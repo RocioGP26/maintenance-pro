@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block title %}Calendario — Mantenimiento Pro{% endblock %}
+{% block page_title %}Calendario Maestro{% endblock %}
+
+{% block content %}
+{% set month_names = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'] %}
+{% set prev = start.replace(month=start.month - 1) if start.month > 1 else start.replace(year=start.year - 1, month=12) %}
+{% set next_m = start.month + 1 %}
+{% set next_y = start.year %}
+{% if next_m > 12 %}
+  {% set next_m = 1 %}
+  {% set next_y = start.year + 1 %}
+{% endif %}
+{% set siguiente = start.replace(year=next_y, month=next_m) %}
+
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+  <h2 class="h5 mb-0">{{ month_names[month - 1] }} {{ year }}</h2>
+  <div class="btn-group">
+    <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('main.calendario', y=prev.year, m=prev.month) }}">&laquo; Anterior</a>
+    <a class="btn btn-outline-primary btn-sm" href="{{ url_for('main.calendario') }}">Hoy</a>
+    <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('main.calendario', y=siguiente.year, m=siguiente.month) }}">Siguiente &raquo;</a>
+  </div>
+</div>
+
+<div class="card card-dashboard">
+  <div class="card-body">
+    <div class="row g-0 text-center border">
+      {% for d in ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'] %}
+      <div class="col border-bottom border-end py-2 fw-semibold bg-light">{{ d }}</div>
+      {% endfor %}
+    </div>
+    {% for week in weeks %}
+    <div class="row g-0 text-center border border-top-0">
+      {% for day in week %}
+      <div class="col border-bottom border-end py-2 text-start align-top" style="min-height:104px;">
+        {% if day %}
+          {% set cell_date = '%04d-%02d-%02d'|format(year, month, day) %}
+          <div class="fw-bold mb-1">{{ day }}</div>
+          {% if by_day.get(cell_date) %}
+            {% for o in by_day[cell_date] %}
+              <div class="small mb-1">
+                <a href="{{ url_for('main.ordenes_edit', id=o.id) }}" class="text-decoration-none d-block" title="{{ o.titulo }}">
+                  <span class="badge text-bg-primary text-wrap text-start w-100">{{ o.titulo[:36] }}{% if o.titulo|length > 36 %}…{% endif %}</span>
+                </a>
+              </div>
+            {% endfor %}
+          {% endif %}
+        {% else %}
+          <span class="text-muted">&nbsp;</span>
+        {% endif %}
+      </div>
+      {% endfor %}
+    </div>
+    {% endfor %}
+  </div>
+</div>
+<p class="text-muted small mt-2 mb-0">Las órdenes con <strong>fecha programada</strong> aparecen en el día correspondiente. {{ last_day }} días en este mes.</p>
+{% endblock %}

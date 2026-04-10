@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block title %}{% if order %}Editar{% else %}Nueva{% endif %} orden — Mantenimiento Pro{% endblock %}
+{% block page_title %}{% if order %}Editar orden{% else %}Nueva orden de trabajo{% endif %}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-8">
+    <div class="card card-dashboard">
+      <div class="card-body">
+        <form method="post">
+          <div class="row g-3">
+            <div class="col-12">
+              <label class="form-label">Título</label>
+              <input type="text" name="titulo" class="form-control" required value="{{ order.titulo if order else '' }}">
+            </div>
+            <div class="col-12">
+              <label class="form-label">Descripción</label>
+              <textarea name="descripcion" class="form-control" rows="3">{{ order.descripcion if order else '' }}</textarea>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Equipo</label>
+              <select name="machine_id" class="form-select" required>
+                <option value="">— Seleccionar —</option>
+                {% for m in machines %}
+                  <option value="{{ m.id }}" {% if order and order.machine_id == m.id %}selected{% endif %}>{{ m.codigo }} — {{ m.nombre }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Técnico asignado</label>
+              <select name="technician_id" class="form-select">
+                <option value="">— Sin asignar —</option>
+                {% for t in technicians %}
+                  <option value="{{ t.id }}" {% if order and order.technician_id == t.id %}selected{% endif %}>{{ t.nombre }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Tipo</label>
+              {% set tp = order.tipo if order else 'correctivo' %}
+              <select name="tipo" class="form-select">
+                <option value="preventivo" {% if tp == 'preventivo' %}selected{% endif %}>Preventivo</option>
+                <option value="correctivo" {% if tp == 'correctivo' %}selected{% endif %}>Correctivo</option>
+                <option value="emergencia" {% if tp == 'emergencia' %}selected{% endif %}>Emergencia</option>
+              </select>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Estado</label>
+              {% set st = order.status if order else 'abierta' %}
+              <select name="status" class="form-select">
+                <option value="abierta" {% if st == 'abierta' %}selected{% endif %}>Abierta</option>
+                <option value="en_proceso" {% if st == 'en_proceso' %}selected{% endif %}>En proceso</option>
+                <option value="cerrada" {% if st == 'cerrada' %}selected{% endif %}>Cerrada</option>
+              </select>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Fecha programada</label>
+              <input type="date" name="fecha_programada" class="form-control"
+                     value="{{ order.fecha_programada.isoformat() if order and order.fecha_programada else '' }}">
+            </div>
+          </div>
+          <div class="mt-4 d-flex gap-2">
+            <button type="submit" class="btn btn-primary">Guardar</button>
+            <a href="{{ url_for('main.ordenes_list') }}" class="btn btn-outline-secondary">Cancelar</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

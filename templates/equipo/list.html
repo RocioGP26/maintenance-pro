@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}Equipo técnico — Mantenimiento Pro{% endblock %}
+{% block page_title %}Equipo Técnico{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-end mb-3">
+  <a href="{{ url_for('main.equipo_new') }}" class="btn btn-primary"><i class="bi bi-person-plus"></i> Nuevo técnico</a>
+</div>
+
+<div class="card card-dashboard">
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0">
+      <thead class="table-light">
+        <tr>
+          <th>Nombre</th>
+          <th>Especialidad</th>
+          <th>Teléfono</th>
+          <th>Email</th>
+          <th>Estado</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for t in technicians %}
+        <tr>
+          <td class="fw-medium">{{ t.nombre }}</td>
+          <td>{{ t.especialidad or '—' }}</td>
+          <td>{{ t.telefono or '—' }}</td>
+          <td>{{ t.email or '—' }}</td>
+          <td>{% if t.activo %}<span class="badge text-bg-success">Activo</span>{% else %}<span class="badge text-bg-secondary">Inactivo</span>{% endif %}</td>
+          <td class="text-end">
+            <a href="{{ url_for('main.equipo_edit', id=t.id) }}" class="btn btn-sm btn-outline-secondary">Editar</a>
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="6" class="text-center text-muted py-4">No hay técnicos.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,159 @@
+{% extends "base.html" %}
+{% block title %}Dashboard — Mantenimiento Pro{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap align-items-center gap-2 mb-4">
+  <span class="text-secondary fw-medium">Período:</span>
+  {% for p, label in [('dia', 'Día'), ('semana', 'Semana'), ('mes', 'Mes'), ('año', 'Año')] %}
+    <a href="{{ url_for('main.dashboard', periodo=p) }}"
+       class="btn btn-sm btn-outline-secondary period-btn {% if periodo == p %}active{% endif %}">{{ label }}</a>
+  {% endfor %}
+</div>
+
+<div class="row g-4">
+  <div class="col-lg-6">
+    <div class="card card-dashboard h-100">
+      <div class="card-body">
+        <h5 class="card-title fw-semibold mb-3">Estado de Salud de la Planta</h5>
+        <div class="chart-box">
+          <canvas id="chartSalud"></canvas>
+        </div>
+        <ul class="list-unstyled small mb-0 mt-2">
+          <li><span class="badge rounded-pill" style="background:#38a169;">&nbsp;</span> Operativos: {{ health.counts.op }} ({{ health.operativos }}%)</li>
+          <li><span class="badge rounded-pill" style="background:#ed8936;">&nbsp;</span> En Mantenimiento: {{ health.counts.mant }} ({{ health.mantenimiento }}%)</li>
+          <li><span class="badge rounded-pill" style="background:#e53e3e;">&nbsp;</span> En Falla: {{ health.counts.falla }} ({{ health.falla }}%)</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-6">
+    <div class="card card-dashboard h-100">
+      <div class="card-body">
+        <h5 class="card-title fw-semibold mb-3">Cumplimiento Preventivo</h5>
+        <div class="gauge-wrap">
+          <canvas id="chartGauge"></canvas>
+          <div class="gauge-center">{{ cumplimiento }}%</div>
+        </div>
+        <p class="text-muted small text-center mb-0">{{ prev_msg }}</p>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-6">
+    <div class="card card-dashboard h-100">
+      <div class="card-body">
+        <h5 class="card-title fw-semibold mb-3">Top 5 Equipos Críticos</h5>
+        {% if criticos %}
+          <ul class="list-group list-group-flush">
+            {% for m in criticos %}
+              <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+                <div>
+                  <strong>{{ m.nombre }}</strong>
+                  <span class="text-muted small d-block">{{ m.codigo }} · {{ m.ubicacion or '—' }}</span>
+                </div>
+                <span class="badge bg-secondary text-uppercase">{{ m.status }}</span>
+              </li>
+            {% endfor %}
+          </ul>
+        {% else %}
+          <p class="text-muted mb-0 py-4 text-center">No hay equipos críticos registrados</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-6">
+    <div class="card card-dashboard h-100">
+      <div class="card-body">
+        <h5 class="card-title fw-semibold mb-3">Carga de Trabajo por Técnico</h5>
+        {% if workload_empty %}
+          <div class="chart-box d-flex align-items-center justify-content-center border rounded bg-light">
+            <span class="text-muted">Sin datos</span>
+          </div>
+        {% else %}
+          <div class="chart-box">
+            <canvas id="chartCarga"></canvas>
+          </div>
+        {% endif %}
+        {% if workload_empty %}
+          <p class="text-muted small text-center mb-0 mt-2">Sin datos</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+<script>
+  const saludCtx = document.getElementById('chartSalud');
+  if (saludCtx) {
+    new Chart(saludCtx, {
+      type: 'doughnut',
+      data: {
+        labels: ['Operativos', 'En Mantenimiento', 'En Falla'],
+        datasets: [{
+          data: [{{ health.operativos }}, {{ health.mantenimiento }}, {{ health.falla }}],
+          backgroundColor: ['#38a169', '#ed8936', '#e53e3e'],
+          borderWidth: 0
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { position: 'bottom' } },
+        cutout: '65%'
+      }
+    });
+  }
+
+  const gCtx = document.getElementById('chartGauge');
+  if (gCtx) {
+    const val = {{ cumplimiento }};
+    const rest = Math.max(0, 100 - val);
+    new Chart(gCtx, {
+      type: 'doughnut',
+      data: {
+        labels: ['Cumplido', 'Restante'],
+        datasets: [{
+          data: [val, rest],
+          backgroundColor: ['#3182ce', '#e2e8f0'],
+          borderWidth: 0
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        rotation: -90,
+        circumference: 180,
+        plugins: { legend: { display: false }, tooltip: { enabled: true } },
+        cutout: '75%'
+      }
+    });
+  }
+
+  const cargaCtx = document.getElementById('chartCarga');
+  if (cargaCtx) {
+    new Chart(cargaCtx, {
+      type: 'bar',
+      data: {
+        labels: {{ workload_labels | tojson }},
+        datasets: [{
+          label: 'Órdenes abiertas / en proceso',
+          data: {{ workload_values | tojson }},
+          backgroundColor: '#3182ce',
+          borderRadius: 4
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          y: { beginAtZero: true, ticks: { stepSize: 1 } }
+        },
+        plugins: { legend: { display: false } }
+      }
+    });
+  }
+</script>
+{% endblock %}

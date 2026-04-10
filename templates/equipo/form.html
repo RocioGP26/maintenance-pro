@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}{% if tech %}Editar{% else %}Nuevo{% endif %} técnico — Mantenimiento Pro{% endblock %}
+{% block page_title %}{% if tech %}Editar técnico{% else %}Nuevo técnico{% endif %}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-8">
+    <div class="card card-dashboard">
+      <div class="card-body">
+        <form method="post">
+          <div class="row g-3">
+            <div class="col-12">
+              <label class="form-label">Nombre completo</label>
+              <input type="text" name="nombre" class="form-control" required value="{{ tech.nombre if tech else '' }}">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Especialidad</label>
+              <input type="text" name="especialidad" class="form-control" value="{{ tech.especialidad if tech else '' }}">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Teléfono</label>
+              <input type="text" name="telefono" class="form-control" value="{{ tech.telefono if tech else '' }}">
+            </div>
+            <div class="col-12">
+              <label class="form-label">Email</label>
+              <input type="email" name="email" class="form-control" value="{{ tech.email if tech else '' }}">
+            </div>
+            <div class="col-12">
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" name="activo" id="activo" {% if not tech or tech.activo %}checked{% endif %}>
+                <label class="form-check-label" for="activo">Activo (puede recibir asignaciones)</label>
+              </div>
+            </div>
+          </div>
+          <div class="mt-4 d-flex gap-2">
+            <button type="submit" class="btn btn-primary">Guardar</button>
+            <a href="{{ url_for('main.equipo_list') }}" class="btn btn-outline-secondary">Cancelar</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

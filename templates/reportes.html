@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+{% block title %}Reportes — Mantenimiento Pro{% endblock %}
+{% block page_title %}Reportes / Analítica{% endblock %}
+
+{% block content %}
+<div class="row g-4 mb-4">
+  <div class="col-md-4">
+    <div class="card card-dashboard h-100">
+      <div class="card-body">
+        <h6 class="text-muted text-uppercase small">Equipos registrados</h6>
+        <p class="display-6 fw-bold text-primary mb-0">{{ total_m }}</p>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card card-dashboard h-100">
+      <div class="card-body">
+        <h6 class="text-muted text-uppercase small">Referencias bajo mínimo</h6>
+        <p class="display-6 fw-bold {% if bajo_minimo %}text-warning{% else %}text-success{% endif %} mb-0">{{ bajo_minimo }}</p>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card card-dashboard h-100">
+      <div class="card-body">
+        <h6 class="text-muted text-uppercase small">Resumen</h6>
+        <p class="small mb-0 text-muted">Distribución de activos por estado y órdenes por tipo y estado (todas las fechas).</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-4">
+  <div class="col-lg-4">
+    <div class="card card-dashboard h-100">
+      <div class="card-body">
+        <h5 class="card-title fw-semibold mb-3">Activos por estado</h5>
+        <div class="chart-box">
+          <canvas id="chartEstado"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-4">
+    <div class="card card-dashboard h-100">
+      <div class="card-body">
+        <h5 class="card-title fw-semibold mb-3">Órdenes por tipo</h5>
+        <div class="chart-box">
+          <canvas id="chartTipo"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-4">
+    <div class="card card-dashboard h-100">
+      <div class="card-body">
+        <h5 class="card-title fw-semibold mb-3">Órdenes por estado</h5>
+        <div class="chart-box">
+          <canvas id="chartWoEstado"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+<script>
+  const labelsEstado = {{ chart_estado_labels | tojson }};
+  const dataEstado = {{ chart_estado_data | tojson }};
+  new Chart(document.getElementById('chartEstado'), {
+    type: 'pie',
+    data: {
+      labels: labelsEstado,
+      datasets: [{ data: dataEstado, backgroundColor: ['#38a169', '#ed8936', '#e53e3e', '#718096'] }]
+    },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
+  });
+
+  const labelsTipo = {{ chart_tipo_labels | tojson }};
+  const dataTipo = {{ chart_tipo_data | tojson }};
+  new Chart(document.getElementById('chartTipo'), {
+    type: 'doughnut',
+    data: {
+      labels: labelsTipo,
+      datasets: [{ data: dataTipo, backgroundColor: ['#3182ce', '#805ad5', '#dd6b20'] }]
+    },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } }, cutout: '55%' }
+  });
+
+  const labelsWo = {{ chart_wo_labels | tojson }};
+  const dataWo = {{ chart_wo_data | tojson }};
+  new Chart(document.getElementById('chartWoEstado'), {
+    type: 'bar',
+    data: {
+      labels: labelsWo,
+      datasets: [{ label: 'Cantidad', data: dataWo, backgroundColor: '#3182ce', borderRadius: 6 }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
+    }
+  });
+</script>
+{% endblock %}

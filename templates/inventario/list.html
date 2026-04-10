@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}Inventario — Mantenimiento Pro{% endblock %}
+{% block page_title %}Inventario de Repuestos{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+  <form class="d-flex gap-2" method="get" action="{{ url_for('main.inventario_list') }}">
+    <input type="search" name="q" value="{{ q }}" class="form-control" placeholder="Buscar SKU o nombre…">
+    <button class="btn btn-outline-primary" type="submit">Buscar</button>
+  </form>
+  <a href="{{ url_for('main.inventario_new') }}" class="btn btn-primary"><i class="bi bi-plus-lg"></i> Nuevo repuesto</a>
+</div>
+
+<div class="card card-dashboard">
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0">
+      <thead class="table-light">
+        <tr>
+          <th>SKU</th>
+          <th>Nombre</th>
+          <th>Categoría</th>
+          <th>Cantidad</th>
+          <th>Mínimo</th>
+          <th>Ubicación</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for p in items %}
+        <tr class="{% if p.cantidad < p.stock_minimo %}table-warning{% endif %}">
+          <td class="fw-medium">{{ p.sku }}</td>
+          <td>{{ p.nombre }}</td>
+          <td>{{ p.categoria or '—' }}</td>
+          <td>{{ p.cantidad }} {{ p.unidad }}</td>
+          <td>{{ p.stock_minimo }}</td>
+          <td>{{ p.ubicacion_almacen or '—' }}</td>
+          <td class="text-end">
+            <a href="{{ url_for('main.inventario_edit', id=p.id) }}" class="btn btn-sm btn-outline-secondary">Editar</a>
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="7" class="text-center text-muted py-4">No hay repuestos.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

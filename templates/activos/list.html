@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}Activos — Mantenimiento Pro{% endblock %}
+{% block page_title %}Activos (Equipos){% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+  <form class="d-flex gap-2" method="get" action="{{ url_for('main.activos_list') }}">
+    <input type="search" name="q" value="{{ q }}" class="form-control" placeholder="Buscar código, nombre, ubicación…">
+    <button class="btn btn-outline-primary" type="submit">Buscar</button>
+  </form>
+  <a href="{{ url_for('main.activos_new') }}" class="btn btn-primary"><i class="bi bi-plus-lg"></i> Nuevo activo</a>
+</div>
+
+<div class="card card-dashboard">
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0">
+      <thead class="table-light">
+        <tr>
+          <th>Código</th>
+          <th>Tipo</th>
+          <th>Nombre</th>
+          <th>Ubicación</th>
+          <th>Estado</th>
+          <th>Crítico</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for m in machines %}
+        <tr>
+          <td class="fw-medium">{{ m.codigo }}</td>
+          <td class="small">{{ m.tipo_etiqueta }}</td>
+          <td>{{ m.nombre }}</td>
+          <td>{{ m.ubicacion or '—' }}</td>
+          <td><span class="badge text-bg-secondary">{{ m.status }}</span></td>
+          <td>{% if m.es_critico %}<i class="bi bi-star-fill text-warning"></i>{% else %}—{% endif %}</td>
+          <td class="table-actions text-end">
+            <a href="{{ url_for('main.activos_edit', id=m.id) }}" class="btn btn-sm btn-outline-secondary">Editar</a>
+            <form action="{{ url_for('main.activos_delete', id=m.id) }}" method="post" class="d-inline" onsubmit="return confirm('¿Eliminar este activo?');">
+              <button type="submit" class="btn btn-sm btn-outline-danger">Eliminar</button>
+            </form>
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="7" class="text-center text-muted py-4">No hay equipos registrados.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

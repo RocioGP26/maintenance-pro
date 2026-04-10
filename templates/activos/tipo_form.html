@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}{% if tipo %}Editar tipo{% else %}Nuevo tipo{% endif %} — Mantenimiento Pro{% endblock %}
+{% block page_title %}{% if tipo %}Editar tipo de máquina{% else %}Nuevo tipo de máquina{% endif %}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-7">
+    <div class="card card-dashboard">
+      <div class="card-body">
+        <form method="post">
+          <div class="mb-3">
+            <label class="form-label">Nombre visible</label>
+            <input type="text" name="nombre" class="form-control" required
+                   value="{{ tipo.nombre if tipo else '' }}"
+                   placeholder="Ej. Bomba de agua">
+            <div class="form-text">Es lo que verá el usuario al elegir el tipo de un equipo.</div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Prefijo de código</label>
+            <input type="text" name="prefijo" class="form-control text-uppercase" required maxlength="8"
+                   pattern="[A-Za-z0-9]{2,8}"
+                   value="{{ tipo.prefijo if tipo else '' }}"
+                   placeholder="BM">
+            <div class="form-text">2 a 8 letras o números, sin espacios. Códigos automáticos: <strong>BM-001</strong>, <strong>BM-002</strong>, etc.</div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Orden en listas</label>
+            <input type="number" name="orden" class="form-control" value="{{ tipo.orden if tipo else siguiente_orden }}">
+          </div>
+          {% if tipo %}
+          <div class="mb-3">
+            <div class="form-check form-switch">
+              <input class="form-check-input" type="checkbox" name="activo" value="1" id="activo" {% if tipo.activo %}checked{% endif %}>
+              <label class="form-check-label" for="activo">Tipo activo (visible al registrar equipos)</label>
+            </div>
+          </div>
+          <div class="mb-3">
+            <span class="text-muted small">Clave interna (no editable):</span>
+            <code class="d-block">{{ tipo.clave }}</code>
+          </div>
+          {% endif %}
+          <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-primary">Guardar</button>
+            <a href="{{ url_for('main.activos_tipo_list') }}" class="btn btn-outline-secondary">Cancelar</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
