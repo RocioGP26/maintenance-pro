@@ -402,20 +402,6 @@ button.sidebar-nav-toggle:focus {
   background: var(--dash-empresa-header-bg);
 }
 
-/* Categorías de sector — Flota, Carga y bodega, Soporte (mockup) */
-.sector-cats-eyebrow {
-  color: var(--dash-text-muted);
-  font-size: 0.7rem;
-  font-weight: 600;
-  letter-spacing: 0.1em;
-  margin: 0;
-  text-transform: uppercase;
-}
-
-.sector-cats-eyebrow strong {
-  color: var(--dash-text-heading);
-}
-
 .sector-cats-row {
   display: grid;
   gap: 0.65rem;
