@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}Tipos de máquina — Mantenimiento Pro{% endblock %}
+{% block title %}Tipos de máquina — {{ app_name }}{% endblock %}
 {% block page_title %}Tipos de máquina{% endblock %}
 
 {% block content %}
@@ -16,6 +16,7 @@
           <th>Orden</th>
           <th>Nombre</th>
           <th>Prefijo</th>
+          <th>Sector</th>
           <th>Clave interna</th>
           <th>Equipos</th>
           <th>Estado</th>
@@ -28,6 +29,7 @@
           <td>{{ t.orden }}</td>
           <td class="fw-medium">{{ t.nombre }}</td>
           <td><span class="badge text-bg-primary">{{ t.prefijo }}</span></td>
+          <td class="small">{{ sector_labels.get(t.sector_industrial, '—') }}</td>
           <td class="small text-muted font-monospace text-break">{{ t.clave }}</td>
           <td>{{ t.machines.count() }}</td>
           <td>{% if t.activo %}<span class="badge text-bg-success">Activo</span>{% else %}<span class="badge text-bg-secondary">Inactivo</span>{% endif %}</td>
@@ -41,7 +43,7 @@
           </td>
         </tr>
         {% else %}
-        <tr><td colspan="7" class="text-center text-muted py-4">No hay tipos. Crea el primero.</td></tr>
+        <tr><td colspan="8" class="text-center text-muted py-4">No hay tipos. Crea el primero.</td></tr>
         {% endfor %}
       </tbody>
     </table>

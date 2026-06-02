@@ -1,4 +1,4 @@
-"""Punto de entrada para Mantenimiento Pro."""
+"""Punto de entrada para Mantis."""
 from app import create_app
 
 app = create_app()

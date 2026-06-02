@@ -1,0 +1,9 @@
+{% macro status_badge(status) %}
+  {% set m = wo_status_meta(status) %}
+  <span class="badge {{ m.badge_class }}">{{ m.label }}</span>
+{% endmacro %}
+
+{% macro tipo_badge(tipo, short=false) %}
+  {% set m = wo_tipo_meta(tipo) %}
+  <span class="badge {{ m.badge_class }}" title="{{ m.label }}">{% if short %}{{ m.short }}{% else %}{{ m.label }}{% endif %}</span>
+{% endmacro %}

@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}{% if tipo %}Editar tipo{% else %}Nuevo tipo{% endif %} — Mantenimiento Pro{% endblock %}
+{% block title %}{% if tipo %}Editar tipo{% else %}Nuevo tipo{% endif %} — {{ app_name }}{% endblock %}
 {% block page_title %}{% if tipo %}Editar tipo de máquina{% else %}Nuevo tipo de máquina{% endif %}{% endblock %}
 
 {% block content %}
@@ -22,6 +22,18 @@
                    value="{{ tipo.prefijo if tipo else '' }}"
                    placeholder="BM">
             <div class="form-text">2 a 8 letras o números, sin espacios. Códigos automáticos: <strong>BM-001</strong>, <strong>BM-002</strong>, etc.</div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label" for="sector_industrial">Sector industrial</label>
+            <select name="sector_industrial" id="sector_industrial" class="form-select" required>
+              {% for s_key, s_label in sectores_nav %}
+              <option value="{{ s_key }}"
+                {% if tipo and tipo.sector_industrial == s_key %}selected{% elif not tipo and s_key == 'manufactura' %}selected{% endif %}>
+                {{ s_label }}
+              </option>
+              {% endfor %}
+            </select>
+            <div class="form-text">Define qué categorías del dashboard incluyen equipos de este tipo.</div>
           </div>
           <div class="mb-3">
             <label class="form-label">Orden en listas</label>

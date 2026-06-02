@@ -1,17 +1,98 @@
 {% extends "base.html" %}
-{% block title %}{% if order %}Editar{% else %}Nueva{% endif %} orden — Mantenimiento Pro{% endblock %}
-{% block page_title %}{% if order %}Editar orden{% else %}Nueva orden de trabajo{% endif %}{% endblock %}
+{% block title %}{% if order %}{% if solo_lectura|default(false) %}Ver{% else %}Editar{% endif %}{% else %}Nueva{% endif %} orden — {{ app_name }}{% endblock %}
+{% block page_title %}{% if order %}{% if solo_lectura|default(false) %}Ver orden{% else %}Editar orden{% endif %}{% if order.numero %} — {{ order.numero }}{% endif %}{% else %}Nueva orden de trabajo{% endif %}{% endblock %}
+
+{% block head_extra %}
+<style>
+  .modal-jornada .modal-header { border-bottom: 1px solid #e8eaed; padding: 1rem 1.25rem; }
+  .modal-jornada .modal-title { font-size: 1rem; font-weight: 600; color: #1a2b4a; }
+  .modal-jornada .modal-body { padding: 1.25rem; background: #f6f7f9; }
+  .modal-jornada .modal-footer { border-top: 1px solid #e8eaed; background: #fff; }
+  .jornadas-table-wrap { border: 1px solid #dee2e6; border-radius: 8px; overflow: hidden; background: #fff; }
+  .jornadas-table { margin-bottom: 0; }
+  .jornadas-table thead th {
+    background: linear-gradient(180deg, #e2e6ea 0%, #f1f3f5 55%, #fafbfc 100%);
+    font-weight: 600;
+    font-size: 0.8125rem;
+    color: #343a40;
+    text-align: center;
+    vertical-align: middle;
+    border-bottom: 1px solid #ced4da;
+    white-space: nowrap;
+    padding: 0.65rem 0.75rem;
+  }
+  .jornadas-table thead th.col-desc { text-align: center; min-width: 12rem; }
+  .jornadas-table tbody td {
+    font-size: 0.875rem;
+    text-align: center;
+    vertical-align: middle;
+    padding: 0.55rem 0.75rem;
+  }
+  .jornadas-table tbody td.col-desc {
+    text-align: left;
+    max-width: 16rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .jornadas-table tbody td.col-tecnico { text-align: left; white-space: nowrap; }
+  .jornadas-table tbody tr:hover { background-color: #f8f9fa; }
+  #jornadasVacio { border: 1px dashed #ced4da; border-radius: 8px; padding: 1.25rem; text-align: center; color: #6c757d; background: #fafbfc; font-size: 0.875rem; }
+</style>
+{% endblock %}
 
 {% block content %}
 <div class="row justify-content-center">
-  <div class="col-lg-8">
+  <div class="col-lg-10">
     <div class="card card-dashboard">
       <div class="card-body">
-        <form method="post">
+        {% if solo_lectura|default(false) %}
+        <div class="alert alert-secondary d-flex align-items-center gap-2 mb-3" role="alert">
+          <i class="bi bi-lock-fill"></i>
+          <span>Esta orden está <strong>cerrada</strong> y no puede modificarse. Solo consulta.</span>
+        </div>
+        {% endif %}
+        <form method="post" id="ordenForm" data-solo-lectura="{{ '1' if solo_lectura|default(false) else '0' }}">
+          <input type="hidden" name="jornadas_json" id="jornadasJson" value="">
+          <fieldset {% if solo_lectura|default(false) %}disabled{% endif %}>
           <div class="row g-3">
-            <div class="col-12">
-              <label class="form-label">Título</label>
-              <input type="text" name="titulo" class="form-control" required value="{{ order.titulo if order else '' }}">
+            {% if order and order.numero %}
+            <div class="col-md-4">
+              <label class="form-label">N° OT</label>
+              <input type="text" class="form-control fw-semibold text-primary" readonly value="{{ order.numero }}">
+            </div>
+            {% endif %}
+            <div class="col-12{% if order and order.numero %} col-md-8{% endif %}">
+              <label class="form-label" id="labelTituloActividad">{% if order and order.tipo == 'preventivo' %}Actividad{% else %}Título{% endif %}</label>
+              <input type="text" name="titulo" id="inputTituloActividad" class="form-control" required
+                     placeholder="{% if order and order.tipo == 'preventivo' %}Ej. Lubricación general{% else %}Descripción breve de la orden{% endif %}"
+                     value="{{ order.titulo if order else '' }}">
+              <div class="form-text small {% if not order or order.tipo != 'preventivo' %}d-none{% endif %}" id="hintActividadPreventiva">
+                Una misma actividad no puede repetirse en el mismo equipo mientras exista una OT preventiva abierta.
+              </div>
+            </div>
+            <div class="col-12 d-none" id="seccionPreventivo">
+              <div class="border rounded p-3 bg-light">
+                <h6 class="fw-semibold mb-2"><i class="bi bi-arrow-repeat me-1"></i> Frecuencia del mantenimiento</h6>
+                <div class="row g-2 align-items-end">
+                  <div class="col-auto">
+                    <label class="form-label small mb-1">Cada</label>
+                    <input type="number" name="frecuencia_valor" id="frecuenciaValor" class="form-control form-control-sm"
+                           min="1" max="999" value="{{ frecuencia_valor }}">
+                  </div>
+                  <div class="col-md-4">
+                    <label class="form-label small mb-1">Unidad</label>
+                    <select name="frecuencia_unidad" id="frecuenciaUnidad" class="form-select form-select-sm">
+                      {% for val, lbl in frecuencia_unidades %}
+                      <option value="{{ val }}" {% if frecuencia_unidad == val %}selected{% endif %}>{{ lbl }}</option>
+                      {% endfor %}
+                    </select>
+                  </div>
+                  <div class="col-md">
+                    <p class="small text-muted mb-0" id="frecuenciaResumen">{{ frecuencia_label }}</p>
+                  </div>
+                </div>
+              </div>
             </div>
             <div class="col-12">
               <label class="form-label">Descripción</label>
@@ -27,7 +108,7 @@
               </select>
             </div>
             <div class="col-md-6">
-              <label class="form-label">Técnico asignado</label>
+              <label class="form-label">Técnico asignado (orden)</label>
               <select name="technician_id" class="form-select">
                 <option value="">— Sin asignar —</option>
                 {% for t in technicians %}
@@ -37,8 +118,9 @@
             </div>
             <div class="col-md-4">
               <label class="form-label">Tipo</label>
-              {% set tp = order.tipo if order else 'correctivo' %}
-              <select name="tipo" class="form-select">
+              {% set tp = order.tipo if order else '' %}
+              <select name="tipo" id="selectTipo" class="form-select" required>
+                <option value="" {% if not tp %}selected{% endif %}>— Seleccionar —</option>
                 <option value="preventivo" {% if tp == 'preventivo' %}selected{% endif %}>Preventivo</option>
                 <option value="correctivo" {% if tp == 'correctivo' %}selected{% endif %}>Correctivo</option>
                 <option value="emergencia" {% if tp == 'emergencia' %}selected{% endif %}>Emergencia</option>
@@ -51,6 +133,16 @@
                 <option value="abierta" {% if st == 'abierta' %}selected{% endif %}>Abierta</option>
                 <option value="en_proceso" {% if st == 'en_proceso' %}selected{% endif %}>En proceso</option>
                 <option value="cerrada" {% if st == 'cerrada' %}selected{% endif %}>Cerrada</option>
+                <option value="completado" {% if st == 'completado' %}selected{% endif %}>Completado</option>
+              </select>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Prioridad</label>
+              {% set pr = order.prioridad if order else 'media' %}
+              <select name="prioridad" class="form-select">
+                {% for val, lbl in prioridades %}
+                <option value="{{ val }}" {% if pr == val %}selected{% endif %}>{{ lbl }}</option>
+                {% endfor %}
               </select>
             </div>
             <div class="col-md-4">
@@ -58,14 +150,599 @@
               <input type="date" name="fecha_programada" class="form-control"
                      value="{{ order.fecha_programada.isoformat() if order and order.fecha_programada else '' }}">
             </div>
+
+            <div class="col-12 d-none" id="seccionRepuestos">
+              <hr class="my-1">
+              <h6 class="fw-semibold mb-2"><i class="bi bi-box-seam me-1"></i> Repuestos (inventario)</h6>
+              <div class="form-check mb-2">
+                <input class="form-check-input" type="checkbox" name="usa_repuestos" value="1" id="usa_repuestos"
+                       {% if usa_repuestos_inicial %}checked{% endif %}>
+                <label class="form-check-label" for="usa_repuestos">
+                  Requiere cambio de repuestos
+                </label>
+              </div>
+              <div id="panelRepuestos" class="{% if not usa_repuestos_inicial %}d-none{% endif %}">
+                <p class="form-text small mb-2">Selecciona los repuestos consumidos; el stock se descuenta al guardar la orden.</p>
+                <div class="table-responsive border rounded mb-2">
+                  <table class="table table-sm table-hover mb-0 ot-repuestos-table">
+                    <thead class="table-light">
+                      <tr>
+                        <th>Repuesto</th>
+                        <th style="width:6rem;">Cant.</th>
+                        <th class="text-end" style="width:7rem;">Costo / u.</th>
+                        <th class="text-end" style="width:7rem;">Total</th>
+                        <th>Notas</th>
+                        <th style="width:2.5rem;"></th>
+                      </tr>
+                    </thead>
+                    <tbody id="repuestosTbody"></tbody>
+                  </table>
+                </div>
+                <button type="button" class="btn btn-sm btn-outline-primary" id="btnAgregarRepuesto">
+                  <i class="bi bi-plus-lg"></i> Agregar repuesto
+                </button>
+                <div id="repuestosVacio" class="form-text small text-muted mt-1">Sin repuestos agregados.</div>
+                <div id="repuestosCostoTotal" class="small text-end fw-semibold mt-2 d-none"></div>
+              </div>
+              <input type="hidden" name="repuestos_json" id="repuestosJson" value="">
+            </div>
+
+            <div class="col-12">
+              <hr class="my-1">
+              <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-2">
+                <div>
+                  <h6 class="fw-semibold mb-0">Jornadas de trabajo</h6>
+                  <p class="form-text small mb-0">Registra cada visita o tramo de trabajo con el modal de avance. Al marcar la orden como <strong>Cerrada</strong> ya no podrá editarse.</p>
+                </div>
+                <button type="button" class="btn btn-sm btn-primary" id="btnAbrirModalJornada" data-bs-toggle="modal" data-bs-target="#modalJornada">
+                  <i class="bi bi-plus-lg"></i> Agregar jornada
+                </button>
+              </div>
+              <div id="jornadasVacio">Aún no hay jornadas registradas.</div>
+              <div class="table-responsive jornadas-table-wrap d-none" id="jornadasTablaWrap">
+                <table class="table jornadas-table">
+                  <thead>
+                    <tr>
+                      <th>Fecha</th>
+                      <th>Inicio</th>
+                      <th>Fin</th>
+                      <th>Duración</th>
+                      <th>Técnico realizador</th>
+                      <th class="col-desc">Descripción</th>
+                      <th style="width: 5.5rem;"></th>
+                    </tr>
+                  </thead>
+                  <tbody id="jornadasTbody"></tbody>
+                </table>
+              </div>
+            </div>
+
+            <div class="col-md-5">
+              <label class="form-label">Tiempo gastado (total)</label>
+              <div class="input-group">
+                <input type="number" name="tiempo_horas" id="tiempo_horas" class="form-control" min="0" max="9999"
+                       value="{{ tiempo_horas }}" readonly>
+                <span class="input-group-text">h</span>
+                <input type="number" name="tiempo_minutos" id="tiempo_minutos" class="form-control" min="0" max="59"
+                       value="{{ tiempo_minutos }}" readonly>
+                <span class="input-group-text">min</span>
+              </div>
+              <div id="tiempo_gastado_preview" class="form-text">—</div>
+            </div>
+            <div class="col-md-7 d-flex align-items-end">
+              <div class="form-check mb-2">
+                <input class="form-check-input" type="checkbox" name="tiempo_manual" value="1" id="tiempo_manual">
+                <label class="form-check-label" for="tiempo_manual">
+                  Ajustar tiempo total manualmente (sin usar las jornadas)
+                </label>
+              </div>
+            </div>
           </div>
+          </fieldset>
           <div class="mt-4 d-flex gap-2">
-            <button type="submit" class="btn btn-primary">Guardar</button>
-            <a href="{{ url_for('main.ordenes_list') }}" class="btn btn-outline-secondary">Cancelar</a>
+            {% if not solo_lectura|default(false) %}
+            <button type="submit" class="btn btn-primary">Guardar orden</button>
+            {% endif %}
+            <a href="{{ url_for('main.ordenes_list') }}" class="btn btn-outline-secondary">{% if solo_lectura|default(false) %}Volver{% else %}Cancelar{% endif %}</a>
           </div>
         </form>
       </div>
     </div>
   </div>
 </div>
+
+<div class="modal fade modal-jornada" id="modalJornada" tabindex="-1" aria-labelledby="modalJornadaLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="modalJornadaLabel">
+          <i class="bi bi-calendar-event me-2 text-primary"></i>Registrar avance / jornada
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body">
+        <div class="row g-3">
+          <div class="col-12">
+            <label class="form-label fw-semibold" for="jornadaFecha">Fecha</label>
+            <input type="date" class="form-control" id="jornadaFecha" required>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-semibold" for="jornadaHoraInicio">Hora inicio</label>
+            <input type="time" class="form-control" id="jornadaHoraInicio" required>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-semibold" for="jornadaHoraFin">Hora fin</label>
+            <input type="time" class="form-control" id="jornadaHoraFin" required>
+          </div>
+          <div class="col-12">
+            <label class="form-label fw-semibold" for="jornadaTecnico">Técnico realizador (esta jornada)</label>
+            <select class="form-select" id="jornadaTecnico">
+              <option value="">— Seleccionar —</option>
+              {% for t in technicians %}
+              <option value="{{ t.id }}">{{ t.nombre }}</option>
+              {% endfor %}
+              <option value="otro">Otro</option>
+            </select>
+          </div>
+          <div class="col-12" id="wrapTecnicoNombre">
+            <label class="form-label fw-semibold" for="jornadaTecnicoNombre">Nombre técnico o empresa</label>
+            <input type="text" class="form-control" id="jornadaTecnicoNombre" placeholder="Nombre del técnico o empresa externa">
+          </div>
+          <div class="col-12">
+            <label class="form-label fw-semibold" for="jornadaDescripcion">Descripción del avance</label>
+            <textarea class="form-control" id="jornadaDescripcion" rows="3"
+                      placeholder="Ej. Trabajo de 8:00 a 9:30, limpieza y revisión..."></textarea>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-secondary text-uppercase fw-semibold" data-bs-dismiss="modal">Cancelar</button>
+        <button type="button" class="btn btn-primary text-uppercase fw-semibold" id="btnGuardarJornada">
+          <i class="bi bi-save me-1"></i> Guardar jornada
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function () {
+  var soloLectura = document.getElementById('ordenForm') &&
+    document.getElementById('ordenForm').dataset.soloLectura === '1';
+  var technicians = {{ technicians_json|safe }};
+  var techById = {};
+  technicians.forEach(function (t) { techById[String(t.id)] = t.nombre; });
+
+  var jornadas = {{ jornadas_inicial|tojson }};
+
+  var editIndex = -1;
+  var tbody = document.getElementById('jornadasTbody');
+  var tablaWrap = document.getElementById('jornadasTablaWrap');
+  var vacio = document.getElementById('jornadasVacio');
+  var hidden = document.getElementById('jornadasJson');
+  var manual = document.getElementById('tiempo_manual');
+  var th = document.getElementById('tiempo_horas');
+  var tm = document.getElementById('tiempo_minutos');
+  var preview = document.getElementById('tiempo_gastado_preview');
+  var modalEl = document.getElementById('modalJornada');
+  var modal = modalEl ? bootstrap.Modal.getOrCreateInstance(modalEl) : null;
+  var btnAgregar = document.getElementById('btnAbrirModalJornada');
+  if (soloLectura && btnAgregar) {
+    btnAgregar.classList.add('d-none');
+    btnAgregar.removeAttribute('data-bs-toggle');
+    btnAgregar.removeAttribute('data-bs-target');
+  }
+
+  function hoyISO() {
+    var d = new Date();
+    return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+  }
+
+  function fmtFecha(iso) {
+    if (!iso) return '—';
+    var p = iso.split('-');
+    if (p.length !== 3) return iso;
+    return p[2] + '/' + p[1] + '/' + p[0];
+  }
+
+  function minutosJornada(j) {
+    if (!j.fecha || !j.hora_inicio || !j.hora_fin) return 0;
+    var a = new Date(j.fecha + 'T' + j.hora_inicio);
+    var b = new Date(j.fecha + 'T' + j.hora_fin);
+    if (isNaN(a) || isNaN(b) || b <= a) return 0;
+    return Math.floor((b - a) / 60000);
+  }
+
+  function formatear(minutos) {
+    if (minutos <= 0) return '0 min';
+    var h = Math.floor(minutos / 60);
+    var m = minutos % 60;
+    if (h && m) return h + ' h ' + m + ' min';
+    if (h) return h + ' h';
+    return m + ' min';
+  }
+
+  function tecnicoLabel(j) {
+    if (j.technician_id && j.technician_id !== 'otro') {
+      return techById[String(j.technician_id)] || 'Técnico';
+    }
+    return j.tecnico_nombre || '—';
+  }
+
+  function syncHidden() {
+    hidden.value = JSON.stringify(jornadas);
+  }
+
+  function recalcularTotal() {
+    if (manual && manual.checked) return;
+    var total = 0;
+    jornadas.forEach(function (j) { total += minutosJornada(j); });
+    if (th) th.value = Math.floor(total / 60);
+    if (tm) tm.value = total % 60;
+    if (preview) preview.textContent = jornadas.length ? formatear(total) : '—';
+  }
+
+  function escHtml(s) {
+    return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;');
+  }
+
+  function renderLista() {
+    if (!tbody || !vacio) return;
+    tbody.innerHTML = '';
+    var hay = jornadas.length > 0;
+    vacio.style.display = hay ? 'none' : 'block';
+    if (tablaWrap) {
+      tablaWrap.classList.toggle('d-none', !hay);
+    }
+    jornadas.forEach(function (j, idx) {
+      var mins = minutosJornada(j);
+      var tr = document.createElement('tr');
+      tr.innerHTML =
+        '<td class="text-nowrap">' + escHtml(fmtFecha(j.fecha)) + '</td>' +
+        '<td class="text-nowrap">' + escHtml(j.hora_inicio || '—') + '</td>' +
+        '<td class="text-nowrap">' + escHtml(j.hora_fin || '—') + '</td>' +
+        '<td class="text-nowrap">' + escHtml(formatear(mins)) + '</td>' +
+        '<td class="col-tecnico">' + escHtml(tecnicoLabel(j)) + '</td>' +
+        '<td class="col-desc" title="' + escHtml(j.descripcion || '') + '">' + escHtml(j.descripcion || '—') + '</td>' +
+        '<td class="text-end text-nowrap">' +
+          (soloLectura ? '—' : (
+            '<button type="button" class="btn btn-sm btn-outline-secondary btn-editar-jornada" data-idx="' + idx + '" title="Editar"><i class="bi bi-pencil"></i></button> ' +
+            '<button type="button" class="btn btn-sm btn-outline-danger btn-quitar-jornada" data-idx="' + idx + '" title="Quitar"><i class="bi bi-trash"></i></button>'
+          )) +
+        '</td>';
+      tbody.appendChild(tr);
+    });
+    tbody.querySelectorAll('.btn-editar-jornada').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        abrirModal(parseInt(btn.getAttribute('data-idx'), 10));
+      });
+    });
+    tbody.querySelectorAll('.btn-quitar-jornada').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        jornadas.splice(parseInt(btn.getAttribute('data-idx'), 10), 1);
+        syncHidden();
+        renderLista();
+        recalcularTotal();
+      });
+    });
+    syncHidden();
+    recalcularTotal();
+  }
+
+  function toggleTecnicoNombre() {
+    var sel = document.getElementById('jornadaTecnico');
+    var wrap = document.getElementById('wrapTecnicoNombre');
+    var inp = document.getElementById('jornadaTecnicoNombre');
+    var esOtro = sel && sel.value === 'otro';
+    if (wrap) wrap.style.display = esOtro || !sel.value ? '' : 'none';
+    if (inp) inp.required = esOtro;
+  }
+
+  function limpiarModal() {
+    document.getElementById('jornadaFecha').value = hoyISO();
+    document.getElementById('jornadaHoraInicio').value = '';
+    document.getElementById('jornadaHoraFin').value = '';
+    document.getElementById('jornadaTecnico').value = '';
+    document.getElementById('jornadaTecnicoNombre').value = '';
+    document.getElementById('jornadaDescripcion').value = '';
+    toggleTecnicoNombre();
+  }
+
+  function abrirModal(idx) {
+    if (soloLectura) return;
+    editIndex = typeof idx === 'number' ? idx : -1;
+    limpiarModal();
+    if (editIndex >= 0 && jornadas[editIndex]) {
+      var j = jornadas[editIndex];
+      document.getElementById('jornadaFecha').value = j.fecha || '';
+      document.getElementById('jornadaHoraInicio').value = j.hora_inicio || '';
+      document.getElementById('jornadaHoraFin').value = j.hora_fin || '';
+      document.getElementById('jornadaTecnico').value = j.technician_id ? String(j.technician_id) : 'otro';
+      document.getElementById('jornadaTecnicoNombre').value = j.tecnico_nombre || '';
+      document.getElementById('jornadaDescripcion').value = j.descripcion || '';
+      toggleTecnicoNombre();
+    }
+    if (modal) modal.show();
+  }
+
+  if (modalEl) {
+    modalEl.addEventListener('show.bs.modal', function (e) {
+      if (e.relatedTarget && e.relatedTarget.id === 'btnAbrirModalJornada') {
+        editIndex = -1;
+        limpiarModal();
+      }
+    });
+  }
+
+  document.getElementById('jornadaTecnico').addEventListener('change', toggleTecnicoNombre);
+
+  if (!soloLectura) document.getElementById('btnGuardarJornada').addEventListener('click', function () {
+    var fecha = document.getElementById('jornadaFecha').value;
+    var horaIni = document.getElementById('jornadaHoraInicio').value;
+    var horaFin = document.getElementById('jornadaHoraFin').value;
+    var tech = document.getElementById('jornadaTecnico').value;
+    var nombre = document.getElementById('jornadaTecnicoNombre').value.trim();
+    var desc = document.getElementById('jornadaDescripcion').value.trim();
+
+    if (!fecha || !horaIni || !horaFin) {
+      alert('Completa fecha, hora inicio y hora fin.');
+      return;
+    }
+    if (horaFin <= horaIni) {
+      alert('La hora fin debe ser posterior a la hora inicio.');
+      return;
+    }
+    if (!tech) {
+      alert('Selecciona el técnico realizador.');
+      return;
+    }
+    if (tech === 'otro' && !nombre) {
+      alert('Indica el nombre del técnico o empresa.');
+      return;
+    }
+
+    var item = {
+      fecha: fecha,
+      hora_inicio: horaIni,
+      hora_fin: horaFin,
+      technician_id: tech,
+      tecnico_nombre: tech === 'otro' ? nombre : '',
+      descripcion: desc
+    };
+
+    if (editIndex >= 0) {
+      jornadas[editIndex] = item;
+    } else {
+      jornadas.push(item);
+    }
+    syncHidden();
+    renderLista();
+    if (modal) modal.hide();
+  });
+
+  function toggleManual() {
+    if (soloLectura) return;
+    var on = manual && manual.checked;
+    if (th) th.readOnly = !on;
+    if (tm) tm.readOnly = !on;
+    if (btnAgregar) btnAgregar.disabled = on;
+    if (!on) recalcularTotal();
+  }
+
+  if (manual && !soloLectura) manual.addEventListener('change', toggleManual);
+
+  toggleTecnicoNombre();
+  syncHidden();
+  renderLista();
+  toggleManual();
+
+  var selectTipo = document.getElementById('selectTipo');
+  var seccionPrev = document.getElementById('seccionPreventivo');
+  var labelTitulo = document.getElementById('labelTituloActividad');
+  var hintPrev = document.getElementById('hintActividadPreventiva');
+  var inputTitulo = document.getElementById('inputTituloActividad');
+  var freqVal = document.getElementById('frecuenciaValor');
+  var freqUni = document.getElementById('frecuenciaUnidad');
+  var freqResumen = document.getElementById('frecuenciaResumen');
+  var freqLabels = { dias: 'días', semanas: 'semanas', meses: 'meses' };
+
+  function actualizarSeccionPreventivo() {
+    var esPrev = selectTipo && selectTipo.value === 'preventivo';
+    if (seccionPrev) seccionPrev.classList.toggle('d-none', !esPrev);
+    if (labelTitulo) labelTitulo.textContent = esPrev ? 'Actividad' : 'Título';
+    if (hintPrev) hintPrev.classList.toggle('d-none', !esPrev);
+    if (inputTitulo) {
+      inputTitulo.placeholder = esPrev
+        ? 'Ej. Lubricación general'
+        : 'Descripción breve de la orden';
+    }
+    if (esPrev) actualizarFrecuenciaResumen();
+  }
+
+  function actualizarFrecuenciaResumen() {
+    if (!freqResumen || !freqVal) return;
+    var v = parseInt(freqVal.value, 10) || 1;
+    var u = freqUni ? freqUni.value : 'meses';
+    freqResumen.textContent = 'Cada ' + v + ' ' + (freqLabels[u] || u);
+  }
+
+  if (freqVal) freqVal.addEventListener('input', actualizarFrecuenciaResumen);
+  if (freqUni) freqUni.addEventListener('change', actualizarFrecuenciaResumen);
+
+  var seccionRep = document.getElementById('seccionRepuestos');
+  var usaRep = document.getElementById('usa_repuestos');
+  var panelRep = document.getElementById('panelRepuestos');
+  var repuestosTbody = document.getElementById('repuestosTbody');
+  var repHidden = document.getElementById('repuestosJson');
+  var repVacio = document.getElementById('repuestosVacio');
+  var btnAddRep = document.getElementById('btnAgregarRepuesto');
+  var catalogoRep = {{ repuestos_catalog_json|safe }};
+  var repuestos = {{ repuestos_inicial|tojson }};
+  var repCostoTotalEl = document.getElementById('repuestosCostoTotal');
+
+  function escRep(s) {
+    return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;');
+  }
+
+  function actualizarSeccionRepuestos() {
+    actualizarSeccionPreventivo();
+    var esCorrectivo = selectTipo && selectTipo.value === 'correctivo';
+    if (seccionRep) seccionRep.classList.toggle('d-none', !esCorrectivo);
+    if (!esCorrectivo && usaRep) {
+      usaRep.checked = false;
+      togglePanelRep();
+      repuestos = [];
+      renderRepuestos();
+    }
+  }
+
+  function opcionesRepuesto(selectedId) {
+    var html = '<option value="">— Seleccionar —</option>';
+    catalogoRep.forEach(function (p) {
+      var sel = String(p.id) === String(selectedId) ? ' selected' : '';
+      html += '<option value="' + p.id + '"' + sel + '>' +
+        escRep(p.sku) + ' — ' + escRep(p.nombre) + ' (stock: ' + p.stock + ' ' + escRep(p.unidad) + ')</option>';
+    });
+    return html;
+  }
+
+  function costoUnitarioRep(id) {
+    var p = catalogoRep.find(function (x) { return String(x.id) === String(id); });
+    return p ? (parseFloat(p.costo_unitario) || 0) : 0;
+  }
+
+  function fmtRepMoney(n) {
+    var entero = Math.floor(n);
+    var frac = Math.round((n - entero) * 100);
+    var s = entero.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+    if (frac > 0) return '$' + s + ',' + String(frac).padStart(2, '0');
+    return '$' + s;
+  }
+
+  function actualizarTotalesRep() {
+    if (!repuestosTbody) return;
+    var suma = 0;
+    repuestosTbody.querySelectorAll('tr').forEach(function (tr) {
+      var sel = tr.querySelector('.rep-spare');
+      var qty = tr.querySelector('.rep-qty');
+      var celUnit = tr.querySelector('.rep-costo-unit');
+      var celTotal = tr.querySelector('.rep-costo-total');
+      if (!sel || !sel.value) {
+        if (celUnit) celUnit.textContent = '—';
+        if (celTotal) celTotal.textContent = '—';
+        return;
+      }
+      var cu = costoUnitarioRep(sel.value);
+      var q = parseInt(qty && qty.value, 10) || 1;
+      var ct = cu * q;
+      suma += ct;
+      if (celUnit) celUnit.textContent = fmtRepMoney(cu);
+      if (celTotal) celTotal.textContent = fmtRepMoney(ct);
+    });
+    if (repCostoTotalEl) {
+      if (suma > 0) {
+        repCostoTotalEl.textContent = 'Costo total repuestos: ' + fmtRepMoney(suma);
+        repCostoTotalEl.classList.remove('d-none');
+      } else {
+        repCostoTotalEl.classList.add('d-none');
+      }
+    }
+  }
+
+  function syncRepHidden() {
+    if (repHidden) repHidden.value = JSON.stringify(repuestos);
+  }
+
+  function syncRepFromDom() {
+    repuestos = [];
+    if (!repuestosTbody) return;
+    repuestosTbody.querySelectorAll('tr').forEach(function (tr) {
+      var sel = tr.querySelector('.rep-spare');
+      var qty = tr.querySelector('.rep-qty');
+      var notas = tr.querySelector('.rep-notas');
+      if (!sel || !sel.value) return;
+      repuestos.push({
+        spare_part_id: parseInt(sel.value, 10),
+        cantidad: parseInt(qty && qty.value, 10) || 1,
+        notas: notas ? notas.value.trim() : ''
+      });
+    });
+  }
+
+  function enlazarFilaRep(tr) {
+    var btn = tr.querySelector('.btn-quitar-rep');
+    if (btn) btn.addEventListener('click', function () {
+      syncRepFromDom();
+      var filas = repuestosTbody.querySelectorAll('tr');
+      var idx = Array.prototype.indexOf.call(filas, tr);
+      if (idx >= 0) repuestos.splice(idx, 1);
+      renderRepuestos();
+    });
+    tr.querySelectorAll('.rep-spare, .rep-qty, .rep-notas').forEach(function (el) {
+      el.addEventListener('change', function () {
+        syncRepFromDom();
+        syncRepHidden();
+        actualizarTotalesRep();
+      });
+      el.addEventListener('input', actualizarTotalesRep);
+    });
+  }
+
+  function renderRepuestos() {
+    if (!repuestosTbody) return;
+    repuestosTbody.innerHTML = '';
+    if (repVacio) repVacio.style.display = repuestos.length ? 'none' : 'block';
+    repuestos.forEach(function (r) {
+      var tr = document.createElement('tr');
+      var cu = r.costo_unitario != null ? parseFloat(r.costo_unitario) : costoUnitarioRep(r.spare_part_id);
+      var ct = r.costo_total != null ? parseFloat(r.costo_total) : cu * (r.cantidad || 1);
+      if (soloLectura) {
+        tr.innerHTML =
+          '<td>' + escRep(r.sku) + ' — ' + escRep(r.nombre) + '</td>' +
+          '<td class="text-center">' + r.cantidad + '</td>' +
+          '<td class="text-end text-muted rep-costo-unit">' + fmtRepMoney(cu) + '</td>' +
+          '<td class="text-end fw-medium rep-costo-total">' + fmtRepMoney(ct) + '</td>' +
+          '<td>' + escRep(r.notas || '—') + '</td><td></td>';
+      } else {
+        tr.innerHTML =
+          '<td><select class="form-select form-select-sm rep-spare">' + opcionesRepuesto(r.spare_part_id) + '</select></td>' +
+          '<td><input type="number" class="form-control form-control-sm rep-qty" min="1" value="' + (r.cantidad || 1) + '"></td>' +
+          '<td class="text-end text-muted small rep-costo-unit">—</td>' +
+          '<td class="text-end fw-medium small rep-costo-total">—</td>' +
+          '<td><input type="text" class="form-control form-control-sm rep-notas" value="' + escRep(r.notas || '') + '" placeholder="Opcional"></td>' +
+          '<td class="text-end"><button type="button" class="btn btn-sm btn-outline-danger btn-quitar-rep"><i class="bi bi-trash"></i></button></td>';
+      }
+      repuestosTbody.appendChild(tr);
+      if (!soloLectura) enlazarFilaRep(tr);
+    });
+    syncRepHidden();
+    actualizarTotalesRep();
+  }
+
+  function togglePanelRep() {
+    if (panelRep && usaRep) panelRep.classList.toggle('d-none', !usaRep.checked);
+  }
+
+  if (selectTipo) selectTipo.addEventListener('change', actualizarSeccionRepuestos);
+  if (usaRep) usaRep.addEventListener('change', togglePanelRep);
+  if (btnAddRep && !soloLectura) {
+    btnAddRep.addEventListener('click', function () {
+      syncRepFromDom();
+      repuestos.push({ spare_part_id: '', cantidad: 1, notas: '', sku: '', nombre: '' });
+      renderRepuestos();
+    });
+  }
+  if (soloLectura) {
+    if (usaRep) usaRep.disabled = true;
+    if (btnAddRep) btnAddRep.classList.add('d-none');
+  }
+
+  actualizarSeccionPreventivo();
+  actualizarSeccionRepuestos();
+  togglePanelRep();
+  renderRepuestos();
+})();
+</script>
 {% endblock %}

@@ -1,47 +1,135 @@
 {% extends "base.html" %}
-{% block title %}Órdenes de trabajo — Mantenimiento Pro{% endblock %}
+{% block title %}Órdenes de trabajo — {{ app_name }}{% endblock %}
 {% block page_title %}Órdenes de Trabajo{% endblock %}
 
+{% block head_extra %}
+<style>
+  .ot-list-toolbar { margin-bottom: 0.65rem; }
+  .ot-list-toolbar .btn { padding: 0.2rem 0.55rem; font-size: 0.75rem; }
+  .ot-list-toolbar .btn-primary { padding: 0.25rem 0.65rem; font-size: 0.8125rem; }
+  .ot-list-card .card-body { padding: 0; }
+  .ot-list-table { font-size: 0.8125rem; margin-bottom: 0; }
+  .ot-list-table thead th {
+    padding: 0.35rem 0.45rem;
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: #6c757d;
+    white-space: nowrap;
+    border-bottom-width: 1px;
+  }
+  .ot-list-table tbody td {
+    padding: 0.3rem 0.45rem;
+    vertical-align: middle;
+    line-height: 1.25;
+  }
+  .ot-list-table tbody tr:hover { background-color: #f8f9fa; }
+  .ot-list-table .badge { font-size: 0.68rem; padding: 0.15em 0.4em; font-weight: 600; }
+  .ot-list-table .ot-num { font-size: 0.75rem; font-weight: 600; color: var(--bs-primary); white-space: nowrap; }
+  .ot-list-table .ot-titulo {
+    max-width: 10rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-weight: 500;
+  }
+  .ot-list-table .ot-equipo {
+    max-width: 8rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: #495057;
+  }
+  .ot-list-table .ot-meta { font-size: 0.75rem; color: #6c757d; white-space: nowrap; }
+  .ot-list-table .ot-tecnico {
+    max-width: 6.5rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 0.75rem;
+  }
+  .ot-list-table .btn-ot-action {
+    padding: 0.15rem 0.35rem;
+    font-size: 0.75rem;
+    line-height: 1;
+  }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
-  <div class="btn-group">
-    <a href="{{ url_for('main.ordenes_list') }}" class="btn btn-sm btn-outline-secondary {% if not status_filter %}active{% endif %}">Todas</a>
-    <a href="{{ url_for('main.ordenes_list', status='abierta') }}" class="btn btn-sm btn-outline-secondary {% if status_filter == 'abierta' %}active{% endif %}">Abiertas</a>
-    <a href="{{ url_for('main.ordenes_list', status='en_proceso') }}" class="btn btn-sm btn-outline-secondary {% if status_filter == 'en_proceso' %}active{% endif %}">En proceso</a>
-    <a href="{{ url_for('main.ordenes_list', status='cerrada') }}" class="btn btn-sm btn-outline-secondary {% if status_filter == 'cerrada' %}active{% endif %}">Cerradas</a>
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 ot-list-toolbar">
+  <div class="btn-group btn-group-sm">
+    <a href="{{ url_for('main.ordenes_list') }}" class="btn btn-outline-secondary {% if not status_filter %}active{% endif %}">Todas</a>
+    <a href="{{ url_for('main.ordenes_list', status='abierta') }}" class="btn btn-outline-secondary {% if status_filter == 'abierta' %}active{% endif %}">Abiertas</a>
+    <a href="{{ url_for('main.ordenes_list', status='en_proceso') }}" class="btn btn-outline-secondary {% if status_filter == 'en_proceso' %}active{% endif %}">En proceso</a>
+    <a href="{{ url_for('main.ordenes_list', status='cerrada') }}" class="btn btn-outline-secondary {% if status_filter == 'cerrada' %}active{% endif %}">Cerradas</a>
+    <a href="{{ url_for('main.ordenes_list', status='completado') }}" class="btn btn-outline-secondary {% if status_filter == 'completado' %}active{% endif %}">Completadas</a>
   </div>
-  <a href="{{ url_for('main.ordenes_new') }}" class="btn btn-primary"><i class="bi bi-plus-lg"></i> Nueva orden</a>
+  <a href="{{ url_for('main.ordenes_new') }}" class="btn btn-primary btn-sm"><i class="bi bi-plus-lg"></i> Nueva</a>
 </div>
 
-<div class="card card-dashboard">
+<div class="card card-dashboard ot-list-card">
   <div class="table-responsive">
-    <table class="table table-hover align-middle mb-0">
+    <table class="table table-hover ot-list-table">
       <thead class="table-light">
         <tr>
-          <th>Título</th>
+          <th>N° OT</th>
+          <th>Actividad / Título</th>
           <th>Equipo</th>
           <th>Tipo</th>
           <th>Estado</th>
-          <th>Fecha prog.</th>
-          <th>Técnico</th>
-          <th></th>
+          <th>Prog.</th>
+          <th>Ejecución</th>
+          <th class="text-center" title="Jornadas / tiempo">J/T</th>
+          <th>Téc.</th>
+          <th class="text-end" style="width:2.5rem;"></th>
         </tr>
       </thead>
       <tbody>
+        {% from 'macros/ordenes.html' import tipo_badge with context %}
         {% for o in orders %}
         <tr>
-          <td class="fw-medium">{{ o.titulo }}</td>
-          <td>{{ o.machine.nombre if o.machine else '—' }}</td>
-          <td><span class="badge text-bg-light text-dark">{{ o.tipo }}</span></td>
-          <td><span class="badge text-bg-secondary">{{ o.status }}</span></td>
-          <td>{{ o.fecha_programada.strftime('%d/%m/%Y') if o.fecha_programada else '—' }}</td>
-          <td>{{ o.technician.nombre if o.technician else '—' }}</td>
+          <td><span class="ot-num">{{ o.numero or '—' }}</span></td>
+          <td>
+            <span class="ot-titulo d-inline-block" title="{{ o.titulo }}">{{ o.titulo }}</span>
+            {% if o.tipo == 'preventivo' and o.frecuencia_valor %}
+            {% set fu_lbl = {'dias': 'días', 'semanas': 'semanas', 'meses': 'meses'} %}
+            <span class="d-block ot-meta">Cada {{ o.frecuencia_valor }} {{ fu_lbl.get(o.frecuencia_unidad, o.frecuencia_unidad) }}</span>
+            {% endif %}
+          </td>
+          <td><span class="ot-equipo d-inline-block" title="{{ o.machine.nombre if o.machine else '' }}">{{ o.machine.nombre if o.machine else '—' }}</span></td>
+          <td>{{ tipo_badge(o.tipo, short=true) }}</td>
+          <td>
+            {% set sm = wo_status_meta(o.status) %}
+            <span class="badge {{ sm.badge_class }}">{{ sm.label }}</span>
+          </td>
+          <td class="ot-meta text-nowrap">
+            {% if o.fecha_programada %}{{ o.fecha_programada.strftime('%d/%m/%y') }}{% else %}—{% endif %}
+          </td>
+          <td class="ot-meta text-nowrap">
+            {% if o.fecha_inicio and o.fecha_cierre %}
+              {{ o.fecha_inicio.strftime('%d/%m %H:%M') }} – {{ o.fecha_cierre.strftime('%d/%m %H:%M') }}
+            {% elif o.fecha_inicio %}
+              {{ o.fecha_inicio.strftime('%d/%m %H:%M') }} –
+            {% else %}—{% endif %}
+          </td>
+          <td class="ot-meta text-center text-nowrap">
+            {% if o.num_jornadas %}{{ o.num_jornadas }}{% else %}—{% endif %}
+            {% if o.tiempo_gastado_label and o.tiempo_gastado_label != '—' %}
+              <span class="text-muted">·</span> {{ o.tiempo_gastado_label }}
+            {% endif %}
+          </td>
+          <td><span class="ot-tecnico d-inline-block" title="{{ o.technician.nombre if o.technician else '' }}">{{ o.technician.nombre if o.technician else '—' }}</span></td>
           <td class="text-end">
-            <a href="{{ url_for('main.ordenes_edit', id=o.id) }}" class="btn btn-sm btn-outline-secondary">Editar</a>
+            <a href="{{ url_for('main.ordenes_edit', id=o.id) }}" class="btn btn-outline-secondary btn-ot-action"
+               title="{% if wo_es_editable(o.status) %}Editar{% else %}Ver{% endif %}">
+              <i class="bi bi-{% if wo_es_editable(o.status) %}pencil{% else %}eye{% endif %}"></i>
+            </a>
           </td>
         </tr>
         {% else %}
-        <tr><td colspan="7" class="text-center text-muted py-4">No hay órdenes.</td></tr>
+        <tr><td colspan="10" class="text-center text-muted py-3 small">No hay órdenes.</td></tr>
         {% endfor %}
       </tbody>
     </table>

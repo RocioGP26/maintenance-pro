@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Configurar cuenta — {{ app_name }}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+  <link href="{{ url_for('static', filename='css/app.css') }}" rel="stylesheet">
+</head>
+<body class="onboarding-page">
+  <div class="onboarding-wrap">
+    <div class="text-center onboarding-hero mb-4">
+      <div class="brand-logo-panel brand-logo-panel--onboarding mx-auto mb-3">
+        <img src="{{ url_for('static', filename=app_logo_path) }}" alt="{{ app_name }} CMMS" class="onboarding-logo"
+             onerror="this.closest('.brand-logo-panel').classList.add('d-none'); document.getElementById('onb-logo-fallback').classList.remove('d-none');">
+      </div>
+      <div id="onb-logo-fallback" class="onboarding-hero-fallback d-none mb-2">
+        <i class="bi bi-shield-check fs-1"></i>
+        <span class="d-block fw-bold mt-1">{{ app_name }}</span>
+      </div>
+      <p class="onboarding-hero-tagline mb-0">Configura tu empresa en pocos minutos</p>
+    </div>
+
+    <ul class="nav nav-pills onboarding-steps justify-content-center mb-4 flex-wrap gap-1">
+      {% for key, label in steps %}
+      <li class="nav-item">
+        <span class="nav-link {% if step == loop.index %}active{% elif step > loop.index %}done{% else %}disabled{% endif %} py-1 px-2 small">
+          {{ loop.index }}. {{ label }}
+        </span>
+      </li>
+      {% endfor %}
+    </ul>
+
+  <div class="card onboarding-card shadow-sm">
+    <div class="card-body p-4">
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          {% for cat, msg in messages %}
+            <div class="alert alert-{{ cat }} py-2 small">{{ msg }}</div>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
+
+      <form method="post">
+        {% if step == 1 %}
+        <h2 class="h5 fw-semibold mb-3">Paso 1 — Tu empresa</h2>
+        <div class="row g-3">
+          <div class="col-12">
+            <label class="form-label">Razón social *</label>
+            <input type="text" name="razon_social" class="form-control" required
+                   value="{{ data.empresa.razon_social if data.empresa else '' }}">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">NIT</label>
+            <input type="text" name="nit" class="form-control" value="{{ data.empresa.nit if data.empresa else '' }}">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Correo de la empresa</label>
+            <input type="email" name="email_empresa" class="form-control" value="{{ data.empresa.email if data.empresa else '' }}">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Teléfono de la empresa</label>
+            <input type="text" name="telefono_empresa" class="form-control" value="{{ data.empresa.telefono if data.empresa else '' }}">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Sector industrial *</label>
+            <select name="sector" class="form-select" required>
+              {% for s_key, s_label in sectores %}
+              <option value="{{ s_key }}" {% if data.empresa and data.empresa.sector == s_key %}selected{% elif not data.empresa and s_key == 'manufactura' %}selected{% endif %}>{{ s_label }}</option>
+              {% endfor %}
+            </select>
+            <div class="form-text">Personaliza el dashboard y las categorías de equipos.</div>
+          </div>
+          <div class="col-12">
+            <label class="form-label">Dirección</label>
+            <input type="text" name="direccion" class="form-control" value="{{ data.empresa.direccion if data.empresa else '' }}">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Ciudad</label>
+            <input type="text" name="ciudad" class="form-control" value="{{ data.empresa.ciudad if data.empresa else '' }}">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">País</label>
+            <input type="text" name="pais" class="form-control" value="{{ data.empresa.pais if data.empresa else 'Colombia' }}">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Moneda</label>
+            <select name="moneda" class="form-select">
+              <option value="COP" selected>COP</option>
+              <option value="USD">USD</option>
+              <option value="MXN">MXN</option>
+            </select>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Zona horaria</label>
+            <select name="zona_horaria" class="form-select">
+              <option value="America/Bogota" selected>America/Bogotá</option>
+              <option value="America/Mexico_City">America/Ciudad de México</option>
+              <option value="America/Lima">America/Lima</option>
+            </select>
+          </div>
+        </div>
+
+        {% elif step == 2 %}
+        <h2 class="h5 fw-semibold mb-3">Paso 2 — Usuario administrador</h2>
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label class="form-label">Nombre completo</label>
+            <input type="text" name="nombre" class="form-control" value="{{ data.admin.nombre if data.admin else '' }}">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Correo</label>
+            <input type="email" name="email" class="form-control" value="{{ data.admin.email if data.admin else '' }}">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Usuario *</label>
+            <input type="text" name="username" class="form-control" required autocomplete="username"
+                   value="{{ data.admin.username if data.admin else '' }}">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Teléfono</label>
+            <input type="text" name="telefono" class="form-control" value="{{ data.admin.telefono if data.admin else '' }}">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Contraseña *</label>
+            <input type="password" name="password" class="form-control" required autocomplete="new-password">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Confirmar contraseña *</label>
+            <input type="password" name="password2" class="form-control" required autocomplete="new-password">
+          </div>
+        </div>
+
+        {% elif step == 3 %}
+        <h2 class="h5 fw-semibold mb-3">Paso 3 — Sede principal</h2>
+        <p class="text-muted small">Se creará automáticamente con categorías, estados y prioridades de mantenimiento.</p>
+        <div class="mb-3">
+          <label class="form-label">Nombre de la sede</label>
+          <input type="text" name="sede_nombre" class="form-control" placeholder="Sede principal"
+                 value="{{ data.sede_nombre if data.sede_nombre else 'Sede principal' }}">
+        </div>
+        <ul class="list-unstyled small text-muted mb-0">
+          <li><i class="bi bi-check2 text-success"></i> Categorías: Equipos, Motores, Infraestructura, Vehículos</li>
+          <li><i class="bi bi-check2 text-success"></i> Estados: Operativo, En mantenimiento, Fuera de servicio</li>
+          <li><i class="bi bi-check2 text-success"></i> Prioridades OT: Baja, Media, Alta, Crítica</li>
+          <li><i class="bi bi-check2 text-success"></i> Activos y una orden de ejemplo</li>
+        </ul>
+
+        {% elif step == 4 %}
+        <h2 class="h5 fw-semibold mb-3">Paso 4 — Plan de servicio</h2>
+        <p class="text-muted small mb-3">El cobro con pasarela (Stripe, Wompi, PayU) puede activarse después.</p>
+        <div class="row g-2">
+          {% for plan_key, meta in planes %}
+          <div class="col-12">
+            <label class="onboarding-plan d-block">
+              <input type="radio" name="plan" value="{{ plan_key }}" class="form-check-input me-2"
+                     {% if loop.first %}checked{% endif %}>
+              <strong>{{ meta.label }}</strong>
+              <span class="d-block small text-muted ms-4">{{ meta.descripcion }}</span>
+            </label>
+          </div>
+          {% endfor %}
+        </div>
+        {% endif %}
+
+        <div class="d-flex justify-content-between mt-4 pt-2 border-top">
+          {% if step > 1 %}
+          <button type="submit" name="action" value="back" class="btn btn-outline-secondary">Atrás</button>
+          {% else %}
+          <a href="{{ url_for('main.login') }}" class="btn btn-outline-secondary">Ya tengo cuenta</a>
+          {% endif %}
+          <button type="submit" name="action" value="next" class="btn btn-primary">
+            {% if step == total_steps %}Finalizar configuración{% else %}Continuar{% endif %}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

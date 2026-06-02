@@ -1,159 +1,934 @@
 {% extends "base.html" %}
-{% block title %}Dashboard — Mantenimiento Pro{% endblock %}
+
+{% block title %}Dashboard — {{ app_name }}{% endblock %}
+
+{% block body_class %}theme-dashboard-dark{% endblock %}
+
 {% block page_title %}Dashboard{% endblock %}
 
-{% block content %}
-<div class="d-flex flex-wrap align-items-center gap-2 mb-4">
-  <span class="text-secondary fw-medium">Período:</span>
-  {% for p, label in [('dia', 'Día'), ('semana', 'Semana'), ('mes', 'Mes'), ('año', 'Año')] %}
+{% block header_toolbar %}
+<div id="tour-period-toolbar" class="dash-header-toolbar">
+  <div class="dash-pill-group">
+    {% for p, label in [('dia', 'Día'), ('semana', 'Semana'), ('mes', 'Mes'), ('año', 'Año')] %}
     <a href="{{ url_for('main.dashboard', periodo=p) }}"
-       class="btn btn-sm btn-outline-secondary period-btn {% if periodo == p %}active{% endif %}">{{ label }}</a>
+       class="btn btn-sm period-btn {% if periodo == p %}active{% endif %}">{{ label }}</a>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}
+
+
+
+{% block content %}
+
+{% if show_welcome %}
+
+<div class="modal fade show d-block" id="welcomeModal" tabindex="-1" style="background:rgba(0,0,0,.45);">
+
+  <div class="modal-dialog modal-dialog-centered">
+
+    <div class="modal-content border-0 shadow">
+
+      <div class="modal-header border-0 pb-0">
+
+        <h5 class="modal-title fw-bold">Bienvenido a {{ app_name }}</h5>
+
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar" onclick="document.getElementById('welcomeModal').remove()"></button>
+
+      </div>
+
+      <div class="modal-body">
+
+        <ul class="list-unstyled small mb-3">
+
+          <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i> Empresa creada{% if empresa %}: <strong>{{ empresa.razon_social }}</strong>{% endif %}</li>
+
+          <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i> Usuario administrador configurado</li>
+
+          <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i> Sede principal y datos de ejemplo listos</li>
+
+          <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i> Dashboard personalizado · {{ sector_label }}</li>
+
+        </ul>
+
+        <p class="small text-muted mb-0">Ahora registra tu primer activo real o explora la plataforma con el tour guiado.</p>
+
+      </div>
+
+      <div class="modal-footer border-0 flex-wrap gap-2">
+
+        <a href="{{ url_for('main.activos_new') }}" class="btn btn-primary">
+
+          <i class="bi bi-plus-lg"></i> Registrar mi primer activo
+
+        </a>
+
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal" onclick="document.getElementById('welcomeModal').remove()">
+
+          Explorar dashboard
+
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+
+{% endif %}
+
+
+
+{% if empresa %}
+
+<div class="dashboard-top-row">
+
+  <div class="dashboard-top-row__empresa">
+
+    <div id="tour-empresa-header" class="card card-dashboard dashboard-empresa-header">
+
+      <div class="card-body py-3">
+
+        <div class="d-flex flex-wrap align-items-center gap-3">
+
+          {% if empresa_logo_url %}
+
+          <div class="brand-logo-panel brand-logo-panel--dashboard flex-shrink-0">
+
+            <img src="{{ empresa_logo_url }}" alt="{{ empresa.razon_social }}" class="dashboard-empresa-logo">
+
+          </div>
+
+          {% endif %}
+
+          <div class="flex-grow-1 min-width-0">
+
+            <p class="app-tagline mb-1">Tu empresa</p>
+
+            <h2 class="h5 fw-bold mb-1 text-truncate">{{ empresa.razon_social }}</h2>
+
+            <div class="d-flex flex-wrap align-items-center gap-2">
+
+              <span class="badge rounded-pill text-bg-primary">{{ sector_label }}</span>
+
+              {% if empresa.ciudad %}<span class="text-muted small">{{ empresa.ciudad }}{% if empresa.pais %}, {{ empresa.pais }}{% endif %}</span>{% endif %}
+
+              {% if current_user.rol == 'admin' %}
+
+              <a href="{{ url_for('main.configuracion_empresa') }}" class="small text-decoration-none">Configuración</a>
+
+              {% endif %}
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <div class="dashboard-top-row__alertas">
+
+    <div class="card card-dashboard alert-center">
+
+      <div class="card-body alert-center-body">
+
+        <div class="alert-center-head">
+
+          <h6 class="alert-center-title">
+
+            <span class="alert-center-title-icon" aria-hidden="true"><i class="bi bi-exclamation-octagon-fill"></i></span>
+
+            Alertas críticas
+
+          </h6>
+
+          {% if alertas %}
+
+            <span class="badge alert-center-badge">{{ alertas|length }}</span>
+
+          {% endif %}
+
+        </div>
+
+        {% if alertas %}
+
+          <ul class="alert-center-list list-unstyled mb-0">
+
+            {% for a in alertas %}
+
+              <li class="alert-center-item alert-center-item--{{ a.nivel }}">
+
+                <span class="alert-center-dot alert-center-dot--{{ a.nivel }}" aria-hidden="true"></span>
+
+                <p class="alert-center-line mb-0">
+
+                  {% if a.href %}
+
+                    <a href="{{ a.href }}" class="alert-center-link">{{ a.titulo }}</a>
+
+                  {% else %}
+
+                    <strong class="alert-center-link">{{ a.titulo }}</strong>
+
+                  {% endif %}
+
+                  <span class="alert-center-sep">·</span>
+
+                  <span class="alert-center-msg">{{ a.mensaje }}</span>
+
+                </p>
+
+              </li>
+
+            {% endfor %}
+
+          </ul>
+
+        {% else %}
+
+          <p class="alert-center-empty mb-0"><i class="bi bi-check-circle text-success me-1"></i> Sin alertas activas.</p>
+
+        {% endif %}
+
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+
+{% else %}
+
+<div class="card card-dashboard alert-center mb-4">
+
+  <div class="card-body alert-center-body">
+
+    <div class="alert-center-head">
+
+      <h6 class="alert-center-title">
+
+        <span class="alert-center-title-icon" aria-hidden="true"><i class="bi bi-exclamation-octagon-fill"></i></span>
+
+        Alertas críticas
+
+      </h6>
+
+      {% if alertas %}
+
+        <span class="badge alert-center-badge">{{ alertas|length }}</span>
+
+      {% endif %}
+
+    </div>
+
+    {% if alertas %}
+
+      <ul class="alert-center-list list-unstyled mb-0">
+
+        {% for a in alertas %}
+
+          <li class="alert-center-item alert-center-item--{{ a.nivel }}">
+
+            <span class="alert-center-dot alert-center-dot--{{ a.nivel }}" aria-hidden="true"></span>
+
+            <p class="alert-center-line mb-0">
+
+              {% if a.href %}
+
+                <a href="{{ a.href }}" class="alert-center-link">{{ a.titulo }}</a>
+
+              {% else %}
+
+                <strong class="alert-center-link">{{ a.titulo }}</strong>
+
+              {% endif %}
+
+              <span class="alert-center-sep">·</span>
+
+              <span class="alert-center-msg">{{ a.mensaje }}</span>
+
+            </p>
+
+          </li>
+
+        {% endfor %}
+
+      </ul>
+
+    {% else %}
+
+      <p class="alert-center-empty mb-0"><i class="bi bi-check-circle text-success me-1"></i> Sin alertas activas.</p>
+
+    {% endif %}
+
+  </div>
+
+</div>
+
+{% endif %}
+
+
+
+{% if not sector_locked %}
+
+<div id="tour-sector-toolbar" class="dash-toolbar">
+
+  <span class="dash-toolbar-label">Sector</span>
+
+  <div class="dash-pill-group">
+
+    {% for s_key, s_label in [('manufactura', 'Manufactura'), ('logistica', 'Logística'), ('alimentos', 'Alimentos')] %}
+
+    <a href="{{ url_for('main.dashboard', sector=s_key, periodo=periodo) }}"
+
+       class="btn btn-sm sector-btn {% if sector == s_key %}active{% endif %}">{{ s_label }}</a>
+
+    {% endfor %}
+
+  </div>
+
+</div>
+
+{% endif %}
+
+
+
+<div class="sector-cats-wrap mb-4">
+
+  <p class="sector-cats-eyebrow mb-2">Dashboard · <strong>{{ sector_label }}</strong></p>
+
+  <div class="sector-cats-row" role="list" style="--sector-cat-count: {{ sector_categorias|length }};">
+
+    {% for cat in sector_categorias %}
+
+    <article class="sector-cat-card" role="listitem">
+
+      <span class="sector-cat-card-icon sector-cat-card-icon--{{ cat.tone }}" aria-hidden="true">
+
+        <i class="bi {{ cat.icon }}"></i>
+
+      </span>
+
+      <div class="sector-cat-card-body">
+
+        <h3 class="sector-cat-card-label">{{ cat.label }}</h3>
+
+        <p class="sector-cat-card-value mb-0">{{ cat.resumen }}</p>
+
+      </div>
+
+    </article>
+
+    {% endfor %}
+
+  </div>
+
+</div>
+
+
+
+<div id="tour-kpis" class="row g-2 mb-3 kpi-row">
+  {% for card in kpi_cards %}
+  <div class="col-6 col-md-4 col-xl kpi-col">
+    <div class="card card-dashboard kpi-card kpi-card--{{ card.style }} h-100">
+      <div class="card-body kpi-card-body{% if not card.show_icon|default(true) %} kpi-card-body--compact{% endif %}">
+        {% if card.show_icon|default(true) %}
+        <span class="kpi-icon" aria-hidden="true"><i class="bi {{ card.icon }}"></i></span>
+        {% endif %}
+        <div class="kpi-main">
+          <h6 class="kpi-label">{{ card.label }}</h6>
+          <p class="kpi-value mb-0">{{ card.value }}</p>
+          {% if card.hint %}
+          <p class="kpi-hint mb-0"{% if card.hint_title %} title="{{ card.hint_title }}"{% endif %}>{{ card.hint }}</p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
   {% endfor %}
 </div>
 
+
+
 <div class="row g-4">
-  <div class="col-lg-6">
-    <div class="card card-dashboard h-100">
-      <div class="card-body">
-        <h5 class="card-title fw-semibold mb-3">Estado de Salud de la Planta</h5>
-        <div class="chart-box">
-          <canvas id="chartSalud"></canvas>
+
+  <div class="col-lg-4">
+
+    <div class="card card-dashboard upcoming-maint h-100">
+
+      <div class="card-body d-flex flex-column">
+
+        <div class="dash-card-head">
+
+          <div class="d-flex align-items-center gap-2">
+
+            <span class="dash-card-head-icon" aria-hidden="true"><i class="bi bi-calendar-event"></i></span>
+
+            <h5 class="card-title mb-0">Próximos mantenimientos</h5>
+
+          </div>
+
+          <a href="{{ url_for('main.calendario') }}" class="small fw-semibold text-decoration-none">Calendario</a>
+
         </div>
-        <ul class="list-unstyled small mb-0 mt-2">
-          <li><span class="badge rounded-pill" style="background:#38a169;">&nbsp;</span> Operativos: {{ health.counts.op }} ({{ health.operativos }}%)</li>
-          <li><span class="badge rounded-pill" style="background:#ed8936;">&nbsp;</span> En Mantenimiento: {{ health.counts.mant }} ({{ health.mantenimiento }}%)</li>
-          <li><span class="badge rounded-pill" style="background:#e53e3e;">&nbsp;</span> En Falla: {{ health.counts.falla }} ({{ health.falla }}%)</li>
-        </ul>
-      </div>
-    </div>
-  </div>
-  <div class="col-lg-6">
-    <div class="card card-dashboard h-100">
-      <div class="card-body">
-        <h5 class="card-title fw-semibold mb-3">Cumplimiento Preventivo</h5>
-        <div class="gauge-wrap">
-          <canvas id="chartGauge"></canvas>
-          <div class="gauge-center">{{ cumplimiento }}%</div>
-        </div>
-        <p class="text-muted small text-center mb-0">{{ prev_msg }}</p>
-      </div>
-    </div>
-  </div>
-  <div class="col-lg-6">
-    <div class="card card-dashboard h-100">
-      <div class="card-body">
-        <h5 class="card-title fw-semibold mb-3">Top 5 Equipos Críticos</h5>
-        {% if criticos %}
-          <ul class="list-group list-group-flush">
-            {% for m in criticos %}
-              <li class="list-group-item d-flex justify-content-between align-items-center px-0">
-                <div>
-                  <strong>{{ m.nombre }}</strong>
-                  <span class="text-muted small d-block">{{ m.codigo }} · {{ m.ubicacion or '—' }}</span>
-                </div>
-                <span class="badge bg-secondary text-uppercase">{{ m.status }}</span>
+
+        {% if proximos_mantenimientos %}
+
+          <ul class="upcoming-maint-list list-unstyled mb-0 flex-grow-1">
+
+            {% for item in proximos_mantenimientos %}
+
+              <li class="upcoming-maint-item">
+
+                <a href="{{ item.href }}" class="upcoming-maint-row" title="{{ item.titulo }}">
+
+                  <time class="upcoming-maint-date" datetime="{{ item.fecha.isoformat() }}">
+
+                    <span class="upcoming-maint-date-day">{{ item.fecha_dia }}</span>
+
+                    <span class="upcoming-maint-date-month">{{ item.fecha_mes }}</span>
+
+                  </time>
+
+                  <span class="upcoming-maint-equipo">{{ item.equipo }}</span>
+
+                  <span class="upcoming-maint-tipo upcoming-maint-tipo--{{ item.tipo_slug }}">{{ item.tipo_short }}</span>
+
+                </a>
+
               </li>
+
             {% endfor %}
+
           </ul>
+
         {% else %}
-          <p class="text-muted mb-0 py-4 text-center">No hay equipos críticos registrados</p>
+
+          <p class="upcoming-maint-empty mb-0 flex-grow-1">No hay mantenimientos programados. Asigna fechas en las órdenes de trabajo.</p>
+
         {% endif %}
+
       </div>
+
     </div>
+
   </div>
-  <div class="col-lg-6">
-    <div class="card card-dashboard h-100">
-      <div class="card-body">
-        <h5 class="card-title fw-semibold mb-3">Carga de Trabajo por Técnico</h5>
-        {% if workload_empty %}
-          <div class="chart-box d-flex align-items-center justify-content-center border rounded bg-light">
-            <span class="text-muted">Sin datos</span>
+
+  <div class="col-lg-8">
+
+    <div class="row g-4">
+
+      <div class="col-md-6">
+
+        <div class="card card-dashboard h-100">
+
+          <div class="card-body">
+
+            <div class="dash-card-head">
+
+              <div class="d-flex align-items-center gap-2">
+
+                <span class="dash-card-head-icon" aria-hidden="true"><i class="bi bi-heart-pulse"></i></span>
+
+                <h5 class="card-title mb-0">Estado de salud de la planta</h5>
+
+              </div>
+
+            </div>
+
+            <div class="chart-box">
+
+              <canvas id="chartSalud"></canvas>
+
+            </div>
+
+            <ul class="health-legend list-unstyled mb-0 mt-2">
+
+              <li><span class="health-legend-swatch health-legend-swatch--ok"></span> Operativos: {{ health.counts.op }} ({{ health.operativos }}%)</li>
+
+              <li><span class="health-legend-swatch health-legend-swatch--warn"></span> En mantenimiento: {{ health.counts.mant }} ({{ health.mantenimiento }}%)</li>
+
+              <li><span class="health-legend-swatch health-legend-swatch--bad"></span> En falla: {{ health.counts.falla }} ({{ health.falla }}%)</li>
+
+            </ul>
+
           </div>
-        {% else %}
-          <div class="chart-box">
-            <canvas id="chartCarga"></canvas>
-          </div>
-        {% endif %}
-        {% if workload_empty %}
-          <p class="text-muted small text-center mb-0 mt-2">Sin datos</p>
-        {% endif %}
+
+        </div>
+
       </div>
+
+      <div class="col-md-6">
+
+        <div class="card card-dashboard h-100">
+
+          <div class="card-body">
+
+            <div class="dash-card-head">
+
+              <div class="d-flex align-items-center gap-2">
+
+                <span class="dash-card-head-icon" aria-hidden="true"><i class="bi bi-shield-check"></i></span>
+
+                <h5 class="card-title mb-0">Cumplimiento preventivo</h5>
+
+              </div>
+
+            </div>
+
+            <div class="prev-compliance">
+
+              <div class="prev-compliance-gauge">
+
+                <div class="gauge-wrap">
+
+                  <canvas id="chartGauge" aria-hidden="true"></canvas>
+
+                  <div class="gauge-center">
+
+                    <span class="gauge-center-value">{% if cumplimiento % 1 == 0 %}{{ cumplimiento | int }}{% else %}{{ cumplimiento }}{% endif %}</span><span class="gauge-center-unit">%</span>
+
+                  </div>
+
+                </div>
+
+              </div>
+
+              <p class="prev-compliance-label mb-0">{{ prev_msg }}</p>
+
+              <div class="prev-compliance-bar"
+                   role="progressbar"
+                   aria-valuenow="{{ cumplimiento }}"
+                   aria-valuemin="0"
+                   aria-valuemax="100"
+                   aria-label="Cumplimiento preventivo">
+
+                <div class="prev-compliance-bar-fill" style="width: {{ cumplimiento }}%;"></div>
+
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
     </div>
+
   </div>
+
 </div>
+
+
+
+<div class="row g-4 mt-1">
+
+  <div class="col-lg-6">
+
+    <div class="card card-dashboard h-100">
+
+      <div class="card-body">
+
+        <div class="dash-card-head">
+
+          <div class="d-flex align-items-center gap-2">
+
+            <span class="dash-card-head-icon" aria-hidden="true"><i class="bi bi-exclamation-triangle"></i></span>
+
+            <h5 class="card-title mb-0">Top 5 equipos críticos</h5>
+
+          </div>
+
+        </div>
+
+        {% if critico_items %}
+
+          <ul class="critico-equipos-list list-unstyled mb-0">
+
+            {% for item in critico_items %}
+
+              <li class="critico-equipos-item">
+
+                <a href="{{ item.href }}" class="critico-equipos-row" title="{{ item.codigo }}{% if item.ubicacion %} · {{ item.ubicacion }}{% endif %}">
+
+                  <span class="critico-equipos-nombre">{{ item.nombre }}</span>
+
+                  <span class="critico-equipos-status critico-equipos-status--{{ item.status_slug }}">{{ item.status_short }}</span>
+
+                </a>
+
+              </li>
+
+            {% endfor %}
+
+          </ul>
+
+        {% else %}
+
+          <p class="critico-equipos-empty mb-0">No hay equipos críticos registrados</p>
+
+        {% endif %}
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <div class="col-lg-6">
+
+    <div class="card card-dashboard h-100">
+
+      <div class="card-body">
+
+        <div class="dash-card-head">
+
+          <div class="d-flex align-items-center gap-2">
+
+            <span class="dash-card-head-icon" aria-hidden="true"><i class="bi bi-people"></i></span>
+
+            <h5 class="card-title mb-0">Carga de trabajo por técnico</h5>
+
+          </div>
+
+        </div>
+
+        <div class="workload-panel">
+
+          {% if workload_empty %}
+
+            <div class="chart-box chart-box--empty workload-chart-box d-flex align-items-center justify-content-center">
+
+              <span class="workload-empty"><i class="bi bi-bar-chart me-1"></i> Sin datos</span>
+
+            </div>
+
+          {% else %}
+
+            <div class="chart-box workload-chart-box">
+
+              <canvas id="chartCarga"></canvas>
+
+            </div>
+
+            <div class="workload-footer">
+
+              <span class="workload-footer-label">Total órdenes</span>
+
+              <span class="workload-footer-value">{{ workload_total }}</span>
+
+            </div>
+
+          {% endif %}
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+
 {% endblock %}
+
+
+
+{% block head_extra %}
+
+{% if show_tour %}
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/driver.js@1.3.1/dist/driver.css">
+
+{% endif %}
+
+{% endblock %}
+
+
 
 {% block scripts %}
+
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+
+{% if show_tour %}
+
+<script src="https://cdn.jsdelivr.net/npm/driver.js@1.3.1/dist/driver.js.iife.js"></script>
+
 <script>
-  const saludCtx = document.getElementById('chartSalud');
-  if (saludCtx) {
-    new Chart(saludCtx, {
-      type: 'doughnut',
-      data: {
-        labels: ['Operativos', 'En Mantenimiento', 'En Falla'],
-        datasets: [{
-          data: [{{ health.operativos }}, {{ health.mantenimiento }}, {{ health.falla }}],
-          backgroundColor: ['#38a169', '#ed8936', '#e53e3e'],
-          borderWidth: 0
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: { legend: { position: 'bottom' } },
-        cutout: '65%'
-      }
-    });
+
+document.addEventListener('DOMContentLoaded', function () {
+
+  if (typeof window.driver === 'undefined' || !window.driver.js) return;
+
+  const driver = window.driver.js.driver;
+
+  const tour = driver({
+
+    showProgress: true,
+
+    nextBtnText: 'Siguiente',
+
+    prevBtnText: 'Atrás',
+
+    doneBtnText: 'Listo',
+
+    steps: [
+
+      { element: '#tour-empresa-header', popover: { title: 'Tu empresa', description: 'Logo, nombre y sector industrial configurados al registrarte.' } },
+
+      { element: '#tour-period-toolbar', popover: { title: 'Período', description: 'Filtra métricas y gráficos por día, semana, mes o año.' } },
+
+      { element: '#tour-kpis', popover: { title: 'Indicadores', description: 'Vista rápida del estado de tu operación.' } },
+
+      { element: '#tour-nav-activos', popover: { title: 'Activos', description: 'Registra equipos, motores, vehículos y más.' } },
+
+      { element: '#tour-nav-ordenes', popover: { title: 'Programador', description: 'Planeación mensual, listado y gestión de órdenes de trabajo.' } },
+
+      { element: '#tour-nav-calendario', popover: { title: 'Calendario', description: 'Planifica trabajos por fecha programada.' } },
+
+    ],
+
+  });
+
+  setTimeout(function () { tour.drive(); }, 600);
+
+});
+
+</script>
+
+{% endif %}
+
+<script>
+
+  function dashCssVar(name) {
+    return getComputedStyle(document.body).getPropertyValue(name).trim();
   }
+
+  const chartBorder = dashCssVar('--dash-chart-border') || '#1a2332';
+  const gaugeTrack = dashCssVar('--dash-gauge-track') || 'rgba(255,255,255,0.1)';
+  const chartGrid = dashCssVar('--dash-chart-grid') || 'rgba(255,255,255,0.06)';
+  const chartBar = dashCssVar('--dash-chart-bar') || 'rgba(55,138,221,0.85)';
+
+  const saludCtx = document.getElementById('chartSalud');
+
+  if (saludCtx) {
+
+    new Chart(saludCtx, {
+
+      type: 'doughnut',
+
+      data: {
+
+        labels: ['Operativos', 'En Mantenimiento', 'En Falla'],
+
+        datasets: [{
+
+          data: [{{ health.operativos }}, {{ health.mantenimiento }}, {{ health.falla }}],
+
+          backgroundColor: ['#38a169', '#ed8936', '#e53e3e'],
+
+          borderColor: chartBorder,
+
+          borderWidth: 3,
+
+          hoverOffset: 6
+
+        }]
+
+      },
+
+      options: {
+
+        responsive: true,
+
+        maintainAspectRatio: false,
+
+        plugins: { legend: { display: false } },
+
+        cutout: '62%'
+
+      }
+
+    });
+
+  }
+
+
 
   const gCtx = document.getElementById('chartGauge');
+
   if (gCtx) {
+
     const val = {{ cumplimiento }};
+
     const rest = Math.max(0, 100 - val);
+
     new Chart(gCtx, {
+
       type: 'doughnut',
+
       data: {
+
         labels: ['Cumplido', 'Restante'],
+
         datasets: [{
+
           data: [val, rest],
-          backgroundColor: ['#3182ce', '#e2e8f0'],
-          borderWidth: 0
+
+          backgroundColor: ['#378add', gaugeTrack],
+
+          borderColor: 'transparent',
+
+          borderWidth: 0,
+
+          hoverOffset: 0,
+
+          spacing: 0
+
         }]
+
       },
+
       options: {
+
         responsive: true,
+
         maintainAspectRatio: false,
+
         rotation: -90,
+
         circumference: 180,
-        plugins: { legend: { display: false }, tooltip: { enabled: true } },
-        cutout: '75%'
+
+        plugins: { legend: { display: false }, tooltip: { enabled: false } },
+
+        cutout: '78%',
+
+        animation: { animateRotate: true, duration: 800 }
+
       }
+
     });
+
   }
 
+
+
   const cargaCtx = document.getElementById('chartCarga');
+
   if (cargaCtx) {
-    new Chart(cargaCtx, {
-      type: 'bar',
-      data: {
-        labels: {{ workload_labels | tojson }},
-        datasets: [{
-          label: 'Órdenes abiertas / en proceso',
-          data: {{ workload_values | tojson }},
-          backgroundColor: '#3182ce',
-          borderRadius: 4
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        scales: {
-          y: { beginAtZero: true, ticks: { stepSize: 1 } }
-        },
-        plugins: { legend: { display: false } }
-      }
+
+    const workloadPalette = [
+      'rgba(55, 138, 221, 0.92)',
+      'rgba(56, 161, 105, 0.92)',
+      'rgba(237, 137, 54, 0.92)',
+      'rgba(129, 140, 248, 0.92)',
+      'rgba(229, 62, 62, 0.92)',
+      'rgba(14, 165, 233, 0.92)',
+      'rgba(168, 85, 247, 0.92)',
+    ];
+
+    const wValues = {{ workload_values | tojson }};
+
+    const wColors = wValues.map(function (_, i) {
+      return workloadPalette[i % workloadPalette.length];
     });
+
+    const tickMuted = dashCssVar('--dash-text-muted') || 'rgba(255,255,255,0.5)';
+
+    new Chart(cargaCtx, {
+
+      type: 'bar',
+
+      data: {
+
+        labels: {{ workload_labels | tojson }},
+
+        datasets: [{
+
+          label: 'Órdenes abiertas / en proceso',
+
+          data: wValues,
+
+          backgroundColor: wColors,
+
+          borderColor: 'transparent',
+
+          borderWidth: 0,
+
+          borderRadius: 4,
+
+          borderSkipped: false,
+
+          barThickness: 14,
+
+          maxBarThickness: 18
+
+        }]
+
+      },
+
+      options: {
+
+        indexAxis: 'y',
+
+        responsive: true,
+
+        maintainAspectRatio: false,
+
+        layout: { padding: { right: 8 } },
+
+        scales: {
+
+          x: {
+            beginAtZero: true,
+            ticks: {
+              stepSize: 1,
+              color: tickMuted,
+              font: { size: 10 }
+            },
+            grid: { color: chartGrid, drawBorder: false }
+          },
+          y: {
+            ticks: {
+              color: tickMuted,
+              font: { size: 11, weight: '500' },
+              autoSkip: false
+            },
+            grid: { display: false },
+            border: { display: false }
+          }
+
+        },
+
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: 'rgba(26, 35, 50, 0.95)',
+            titleColor: '#fff',
+            bodyColor: 'rgba(255,255,255,0.85)',
+            padding: 10,
+            cornerRadius: 6
+          }
+        }
+
+      }
+
+    });
+
   }
+
 </script>
+
 {% endblock %}
+

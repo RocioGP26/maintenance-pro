@@ -1,0 +1,179 @@
+{% extends "base.html" %}
+{% block title %}Planeación mensual — {{ app_name }}{% endblock %}
+{% block page_title %}Planeación mensual por activo{% endblock %}
+
+{% block content %}
+<form method="get" class="card card-dashboard mb-3" id="filtroPlaneacion">
+  <div class="card-body py-3">
+    <div class="row g-3 align-items-end">
+      <div class="col-auto">
+        <label class="form-label small mb-1">Mes</label>
+        <select name="mes" class="form-select form-select-sm" onchange="this.form.submit()">
+          {% for num, nombre in meses %}
+          <option value="{{ num }}" {% if mes == num %}selected{% endif %}>{{ nombre }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-auto">
+        <label class="form-label small mb-1">Año</label>
+        <select name="anio" class="form-select form-select-sm" onchange="this.form.submit()">
+          {% for a in anios %}
+          <option value="{{ a }}" {% if anio == a %}selected{% endif %}>{{ a }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-lg text-lg-end">
+        <p class="small text-muted mb-0">
+          Máximo del mes: <strong>{{ max_horas }} h</strong> (24 h × días del mes).
+          <span class="d-block d-lg-inline ms-lg-2">Meta guardada: no editable.</span>
+        </p>
+      </div>
+    </div>
+  </div>
+</form>
+
+<form method="post" id="formPlaneacion">
+  <input type="hidden" name="mes" value="{{ mes }}">
+  <input type="hidden" name="anio" value="{{ anio }}">
+
+  <div class="d-flex flex-wrap align-items-center gap-3 mb-3">
+    <div class="form-check mb-0">
+      <input class="form-check-input" type="checkbox" id="replicarMeta" name="replicar_ui" value="1">
+      <label class="form-check-label small" for="replicarMeta">Replicar meta a todas las filas</label>
+    </div>
+    <button type="submit" name="accion" value="guardar" class="btn btn-primary btn-sm">
+      <i class="bi bi-lock-fill me-1"></i> Guardar seleccionadas
+    </button>
+    <button type="submit" name="accion" value="cargar_anterior" class="btn btn-warning btn-sm text-dark"
+            onclick="return confirm('¿Cargar horas del mes anterior en equipos sin meta guardada?');">
+      <i class="bi bi-lightning-fill me-1"></i> Cargar horas del mes anterior
+    </button>
+  </div>
+
+  <div class="card card-dashboard planeacion-card">
+    <div class="planeacion-table-head px-3 py-2 d-flex flex-wrap justify-content-between align-items-center gap-2">
+      <span class="fw-semibold text-white">Edición masiva por equipo — {{ mes_label }} {{ anio }}</span>
+      <span class="small text-white-50">
+        <span class="text-white">{{ total_equipos }}</span> equipos ·
+        <span class="text-success-emphasis">{{ total_configurados }}</span> configurados ·
+        <span class="text-warning">{{ total_pendientes }}</span> pendientes
+      </span>
+    </div>
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0 planeacion-table">
+        <thead class="table-light">
+          <tr>
+            <th style="width:2.5rem;">
+              <input type="checkbox" class="form-check-input" id="selTodos" title="Seleccionar editables">
+            </th>
+            <th>Código equipo</th>
+            <th>Nombre del equipo</th>
+            <th style="width:9rem;">Horas programadas (meta)</th>
+            <th style="width:14rem;">Estado</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for f in filas %}
+          {% set m = f.machine %}
+          <tr class="{% if f.solo_lectura %}table-light{% elif not f.configurado %}planeacion-pendiente{% endif %}"
+              data-editable="{{ '0' if f.solo_lectura else '1' }}">
+            <td>
+              {% if not f.solo_lectura %}
+              <input type="checkbox" class="form-check-input fila-sel" name="sel_{{ m.id }}" value="1">
+              {% endif %}
+            </td>
+            <td class="fw-medium">
+              <a href="{{ url_for('main.activos_edit', id=m.id) }}">{{ m.codigo }}</a>
+            </td>
+            <td>{{ m.nombre }}</td>
+            <td>
+              {% if f.solo_lectura %}
+              <span class="fw-medium">{{ '%g'|format(f.horas_meta) }}</span>
+              {% else %}
+              <input type="number" name="horas_{{ m.id }}" class="form-control form-control-sm input-horas-meta"
+                     min="0" max="{{ max_horas }}" step="0.5"
+                     value="{{ f.horas_meta if f.horas_meta is not none else '' }}"
+                     placeholder="0">
+              {% endif %}
+            </td>
+            <td>
+              {% if f.configurado %}
+              <span class="badge text-bg-success"><i class="bi bi-check-lg"></i> Configurado</span>
+              <span class="badge text-bg-secondary"><i class="bi bi-lock"></i> Solo lectura (meta guardada)</span>
+              {% elif f.horas_meta is not none %}
+              <span class="badge text-bg-info text-dark">Borrador</span>
+              <span class="badge text-bg-warning text-dark">Pendiente de guardar</span>
+              {% else %}
+              <span class="badge text-bg-warning text-dark">Pendiente</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="5" class="text-center text-muted py-4">
+              No hay activos registrados. <a href="{{ url_for('main.activos_new') }}">Crear activo</a>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</form>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function () {
+  var replicar = document.getElementById('replicarMeta');
+  var selTodos = document.getElementById('selTodos');
+  var maxH = {{ max_horas }};
+
+  function filasEditables() {
+    return Array.prototype.slice.call(document.querySelectorAll('tr[data-editable="1"]'));
+  }
+
+  if (selTodos) {
+    selTodos.addEventListener('change', function () {
+      document.querySelectorAll('.fila-sel').forEach(function (cb) {
+        cb.checked = selTodos.checked;
+      });
+    });
+  }
+
+  if (replicar) {
+    document.addEventListener('input', function (ev) {
+      if (!replicar.checked) return;
+      var t = ev.target;
+      if (!t.classList || !t.classList.contains('input-horas-meta')) return;
+      var val = t.value;
+      document.querySelectorAll('.input-horas-meta').forEach(function (inp) {
+        if (inp !== t) inp.value = val;
+      });
+    });
+  }
+
+  document.getElementById('formPlaneacion').addEventListener('submit', function (ev) {
+    var btn = ev.submitter;
+    if (!btn || btn.value !== 'guardar') return;
+    var alguna = document.querySelector('.fila-sel:checked');
+    if (!alguna) {
+      ev.preventDefault();
+      alert('Selecciona al menos un equipo para guardar la meta.');
+      return;
+    }
+    document.querySelectorAll('.fila-sel:checked').forEach(function (cb) {
+      var tr = cb.closest('tr');
+      var inp = tr && tr.querySelector('.input-horas-meta');
+      if (inp) {
+        var v = parseFloat(inp.value);
+        if (isNaN(v) || v < 0 || v > maxH) {
+          ev.preventDefault();
+          alert('Revisa las horas: deben estar entre 0 y ' + maxH + ' para este mes.');
+        }
+      }
+    });
+  });
+})();
+</script>
+{% endblock %}

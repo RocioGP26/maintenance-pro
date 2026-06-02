@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}Reportes — Mantenimiento Pro{% endblock %}
+{% block title %}Reportes — {{ app_name }}{% endblock %}
 {% block page_title %}Reportes / Analítica{% endblock %}
 
 {% block content %}
@@ -73,29 +73,31 @@
     type: 'pie',
     data: {
       labels: labelsEstado,
-      datasets: [{ data: dataEstado, backgroundColor: ['#38a169', '#ed8936', '#e53e3e', '#718096'] }]
+      datasets: [{ data: dataEstado, backgroundColor: ['#38a169', '#ed8936', '#e53e3e', '#888780'] }]
     },
     options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
   });
 
   const labelsTipo = {{ chart_tipo_labels | tojson }};
   const dataTipo = {{ chart_tipo_data | tojson }};
+  const colorsTipo = {{ chart_tipo_colors | tojson }};
   new Chart(document.getElementById('chartTipo'), {
     type: 'doughnut',
     data: {
       labels: labelsTipo,
-      datasets: [{ data: dataTipo, backgroundColor: ['#3182ce', '#805ad5', '#dd6b20'] }]
+      datasets: [{ data: dataTipo, backgroundColor: colorsTipo }]
     },
     options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } }, cutout: '55%' }
   });
 
   const labelsWo = {{ chart_wo_labels | tojson }};
   const dataWo = {{ chart_wo_data | tojson }};
+  const colorsWo = {{ chart_wo_colors | tojson }};
   new Chart(document.getElementById('chartWoEstado'), {
     type: 'bar',
     data: {
       labels: labelsWo,
-      datasets: [{ label: 'Cantidad', data: dataWo, backgroundColor: '#3182ce', borderRadius: 6 }]
+      datasets: [{ label: 'Cantidad', data: dataWo, backgroundColor: colorsWo, borderRadius: 6 }]
     },
     options: {
       responsive: true,

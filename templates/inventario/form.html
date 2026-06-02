@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}{% if item %}Editar{% else %}Nuevo{% endif %} repuesto — Mantenimiento Pro{% endblock %}
+{% block title %}{% if item %}Editar{% else %}Nuevo{% endif %} repuesto — {{ app_name }}{% endblock %}
 {% block page_title %}{% if item %}Editar repuesto{% else %}Nuevo repuesto{% endif %}{% endblock %}
 
 {% block content %}
@@ -27,13 +27,30 @@
             </div>
             <div class="col-md-4">
               <label class="form-label">Cantidad en stock</label>
-              <input type="number" name="cantidad" class="form-control" min="0" value="{{ item.cantidad if item else 0 }}">
+              <input type="number" name="cantidad" id="cantidadStock" class="form-control" min="0" value="{{ item.cantidad if item else 0 }}">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Costo por unidad</label>
+              <div class="input-group">
+                <span class="input-group-text">$</span>
+                <input type="number" name="costo_unitario" id="costoUnitario" class="form-control" min="0" step="0.01"
+                       value="{{ '%.2f'|format(item.costo_unitario) if item and item.costo_unitario else '0' }}">
+              </div>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Costo total (stock)</label>
+              <div class="input-group">
+                <span class="input-group-text">$</span>
+                <input type="text" id="costoTotalPreview" class="form-control bg-light" readonly
+                       value="{% if item %}{{ formato_moneda(item.costo_total, empresa_actual.moneda if empresa_actual else 'COP') }}{% else %}$0{% endif %}">
+              </div>
+              <div class="form-text">Cantidad × costo unitario</div>
             </div>
             <div class="col-md-4">
               <label class="form-label">Stock mínimo</label>
               <input type="number" name="stock_minimo" class="form-control" min="0" value="{{ item.stock_minimo if item else 0 }}">
             </div>
-            <div class="col-md-4">
+            <div class="col-md-8">
               <label class="form-label">Ubicación en almacén</label>
               <input type="text" name="ubicacion_almacen" class="form-control" value="{{ item.ubicacion_almacen if item else '' }}">
             </div>
@@ -47,4 +64,29 @@
     </div>
   </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function () {
+  var qty = document.getElementById('cantidadStock');
+  var unit = document.getElementById('costoUnitario');
+  var total = document.getElementById('costoTotalPreview');
+  function fmt(n) {
+    var entero = Math.floor(n);
+    var frac = Math.round((n - entero) * 100);
+    var s = entero.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+    if (frac > 0) return '$' + s + ',' + String(frac).padStart(2, '0');
+    return '$' + s;
+  }
+  function actualizar() {
+    if (!total) return;
+    var q = parseInt(qty && qty.value, 10) || 0;
+    var u = parseFloat(unit && unit.value) || 0;
+    total.value = fmt(q * u);
+  }
+  if (qty) qty.addEventListener('input', actualizar);
+  if (unit) unit.addEventListener('input', actualizar);
+})();
+</script>
 {% endblock %}

@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}Inventario — Mantenimiento Pro{% endblock %}
+{% block title %}Inventario — {{ app_name }}{% endblock %}
 {% block page_title %}Inventario de Repuestos{% endblock %}
 
 {% block content %}
@@ -20,6 +20,8 @@
           <th>Nombre</th>
           <th>Categoría</th>
           <th>Cantidad</th>
+          <th class="text-end">Costo / u.</th>
+          <th class="text-end">Costo total</th>
           <th>Mínimo</th>
           <th>Ubicación</th>
           <th></th>
@@ -32,6 +34,8 @@
           <td>{{ p.nombre }}</td>
           <td>{{ p.categoria or '—' }}</td>
           <td>{{ p.cantidad }} {{ p.unidad }}</td>
+          <td class="text-end text-muted">{{ formato_moneda(p.costo_unitario, empresa_actual.moneda if empresa_actual else 'COP') }}</td>
+          <td class="text-end fw-medium">{{ formato_moneda(p.costo_total, empresa_actual.moneda if empresa_actual else 'COP') }}</td>
           <td>{{ p.stock_minimo }}</td>
           <td>{{ p.ubicacion_almacen or '—' }}</td>
           <td class="text-end">
@@ -39,9 +43,18 @@
           </td>
         </tr>
         {% else %}
-        <tr><td colspan="7" class="text-center text-muted py-4">No hay repuestos.</td></tr>
+        <tr><td colspan="9" class="text-center text-muted py-4">No hay repuestos.</td></tr>
         {% endfor %}
       </tbody>
+      {% if items %}
+      <tfoot class="table-light">
+        <tr>
+          <td colspan="5" class="text-end fw-semibold">Valor total en inventario</td>
+          <td class="text-end fw-semibold">{{ formato_moneda(valor_inventario, empresa_actual.moneda if empresa_actual else 'COP') }}</td>
+          <td colspan="3"></td>
+        </tr>
+      </tfoot>
+      {% endif %}
     </table>
   </div>
 </div>

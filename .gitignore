@@ -17,6 +17,7 @@ build/
 instance/
 *.db
 *.sqlite3
+static/uploads/
 
 # IDE
 .idea/

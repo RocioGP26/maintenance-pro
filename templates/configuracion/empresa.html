@@ -1,0 +1,201 @@
+{% extends "base.html" %}
+{% block title %}Configuración de empresa — {{ app_name }}{% endblock %}
+{% block page_title %}Configuración de empresa{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+  <div class="col-lg-8">
+    <form method="post" enctype="multipart/form-data">
+      <input type="hidden" name="accion" value="guardar">
+
+      <div class="card card-dashboard mb-4">
+        <div class="card-body">
+          <h5 class="fw-semibold mb-3">Datos generales</h5>
+          <div class="row g-3">
+            <div class="col-md-8">
+              <label class="form-label" for="razon_social">Razón social *</label>
+              <input type="text" class="form-control" id="razon_social" name="razon_social" required
+                     value="{{ empresa.razon_social }}">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label" for="nit">NIT</label>
+              <input type="text" class="form-control" id="nit" name="nit" value="{{ empresa.nit }}">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label" for="email">Correo de contacto</label>
+              <input type="email" class="form-control" id="email" name="email" value="{{ empresa.email }}">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label" for="telefono">Teléfono</label>
+              <input type="text" class="form-control" id="telefono" name="telefono" value="{{ empresa.telefono }}">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label" for="sector">Sector industrial</label>
+              <select class="form-select" id="sector" name="sector" required>
+                {% for s_key, s_label in sectores %}
+                <option value="{{ s_key }}" {% if empresa.sector == s_key %}selected{% endif %}>{{ s_label }}</option>
+                {% endfor %}
+              </select>
+              <div class="form-text">Define las categorías del dashboard y los tipos de equipo sugeridos.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card card-dashboard mb-4">
+        <div class="card-body">
+          <h5 class="fw-semibold mb-3">Ubicación</h5>
+          <div class="row g-3">
+            <div class="col-12">
+              <label class="form-label" for="direccion">Dirección</label>
+              <input type="text" class="form-control" id="direccion" name="direccion" value="{{ empresa.direccion }}">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label" for="ciudad">Ciudad</label>
+              <input type="text" class="form-control" id="ciudad" name="ciudad" value="{{ empresa.ciudad }}">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label" for="pais">País</label>
+              <input type="text" class="form-control" id="pais" name="pais" value="{{ empresa.pais }}">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card card-dashboard mb-4">
+        <div class="card-body">
+          <h5 class="fw-semibold mb-3">Regional</h5>
+          <div class="row g-3">
+            <div class="col-md-4">
+              <label class="form-label" for="moneda">Moneda</label>
+              <select class="form-select" id="moneda" name="moneda">
+                {% for val, lbl in monedas %}
+                <option value="{{ val }}" {% if empresa.moneda == val %}selected{% endif %}>{{ lbl }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="col-md-8">
+              <label class="form-label" for="zona_horaria">Zona horaria</label>
+              <select class="form-select" id="zona_horaria" name="zona_horaria">
+                {% for val, lbl in zonas %}
+                <option value="{{ val }}" {% if empresa.zona_horaria == val %}selected{% endif %}>{{ lbl }}</option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card card-dashboard mb-4">
+        <div class="card-body">
+          <h5 class="fw-semibold mb-3">Sede principal</h5>
+          <div class="mb-0">
+            <label class="form-label" for="sede_principal_nombre">Nombre</label>
+            <input type="text" class="form-control" id="sede_principal_nombre" name="sede_principal_nombre"
+                   value="{{ sede_principal.nombre if sede_principal else 'Sede principal' }}">
+          </div>
+        </div>
+      </div>
+
+      <div class="card card-dashboard mb-4">
+        <div class="card-body">
+          <h5 class="fw-semibold mb-3">Logo de la empresa</h5>
+          <div class="row g-3 align-items-start">
+            <div class="col-md-4 text-center">
+              <div class="config-logo-preview p-2">
+                <img src="{{ logo_url }}" alt="Logo" class="img-fluid" id="logoPreview">
+              </div>
+            </div>
+            <div class="col-md-8">
+              <div class="mb-3">
+                <label class="form-label" for="logo_archivo">Subir imagen</label>
+                <input type="file" class="form-control" id="logo_archivo" name="logo_archivo"
+                       accept=".png,.jpg,.jpeg,.webp,.svg">
+                <div class="form-text">PNG, JPG, WEBP o SVG. Si no subes archivo, se mantiene el actual.</div>
+              </div>
+              <div class="mb-0">
+                <label class="form-label" for="logo_url">O URL del logo</label>
+                <input type="url" class="form-control" id="logo_url" name="logo_url"
+                       placeholder="https://..." value="{{ empresa.logo if empresa.logo and empresa.logo.startswith('http') else '' }}">
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="d-flex flex-wrap gap-2">
+        <button type="submit" class="btn btn-primary">Guardar cambios</button>
+        <a href="{{ url_for('main.dashboard') }}" class="btn btn-outline-secondary">Cancelar</a>
+      </div>
+    </form>
+  </div>
+
+  <div class="col-lg-4">
+    <div class="card card-dashboard mb-4">
+      <div class="card-body">
+        <h6 class="text-muted text-uppercase small fw-semibold mb-3">Plan de servicio</h6>
+        {% if plan and plan_meta %}
+        <p class="fw-semibold mb-1">{{ plan_meta.label }}</p>
+        <p class="small text-muted mb-2">{{ plan_meta.descripcion }}</p>
+        <ul class="list-unstyled small mb-0">
+          <li><strong>Inicio:</strong> {{ plan.fecha_inicio.strftime('%d/%m/%Y') }}</li>
+          {% if plan.fecha_fin %}
+          <li><strong>Vence:</strong> {{ plan.fecha_fin.strftime('%d/%m/%Y') }}</li>
+          {% else %}
+          <li><strong>Vence:</strong> Sin fecha límite</li>
+          {% endif %}
+        </ul>
+        {% else %}
+        <p class="text-muted small mb-0">Sin plan activo registrado.</p>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="card card-dashboard mb-4">
+      <div class="card-body">
+        <h6 class="text-muted text-uppercase small fw-semibold mb-3">Sedes</h6>
+        <ul class="list-group list-group-flush mb-3">
+          {% for s in sedes %}
+          <li class="list-group-item px-0 d-flex justify-content-between align-items-center">
+            <span>{{ s.nombre }}{% if s.es_principal %} <span class="badge text-bg-primary">Principal</span>{% endif %}</span>
+          </li>
+          {% else %}
+          <li class="list-group-item px-0 text-muted small">Sin sedes.</li>
+          {% endfor %}
+        </ul>
+        <form method="post" class="row g-2">
+          <input type="hidden" name="accion" value="nueva_sede">
+          <div class="col-8">
+            <input type="text" name="nueva_sede_nombre" class="form-control form-control-sm" placeholder="Nueva sede">
+          </div>
+          <div class="col-4">
+            <button type="submit" class="btn btn-sm btn-outline-primary w-100">Agregar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div class="card card-dashboard">
+      <div class="card-body small text-muted">
+        <p class="mb-1"><strong>Registrada:</strong> {{ empresa.fecha_registro.strftime('%d/%m/%Y %H:%M') if empresa.fecha_registro else '—' }}</p>
+        <p class="mb-0">Los cambios de sector actualizan el dashboard al recargar la página de inicio.</p>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function () {
+  var input = document.getElementById('logo_archivo');
+  var preview = document.getElementById('logoPreview');
+  if (!input || !preview) return;
+  input.addEventListener('change', function () {
+    var f = input.files && input.files[0];
+    if (!f) return;
+    preview.src = URL.createObjectURL(f);
+  });
+})();
+</script>
+{% endblock %}

@@ -1,7 +1,7 @@
 import os
 
 from flask import Flask
-from flask_login import LoginManager
+from flask_login import LoginManager, current_user
 from flask_sqlalchemy import SQLAlchemy
 
 db = SQLAlchemy()
@@ -27,6 +27,32 @@ def create_app():
     db.init_app(app)
     login_manager.init_app(app)
 
+    from app.branding import APP_LOGO_PATH, APP_NAME, APP_TAGLINE
+
+    from app.money import formato_moneda
+    from app.models import wo_es_editable, wo_status_meta, wo_tipo_meta
+
+    app.jinja_env.globals["wo_status_meta"] = wo_status_meta
+    app.jinja_env.globals["formato_moneda"] = formato_moneda
+    app.jinja_env.globals["wo_es_editable"] = wo_es_editable
+    app.jinja_env.globals["wo_tipo_meta"] = wo_tipo_meta
+
+    @app.context_processor
+    def inject_globals():
+        empresa_actual = None
+        if current_user.is_authenticated and getattr(current_user, "empresa", None):
+            empresa_actual = current_user.empresa
+        return {
+            "app_name": APP_NAME,
+            "app_tagline": APP_TAGLINE,
+            "app_logo_path": APP_LOGO_PATH,
+            "empresa_actual": empresa_actual,
+            "wo_status_meta": wo_status_meta,
+            "wo_es_editable": wo_es_editable,
+            "wo_tipo_meta": wo_tipo_meta,
+            "formato_moneda": formato_moneda,
+        }
+
     from app import models  # noqa: F401
     from app.models import User
 
@@ -41,13 +67,17 @@ def create_app():
 
     with app.app_context():
         db.create_all()
+        models.ensure_saas_schema()
         models.ensure_machine_tipo_equipo_column()
+        models.ensure_machine_types_sector_column()
         models.seed_machine_types_if_empty()
         models.ensure_machines_machine_type_fk()
         models.seed_if_empty()
 
     from app import routes
+    from app.onboarding_routes import onboarding_bp
 
     app.register_blueprint(routes.bp)
+    app.register_blueprint(onboarding_bp)
 
     return app
