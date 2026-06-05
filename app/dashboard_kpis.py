@@ -106,6 +106,7 @@ def build_plant_kpi_cards(
     emp,
     wo_period_q,
     closed_repairs: list,
+    preventivas_q=None,
 ) -> list[dict[str, Any]]:
     from app.models import MachineStatus, WorkOrder, WorkOrderType, WORK_ORDER_TERMINAL_STATUSES
 
@@ -136,14 +137,17 @@ def build_plant_kpi_cards(
     else:
         disp_total = 0.0
 
-    preventivas_q = wo_period_q.filter(WorkOrder.tipo == WorkOrderType.PREVENTIVO.value)
+    if preventivas_q is None:
+        preventivas_q = wo_period_q.filter(WorkOrder.tipo == WorkOrderType.PREVENTIVO.value)
     prev_total = preventivas_q.count()
-    prev_done = preventivas_q.filter(
-        WorkOrder.status.in_(WORK_ORDER_TERMINAL_STATUSES)
-    ).count()
-    prev_closed = list(
-        preventivas_q.filter(WorkOrder.status.in_(WORK_ORDER_TERMINAL_STATUSES)).all()
+    from sqlalchemy import func, or_
+
+    terminal_prev = or_(
+        WorkOrder.status.in_(WORK_ORDER_TERMINAL_STATUSES),
+        func.lower(WorkOrder.status).in_(("cerrada", "completado", "cerrado")),
     )
+    prev_done = preventivas_q.filter(terminal_prev).count()
+    prev_closed = list(preventivas_q.filter(terminal_prev).all())
     prev_horas = _wo_horas_periodo(prev_closed, emp)
     if prev_total:
         cumpl_prev = round(100.0 * prev_done / prev_total, 0)

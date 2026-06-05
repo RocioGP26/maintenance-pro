@@ -7,6 +7,11 @@
   .ot-list-toolbar { margin-bottom: 0.65rem; }
   .ot-list-toolbar .btn { padding: 0.2rem 0.55rem; font-size: 0.75rem; }
   .ot-list-toolbar .btn-primary { padding: 0.25rem 0.65rem; font-size: 0.8125rem; }
+  .ot-filtros-card { margin-bottom: 0.75rem; }
+  .ot-filtros-card .card-body { padding: 0.75rem 1rem; }
+  .ot-filtros-card .form-label { font-size: 0.7rem; margin-bottom: 0.15rem; color: #6c757d; }
+  .ot-filtros-card .form-control,
+  .ot-filtros-card .form-select { font-size: 0.8125rem; }
   .ot-list-card .card-body { padding: 0; }
   .ot-list-table { font-size: 0.8125rem; margin-bottom: 0; }
   .ot-list-table thead th {
@@ -35,11 +40,76 @@
     font-weight: 500;
   }
   .ot-list-table .ot-equipo {
-    max-width: 8rem;
+    display: block;
+    max-width: 11rem;
+    line-height: 1.3;
+    color: #495057;
+  }
+  .ot-list-table .ot-equipo-codigo {
+    display: block;
+    font-family: var(--bs-font-monospace);
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--bs-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .ot-list-table .ot-equipo-nombre {
+    display: block;
+    font-size: 0.75rem;
+    color: #6c757d;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+  }
+  .ot-list-table .ot-ubicacion {
+    display: block;
+    max-width: 9rem;
+    line-height: 1.3;
+  }
+  .ot-list-table .ot-ubicacion-area {
+    display: block;
+    font-size: 0.75rem;
+    font-weight: 600;
     color: #495057;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .ot-list-table .ot-ubicacion-detalle {
+    display: block;
+    font-size: 0.75rem;
+    color: #6c757d;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .ot-list-table .ot-tipo-estado {
+    display: block;
+    line-height: 1.3;
+    min-width: 4.5rem;
+  }
+  .ot-list-table .ot-tipo-estado-tipo {
+    display: block;
+  }
+  .ot-list-table .ot-tipo-estado-tipo .badge {
+    font-size: 0.68rem;
+    padding: 0.15em 0.45em;
+  }
+  .ot-list-table .ot-tipo-estado-status {
+    display: block;
+    margin-top: 0.12rem;
+  }
+  .ot-list-table .ot-tipo-estado-status .badge {
+    font-size: 0.65rem;
+    padding: 0.12em 0.4em;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    display: inline-block;
+    vertical-align: top;
   }
   .ot-list-table .ot-meta { font-size: 0.75rem; color: #6c757d; white-space: nowrap; }
   .ot-list-table .ot-tecnico {
@@ -60,13 +130,86 @@
 {% block content %}
 <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 ot-list-toolbar">
   <div class="btn-group btn-group-sm">
-    <a href="{{ url_for('main.ordenes_list') }}" class="btn btn-outline-secondary {% if not status_filter %}active{% endif %}">Todas</a>
-    <a href="{{ url_for('main.ordenes_list', status='abierta') }}" class="btn btn-outline-secondary {% if status_filter == 'abierta' %}active{% endif %}">Abiertas</a>
-    <a href="{{ url_for('main.ordenes_list', status='en_proceso') }}" class="btn btn-outline-secondary {% if status_filter == 'en_proceso' %}active{% endif %}">En proceso</a>
-    <a href="{{ url_for('main.ordenes_list', status='cerrada') }}" class="btn btn-outline-secondary {% if status_filter == 'cerrada' %}active{% endif %}">Cerradas</a>
-    <a href="{{ url_for('main.ordenes_list', status='completado') }}" class="btn btn-outline-secondary {% if status_filter == 'completado' %}active{% endif %}">Completadas</a>
+    <a href="{{ url_for('main.ordenes_list', **filtros_qs_base) }}"
+       class="btn btn-outline-secondary {% if not status_filter %}active{% endif %}">Todas</a>
+    <a href="{{ url_for('main.ordenes_list', status='abierta', **filtros_qs_base) }}"
+       class="btn btn-outline-secondary {% if status_filter == 'abierta' %}active{% endif %}">Abiertas</a>
+    <a href="{{ url_for('main.ordenes_list', status='en_proceso', **filtros_qs_base) }}"
+       class="btn btn-outline-secondary {% if status_filter == 'en_proceso' %}active{% endif %}">En proceso</a>
+    <a href="{{ url_for('main.ordenes_list', status='cerrada', **filtros_qs_base) }}"
+       class="btn btn-outline-secondary {% if status_filter == 'cerrada' %}active{% endif %}">Cerradas</a>
+    <a href="{{ url_for('main.ordenes_list', status='completado', **filtros_qs_base) }}"
+       class="btn btn-outline-secondary {% if status_filter == 'completado' %}active{% endif %}">Completadas</a>
   </div>
-  <a href="{{ url_for('main.ordenes_new') }}" class="btn btn-primary btn-sm"><i class="bi bi-plus-lg"></i> Nueva</a>
+  {% if perm.crear %}<a href="{{ url_for('main.ordenes_new') }}" class="btn btn-primary btn-sm"><i class="bi bi-plus-lg"></i> Nueva</a>{% endif %}
+</div>
+
+<div class="card card-dashboard ot-filtros-card">
+  <div class="card-body">
+    <form method="get" action="{{ url_for('main.ordenes_list') }}" class="row g-2 align-items-end">
+      {% if status_filter %}
+      <input type="hidden" name="status" value="{{ status_filter }}">
+      {% endif %}
+      <div class="col-6 col-md-2">
+        <label class="form-label" for="f-numero">N° OT</label>
+        <input type="text" id="f-numero" name="numero" class="form-control form-control-sm"
+               value="{{ filtros.numero }}" placeholder="OT-26-0001">
+      </div>
+      <div class="col-6 col-md-2">
+        <label class="form-label" for="f-equipo">Equipo</label>
+        <input type="text" id="f-equipo" name="equipo" class="form-control form-control-sm"
+               value="{{ filtros.equipo }}" placeholder="Código o nombre">
+      </div>
+      <div class="col-6 col-md-2">
+        <label class="form-label" for="f-ubicacion">Área / ubicación</label>
+        <input type="text" id="f-ubicacion" name="ubicacion" class="form-control form-control-sm"
+               value="{{ filtros.ubicacion }}" placeholder="Área o ubicación…">
+      </div>
+      <div class="col-6 col-md-2">
+        <label class="form-label" for="f-tipo">Tipo</label>
+        <select id="f-tipo" name="tipo" class="form-select form-select-sm">
+          {% for val, lbl in tipos_ot %}
+          <option value="{{ val }}" {% if filtros.tipo == val %}selected{% endif %}>{{ lbl }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-6 col-md-2">
+        <label class="form-label" for="f-mes">Mes</label>
+        <select id="f-mes" name="mes" class="form-select form-select-sm">
+          <option value="">Todos</option>
+          {% for num, nombre in meses_ot %}
+          <option value="{{ num }}" {% if filtros.mes == num|string %}selected{% endif %}>{{ nombre }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-6 col-md-2">
+        <label class="form-label" for="f-anio">Año</label>
+        <select id="f-anio" name="anio" class="form-select form-select-sm">
+          <option value="">Todos</option>
+          {% for y in anios_ot %}
+          <option value="{{ y }}" {% if filtros.anio == y|string %}selected{% endif %}>{{ y }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-6 col-md-2">
+        <label class="form-label" for="f-desde">Fecha desde</label>
+        <input type="date" id="f-desde" name="fecha_desde" class="form-control form-control-sm"
+               value="{{ filtros.fecha_desde }}">
+      </div>
+      <div class="col-6 col-md-2">
+        <label class="form-label" for="f-hasta">Fecha hasta</label>
+        <input type="date" id="f-hasta" name="fecha_hasta" class="form-control form-control-sm"
+               value="{{ filtros.fecha_hasta }}">
+      </div>
+      <div class="col-12 col-md-auto d-flex flex-wrap gap-2">
+        <button type="submit" class="btn btn-sm btn-primary"><i class="bi bi-search"></i> Buscar</button>
+        <a href="{{ url_for('main.ordenes_list') }}" class="btn btn-sm btn-outline-secondary">Limpiar</a>
+      </div>
+    </form>
+    {% if hay_filtros %}
+    <p class="small text-muted mb-0 mt-2">{{ orders|length }} resultado(s) con los filtros aplicados.</p>
+    {% endif %}
+  </div>
 </div>
 
 <div class="card card-dashboard ot-list-card">
@@ -77,8 +220,8 @@
           <th>N° OT</th>
           <th>Actividad / Título</th>
           <th>Equipo</th>
+          <th>Ubicación</th>
           <th>Tipo</th>
-          <th>Estado</th>
           <th>Prog.</th>
           <th>Ejecución</th>
           <th class="text-center" title="Jornadas / tiempo">J/T</th>
@@ -98,11 +241,31 @@
             <span class="d-block ot-meta">Cada {{ o.frecuencia_valor }} {{ fu_lbl.get(o.frecuencia_unidad, o.frecuencia_unidad) }}</span>
             {% endif %}
           </td>
-          <td><span class="ot-equipo d-inline-block" title="{{ o.machine.nombre if o.machine else '' }}">{{ o.machine.nombre if o.machine else '—' }}</span></td>
-          <td>{{ tipo_badge(o.tipo, short=true) }}</td>
           <td>
+            {% if o.machine %}
+            <span class="ot-equipo" title="{{ o.machine.codigo }} — {{ o.machine.nombre }}">
+              <span class="ot-equipo-codigo">{{ o.machine.codigo }}</span>
+              <span class="ot-equipo-nombre">{{ o.machine.nombre }}</span>
+            </span>
+            {% else %}—{% endif %}
+          </td>
+          <td>
+            {% set area_ot = o.area or (o.machine.area if o.machine else '') %}
+            {% set ubi_ot = o.ubicacion or (o.machine.ubicacion if o.machine else '') %}
+            {% if area_ot or ubi_ot %}
+            <span class="ot-ubicacion" title="{{ area_ot }}{% if area_ot and ubi_ot %} — {% endif %}{{ ubi_ot }}">
+              <span class="ot-ubicacion-area">{{ area_ot or '—' }}</span>
+              <span class="ot-ubicacion-detalle">{{ ubi_ot or '—' }}</span>
+            </span>
+            {% else %}—{% endif %}
+          </td>
+          <td>
+            {% set tm = wo_tipo_meta(o.tipo) %}
             {% set sm = wo_status_meta(o.status) %}
-            <span class="badge {{ sm.badge_class }}">{{ sm.label }}</span>
+            <span class="ot-tipo-estado" title="{{ tm.label }} — {{ sm.label }}">
+              <span class="ot-tipo-estado-tipo">{{ tipo_badge(o.tipo, short=true) }}</span>
+              <span class="ot-tipo-estado-status"><span class="badge {{ sm.badge_class }}">{{ sm.label }}</span></span>
+            </span>
           </td>
           <td class="ot-meta text-nowrap">
             {% if o.fecha_programada %}{{ o.fecha_programada.strftime('%d/%m/%y') }}{% else %}—{% endif %}
@@ -122,14 +285,16 @@
           </td>
           <td><span class="ot-tecnico d-inline-block" title="{{ o.technician.nombre if o.technician else '' }}">{{ o.technician.nombre if o.technician else '—' }}</span></td>
           <td class="text-end">
+            {% if perm.editar or perm.solo_lectura %}
             <a href="{{ url_for('main.ordenes_edit', id=o.id) }}" class="btn btn-outline-secondary btn-ot-action"
-               title="{% if wo_es_editable(o.status) %}Editar{% else %}Ver{% endif %}">
-              <i class="bi bi-{% if wo_es_editable(o.status) %}pencil{% else %}eye{% endif %}"></i>
+               title="{% if perm.solo_lectura or not wo_es_editable(o.status) %}Ver{% else %}Editar{% endif %}">
+              <i class="bi bi-{% if perm.solo_lectura or not wo_es_editable(o.status) %}eye{% else %}pencil{% endif %}"></i>
             </a>
+            {% endif %}
           </td>
         </tr>
         {% else %}
-        <tr><td colspan="10" class="text-center text-muted py-3 small">No hay órdenes.</td></tr>
+        <tr><td colspan="9" class="text-center text-muted py-3 small">No hay órdenes{% if hay_filtros %} con estos filtros{% endif %}.</td></tr>
         {% endfor %}
       </tbody>
     </table>

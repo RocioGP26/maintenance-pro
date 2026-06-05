@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+{% block title %}Campos personalizados — {{ app_name }}{% endblock %}
+{% block page_title %}Campos personalizados{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-2">
+  <p class="text-muted small mb-0">
+    Campos personalizados · {{ empresa.razon_social }}
+  </p>
+  {% if perm.config %}<a href="{{ url_for('main.configuracion_campos_new') }}" class="btn btn-primary btn-sm py-0 px-2">
+    <i class="bi bi-plus-lg"></i> Nuevo
+  </a>{% endif %}
+</div>
+
+<div class="card card-dashboard">
+  <div class="table-responsive">
+    <table class="table table-sm table-hover table-campos-config align-middle mb-0">
+      <thead class="table-light">
+        <tr>
+          <th class="col-orden">#</th>
+          <th>Campo</th>
+          <th>Sección</th>
+          <th>Entidad</th>
+          <th>Tipo</th>
+          <th>Categorías</th>
+          <th class="text-center col-flag" title="Obligatorio">Obl.</th>
+          <th class="text-center col-flag" title="Registros en uso">Uso</th>
+          <th class="text-center col-flag">Estado</th>
+          <th class="col-acciones"></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for c in campos %}
+        {% set en_uso = c.valores.count() + c.valores_usuario.count() %}
+        <tr class="{% if not c.activo %}table-secondary{% endif %}">
+          <td class="text-muted">{{ c.orden }}</td>
+          <td class="celda-campo-nombre">
+            <span class="fw-medium">{{ c.nombre }}</span>
+            <span class="text-muted font-monospace campo-clave-inline">{{ c.clave }}</span>
+          </td>
+          <td class="celda-truncate" title="{{ etiqueta_seccion_campo_con_ancla(c.seccion, c.seccion_ancla) }}">
+            {{ etiqueta_seccion_campo_con_ancla(c.seccion, c.seccion_ancla) }}
+          </td>
+          <td><span class="badge badge-campos-config text-bg-light text-dark border">{{ c.entidad_label }}</span></td>
+          <td class="celda-truncate" title="{{ c.tipo_label }}">{{ c.tipo_label }}</td>
+          <td class="celda-truncate celda-categorias" title="{% if c.entidad != 'equipo' %}{{ etiqueta_categorias_campo(c, tipos_map) }}{% endif %}">
+            {% if c.entidad == 'equipo' %}—{% else %}{{ etiqueta_categorias_campo(c, tipos_map) }}{% endif %}
+          </td>
+          <td class="text-center">{% if c.obligatorio %}<span class="badge badge-campos-config text-bg-warning">Sí</span>{% else %}<span class="text-muted">—</span>{% endif %}</td>
+          <td class="text-center text-muted">{{ en_uso if en_uso else '—' }}</td>
+          <td class="text-center">
+            {% if c.activo %}<span class="badge badge-campos-config text-bg-success">On</span>
+            {% else %}<span class="badge badge-campos-config text-bg-secondary">Off</span>{% endif %}
+          </td>
+          <td class="text-end text-nowrap col-acciones">
+            {% if perm.config %}
+            <div class="d-inline-flex gap-1 acciones-campos-config">
+              <a href="{{ url_for('main.configuracion_campos_edit', id=c.id) }}" class="btn btn-outline-secondary btn-sm py-0 px-2" title="Editar">
+                <i class="bi bi-pencil"></i>
+              </a>
+              <form method="post" action="{{ url_for('main.configuracion_campos_delete', id=c.id) }}" class="d-inline m-0"
+                    onsubmit="return confirm('¿Eliminar o desactivar este campo?');">
+                <button type="submit" class="btn btn-outline-danger btn-sm py-0 px-2" title="Eliminar">
+                  <i class="bi bi-trash"></i>
+                </button>
+              </form>
+            </div>
+            {% endif %}
+          </td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="10" class="text-center text-muted py-3 small">
+            No hay campos personalizados. Crea el primero para ampliar el formulario de activos.
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="mt-2 d-flex flex-wrap gap-2">
+  <a href="{{ url_for('main.configuracion_empresa') }}" class="btn btn-outline-secondary btn-sm">
+    <i class="bi bi-building-gear"></i> Configuración empresa
+  </a>
+  <a href="{{ url_for('main.activos_list') }}" class="btn btn-outline-secondary btn-sm">
+    <i class="bi bi-arrow-left"></i> Volver a activos
+  </a>
+</div>
+{% endblock %}

@@ -6,16 +6,116 @@
 
 {% block page_title %}Dashboard{% endblock %}
 
-{% block header_toolbar %}
+{% macro dash_filtros_hidden() %}
+    <input type="hidden" name="periodo" value="{{ periodo }}">
+    <input type="hidden" name="ref" value="{{ periodo_ref }}">
+    {% if dash_params.get('sector') %}
+    <input type="hidden" name="sector" value="{{ dash_params.sector }}">
+    {% endif %}
+{% endmacro %}
+
+{% macro dash_period_toolbar() %}
 <div id="tour-period-toolbar" class="dash-header-toolbar">
-  <div class="dash-pill-group">
+  <div class="dash-pill-group" role="group" aria-label="Tipo de período">
     {% for p, label in [('dia', 'Día'), ('semana', 'Semana'), ('mes', 'Mes'), ('año', 'Año')] %}
-    <a href="{{ url_for('main.dashboard', periodo=p) }}"
+    <a href="{{ period_urls[p] }}"
        class="btn btn-sm period-btn {% if periodo == p %}active{% endif %}">{{ label }}</a>
     {% endfor %}
   </div>
+  <div class="dash-period-nav" role="group" aria-label="Navegar período">
+    <a href="{{ period_prev_url }}" class="btn btn-sm btn-dash-period-nav" title="Período anterior" aria-label="Período anterior">
+      <i class="bi bi-chevron-left" aria-hidden="true"></i>
+    </a>
+    <span class="dash-period-label" title="Rango: {{ periodo_rango }}">{{ periodo_label }}</span>
+    <a href="{{ period_next_url }}" class="btn btn-sm btn-dash-period-nav" title="Período siguiente" aria-label="Período siguiente">
+      <i class="bi bi-chevron-right" aria-hidden="true"></i>
+    </a>
+  </div>
+  {% if periodo == 'mes' %}
+  <form method="get" action="{{ url_for('main.dashboard') }}" class="dash-period-form">
+    <input type="hidden" name="periodo" value="mes">
+    {% if dash_params.get('sector') %}
+    <input type="hidden" name="sector" value="{{ dash_params.sector }}">
+    {% endif %}
+    {% if dash_params.get('equipo') %}<input type="hidden" name="equipo" value="{{ dash_params.equipo }}">{% endif %}
+    {% if dash_params.get('ubicacion') %}<input type="hidden" name="ubicacion" value="{{ dash_params.ubicacion }}">{% endif %}
+    <label class="visually-hidden" for="dash-mes">Mes</label>
+    <select id="dash-mes" name="mes" class="form-select form-select-sm" aria-label="Mes">
+      {% for num, nombre in meses_planeacion %}
+      <option value="{{ num }}" {% if num == periodo_mes %}selected{% endif %}>{{ nombre }}</option>
+      {% endfor %}
+    </select>
+    <label class="visually-hidden" for="dash-anio">Año</label>
+    <select id="dash-anio" name="anio" class="form-select form-select-sm" aria-label="Año">
+      {% for y in periodo_anios %}
+      <option value="{{ y }}" {% if y == periodo_anio %}selected{% endif %}>{{ y }}</option>
+      {% endfor %}
+    </select>
+    <button type="submit" class="btn btn-sm btn-primary">Ir</button>
+  </form>
+  {% elif periodo == 'año' %}
+  <form method="get" action="{{ url_for('main.dashboard') }}" class="dash-period-form">
+    <input type="hidden" name="periodo" value="año">
+    {% if dash_params.get('sector') %}
+    <input type="hidden" name="sector" value="{{ dash_params.sector }}">
+    {% endif %}
+    {% if dash_params.get('equipo') %}<input type="hidden" name="equipo" value="{{ dash_params.equipo }}">{% endif %}
+    {% if dash_params.get('ubicacion') %}<input type="hidden" name="ubicacion" value="{{ dash_params.ubicacion }}">{% endif %}
+    <label class="visually-hidden" for="dash-anio-solo">Año</label>
+    <select id="dash-anio-solo" name="anio" class="form-select form-select-sm" aria-label="Año">
+      {% for y in periodo_anios %}
+      <option value="{{ y }}" {% if y == periodo_anio %}selected{% endif %}>{{ y }}</option>
+      {% endfor %}
+    </select>
+    <button type="submit" class="btn btn-sm btn-primary">Ir</button>
+  </form>
+  {% elif periodo == 'dia' %}
+  <form method="get" action="{{ url_for('main.dashboard') }}" class="dash-period-form">
+    <input type="hidden" name="periodo" value="dia">
+    {% if dash_params.get('sector') %}
+    <input type="hidden" name="sector" value="{{ dash_params.sector }}">
+    {% endif %}
+    {% if dash_params.get('equipo') %}<input type="hidden" name="equipo" value="{{ dash_params.equipo }}">{% endif %}
+    {% if dash_params.get('ubicacion') %}<input type="hidden" name="ubicacion" value="{{ dash_params.ubicacion }}">{% endif %}
+    <label class="visually-hidden" for="dash-fecha">Día</label>
+    <input type="date" id="dash-fecha" name="ref" value="{{ periodo_ref }}" class="form-control form-control-sm" aria-label="Día">
+    <button type="submit" class="btn btn-sm btn-primary">Ir</button>
+  </form>
+  {% endif %}
 </div>
-{% endblock %}
+{% endmacro %}
+
+{% macro dash_sidebar_panel() %}
+    <div class="dash-toolbar-unified card card-dashboard">
+      <div class="card-body">
+        <div class="dash-toolbar-unified-row">
+          <div class="dash-toolbar-unified-period">
+            {{ dash_period_toolbar() }}
+          </div>
+          <div class="dash-toolbar-divider" aria-hidden="true"></div>
+          <form method="get" action="{{ url_for('main.dashboard') }}" class="dash-asset-filtros-form dash-toolbar-unified-filtros" aria-label="Filtrar por equipo y ubicación">
+            {{ dash_filtros_hidden() }}
+            <span class="dash-asset-filtros-label"><i class="bi bi-funnel me-1" aria-hidden="true"></i>Filtrar</span>
+            <label class="visually-hidden" for="dash-equipo">Equipo</label>
+            <input type="text" id="dash-equipo" name="equipo" class="form-control form-control-sm"
+                   value="{{ dash_filtros.equipo }}" placeholder="Código o nombre" title="Código o nombre del equipo">
+            <label class="visually-hidden" for="dash-ubicacion">Ubicación</label>
+            <input type="text" id="dash-ubicacion" name="ubicacion" class="form-control form-control-sm"
+                   value="{{ dash_filtros.ubicacion }}" placeholder="Área / ubicación" title="Área o ubicación del activo">
+            <button type="submit" class="btn btn-sm btn-primary">Aplicar</button>
+            {% if hay_filtros_activo %}
+            <a href="{{ dash_clear_filtros_url }}" class="btn btn-sm btn-dash-clear-filtros">Limpiar</a>
+            {% endif %}
+          </form>
+        </div>
+        {% if hay_filtros_activo %}
+        <p class="dash-filtros-activos small text-muted mb-0 mt-2">
+          Vista filtrada{% if dash_filtros.equipo %} · equipo «{{ dash_filtros.equipo }}»{% endif %}{% if dash_filtros.ubicacion %} · ubicación «{{ dash_filtros.ubicacion }}»{% endif %}
+        </p>
+        {% endif %}
+      </div>
+    </div>
+{% endmacro %}
 
 
 
@@ -81,199 +181,9 @@
 
 
 
-{% if empresa %}
-
-<div class="dashboard-top-row">
-
-  <div class="dashboard-top-row__empresa">
-
-    <div id="tour-empresa-header" class="card card-dashboard dashboard-empresa-header">
-
-      <div class="card-body py-3">
-
-        <div class="d-flex flex-wrap align-items-center gap-3">
-
-          {% if empresa_logo_url %}
-
-          <div class="brand-logo-panel brand-logo-panel--dashboard flex-shrink-0">
-
-            <img src="{{ empresa_logo_url }}" alt="{{ empresa.razon_social }}" class="dashboard-empresa-logo">
-
-          </div>
-
-          {% endif %}
-
-          <div class="flex-grow-1 min-width-0">
-
-            <p class="app-tagline mb-1">Tu empresa</p>
-
-            <h2 class="h5 fw-bold mb-1 text-truncate">{{ empresa.razon_social }}</h2>
-
-            <div class="d-flex flex-wrap align-items-center gap-2">
-
-              <span class="badge rounded-pill text-bg-primary">{{ sector_label }}</span>
-
-              {% if empresa.ciudad %}<span class="text-muted small">{{ empresa.ciudad }}{% if empresa.pais %}, {{ empresa.pais }}{% endif %}</span>{% endif %}
-
-              {% if current_user.rol == 'admin' %}
-
-              <a href="{{ url_for('main.configuracion_empresa') }}" class="small text-decoration-none">Configuración</a>
-
-              {% endif %}
-
-            </div>
-
-          </div>
-
-        </div>
-
-      </div>
-
-    </div>
-
-  </div>
-
-  <div class="dashboard-top-row__alertas">
-
-    <div class="card card-dashboard alert-center">
-
-      <div class="card-body alert-center-body">
-
-        <div class="alert-center-head">
-
-          <h6 class="alert-center-title">
-
-            <span class="alert-center-title-icon" aria-hidden="true"><i class="bi bi-exclamation-octagon-fill"></i></span>
-
-            Alertas críticas
-
-          </h6>
-
-          {% if alertas %}
-
-            <span class="badge alert-center-badge">{{ alertas|length }}</span>
-
-          {% endif %}
-
-        </div>
-
-        {% if alertas %}
-
-          <ul class="alert-center-list list-unstyled mb-0">
-
-            {% for a in alertas %}
-
-              <li class="alert-center-item alert-center-item--{{ a.nivel }}">
-
-                <span class="alert-center-dot alert-center-dot--{{ a.nivel }}" aria-hidden="true"></span>
-
-                <p class="alert-center-line mb-0">
-
-                  {% if a.href %}
-
-                    <a href="{{ a.href }}" class="alert-center-link">{{ a.titulo }}</a>
-
-                  {% else %}
-
-                    <strong class="alert-center-link">{{ a.titulo }}</strong>
-
-                  {% endif %}
-
-                  <span class="alert-center-sep">·</span>
-
-                  <span class="alert-center-msg">{{ a.mensaje }}</span>
-
-                </p>
-
-              </li>
-
-            {% endfor %}
-
-          </ul>
-
-        {% else %}
-
-          <p class="alert-center-empty mb-0"><i class="bi bi-check-circle text-success me-1"></i> Sin alertas activas.</p>
-
-        {% endif %}
-
-      </div>
-
-    </div>
-
-  </div>
-
+<div class="dashboard-sidebar-panels mb-3">
+  {{ dash_sidebar_panel() }}
 </div>
-
-{% else %}
-
-<div class="card card-dashboard alert-center mb-4">
-
-  <div class="card-body alert-center-body">
-
-    <div class="alert-center-head">
-
-      <h6 class="alert-center-title">
-
-        <span class="alert-center-title-icon" aria-hidden="true"><i class="bi bi-exclamation-octagon-fill"></i></span>
-
-        Alertas críticas
-
-      </h6>
-
-      {% if alertas %}
-
-        <span class="badge alert-center-badge">{{ alertas|length }}</span>
-
-      {% endif %}
-
-    </div>
-
-    {% if alertas %}
-
-      <ul class="alert-center-list list-unstyled mb-0">
-
-        {% for a in alertas %}
-
-          <li class="alert-center-item alert-center-item--{{ a.nivel }}">
-
-            <span class="alert-center-dot alert-center-dot--{{ a.nivel }}" aria-hidden="true"></span>
-
-            <p class="alert-center-line mb-0">
-
-              {% if a.href %}
-
-                <a href="{{ a.href }}" class="alert-center-link">{{ a.titulo }}</a>
-
-              {% else %}
-
-                <strong class="alert-center-link">{{ a.titulo }}</strong>
-
-              {% endif %}
-
-              <span class="alert-center-sep">·</span>
-
-              <span class="alert-center-msg">{{ a.mensaje }}</span>
-
-            </p>
-
-          </li>
-
-        {% endfor %}
-
-      </ul>
-
-    {% else %}
-
-      <p class="alert-center-empty mb-0"><i class="bi bi-check-circle text-success me-1"></i> Sin alertas activas.</p>
-
-    {% endif %}
-
-  </div>
-
-</div>
-
-{% endif %}
 
 
 
@@ -287,7 +197,7 @@
 
     {% for s_key, s_label in [('manufactura', 'Manufactura'), ('logistica', 'Logística'), ('alimentos', 'Alimentos')] %}
 
-    <a href="{{ url_for('main.dashboard', sector=s_key, periodo=periodo) }}"
+    <a href="{{ sector_urls[s_key] }}"
 
        class="btn btn-sm sector-btn {% if sector == s_key %}active{% endif %}">{{ s_label }}</a>
 
@@ -298,38 +208,6 @@
 </div>
 
 {% endif %}
-
-
-
-<div class="sector-cats-wrap mb-4">
-
-  <div class="sector-cats-row" role="list" style="--sector-cat-count: {{ sector_categorias|length }};">
-
-    {% for cat in sector_categorias %}
-
-    <article class="sector-cat-card" role="listitem">
-
-      <span class="sector-cat-card-icon sector-cat-card-icon--{{ cat.tone }}" aria-hidden="true">
-
-        <i class="bi {{ cat.icon }}"></i>
-
-      </span>
-
-      <div class="sector-cat-card-body">
-
-        <h3 class="sector-cat-card-label">{{ cat.label }}</h3>
-
-        <p class="sector-cat-card-value mb-0">{{ cat.resumen }}</p>
-
-      </div>
-
-    </article>
-
-    {% endfor %}
-
-  </div>
-
-</div>
 
 
 
@@ -371,6 +249,15 @@
             <span class="dash-card-head-icon" aria-hidden="true"><i class="bi bi-calendar-event"></i></span>
 
             <h5 class="card-title mb-0">Próximos mantenimientos</h5>
+            {% if proximos_mantenimientos_total > 0 %}
+            <span class="small text-muted">
+              {% if proximos_mantenimientos_total > proximos_mantenimientos_limite %}
+              {{ proximos_mantenimientos_shown }} de {{ proximos_mantenimientos_total }}
+              {% else %}
+              {{ proximos_mantenimientos_total }}
+              {% endif %}
+            </span>
+            {% endif %}
 
           </div>
 
@@ -386,7 +273,7 @@
 
               <li class="upcoming-maint-item">
 
-                <a href="{{ item.href }}" class="upcoming-maint-row" title="{{ item.titulo }}">
+                <a href="{{ item.href }}" class="upcoming-maint-row" title="{{ item.numero }} — {{ item.titulo }}">
 
                   <time class="upcoming-maint-date" datetime="{{ item.fecha.isoformat() }}">
 
@@ -396,7 +283,10 @@
 
                   </time>
 
-                  <span class="upcoming-maint-equipo">{{ item.equipo }}</span>
+                  <span class="upcoming-maint-equipo">
+                    <span class="upcoming-maint-codigo">{{ item.codigo }}</span>
+                    <span class="upcoming-maint-nombre">{{ item.nombre }}</span>
+                  </span>
 
                   <span class="upcoming-maint-tipo upcoming-maint-tipo--{{ item.tipo_slug }}">{{ item.tipo_short }}</span>
 
@@ -410,7 +300,7 @@
 
         {% else %}
 
-          <p class="upcoming-maint-empty mb-0 flex-grow-1">No hay mantenimientos programados. Asigna fechas en las órdenes de trabajo.</p>
+          <p class="upcoming-maint-empty mb-0 flex-grow-1">No hay mantenimientos futuros en {{ periodo_label }}.</p>
 
         {% endif %}
 
@@ -442,9 +332,15 @@
 
             </div>
 
-            <div class="chart-box">
+            {% if ot_en_periodo > 0 %}
+            <div class="chart-box health-chart-wrap">
 
               <canvas id="chartSalud"></canvas>
+
+              <div class="health-chart-center" aria-hidden="true">
+                <span class="health-chart-center-value">{{ health.counts.total }}</span>
+                <span class="health-chart-center-label">Activos</span>
+              </div>
 
             </div>
 
@@ -457,6 +353,14 @@
               <li><span class="health-legend-swatch health-legend-swatch--bad"></span> En falla: {{ health.counts.falla }} ({{ health.falla }}%)</li>
 
             </ul>
+            {% else %}
+            <div class="chart-box chart-box--empty d-flex align-items-center justify-content-center" style="min-height:10rem;">
+              <p class="text-muted small text-center mb-0 px-3">
+                Sin mantenimientos en {{ periodo_label }}.<br>
+                El estado de salud se muestra cuando hay OT programadas en el período.
+              </p>
+            </div>
+            {% endif %}
 
           </div>
 
@@ -483,7 +387,7 @@
             </div>
 
             <div class="prev-compliance">
-
+              {% if total_prev > 0 %}
               <div class="prev-compliance-gauge">
 
                 <div class="gauge-wrap">
@@ -513,6 +417,30 @@
 
               </div>
 
+              {% if prev_completadas_items %}
+              <div class="prev-compliance-list mt-2">
+                <p class="small fw-semibold mb-1 text-muted">Completadas ({{ prev_completadas }})</p>
+                <ul class="list-unstyled mb-0 prev-compliance-ot-list">
+                  {% for item in prev_completadas_items %}
+                  <li>
+                    <a href="{{ item.href }}" class="prev-compliance-ot-link" title="{{ item.titulo }}">
+                      <span class="prev-compliance-ot-num">{{ item.numero }}</span>
+                      <span class="prev-compliance-ot-titulo">{{ item.titulo }}</span>
+                      <span class="prev-compliance-ot-meta">{{ item.fecha_fmt }} · {{ item.status }}</span>
+                    </a>
+                  </li>
+                  {% endfor %}
+                </ul>
+              </div>
+              {% endif %}
+              {% if prev_pendientes > 0 %}
+              <p class="small text-warning mb-0 mt-2">{{ prev_pendientes }} preventiva(s) pendiente(s) en el período.</p>
+              {% endif %}
+              {% else %}
+              <div class="chart-box chart-box--empty d-flex align-items-center justify-content-center" style="min-height:8rem;">
+                <p class="text-muted small text-center mb-0 px-2">{{ prev_msg }}</p>
+              </div>
+              {% endif %}
             </div>
 
           </div>
@@ -683,9 +611,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     steps: [
 
-      { element: '#tour-empresa-header', popover: { title: 'Tu empresa', description: 'Logo, nombre y sector industrial configurados al registrarte.' } },
-
-      { element: '#tour-period-toolbar', popover: { title: 'Período', description: 'Filtra métricas y gráficos por día, semana, mes o año.' } },
+      { element: '#tour-period-toolbar', popover: { title: 'Período', description: 'Elige día, semana, mes o año. Usa las flechas o los selectores para cambiar el período concreto; el rango activo aparece en el centro.' } },
 
       { element: '#tour-kpis', popover: { title: 'Indicadores', description: 'Vista rápida del estado de tu operación.' } },
 
@@ -720,7 +646,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
   const saludCtx = document.getElementById('chartSalud');
 
-  if (saludCtx) {
+  if (saludCtx && {{ ot_en_periodo }} > 0) {
 
     new Chart(saludCtx, {
 
@@ -766,7 +692,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
   const gCtx = document.getElementById('chartGauge');
 
-  if (gCtx) {
+  if (gCtx && {{ total_prev }} > 0) {
 
     const val = {{ cumplimiento }};
 

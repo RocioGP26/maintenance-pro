@@ -8,7 +8,7 @@
     <input type="search" name="q" value="{{ q }}" class="form-control" placeholder="Buscar SKU o nombre…">
     <button class="btn btn-outline-primary" type="submit">Buscar</button>
   </form>
-  <a href="{{ url_for('main.inventario_new') }}" class="btn btn-primary"><i class="bi bi-plus-lg"></i> Nuevo repuesto</a>
+  {% if perm.crear %}<a href="{{ url_for('main.inventario_new') }}" class="btn btn-primary"><i class="bi bi-plus-lg"></i> Nuevo repuesto</a>{% endif %}
 </div>
 
 <div class="card card-dashboard">
@@ -39,7 +39,7 @@
           <td>{{ p.stock_minimo }}</td>
           <td>{{ p.ubicacion_almacen or '—' }}</td>
           <td class="text-end">
-            <a href="{{ url_for('main.inventario_edit', id=p.id) }}" class="btn btn-sm btn-outline-secondary">Editar</a>
+            {% if perm.editar %}<a href="{{ url_for('main.inventario_edit', id=p.id) }}" class="btn btn-sm btn-outline-secondary">Editar</a>{% elif perm.solo_lectura %}<a href="{{ url_for('main.inventario_edit', id=p.id) }}" class="btn btn-sm btn-outline-secondary">Ver</a>{% endif %}
           </td>
         </tr>
         {% else %}

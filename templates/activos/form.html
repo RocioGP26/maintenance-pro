@@ -1,222 +1,489 @@
-{% extends "base.html" %}
-{% block title %}{% if machine %}Editar{% else %}Nuevo{% endif %} activo — {{ app_name }}{% endblock %}
-{% block page_title %}{% if machine %}Editar activo{% else %}Nuevo activo{% endif %}{% endblock %}
-
-{% block content %}
-<div class="row justify-content-center">
-  <div class="col-lg-9">
-    <div class="card card-dashboard">
-      <div class="card-body">
-        <p class="text-muted small mb-3">
-          Formulario unificado · sector <strong>{{ sector_label }}</strong>.
-          Los campos adicionales cambian según la categoría del activo.
-        </p>
-        <form method="post" id="form-activo">
-          <fieldset class="mb-4">
-            <legend class="h6 text-uppercase text-muted fw-semibold mb-3">Clasificación</legend>
-            <div class="row g-3">
-              <div class="col-12">
-                <label class="form-label" for="machine_type_id">Categoría de activo</label>
-                <select name="machine_type_id" id="machine_type_id" class="form-select" required>
-                  {% for mt in machine_types %}
-                  <option value="{{ mt.id }}"
-                    {% if machine %}
-                      {% if machine.machine_type_id == mt.id %}selected{% endif %}
-                    {% else %}
-                      {% if default_machine_type_id == mt.id %}selected{% endif %}
-                    {% endif %}>
-                    {{ mt.nombre }} — código auto: <strong>{{ mt.prefijo }}-###</strong>
-                  </option>
-                  {% endfor %}
-                </select>
-              </div>
-              {% if not machine %}
-              <div class="col-12">
-                <div class="form-check form-switch">
-                  <input class="form-check-input" type="checkbox" name="generar_codigo" value="1" id="generar_codigo" checked>
-                  <label class="form-check-label" for="generar_codigo">Generar código automáticamente</label>
-                </div>
-                <div class="form-text" id="codigo-help-auto">
-                  Próximo código: <strong id="codigo-sugerido-val">{{ codigo_sugerido }}</strong>
-                </div>
-              </div>
-              {% endif %}
-              <div class="col-md-6">
-                <label class="form-label" for="codigo">Código</label>
-                <input type="text" name="codigo" id="codigo" class="form-control"
-                       {% if machine %}required{% endif %}
-                       value="{{ machine.codigo if machine else '' }}"
-                       {% if not machine %}disabled{% endif %}>
-              </div>
-              <div class="col-md-6">
-                <label class="form-label">Nombre *</label>
-                <input type="text" name="nombre" class="form-control" required value="{{ machine.nombre if machine else '' }}">
-              </div>
-            </div>
-          </fieldset>
-
-          <fieldset class="mb-4">
-            <legend class="h6 text-uppercase text-muted fw-semibold mb-3">Datos base (todos los sectores)</legend>
-            <div class="row g-3">
-              <div class="col-12">
-                <label class="form-label">Descripción</label>
-                <textarea name="descripcion" class="form-control" rows="2">{{ machine.descripcion if machine else '' }}</textarea>
-              </div>
-              <div class="col-md-6">
-                <label class="form-label">Marca</label>
-                <input type="text" name="marca" class="form-control" value="{{ machine.marca if machine else '' }}">
-              </div>
-              <div class="col-md-6">
-                <label class="form-label">Modelo</label>
-                <input type="text" name="modelo" class="form-control" value="{{ machine.modelo if machine else '' }}">
-              </div>
-              <div class="col-md-6">
-                <label class="form-label">N.º de serie</label>
-                <input type="text" name="numero_serie" class="form-control" value="{{ machine.numero_serie if machine else '' }}">
-              </div>
-              <div class="col-md-6">
-                <label class="form-label">Ubicación</label>
-                <input type="text" name="ubicacion" class="form-control" value="{{ machine.ubicacion if machine else '' }}">
-              </div>
-              <div class="col-md-4">
-                <label class="form-label">Estado</label>
-                <select name="status" class="form-select">
-                  {% set st = machine.status if machine else 'operativo' %}
-                  <option value="operativo" {% if st == 'operativo' %}selected{% endif %}>Operativo</option>
-                  <option value="mantenimiento" {% if st == 'mantenimiento' %}selected{% endif %}>En mantenimiento</option>
-                  <option value="falla" {% if st == 'falla' %}selected{% endif %}>En falla</option>
-                </select>
-              </div>
-              <div class="col-md-4">
-                <label class="form-label">Criticidad</label>
-                <select name="criticidad" class="form-select">
-                  {% set crit = machine.criticidad if machine else 'media' %}
-                  {% for c_key, c_label in criticidad_choices %}
-                  <option value="{{ c_key }}" {% if crit == c_key %}selected{% endif %}>{{ c_label }}</option>
-                  {% endfor %}
-                </select>
-              </div>
-              <div class="col-md-4">
-                <label class="form-label">Fecha de compra</label>
-                <input type="date" name="fecha_compra" class="form-control"
-                       value="{{ machine.fecha_compra.isoformat() if machine and machine.fecha_compra else '' }}">
-              </div>
-              <div class="col-md-6">
-                <label class="form-label">Proveedor</label>
-                <input type="text" name="proveedor" class="form-control" value="{{ machine.proveedor if machine else '' }}">
-              </div>
-              <div class="col-md-6">
-                <label class="form-label">URL manual / ficha técnica</label>
-                <input type="url" name="manual_url" class="form-control" placeholder="https://"
-                       value="{{ machine.manual_url if machine else '' }}">
-              </div>
-              <div class="col-12">
-                <label class="form-label">URL fotografía</label>
-                <input type="url" name="foto_url" class="form-control" placeholder="https://"
-                       value="{{ machine.foto_url if machine else '' }}">
-              </div>
-              <div class="col-12">
-                <label class="form-label">Notas</label>
-                <textarea name="notas" class="form-control" rows="2">{{ machine.notas if machine else '' }}</textarea>
-              </div>
-            </div>
-          </fieldset>
-
-          <fieldset class="mb-4" id="campos-sector-wrap">
-            <legend class="h6 text-uppercase text-muted fw-semibold mb-3">Campos del sector</legend>
-            <div id="campos-dinamicos" class="row g-3">
-              {% for campo in campos_personalizados %}
-              <div class="col-md-6 campo-dinamico" data-campo-id="{{ campo.id }}"
-                   data-tipo-mt="{{ campo.machine_type_id or '' }}">
-                <label class="form-label" for="campo_{{ campo.id }}">
-                  {{ campo.nombre }}{% if campo.obligatorio %} *{% endif %}
-                </label>
-                {% set val = valores_campos.get(campo.id, '') %}
-                {% if campo.tipo == 'date' %}
-                <input type="date" name="campo_{{ campo.id }}" id="campo_{{ campo.id }}" class="form-control"
-                       value="{{ val }}" {% if campo.obligatorio %}required{% endif %}>
-                {% elif campo.tipo == 'number' %}
-                <input type="number" step="any" name="campo_{{ campo.id }}" id="campo_{{ campo.id }}" class="form-control"
-                       value="{{ val }}" {% if campo.obligatorio %}required{% endif %}>
-                {% elif campo.tipo == 'boolean' %}
-                <div class="form-check mt-2">
-                  <input class="form-check-input" type="checkbox" name="campo_{{ campo.id }}" id="campo_{{ campo.id }}"
-                         value="1" {% if val in ('1', 'true', 'on') %}checked{% endif %}>
-                  <label class="form-check-label" for="campo_{{ campo.id }}">Sí</label>
-                </div>
-                {% else %}
-                <input type="text" name="campo_{{ campo.id }}" id="campo_{{ campo.id }}" class="form-control"
-                       value="{{ val }}" {% if campo.obligatorio %}required{% endif %}>
-                {% endif %}
-              </div>
-              {% else %}
-              <p class="text-muted small mb-0" id="sin-campos-sector">No hay campos adicionales para esta categoría.</p>
-              {% endfor %}
-            </div>
-          </fieldset>
-
-          <div class="d-flex gap-2">
-            <button type="submit" class="btn btn-primary">Guardar</button>
-            <a href="{{ url_for('main.activos_list') }}" class="btn btn-outline-secondary">Cancelar</a>
-          </div>
-        </form>
-      </div>
-    </div>
-  </div>
-</div>
-{% endblock %}
-
-{% block scripts %}
-<script>
-(function () {
-  var selTipo = document.getElementById('machine_type_id');
-  var camposApi = {{ url_for('main.activos_api_campos') | tojson }};
-  var valoresIniciales = {{ valores_campos | tojson }};
-
-  function filtrarCamposVisibles() {
-    var typeId = selTipo ? String(selTipo.value) : '';
-    var rows = document.querySelectorAll('.campo-dinamico');
-    var visibles = 0;
-    rows.forEach(function (row) {
-      var mt = row.getAttribute('data-tipo-mt');
-      var show = !mt || mt === '' || mt === typeId;
-      row.classList.toggle('d-none', !show);
-      if (show) visibles++;
-    });
-    var empty = document.getElementById('sin-campos-sector');
-    if (empty) empty.classList.toggle('d-none', visibles > 0);
-  }
-
-  if (selTipo) {
-    selTipo.addEventListener('change', filtrarCamposVisibles);
-    filtrarCamposVisibles();
-  }
-
-  {% if not machine %}
-  var cb = document.getElementById('generar_codigo');
-  var inp = document.getElementById('codigo');
-  var helpAuto = document.getElementById('codigo-help-auto');
-  var valStrong = document.getElementById('codigo-sugerido-val');
-  var sugerirUrl = {{ url_for('main.activos_api_sugerir_codigo') | tojson }};
-  if (cb && inp) {
-    function fetchSugerido() {
-      if (!selTipo || !valStrong || !cb.checked) return;
-      fetch(sugerirUrl + '?type_id=' + encodeURIComponent(selTipo.value), { credentials: 'same-origin' })
-        .then(function (r) { return r.json(); })
-        .then(function (d) { valStrong.textContent = d.codigo; })
-        .catch(function () {});
-    }
-    function sync() {
-      var manual = !cb.checked;
-      inp.disabled = manual;
-      inp.required = manual;
-      if (!manual) { inp.value = ''; fetchSugerido(); }
-    }
-    cb.addEventListener('change', sync);
-    if (selTipo) selTipo.addEventListener('change', function () { if (cb.checked) fetchSugerido(); });
-    sync();
-  }
-  {% endif %}
-})();
-</script>
-{% endblock %}
+{% extends "base.html" %}
+{% block title %}{% if machine %}Editar{% else %}Nuevo{% endif %} activo — {{ app_name }}{% endblock %}
+{% block page_title %}{% if machine %}Editar activo{% else %}Nuevo activo{% endif %}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-10">
+    <div class="card card-dashboard">
+      <div class="card-body">
+        <p class="text-muted small mb-3">
+          Formulario estándar multisectorial · sector <strong>{{ sector_label }}</strong>.
+          Los campos adicionales se configuran en <strong>Configuración → Campos personalizados</strong>.
+        </p>
+        <form method="post" id="form-activo">
+          {# 1. Información General #}
+          <fieldset class="mb-4 form-activo-seccion">
+            {% with titulo=activo_secciones_labels.general, seccion_key='general' %}{% include 'activos/_seccion_encabezado.html' %}{% endwith %}
+            <div class="row g-3">
+              <div class="col-12">
+                <div class="d-flex flex-wrap align-items-end gap-4">
+                  <div class="fecha-ingreso-registro">
+                    <label class="form-label mb-1" for="fecha_ingreso">Fecha ingreso</label>
+                    <input type="date" name="fecha_ingreso" id="fecha_ingreso" class="form-control"
+                           value="{{ machine.fecha_ingreso.isoformat() if machine and machine.fecha_ingreso else '' }}">
+                    <div class="form-text">Ingreso del activo a la empresa</div>
+                  </div>
+                  {% if not machine %}
+                  <div class="form-check form-switch mb-0">
+                    <input class="form-check-input" type="checkbox" name="generar_codigo" value="1" id="generar_codigo" checked>
+                    <label class="form-check-label" for="generar_codigo">Generar código automáticamente</label>
+                  </div>
+                  {% endif %}
+                  <div class="form-check mb-0">
+                    <input class="form-check-input" type="checkbox" name="registro_nuevo" value="1" id="registro_nuevo"
+                           {% if registro_nuevo_checked %}checked{% endif %}>
+                    <label class="form-check-label" for="registro_nuevo">Registro nuevo</label>
+                  </div>
+                  <div class="form-check mb-0">
+                    <input class="form-check-input" type="checkbox" name="registro_actualizacion" value="1" id="registro_actualizacion"
+                           {% if registro_actualizacion_checked %}checked{% endif %}>
+                    <label class="form-check-label" for="registro_actualizacion">Actualización</label>
+                  </div>
+                </div>
+                {% if not machine %}
+                <div class="form-text mt-1" id="codigo-help-auto">Próximo código: <strong id="codigo-sugerido-val">{{ codigo_sugerido }}</strong></div>
+                {% endif %}
+              </div>
+              <div class="col-md-4">
+                <label class="form-label" for="codigo">Código del activo *</label>
+                <input type="text" name="codigo" id="codigo" class="form-control font-monospace"
+                       {% if machine %}required value="{{ machine.codigo }}"{% else %}disabled{% endif %}>
+              </div>
+              <div class="col-md-8">
+                <label class="form-label">Nombre del activo *</label>
+                <input type="text" name="nombre" class="form-control" required value="{{ machine.nombre if machine else '' }}">
+              </div>
+              <div class="col-12">
+                <label class="form-label">Descripción</label>
+                <textarea name="descripcion" class="form-control" rows="2">{{ machine.descripcion if machine else '' }}</textarea>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label" for="machine_type_id">Categoría *</label>
+                <select name="machine_type_id" id="machine_type_id" class="form-select" required>
+                  {% for mt in machine_types %}
+                  <option value="{{ mt.id }}"
+                    {% if machine and machine.machine_type_id == mt.id %}selected
+                    {% elif not machine and default_machine_type_id == mt.id %}selected{% endif %}>{{ mt.nombre }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div class="col-md-3">
+                <label class="form-label">Estado</label>
+                {% set st = machine.status if machine else 'operativo' %}
+                <select name="status" class="form-select">
+                  <option value="operativo" {% if st == 'operativo' %}selected{% endif %}>Operativo</option>
+                  <option value="mantenimiento" {% if st == 'mantenimiento' %}selected{% endif %}>En mantenimiento</option>
+                  <option value="falla" {% if st == 'falla' %}selected{% endif %}>En falla</option>
+                </select>
+              </div>
+              <div class="col-md-3">
+                <label class="form-label">Criticidad</label>
+                {% set crit = machine.criticidad if machine else 'media' %}
+                <select name="criticidad" class="form-select">
+                  {% for c_key, c_label in criticidad_choices %}
+                  <option value="{{ c_key }}" {% if crit == c_key %}selected{% endif %}>{{ c_label }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label" for="responsable_technician_id">Responsable</label>
+                <select name="responsable_technician_id" id="responsable_technician_id" class="form-select">
+                  <option value="">— Sin asignar —</option>
+                  {% for t in technicians %}
+                  <option value="{{ t.id }}" {% if machine and machine.responsable_technician_id == t.id %}selected{% endif %}>{{ t.nombre }}</option>
+                  {% endfor %}
+                </select>
+                <div class="form-text small">Técnico responsable del activo. Si usas un campo personalizado «Responsable», ese valor se muestra en las OT.</div>
+              </div>
+            </div>
+            {% with seccion_key='general' %}{% include "activos/_campos_seccion.html" %}{% endwith %}
+          </fieldset>
+          {% with bloques=secciones_custom_despues.get('general', []) %}{% include 'activos/_bloques_seccion_custom.html' %}{% endwith %}
+
+          {# Información técnica #}
+          <fieldset class="mb-4 form-activo-seccion">
+            {% with titulo=activo_secciones_labels.tecnica, seccion_key='tecnica' %}{% include 'activos/_seccion_encabezado.html' %}{% endwith %}
+            <div class="row g-3">
+              <div class="col-md-4">
+                <label class="form-label">Marca</label>
+                <input type="text" name="marca" class="form-control" value="{{ machine.marca if machine else '' }}">
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Modelo</label>
+                <input type="text" name="modelo" class="form-control" value="{{ machine.modelo if machine else '' }}">
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Número de serie</label>
+                <input type="text" name="numero_serie" class="form-control" value="{{ machine.numero_serie if machine else '' }}">
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Fabricante</label>
+                <input type="text" name="fabricante" class="form-control" value="{{ machine.fabricante if machine else '' }}">
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Fecha de fabricación</label>
+                <input type="date" name="fecha_fabricacion" class="form-control"
+                       value="{{ machine.fecha_fabricacion.isoformat() if machine and machine.fecha_fabricacion else '' }}">
+              </div>
+            </div>
+            {% with seccion_key='tecnica' %}{% include "activos/_campos_seccion.html" %}{% endwith %}
+          </fieldset>
+          {% with bloques=secciones_custom_despues.get('tecnica', []) %}{% include 'activos/_bloques_seccion_custom.html' %}{% endwith %}
+
+          {# Ubicación #}
+          <fieldset class="mb-4 form-activo-seccion">
+            {% with titulo=activo_secciones_labels.ubicacion, seccion_key='ubicacion' %}{% include 'activos/_seccion_encabezado.html' %}{% endwith %}
+            <div class="row g-3">
+              <div class="col-md-4">
+                <label class="form-label" for="sede_id">Sede</label>
+                <select name="sede_id" id="sede_id" class="form-select">
+                  <option value="">— Sin sede —</option>
+                  {% for s in sedes %}
+                  <option value="{{ s.id }}" {% if machine and machine.sede_id == s.id %}selected{% endif %}>{{ s.nombre }}{% if s.es_principal %} (principal){% endif %}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label" for="area">Área</label>
+                <input type="text" name="area" id="area" class="form-control"
+                       value="{{ machine.area if machine else '' }}" placeholder="Producción, almacén…">
+              </div>
+              <div class="col-md-4">
+                <label class="form-label" for="ubicacion">Ubicación específica</label>
+                <input type="text" name="ubicacion" id="ubicacion" class="form-control"
+                       value="{{ machine.ubicacion if machine else '' }}" placeholder="Línea 2, bodega B">
+              </div>
+            </div>
+            {% with seccion_key='ubicacion' %}{% include "activos/_campos_seccion.html" %}{% endwith %}
+          </fieldset>
+          {% with bloques=secciones_custom_despues.get('ubicacion', []) %}{% include 'activos/_bloques_seccion_custom.html' %}{% endwith %}
+
+          {# Información operativa #}
+          <fieldset class="mb-4 form-activo-seccion">
+            {% with titulo=activo_secciones_labels.operativa, seccion_key='operativa' %}{% include 'activos/_seccion_encabezado.html' %}{% endwith %}
+            <div class="row g-3">
+              <div class="col-md-3">
+                <label class="form-label">Fecha de instalación</label>
+                <input type="date" name="fecha_instalacion" class="form-control"
+                       value="{{ machine.fecha_instalacion.isoformat() if machine and machine.fecha_instalacion else '' }}">
+              </div>
+              <div class="col-md-3">
+                <label class="form-label">Fecha de puesta en marcha</label>
+                <input type="date" name="fecha_puesta_marcha" class="form-control"
+                       value="{{ machine.fecha_puesta_marcha.isoformat() if machine and machine.fecha_puesta_marcha else '' }}">
+              </div>
+              <div class="col-md-3">
+                <label class="form-label">Vida útil estimada (años)</label>
+                <input type="number" name="vida_util_anios" class="form-control" min="0"
+                       value="{{ machine.vida_util_anios if machine and machine.vida_util_anios else '' }}">
+              </div>
+              <div class="col-md-3">
+                <label class="form-label">Horas de operación</label>
+                <input type="number" step="any" name="horas_operacion" class="form-control" min="0"
+                       value="{{ machine.horas_operacion if machine and machine.horas_operacion is not none else '' }}">
+              </div>
+            </div>
+            {% with seccion_key='operativa' %}{% include "activos/_campos_seccion.html" %}{% endwith %}
+          </fieldset>
+          {% with bloques=secciones_custom_despues.get('operativa', []) %}{% include 'activos/_bloques_seccion_custom.html' %}{% endwith %}
+
+          {# Información financiera #}
+          <fieldset class="mb-4 form-activo-seccion">
+            {% with titulo=activo_secciones_labels.financiera, seccion_key='financiera' %}{% include 'activos/_seccion_encabezado.html' %}{% endwith %}
+            <div class="row g-3">
+              <div class="col-md-3">
+                <label class="form-label">Fecha de compra</label>
+                <input type="date" name="fecha_compra" class="form-control"
+                       value="{{ machine.fecha_compra.isoformat() if machine and machine.fecha_compra else '' }}">
+              </div>
+              <div class="col-md-3">
+                <label class="form-label" for="valor_compra">Valor de compra</label>
+                <div class="input-group">
+                  <span class="input-group-text" id="simbolo_moneda_compra">{{ simbolo_moneda_compra }}</span>
+                  <input type="text" name="valor_compra" id="valor_compra" class="form-control text-end"
+                         value="{{ valor_compra_texto }}" placeholder="0" inputmode="decimal" autocomplete="off">
+                  <select name="moneda_compra" id="moneda_compra" class="form-select flex-shrink-0 input-moneda-compra"
+                          aria-label="Moneda del valor de compra">
+                    {% for val, lbl in monedas_compra %}
+                    <option value="{{ val }}" {% if moneda_compra_sel == val %}selected{% endif %}>{{ val }}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+              </div>
+              <div class="col-md-3">
+                <label class="form-label">Proveedor</label>
+                <input type="text" name="proveedor" class="form-control" value="{{ machine.proveedor if machine else '' }}">
+              </div>
+              <div class="col-md-3">
+                <label class="form-label" for="tiempo_garantia_meses">Tiempo garantía (meses)</label>
+                <input type="number" name="tiempo_garantia_meses" id="tiempo_garantia_meses" class="form-control" min="0" step="1"
+                       value="{{ machine.tiempo_garantia_meses if machine and machine.tiempo_garantia_meses else '' }}"
+                       placeholder="Ej. 12">
+              </div>
+              <div class="col-md-3">
+                <label class="form-label" for="garantia_hasta_preview">Garantía hasta</label>
+                <input type="date" id="garantia_hasta_preview" class="form-control bg-light" readonly tabindex="-1"
+                       value="{{ machine.garantia_hasta.isoformat() if machine and machine.garantia_hasta else '' }}">
+                <div class="form-text">Calculada desde la fecha de compra.</div>
+              </div>
+              <div class="col-md-3">
+                <label class="form-label d-block">Estado garantía</label>
+                {% set eg = machine.estado_garantia_etiqueta if machine else '—' %}
+                {% set eg_cls = machine.estado_garantia_badge if machine else 'secondary' %}
+                <span id="estado_garantia_preview" class="badge text-bg-{{ eg_cls }} mt-2">{{ eg }}</span>
+              </div>
+            </div>
+            {% with seccion_key='financiera' %}{% include "activos/_campos_seccion.html" %}{% endwith %}
+          </fieldset>
+          {% with bloques=secciones_custom_despues.get('financiera', []) %}{% include 'activos/_bloques_seccion_custom.html' %}{% endwith %}
+
+          {# Documentación #}
+          <fieldset class="mb-4 form-activo-seccion">
+            {% with titulo=activo_secciones_labels.documentacion, seccion_key='documentacion' %}{% include 'activos/_seccion_encabezado.html' %}{% endwith %}
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label class="form-label">Fotografía principal (URL)</label>
+                <input type="url" name="foto_url" class="form-control" placeholder="https://"
+                       value="{{ machine.foto_url if machine else '' }}">
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Manual técnico (URL)</label>
+                <input type="url" name="manual_url" class="form-control" placeholder="https://"
+                       value="{{ machine.manual_url if machine else '' }}">
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Ficha técnica (URL)</label>
+                <input type="url" name="ficha_tecnica_url" class="form-control" placeholder="https://"
+                       value="{{ machine.ficha_tecnica_url if machine else '' }}">
+              </div>
+            </div>
+            {% with seccion_key='documentacion' %}{% include "activos/_campos_seccion.html" %}{% endwith %}
+          </fieldset>
+          {% with bloques=secciones_custom_despues.get('documentacion', []) %}{% include 'activos/_bloques_seccion_custom.html' %}{% endwith %}
+
+          {# Observaciones #}
+          <fieldset class="mb-4 form-activo-seccion">
+            {% with titulo=activo_secciones_labels.observaciones, seccion_key='observaciones' %}{% include 'activos/_seccion_encabezado.html' %}{% endwith %}
+            <div class="row g-3">
+              <div class="col-12">
+                <label class="form-label" for="notas">Observaciones</label>
+                <textarea name="notas" id="notas" class="form-control" rows="3"
+                          placeholder="Notas generales, comentarios o recordatorios sobre el activo">{{ machine.notas if machine else '' }}</textarea>
+              </div>
+            </div>
+            {% with seccion_key='observaciones' %}{% include "activos/_campos_seccion.html" %}{% endwith %}
+          </fieldset>
+          {% with bloques=secciones_custom_despues.get('observaciones', []) %}{% include 'activos/_bloques_seccion_custom.html' %}{% endwith %}
+
+          {# Clasificación para mantenimiento #}
+          <fieldset class="mb-4 form-activo-seccion">
+            {% with titulo=activo_secciones_labels.mantenimiento, seccion_key='mantenimiento' %}{% include 'activos/_seccion_encabezado.html' %}{% endwith %}
+            <div class="row g-3">
+              <div class="col-12">
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" name="requiere_mantenimiento" value="1" id="requiere_mantenimiento"
+                         {% if not machine or machine.requiere_mantenimiento %}checked{% endif %}>
+                  <label class="form-check-label" for="requiere_mantenimiento">Requiere mantenimiento</label>
+                </div>
+              </div>
+              <div class="col-12">
+                <label class="form-label d-block">Tipo de mantenimiento</label>
+                <div class="d-flex flex-wrap gap-3">
+                  {% for t_key, t_lbl in mantenimiento_tipos %}
+                  <div class="form-check">
+                    <input class="form-check-input" type="checkbox" name="tipos_mantenimiento" value="{{ t_key }}" id="tm_{{ t_key }}"
+                           {% if t_key in tipos_mant_sel %}checked{% endif %}>
+                    <label class="form-check-label" for="tm_{{ t_key }}">{{ t_lbl }}</label>
+                  </div>
+                  {% endfor %}
+                </div>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Frecuencia base</label>
+                <select name="frecuencia_mantenimiento" class="form-select">
+                  {% for f_key, f_lbl in frecuencia_choices %}
+                  <option value="{{ f_key }}" {% if machine and machine.frecuencia_mantenimiento == f_key %}selected{% endif %}>{{ f_lbl }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+            </div>
+            {% with seccion_key='mantenimiento' %}{% include "activos/_campos_seccion.html" %}{% endwith %}
+          </fieldset>
+          {% with bloques=secciones_custom_despues.get('mantenimiento', []) %}{% include 'activos/_bloques_seccion_custom.html' %}{% endwith %}
+
+          {% if secciones_custom_final %}
+          {% with bloques=secciones_custom_final %}{% include 'activos/_bloques_seccion_custom.html' %}{% endwith %}
+          {% endif %}
+
+          <div id="campos-dinamicos-legacy" class="d-none">
+            {# compatibilidad JS filtro por categoría #}
+            {% for campo in campos_personalizados %}
+            <div class="campo-dinamico" data-campo-id="{{ campo.id }}" data-categorias="{{ campo.categorias_aplicables()|tojson }}"></div>
+            {% endfor %}
+          </div>
+
+          <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-primary">Guardar</button>
+            <a href="{{ url_for('main.activos_list') }}" class="btn btn-outline-secondary">Cancelar</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function () {
+  var selTipo = document.getElementById('machine_type_id');
+  {% if not machine %}
+  var cb = document.getElementById('generar_codigo');
+  var inp = document.getElementById('codigo');
+  var valStrong = document.getElementById('codigo-sugerido-val');
+  var sugerirUrl = {{ url_for('main.activos_api_sugerir_codigo') | tojson }};
+  if (cb && inp) {
+    function fetchSugerido() {
+      if (!selTipo || !valStrong || !cb.checked) return;
+      fetch(sugerirUrl + '?type_id=' + encodeURIComponent(selTipo.value), { credentials: 'same-origin' })
+        .then(function (r) { return r.json(); })
+        .then(function (d) { valStrong.textContent = d.codigo; })
+        .catch(function () {});
+    }
+    function sync() {
+      var manual = !cb.checked;
+      inp.disabled = manual;
+      inp.required = manual;
+      if (!manual) { inp.value = ''; fetchSugerido(); }
+    }
+    cb.addEventListener('change', sync);
+    if (selTipo) selTipo.addEventListener('change', function () { if (cb.checked) fetchSugerido(); });
+    sync();
+  }
+  {% endif %}
+
+  function sumarMesesGarantia(iso, meses) {
+    if (!iso || !meses || meses < 1) return '';
+    var p = iso.split('-').map(Number);
+    var y = p[0], m = p[1], day = p[2];
+    m = m - 1 + meses;
+    y += Math.floor(m / 12);
+    m = (m % 12) + 1;
+    var ultimo = new Date(y, m, 0).getDate();
+    day = Math.min(day, ultimo);
+    return y + '-' + String(m).padStart(2, '0') + '-' + String(day).padStart(2, '0');
+  }
+
+  function estadoGarantiaPreview(isoHasta) {
+    if (!isoHasta) return { label: '—', cls: 'secondary' };
+    var hoy = new Date();
+    hoy.setHours(0, 0, 0, 0);
+    var fin = new Date(isoHasta + 'T12:00:00');
+    if (fin >= hoy) return { label: 'Activa', cls: 'success' };
+    return { label: 'Vencida', cls: 'danger' };
+  }
+
+  var simbolosMoneda = {{ simbolos_moneda | tojson }};
+  var selMonedaCompra = document.getElementById('moneda_compra');
+  var spanSimbolo = document.getElementById('simbolo_moneda_compra');
+  var inpValorCompra = document.getElementById('valor_compra');
+
+  function parseMontoValor(str, moneda) {
+    if (!str) return NaN;
+    if (moneda === 'USD') return parseFloat(String(str).replace(/,/g, ''));
+    var s = String(str).trim();
+    if (s.indexOf(',') >= 0) {
+      var p = s.split(',');
+      return parseFloat(p[0].replace(/\./g, '') + '.' + (p[1] || '0'));
+    }
+    return parseFloat(s.replace(/\./g, ''));
+  }
+
+  function formatMontoValor(n, moneda) {
+    if (isNaN(n) || n === null || n === '') return '';
+    var num = Number(n);
+    if (isNaN(num)) return '';
+    var fixed = num.toFixed(2);
+    var parts = fixed.split('.');
+    if (moneda === 'USD') {
+      parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+      return parts[1] === '00' ? parts[0] : parts[0] + '.' + parts[1];
+    }
+    parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+    return parts[1] === '00' ? parts[0] : parts[0] + ',' + parts[1];
+  }
+
+  function syncSimboloMoneda() {
+    if (!selMonedaCompra || !spanSimbolo) return;
+    spanSimbolo.textContent = simbolosMoneda[selMonedaCompra.value] || '$';
+    if (inpValorCompra && inpValorCompra.value.trim()) {
+      var n = parseMontoValor(inpValorCompra.value, selMonedaCompra.dataset.prev || selMonedaCompra.value);
+      if (!isNaN(n)) inpValorCompra.value = formatMontoValor(n, selMonedaCompra.value);
+    }
+    selMonedaCompra.dataset.prev = selMonedaCompra.value;
+  }
+
+  if (inpValorCompra) {
+    inpValorCompra.addEventListener('blur', function () {
+      var moneda = selMonedaCompra ? selMonedaCompra.value : 'COP';
+      var n = parseMontoValor(inpValorCompra.value, moneda);
+      inpValorCompra.value = isNaN(n) ? '' : formatMontoValor(n, moneda);
+    });
+  }
+  if (selMonedaCompra) {
+    selMonedaCompra.dataset.prev = selMonedaCompra.value;
+    selMonedaCompra.addEventListener('change', syncSimboloMoneda);
+    syncSimboloMoneda();
+  }
+
+  function syncGarantiaFinanciera() {
+    var compra = document.querySelector('[name="fecha_compra"]');
+    var meses = document.getElementById('tiempo_garantia_meses');
+    var hasta = document.getElementById('garantia_hasta_preview');
+    var estado = document.getElementById('estado_garantia_preview');
+    if (!compra || !meses || !hasta || !estado) return;
+    var iso = sumarMesesGarantia(compra.value, parseInt(meses.value, 10));
+    hasta.value = iso;
+    var st = estadoGarantiaPreview(iso);
+    estado.textContent = st.label;
+    estado.className = 'badge text-bg-' + st.cls + ' mt-2';
+  }
+
+  var inpCompra = document.querySelector('[name="fecha_compra"]');
+  var inpMeses = document.getElementById('tiempo_garantia_meses');
+  if (inpCompra) inpCompra.addEventListener('change', syncGarantiaFinanciera);
+  if (inpMeses) inpMeses.addEventListener('input', syncGarantiaFinanciera);
+  syncGarantiaFinanciera();
+
+  function filtrarCamposPorCategoria() {
+    var typeId = selTipo ? parseInt(selTipo.value, 10) : 0;
+    document.querySelectorAll('.campo-dinamico').forEach(function (row) {
+      var raw = row.getAttribute('data-categorias') || '[]';
+      var cats = [];
+      try { cats = JSON.parse(raw); } catch (e) { cats = []; }
+      var show = !typeId || cats.length === 0 || cats.indexOf(typeId) >= 0;
+      row.classList.toggle('d-none', !show);
+    });
+    document.querySelectorAll('.campos-extra-seccion, .seccion-campos-custom').forEach(function (bloque) {
+      var vis = false;
+      bloque.querySelectorAll('.campo-dinamico').forEach(function (row) {
+        if (!row.classList.contains('d-none')) vis = true;
+      });
+      bloque.classList.toggle('d-none', !vis);
+    });
+    document.querySelectorAll('.seccion-campos-custom').forEach(function (fs) {
+      var any = false;
+      fs.querySelectorAll('.campo-dinamico').forEach(function (row) {
+        if (!row.classList.contains('d-none')) any = true;
+      });
+      fs.classList.toggle('d-none', !any);
+    });
+  }
+  if (selTipo) {
+    selTipo.addEventListener('change', filtrarCamposPorCategoria);
+    filtrarCamposPorCategoria();
+  }
+})();
+</script>
+{% endblock %}

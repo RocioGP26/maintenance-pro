@@ -3,6 +3,14 @@
 {% block page_title %}Configuración de empresa{% endblock %}
 
 {% block content %}
+<div class="alert alert-light border d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
+  <div class="small mb-0">
+    <strong><i class="bi bi-ui-checks-grid me-1"></i> Campos personalizados</strong> —
+    añade secciones personalizadas (vehicular, eléctrica, etc.) además de los campos estándar del activo.
+  </div>
+  <a href="{{ url_for('main.configuracion_campos_list') }}" class="btn btn-sm btn-outline-primary">Gestionar campos</a>
+</div>
+
 <div class="row g-4">
   <div class="col-lg-8">
     <form method="post" enctype="multipart/form-data">

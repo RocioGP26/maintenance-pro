@@ -10,10 +10,45 @@ from urllib.parse import urljoin, urlparse
 from flask import Blueprint, current_app, flash, jsonify, redirect, render_template, request, session, url_for
 from werkzeug.utils import secure_filename
 from flask_login import current_user, login_user, logout_user
-from sqlalchemy import func, or_
+from sqlalchemy import and_, func, or_
 
 from app import db
-from app.branding import APP_LOGO_PATH
+from app.branding import APP_LOGO_PATH, empresa_logo_url_or_none
+from app.permissions import (
+    CONFIG_ENDPOINT_PREFIX,
+    CREATE_GET_ENDPOINTS,
+    DELETE_ENDPOINTS,
+    EQUIPO_MUTATION_ENDPOINTS,
+    USER_ROLE_LABELS,
+    USUARIO_POST_ENDPOINTS,
+    UserRole,
+    can_assign_role,
+    can_create,
+    can_delete,
+    can_edit,
+    can_manage_config,
+    can_manage_equipo,
+    normalize_rol,
+    roles_for_select,
+)
+from app.custom_fields import (
+    CAMPO_ENTIDAD_ACTIVO,
+    CAMPO_ENTIDAD_EQUIPO,
+    CAMPO_ENTIDADES,
+    CAMPO_TIPOS,
+    CAMPO_TIPOS_VALIDOS,
+    TEXTO_TAMANOS,
+    categorias_ids_a_json,
+    clave_campo_unica,
+    etiqueta_categorias_campo,
+    opciones_a_texto_form,
+    parse_categorias_form,
+    parse_opciones_texto,
+    parse_texto_tamano_form,
+    slugify_campo_clave,
+    TIPOS_CON_OPCIONES,
+    valor_campo_desde_form,
+)
 from app.dashboard_kpis import build_plant_kpi_cards
 from app.models import (
     ActivoCampoValor,
@@ -26,14 +61,13 @@ from app.models import (
     MachineType,
     PLAN_CATALOG,
     PlanSuscripcion,
-    SECTOR_DASHBOARD_CATEGORIES,
     SECTOR_LABELS,
     Sede,
     MachineMonthlyPlan,
     SparePart,
     Technician,
+    UsuarioCampoValor,
     User,
-    UserRole,
     WORK_ORDER_PRIORITIES,
     WorkOrder,
     WorkOrderJornada,
@@ -46,17 +80,41 @@ from app.models import (
     wo_tipo_meta,
     machine_status_meta,
 )
+from app.asset_standard import (
+    ACTIVO_SECCIONES,
+    ACTIVO_SECCION_ICONO_DEFAULT,
+    ACTIVO_SECCION_ICONOS,
+    ACTIVO_SECCION_KEYS,
+    FRECUENCIA_BASE_CHOICES,
+    MANTENIMIENTO_TIPOS,
+    etiqueta_seccion_campo,
+    etiqueta_seccion_campo_con_ancla,
+    es_seccion_estandar,
+    normalizar_seccion_ancla,
+    normalizar_seccion_campo,
+    calcular_garantia_hasta,
+    registro_flags_checked,
+    registro_flags_from_form,
+    tipos_mantenimiento_from_form,
+    tipos_mantenimiento_list,
+)
 from app.sector_service import (
+    campos_para_equipo,
+    campos_por_seccion_estructurado,
+    ancla_de_seccion_personalizada,
+    categorias_de_seccion_personalizada,
+    secciones_custom_por_ancla,
+    secciones_personalizadas_empresa,
     campos_para_tipo,
     crear_plantilla_sector,
     ensure_empresa_sector_setup,
     get_plantilla_dashboard,
     valores_campos_map,
+    valores_campos_usuario_map,
+    responsables_display_por_maquinas,
 )
 from app.sector_templates import (
     CRITICIDAD_CHOICES,
-    DEFAULT_SECTOR_CATEGORY_UI,
-    SECTOR_DASHBOARD_CATEGORY_UI,
     normalizar_sector,
 )
 from app.planificacion_mensual import (
@@ -68,8 +126,17 @@ from app.planificacion_mensual import (
 from app.preventive_maintenance import (
     PREVENTIVE_FREQUENCY_UNITS,
     aplicar_preventivo_a_orden,
+    crear_programacion_preventiva_anio,
     frecuencia_label,
     parse_frecuencia_form,
+)
+from app.money import (
+    MONEDAS_EMPRESA,
+    MONEDAS_SOPORTADAS,
+    formatear_monto_sin_simbolo,
+    normalizar_moneda,
+    parsear_monto_form,
+    simbolo_moneda_input,
 )
 from app.wo_numbering import asignar_numero_ot
 from app.work_time import (
@@ -83,7 +150,6 @@ from app.work_time import (
 )
 
 EMPRESA_LOGO_EXTENSIONS = {"png", "jpg", "jpeg", "webp", "svg"}
-MONEDAS_EMPRESA = (("COP", "COP — Peso colombiano"), ("USD", "USD — Dólar"), ("MXN", "MXN — Peso mexicano"))
 ZONAS_EMPRESA = (
     ("America/Bogota", "América / Bogotá"),
     ("America/Mexico_City", "América / Ciudad de México"),
@@ -93,8 +159,6 @@ ZONAS_EMPRESA = (
 
 bp = Blueprint("main", __name__)
 
-MAINT_ALERT_WARN_DAYS = 30
-MAINT_ALERT_CRIT_DAYS = 45
 MESES_CORTO = (
     "Ene",
     "Feb",
@@ -141,6 +205,58 @@ def _require_login():
         return redirect(url_for("main.login", next=request.url))
     if not current_user.onboarding_completado:
         return redirect(url_for("onboarding.wizard"))
+
+
+@bp.before_request
+def _enforce_role_permissions():
+    """Aplica permisos por rol en rutas de escritura y formularios."""
+    ep = request.endpoint or ""
+    if ep.startswith("onboarding.") or ep == "main.login":
+        return
+    if not current_user.is_authenticated:
+        return
+
+    method = request.method
+
+    if ep.startswith(CONFIG_ENDPOINT_PREFIX):
+        if method in ("GET", "POST") and not can_manage_config(current_user):
+            flash("Solo el superadministrador puede acceder a la configuración.", "warning")
+            return redirect(url_for("main.dashboard"))
+
+    if method == "GET":
+        if ep in CREATE_GET_ENDPOINTS and not can_create(current_user):
+            flash("No tienes permiso para crear registros.", "warning")
+            return redirect(url_for("main.dashboard"))
+        if ep in EQUIPO_MUTATION_ENDPOINTS and not can_manage_equipo(current_user):
+            flash("No tienes permiso para gestionar el equipo.", "warning")
+            return redirect(url_for("main.equipo_list"))
+        return
+
+    if method != "POST":
+        return
+
+    if ep in USUARIO_POST_ENDPOINTS:
+        return
+
+    if normalize_rol(current_user.rol) == UserRole.USUARIO.value:
+        flash("Tu rol solo permite consultar información.", "warning")
+        return redirect(request.referrer or url_for("main.dashboard"))
+
+    if ep in EQUIPO_MUTATION_ENDPOINTS and not can_manage_equipo(current_user):
+        flash("No tienes permiso para gestionar el equipo.", "warning")
+        return redirect(url_for("main.equipo_list"))
+
+    if ep in DELETE_ENDPOINTS and not can_delete(current_user):
+        flash("No tienes permiso para eliminar registros.", "warning")
+        return redirect(request.referrer or url_for("main.dashboard"))
+
+    if ep in CREATE_GET_ENDPOINTS and not can_create(current_user):
+        flash("No tienes permiso para crear registros.", "warning")
+        return redirect(request.referrer or url_for("main.dashboard"))
+
+    if not can_edit(current_user):
+        flash("No tienes permiso para modificar registros.", "warning")
+        return redirect(request.referrer or url_for("main.dashboard"))
 
 
 @bp.route("/login", methods=["GET", "POST"])
@@ -193,6 +309,121 @@ def _period_bounds(period: str, ref: Optional[date] = None) -> Tuple[date, date,
     return start, end, period
 
 
+def _parse_dashboard_ref() -> date:
+    """Fecha de referencia del período (query ref, mes+anio o hoy)."""
+    ref_s = (request.args.get("ref") or "").strip()
+    if ref_s:
+        for fmt, is_month in (("%Y-%m-%d", False), ("%Y-%m", True)):
+            try:
+                parsed = datetime.strptime(ref_s, fmt).date()
+                if is_month:
+                    return date(parsed.year, parsed.month, 1)
+                return parsed
+            except ValueError:
+                continue
+    period = (request.args.get("periodo") or "mes").lower()
+    try:
+        anio = int(request.args.get("anio", ""))
+        if 2000 <= anio <= 2100:
+            mes_s = request.args.get("mes", "").strip()
+            if mes_s.isdigit():
+                mes = int(mes_s)
+                if 1 <= mes <= 12:
+                    return date(anio, mes, 1)
+            if period == "año":
+                return date(anio, 1, 1)
+    except (TypeError, ValueError):
+        pass
+    return date.today()
+
+
+def _shift_period_ref(period: str, ref: date, delta: int) -> date:
+    period = (period or "mes").lower()
+    if period == "dia":
+        return ref + timedelta(days=delta)
+    if period == "semana":
+        return ref + timedelta(days=7 * delta)
+    if period == "año":
+        return date(ref.year + delta, 1, 1)
+    month = ref.month + delta
+    year = ref.year
+    while month > 12:
+        month -= 12
+        year += 1
+    while month < 1:
+        month += 12
+        year -= 1
+    last = monthrange(year, month)[1]
+    return date(year, month, min(ref.day, last))
+
+
+def _period_display_label(period: str, start: date, end: date) -> str:
+    meses = dict(MESES_PLANEACION)
+    period = (period or "mes").lower()
+    if period == "dia":
+        return start.strftime("%d/%m/%Y")
+    if period == "semana":
+        if start.month == end.month and start.year == end.year:
+            return f"{start.day}–{end.day} {meses.get(end.month, end.month)} {end.year}"
+        return f"{start.strftime('%d/%m/%Y')} – {end.strftime('%d/%m/%Y')}"
+    if period == "año":
+        return str(start.year)
+    return f"{meses.get(start.month, str(start.month))} {start.year}"
+
+
+def _dashboard_filtros_desde_request() -> dict[str, str]:
+    return {
+        "equipo": request.args.get("equipo", "").strip(),
+        "ubicacion": request.args.get("ubicacion", "").strip(),
+    }
+
+
+def _machines_query_con_filtros(q, filtros: dict[str, str]):
+    equipo = filtros.get("equipo", "")
+    if equipo:
+        like = f"%{equipo}%"
+        q = q.filter(or_(Machine.nombre.ilike(like), Machine.codigo.ilike(like)))
+    ubicacion = filtros.get("ubicacion", "")
+    if ubicacion:
+        like = f"%{ubicacion}%"
+        q = q.filter(or_(Machine.ubicacion.ilike(like), Machine.area.ilike(like)))
+    return q
+
+
+def _dashboard_machine_ids(sector: str, filtros: dict[str, str]) -> Optional[list[int]]:
+    """IDs de activos del sector que coinciden; None si no hay filtro activo."""
+    if not any(filtros.get(k, "") for k in ("equipo", "ubicacion")):
+        return None
+    q = _machines_query_con_filtros(_machines_for_sector_query(sector), filtros)
+    return [mid for (mid,) in q.with_entities(Machine.id).all()]
+
+
+def _wo_apply_machine_ids(q, machine_ids: Optional[list[int]]):
+    if machine_ids is None:
+        return q
+    if not machine_ids:
+        return q.filter(WorkOrder.machine_id == -1)
+    return q.filter(WorkOrder.machine_id.in_(machine_ids))
+
+
+def _dashboard_query_params(
+    period: str,
+    ref: date,
+    sector: str,
+    sector_locked: bool,
+    filtros: Optional[dict[str, str]] = None,
+) -> dict[str, str]:
+    params: dict[str, str] = {"periodo": period, "ref": ref.isoformat()}
+    if not sector_locked and sector:
+        params["sector"] = sector
+    filtros = filtros or {}
+    if filtros.get("equipo"):
+        params["equipo"] = filtros["equipo"]
+    if filtros.get("ubicacion"):
+        params["ubicacion"] = filtros["ubicacion"]
+    return params
+
+
 def _parse_sector(value: Optional[str]) -> str:
     return normalizar_sector(value)
 
@@ -204,6 +435,27 @@ def _sector_for_dashboard() -> tuple[str, bool]:
     return _parse_sector(request.args.get("sector")), False
 
 
+def _sector_industrial_empresa() -> Optional[str]:
+    """Sector industrial de la empresa del usuario, si está definido."""
+    if current_user.is_authenticated and current_user.empresa and current_user.empresa.sector:
+        return _parse_sector(current_user.empresa.sector)
+    return None
+
+
+def _sectores_para_tipo_form() -> list[tuple[str, str]]:
+    sector = _sector_industrial_empresa()
+    if sector:
+        return [(sector, SECTOR_LABELS.get(sector, sector))]
+    return [(k, SECTOR_LABELS[k]) for k in SECTOR_LABELS]
+
+
+def _tipo_pertenece_sector_empresa(tipo: MachineType) -> bool:
+    sector = _sector_industrial_empresa()
+    if not sector:
+        return True
+    return (tipo.sector_industrial or "") == sector
+
+
 def _machine_ids_for_sector(sector: str) -> Any:
     q = db.session.query(Machine.id).join(MachineType).filter(
         MachineType.sector_industrial == sector
@@ -212,6 +464,40 @@ def _machine_ids_for_sector(sector: str) -> Any:
     if eid:
         q = q.filter(Machine.empresa_id == eid)
     return q
+
+
+def _machine_ids_for_empresa() -> Any:
+    q = db.session.query(Machine.id)
+    eid = _current_empresa_id()
+    if eid:
+        q = q.filter(Machine.empresa_id == eid)
+    return q
+
+
+def _filter_work_orders_empresa(q):
+    """Incluye OT de la empresa aunque empresa_id en la OT sea NULL."""
+    eid = _current_empresa_id()
+    if not eid:
+        return q
+    return q.filter(
+        or_(
+            WorkOrder.empresa_id == eid,
+            WorkOrder.machine_id.in_(_machine_ids_for_empresa()),
+        )
+    )
+
+
+def _wo_status_terminal_filter():
+    return or_(
+        WorkOrder.status.in_(WORK_ORDER_TERMINAL_STATUSES),
+        func.lower(WorkOrder.status).in_(("cerrada", "completado", "cerrado")),
+    )
+
+
+def _aplicar_fecha_cierre_si_terminal(wo: WorkOrder) -> None:
+    st = (wo.status or "").strip().lower()
+    if st in ("cerrada", "completado", "cerrado") and not wo.fecha_cierre:
+        wo.fecha_cierre = datetime.utcnow()
 
 
 def _machines_for_sector_query(sector: str):
@@ -226,7 +512,12 @@ def _wo_for_sector(sector: str):
     return WorkOrder.machine_id.in_(_machine_ids_for_sector(sector))
 
 
-def _wo_in_period_query(start: date, end: date, sector: Optional[str] = None):
+def _wo_in_period_query(
+    start: date,
+    end: date,
+    sector: Optional[str] = None,
+    machine_ids: Optional[list[int]] = None,
+):
     q = WorkOrder.query.filter(
         WorkOrder.fecha_programada.isnot(None),
         WorkOrder.fecha_programada >= start,
@@ -234,10 +525,103 @@ def _wo_in_period_query(start: date, end: date, sector: Optional[str] = None):
     )
     if sector:
         q = q.filter(_wo_for_sector(sector))
-    return q
+    eid = _current_empresa_id()
+    if eid:
+        q = q.filter(WorkOrder.empresa_id == eid)
+    return _wo_apply_machine_ids(q, machine_ids)
 
 
-def _closed_wo_in_period_query(start: date, end: date, sector: Optional[str] = None):
+def _preventivas_cumplimiento_query(
+    start: date,
+    end: date,
+    sector: Optional[str] = None,
+    *,
+    sector_locked: bool = False,
+    machine_ids: Optional[list[int]] = None,
+):
+    """OT preventivas con fecha programada dentro del período del dashboard."""
+    del sector_locked  # el sector ya se aplica en _wo_in_period_query cuando corresponde
+    q = _wo_in_period_query(start, end, sector, machine_ids)
+    return q.filter(func.lower(WorkOrder.tipo) == WorkOrderType.PREVENTIVO.value)
+
+
+def _cumplimiento_preventivo_dashboard(
+    start: date,
+    end: date,
+    period_label: str,
+    sector: Optional[str] = None,
+    *,
+    sector_locked: bool = False,
+    machine_ids: Optional[list[int]] = None,
+) -> dict[str, Any]:
+    """
+    Cumplimiento = preventivas programadas en el período que están completadas/cerradas.
+    Devuelve listado de todas las completadas según el filtro de fechas.
+    """
+    del sector_locked
+    programadas_q = _preventivas_cumplimiento_query(
+        start, end, sector, machine_ids=machine_ids
+    )
+    total = programadas_q.count()
+    completadas_wo = (
+        programadas_q.filter(_wo_status_terminal_filter())
+        .order_by(WorkOrder.fecha_programada, WorkOrder.id)
+        .all()
+    )
+    n_ok = len(completadas_wo)
+    pendientes = max(0, total - n_ok)
+    status_labels = {
+        WorkOrderStatus.CERRADA.value: "Cerrada",
+        WorkOrderStatus.COMPLETADO.value: "Completado",
+        "cerrado": "Cerrado",
+    }
+    items = []
+    for wo in completadas_wo:
+        st = (wo.status or "").strip().lower()
+        items.append(
+            {
+                "numero": wo.numero or f"OT-{wo.id}",
+                "titulo": wo.titulo,
+                "status": status_labels.get(st, wo.status or "—"),
+                "fecha": wo.fecha_programada,
+                "fecha_fmt": wo.fecha_programada.strftime("%d/%m/%Y")
+                if wo.fecha_programada
+                else "—",
+                "href": url_for("main.ordenes_edit", id=wo.id),
+            }
+        )
+    if total == 0:
+        return {
+            "cumplimiento": 0.0,
+            "total_prev": 0,
+            "prev_completadas": 0,
+            "prev_pendientes": 0,
+            "prev_msg": "",
+            "prev_completadas_items": [],
+            "sin_programadas": True,
+        }
+    pct = round(100.0 * n_ok / total, 1)
+    msg = (
+        f"{n_ok} de {total} completadas en {period_label}"
+        + (f" · {pendientes} pendiente{'s' if pendientes != 1 else ''}" if pendientes else "")
+    )
+    return {
+        "cumplimiento": pct,
+        "total_prev": total,
+        "prev_completadas": n_ok,
+        "prev_pendientes": pendientes,
+        "prev_msg": msg,
+        "prev_completadas_items": items,
+        "sin_programadas": False,
+    }
+
+
+def _closed_wo_in_period_query(
+    start: date,
+    end: date,
+    sector: Optional[str] = None,
+    machine_ids: Optional[list[int]] = None,
+):
     start_dt = datetime.combine(start, datetime.min.time())
     end_dt = datetime.combine(end, datetime.max.time())
     q = WorkOrder.query.filter(
@@ -248,7 +632,10 @@ def _closed_wo_in_period_query(start: date, end: date, sector: Optional[str] = N
     )
     if sector:
         q = q.filter(_wo_for_sector(sector))
-    return q
+    eid = _current_empresa_id()
+    if eid:
+        q = q.filter(WorkOrder.empresa_id == eid)
+    return _wo_apply_machine_ids(q, machine_ids)
 
 
 def _fmt_duration_hours(hours: Optional[float]) -> str:
@@ -259,85 +646,27 @@ def _fmt_duration_hours(hours: Optional[float]) -> str:
     return f"{round(hours, 1)} h"
 
 
-def _tipo_clave_base(mt: MachineType) -> str:
-    if mt.empresa_id and mt.clave.startswith(f"e{mt.empresa_id}_"):
-        return mt.clave[len(f"e{mt.empresa_id}_") :]
-    return mt.clave
-
-
-def _sector_categoria_resumen(total: int, operativos: int, falla: int) -> str:
-    eq = "equipo" if total == 1 else "equipos"
-    if total == 0:
-        return f"0 {eq}"
-    texto = f"{total} {eq} · {operativos} op."
-    if falla:
-        texto += f" · {falla} falla"
-    return texto
-
-
-def _dashboard_sector_categorias(sector: str) -> List[dict[str, Any]]:
-    eid = _current_empresa_id()
-    categorias = []
-    ui_defs = SECTOR_DASHBOARD_CATEGORY_UI.get(sector, DEFAULT_SECTOR_CATEGORY_UI)
-    for idx, (label, claves) in enumerate(SECTOR_DASHBOARD_CATEGORIES.get(sector, ())):
-        ui = ui_defs[idx % len(ui_defs)]
-        types_q = MachineType.query.filter(MachineType.sector_industrial == sector)
-        if eid:
-            types_q = types_q.filter(
-                or_(MachineType.empresa_id == eid, MachineType.empresa_id.is_(None))
-            )
-        type_ids = [t.id for t in types_q.all() if _tipo_clave_base(t) in claves or t.clave in claves]
-        if not type_ids:
-            categorias.append(
-                {
-                    "label": label,
-                    "total": 0,
-                    "operativos": 0,
-                    "falla": 0,
-                    "icon": ui["icon"],
-                    "tone": ui["tone"],
-                    "resumen": _sector_categoria_resumen(0, 0, 0),
-                }
-            )
-            continue
-        machines_q = Machine.query.filter(Machine.machine_type_id.in_(type_ids))
-        if eid:
-            machines_q = machines_q.filter(Machine.empresa_id == eid)
-        machines = machines_q.all()
-        total = len(machines)
-        operativos = sum(1 for m in machines if m.status == MachineStatus.OPERATIVO.value)
-        falla = sum(1 for m in machines if m.status == MachineStatus.FALLA.value)
-        categorias.append(
-            {
-                "label": label,
-                "total": total,
-                "operativos": operativos,
-                "falla": falla,
-                "icon": ui["icon"],
-                "tone": ui["tone"],
-                "resumen": _sector_categoria_resumen(total, operativos, falla),
-            }
-        )
-    return categorias
-
-
 def _dashboard_kpis(
-    start: date, end: date, total_m: int, operativos: int, sector: Optional[str] = None
+    start: date,
+    end: date,
+    total_m: int,
+    operativos: int,
+    sector: Optional[str] = None,
+    machine_ids: Optional[list[int]] = None,
 ) -> dict:
     open_statuses = [WorkOrderStatus.ABIERTA.value, WorkOrderStatus.EN_PROCESO.value]
-    wo_base = WorkOrder.query
-    if sector:
-        wo_base = wo_base.filter(_wo_for_sector(sector))
-    ordenes_abiertas = wo_base.filter(WorkOrder.status.in_(open_statuses)).count()
-    mantenimientos_pendientes = wo_base.filter(
+    wo_period = _wo_in_period_query(start, end, sector, machine_ids)
+    ordenes_abiertas = wo_period.filter(WorkOrder.status.in_(open_statuses)).count()
+    mantenimientos_pendientes = wo_period.filter(
         WorkOrder.tipo == WorkOrderType.PREVENTIVO.value,
         WorkOrder.status.in_(open_statuses),
     ).count()
+    ot_en_periodo = wo_period.count()
     disponibilidad = round(100.0 * operativos / total_m, 1) if total_m else 0.0
 
     repair_types = [WorkOrderType.CORRECTIVO.value, WorkOrderType.EMERGENCIA.value]
     closed_repairs = (
-        _closed_wo_in_period_query(start, end, sector)
+        _closed_wo_in_period_query(start, end, sector, machine_ids)
         .filter(
             WorkOrder.tipo.in_(repair_types),
             WorkOrder.fecha_inicio.isnot(None),
@@ -356,7 +685,7 @@ def _dashboard_kpis(
     mttr = round(sum(repair_hours) / len(repair_hours), 1) if repair_hours else None
 
     failures = (
-        _closed_wo_in_period_query(start, end, sector)
+        _closed_wo_in_period_query(start, end, sector, machine_ids)
         .filter(WorkOrder.tipo.in_(repair_types))
         .order_by(WorkOrder.machine_id, WorkOrder.fecha_cierre)
         .all()
@@ -387,6 +716,7 @@ def _dashboard_kpis(
 
     return {
         "activos_totales": total_m,
+        "ot_en_periodo": ot_en_periodo,
         "ordenes_abiertas": ordenes_abiertas,
         "mantenimientos_pendientes": mantenimientos_pendientes,
         "disponibilidad": disponibilidad,
@@ -409,13 +739,16 @@ def _attach_plant_kpi_cards(
     start: date,
     end: date,
     sector: Optional[str],
+    sector_locked: bool,
     machines: list,
     operativos: int,
+    machine_ids: Optional[list[int]] = None,
 ) -> dict:
     eid = _current_empresa_id()
-    wo_period_q = _wo_in_period_query(start, end, sector)
-    if eid:
-        wo_period_q = wo_period_q.filter(WorkOrder.empresa_id == eid)
+    wo_period_q = _wo_in_period_query(start, end, sector, machine_ids)
+    preventivas_q = _preventivas_cumplimiento_query(
+        start, end, sector, sector_locked=sector_locked, machine_ids=machine_ids
+    )
     kpis["plant_cards"] = build_plant_kpi_cards(
         start=start,
         end=end,
@@ -428,6 +761,7 @@ def _attach_plant_kpi_cards(
         disp_global=kpis.get("_disp_global"),
         emp=kpis.get("_emp"),
         wo_period_q=wo_period_q,
+        preventivas_q=preventivas_q,
         closed_repairs=kpis.get("_closed_repairs") or [],
     )
     for k in ("_mtbf", "_mttr", "_disp_global", "_closed_repairs", "_emp"):
@@ -507,18 +841,70 @@ def _parse_form_date(raw: str) -> Optional[date]:
         return None
 
 
+def _parse_int_form(val) -> Optional[int]:
+    try:
+        s = (val or "").strip()
+        return int(s) if s else None
+    except ValueError:
+        return None
+
+
+def _parse_float_form(val) -> Optional[float]:
+    try:
+        s = (val or "").strip().replace(",", ".")
+        return float(s) if s else None
+    except ValueError:
+        return None
+
+
+def _moneda_empresa_activo(machine: Optional[Machine] = None) -> str:
+    if machine and machine.empresa_id:
+        emp = db.session.get(Empresa, machine.empresa_id)
+        if emp:
+            return normalizar_moneda(emp.moneda)
+    if current_user.is_authenticated and getattr(current_user, "empresa", None):
+        return normalizar_moneda(current_user.empresa.moneda)
+    return "COP"
+
+
 def _apply_machine_base_fields(machine: Machine, form) -> None:
     machine.nombre = form.get("nombre", "").strip()
     machine.descripcion = form.get("descripcion", "").strip()
+    machine.registro_tipo = ""
+    machine.checklist_registro = registro_flags_from_form(form)
+    machine.machine_type_id = int(form.get("machine_type_id") or machine.machine_type_id)
+    raw_sede = (form.get("sede_id") or "").strip()
+    machine.sede_id = int(raw_sede) if raw_sede.isdigit() else None
+    machine.area = form.get("area", "").strip()
     machine.ubicacion = form.get("ubicacion", "").strip()
     machine.marca = form.get("marca", "").strip()
     machine.modelo = form.get("modelo", "").strip()
+    machine.fabricante = form.get("fabricante", "").strip()
     machine.numero_serie = form.get("numero_serie", "").strip()
-    machine.proveedor = form.get("proveedor", "").strip()
-    machine.manual_url = form.get("manual_url", "").strip()
-    machine.foto_url = form.get("foto_url", "").strip()
-    machine.criticidad = form.get("criticidad") or "media"
+    machine.fecha_fabricacion = _parse_form_date(form.get("fecha_fabricacion"))
+    machine.fecha_ingreso = _parse_form_date(form.get("fecha_ingreso"))
+    machine.fecha_instalacion = _parse_form_date(form.get("fecha_instalacion"))
+    machine.fecha_puesta_marcha = _parse_form_date(form.get("fecha_puesta_marcha"))
+    machine.vida_util_anios = _parse_int_form(form.get("vida_util_anios"))
+    machine.horas_operacion = _parse_float_form(form.get("horas_operacion"))
     machine.fecha_compra = _parse_form_date(form.get("fecha_compra"))
+    moneda_emp = _moneda_empresa_activo(machine)
+    machine.moneda_compra = normalizar_moneda(form.get("moneda_compra"), moneda_emp)
+    machine.valor_compra = parsear_monto_form(form.get("valor_compra"), machine.moneda_compra)
+    machine.proveedor = form.get("proveedor", "").strip()
+    machine.tiempo_garantia_meses = _parse_int_form(form.get("tiempo_garantia_meses"))
+    machine.garantia_hasta = calcular_garantia_hasta(
+        machine.fecha_compra, machine.tiempo_garantia_meses
+    )
+    machine.manual_url = form.get("manual_url", "").strip()
+    machine.ficha_tecnica_url = form.get("ficha_tecnica_url", "").strip()
+    machine.foto_url = form.get("foto_url", "").strip()
+    machine.requiere_mantenimiento = bool(form.get("requiere_mantenimiento"))
+    machine.tipos_mantenimiento = tipos_mantenimiento_from_form(form)
+    machine.frecuencia_mantenimiento = (form.get("frecuencia_mantenimiento") or "").strip()
+    raw_resp = (form.get("responsable_technician_id") or "").strip()
+    machine.responsable_technician_id = int(raw_resp) if raw_resp.isdigit() else None
+    machine.criticidad = form.get("criticidad") or "media"
     machine.status = form.get("status") or MachineStatus.OPERATIVO.value
     machine.notas = form.get("notas", "").strip()
     machine.sync_criticidad_critico()
@@ -529,13 +915,9 @@ def _save_machine_custom_fields(
 ) -> Optional[str]:
     campos = campos_para_tipo(empresa_id, sector, machine_type_id)
     for campo in campos:
-        raw = form.get(f"campo_{campo.id}", "")
-        if campo.tipo == "boolean":
-            val = "1" if raw in ("1", "on", "true") else ""
-        else:
-            val = (raw or "").strip()
-        if campo.obligatorio and not val:
-            return f"El campo «{campo.nombre}» es obligatorio."
+        val, err = valor_campo_desde_form(campo, form)
+        if err:
+            return err
         row = ActivoCampoValor.query.filter_by(
             machine_id=machine.id, campo_id=campo.id
         ).first()
@@ -567,202 +949,122 @@ def _activos_form_context(
             "nombre": c.nombre,
             "tipo": c.tipo,
             "obligatorio": c.obligatorio,
-            "machine_type_id": c.machine_type_id,
+            "categorias_ids": c.categorias_aplicables(),
+            "opciones": c.opciones_lista(),
         }
-        for c in CampoPersonalizado.query.filter_by(empresa_id=eid, sector=sector, activo=True)
+        for c in CampoPersonalizado.query.filter(
+            CampoPersonalizado.empresa_id == eid,
+            CampoPersonalizado.sector == sector,
+            CampoPersonalizado.activo.is_(True),
+            or_(
+                CampoPersonalizado.entidad == CAMPO_ENTIDAD_ACTIVO,
+                CampoPersonalizado.entidad.is_(None),
+            ),
+        )
         .order_by(CampoPersonalizado.orden)
         .all()
     ] if eid else []
     valores = valores_campos_map(machine) if machine else {}
+    eid = empresa.id if empresa else None
+    sedes = (
+        Sede.query.filter_by(empresa_id=eid).order_by(Sede.es_principal.desc(), Sede.nombre).all()
+        if eid
+        else []
+    )
+    technicians = (
+        _filter_empresa(
+            Technician.query.filter_by(activo=True).order_by(Technician.nombre), Technician
+        ).all()
+        if eid
+        else []
+    )
+    campos_estandar, _secciones_legacy = (
+        campos_por_seccion_estructurado(eid, sector, preview_id) if eid else ({}, {})
+    )
+    secciones_custom_despues, secciones_custom_final = (
+        secciones_custom_por_ancla(eid, sector, preview_id) if eid else ({}, [])
+    )
+    reg_nuevo, reg_actualizacion = registro_flags_checked(
+        machine.checklist_registro if machine else None,
+        machine.registro_tipo if machine else "",
+    )
+    moneda_empresa = normalizar_moneda(empresa.moneda if empresa else None)
+    moneda_compra_sel = normalizar_moneda(
+        machine.moneda_compra if machine and machine.moneda_compra else None,
+        moneda_empresa,
+    )
     return {
         "machine": machine,
         "machine_types": tipos,
         "default_machine_type_id": preview_id,
         "codigo_sugerido": codigo_sugerido,
         "campos_personalizados": campos,
+        "campos_estandar": campos_estandar,
+        "secciones_custom_despues": secciones_custom_despues,
+        "secciones_custom_final": secciones_custom_final,
+        "activo_secciones": ACTIVO_SECCIONES,
+        "activo_secciones_labels": dict(ACTIVO_SECCIONES),
+        "activo_seccion_keys_list": list(ACTIVO_SECCION_KEYS),
+        "activo_seccion_iconos": ACTIVO_SECCION_ICONOS,
+        "activo_seccion_icono_default": ACTIVO_SECCION_ICONO_DEFAULT,
         "campos_json": campos_json,
         "valores_campos": valores,
         "criticidad_choices": CRITICIDAD_CHOICES,
         "sector_label": SECTOR_LABELS.get(sector, sector),
+        "sedes": sedes,
+        "technicians": technicians,
+        "mantenimiento_tipos": MANTENIMIENTO_TIPOS,
+        "frecuencia_choices": FRECUENCIA_BASE_CHOICES,
+        "tipos_mant_sel": tipos_mantenimiento_list(machine.tipos_mantenimiento if machine else ""),
+        "registro_nuevo_checked": reg_nuevo,
+        "registro_actualizacion_checked": reg_actualizacion,
+        "moneda_empresa": moneda_empresa,
+        "moneda_compra_sel": moneda_compra_sel,
+        "monedas_compra": MONEDAS_SOPORTADAS,
+        "simbolo_moneda_compra": simbolo_moneda_input(moneda_compra_sel),
+        "simbolos_moneda": {c: simbolo_moneda_input(c) for c, _ in MONEDAS_SOPORTADAS},
+        "valor_compra_texto": (
+            formatear_monto_sin_simbolo(machine.valor_compra, moneda_compra_sel)
+            if machine and machine.valor_compra is not None
+            else ""
+        ),
     }
 
 
-def _days_since_last_maintenance(machine: Machine, ref: date) -> int:
-    last = (
-        WorkOrder.query.filter(
-            WorkOrder.machine_id == machine.id,
-            WorkOrder.tipo == WorkOrderType.PREVENTIVO.value,
-            WorkOrder.status.in_(WORK_ORDER_TERMINAL_STATUSES),
-            WorkOrder.fecha_cierre.isnot(None),
-        )
-        .order_by(WorkOrder.fecha_cierre.desc())
-        .first()
-    )
-    if last and last.fecha_cierre:
-        last_date = last.fecha_cierre.date()
-    else:
-        closed = (
-            WorkOrder.query.filter(
-                WorkOrder.machine_id == machine.id,
-                WorkOrder.status.in_(WORK_ORDER_TERMINAL_STATUSES),
-                WorkOrder.fecha_cierre.isnot(None),
-            )
-            .order_by(WorkOrder.fecha_cierre.desc())
-            .first()
-        )
-        if closed and closed.fecha_cierre:
-            last_date = closed.fecha_cierre.date()
-        elif machine.created_at:
-            last_date = machine.created_at.date()
-        else:
-            last_date = ref
-    return (ref - last_date).days
-
-
-def _dashboard_alertas(
-    ref: Optional[date] = None, sector: Optional[str] = None
-) -> List[dict[str, Any]]:
-    ref = ref or date.today()
-    open_statuses = [WorkOrderStatus.ABIERTA.value, WorkOrderStatus.EN_PROCESO.value]
-    alertas: list[dict[str, Any]] = []
-
-    machines_q = Machine.query.order_by(Machine.nombre)
-    if sector:
-        machines_q = machines_q.join(MachineType).filter(MachineType.sector_industrial == sector)
-    for m in machines_q.all():
-        dias_sin = _days_since_last_maintenance(m, ref)
-        if dias_sin >= MAINT_ALERT_WARN_DAYS:
-            nivel = "critical" if dias_sin >= MAINT_ALERT_CRIT_DAYS or m.es_critico else "warning"
-            alertas.append(
-                {
-                    "nivel": nivel,
-                    "titulo": m.nombre,
-                    "mensaje": f"Sin mantenimiento hace {dias_sin} días",
-                    "prioridad": dias_sin,
-                    "machine_id": m.id,
-                }
-            )
-
-        tipo_clave = m.machine_type.clave if m.machine_type else ""
-        notas = (m.notas or "").lower()
-        if m.status == MachineStatus.FALLA.value and tipo_clave == "motor":
-            alertas.append(
-                {
-                    "nivel": "critical",
-                    "titulo": m.nombre if m.codigo == m.nombre else f"{m.nombre} ({m.codigo})",
-                    "mensaje": "Vibración fuera de rango",
-                    "prioridad": 10_000,
-                    "machine_id": m.id,
-                }
-            )
-        elif m.status == MachineStatus.FALLA.value and m.es_critico:
-            alertas.append(
-                {
-                    "nivel": "critical",
-                    "titulo": m.nombre,
-                    "mensaje": "Equipo crítico en falla",
-                    "prioridad": 9_000,
-                    "machine_id": m.id,
-                }
-            )
-        elif "vibr" in notas and m.status != MachineStatus.OPERATIVO.value:
-            alertas.append(
-                {
-                    "nivel": "warning",
-                    "titulo": m.nombre,
-                    "mensaje": "Vibración fuera de rango (nota en activo)",
-                    "prioridad": 5_000,
-                    "machine_id": m.id,
-                }
-            )
-
-    for inc in Incident.query.filter_by(resuelto=False).all():
-        texto = f"{inc.titulo} {inc.descripcion}".lower()
-        if "vibr" not in texto or not inc.machine_id:
-            continue
-        m = inc.machine
-        if not m:
-            continue
-        if sector and (not m.machine_type or m.machine_type.sector_industrial != sector):
-            continue
-        if any(a.get("machine_id") == m.id and "Vibración" in a.get("mensaje", "") for a in alertas):
-            continue
-        alertas.append(
-            {
-                "nivel": "critical" if m.es_critico else "warning",
-                "titulo": m.nombre,
-                "mensaje": "Vibración fuera de rango",
-                "prioridad": 8_000,
-                "machine_id": m.id,
-            }
-        )
-
-    vencidas_q = WorkOrder.query.filter(
-        WorkOrder.status.in_(open_statuses),
-        WorkOrder.fecha_programada.isnot(None),
-        WorkOrder.fecha_programada < ref,
-    )
-    if sector:
-        vencidas_q = vencidas_q.filter(_wo_for_sector(sector))
-    vencidas = vencidas_q.order_by(WorkOrder.fecha_programada).all()
-    for wo in vencidas:
-        dias = (ref - wo.fecha_programada).days
-        alertas.append(
-            {
-                "nivel": "critical" if dias >= 3 else "warning",
-                "titulo": f"OT-{wo.id}",
-                "mensaje": f"Vencida hace {dias} día{'s' if dias != 1 else ''}",
-                "prioridad": 7_000 + dias,
-                "wo_id": wo.id,
-            }
-        )
-
-    nivel_rank = {"critical": 0, "warning": 1}
-    alertas.sort(key=lambda a: (nivel_rank.get(a["nivel"], 2), -a.get("prioridad", 0)))
-
-    seen: set[tuple[str, str]] = set()
-    unicas: list[dict[str, Any]] = []
-    for a in alertas:
-        key = (a["titulo"], a["mensaje"])
-        if key in seen:
-            continue
-        seen.add(key)
-        if a.get("machine_id"):
-            a["href"] = url_for("main.activos_edit", id=a["machine_id"])
-        elif a.get("wo_id"):
-            a["href"] = url_for("main.ordenes_edit", id=a["wo_id"])
-        unicas.append(a)
-    return unicas[:12]
+PROXIMOS_MANTENIMIENTOS_LIMITE = 8
 
 
 def _proximos_mantenimientos(
-    ref: Optional[date] = None,
-    limit: int = 8,
-    horizon_days: int = 120,
+    start: date,
+    end: date,
+    limit: int = PROXIMOS_MANTENIMIENTOS_LIMITE,
     sector: Optional[str] = None,
-) -> List[dict[str, Any]]:
-    ref = ref or date.today()
-    horizon = ref + timedelta(days=horizon_days)
-    open_statuses = [WorkOrderStatus.ABIERTA.value, WorkOrderStatus.EN_PROCESO.value]
-    prox_q = WorkOrder.query.filter(
-        WorkOrder.fecha_programada.isnot(None),
-        WorkOrder.fecha_programada >= ref,
-        WorkOrder.fecha_programada <= horizon,
-        WorkOrder.status.in_(open_statuses),
+    machine_ids: Optional[list[int]] = None,
+) -> dict[str, Any]:
+    """OT futuras con fecha programada en el período del dashboard (máx. `limit` en lista)."""
+    from sqlalchemy.orm import joinedload
+
+    hoy = date.today()
+    desde = max(start, hoy)
+    if desde > end:
+        return {"items": [], "total": 0, "limit": limit, "shown": 0}
+
+    prox_q = _wo_in_period_query(desde, end, sector, machine_ids).filter(
+        ~WorkOrder.status.in_(WORK_ORDER_TERMINAL_STATUSES)
     )
-    if sector:
-        prox_q = prox_q.filter(_wo_for_sector(sector))
-    orders = prox_q.order_by(WorkOrder.fecha_programada, WorkOrder.id).limit(limit).all()
+    total = prox_q.count()
+    orders = (
+        prox_q.options(joinedload(WorkOrder.machine))
+        .order_by(WorkOrder.fecha_programada, WorkOrder.id)
+        .limit(limit)
+        .all()
+    )
     items: list[dict[str, Any]] = []
     for wo in orders:
         d = wo.fecha_programada
         m = wo.machine
-        if m:
-            equipo = m.nombre
-            if m.codigo and m.codigo.lower() not in (m.nombre or "").lower():
-                equipo = f"{m.nombre} ({m.codigo})"
-        else:
-            equipo = wo.titulo
+        codigo = (m.codigo if m and m.codigo else "") or "—"
+        nombre = (m.nombre if m else "") or wo.titulo
         tipo_meta = wo_tipo_meta(wo.tipo)
         items.append(
             {
@@ -770,26 +1072,85 @@ def _proximos_mantenimientos(
                 "fecha_dia": f"{d.day:02d}",
                 "fecha_mes": MESES_CORTO[d.month - 1].upper(),
                 "fecha_corta": f"{d.day:02d} {MESES_CORTO[d.month - 1].upper()}",
-                "equipo": equipo,
+                "codigo": codigo,
+                "nombre": nombre,
                 "titulo": wo.titulo,
+                "numero": wo.numero or f"OT-{wo.id}",
                 "tipo": wo.tipo,
                 "tipo_slug": (wo.tipo or "").strip().lower(),
                 "tipo_short": tipo_meta["short"].upper(),
                 "href": url_for("main.ordenes_edit", id=wo.id),
             }
         )
-    return items
+    return {
+        "items": items,
+        "total": total,
+        "limit": limit,
+        "shown": len(items),
+    }
 
 
 @bp.route("/")
 def dashboard():
     period = request.args.get("periodo", "mes")
     sector, sector_locked = _sector_for_dashboard()
+    dash_filtros = _dashboard_filtros_desde_request()
+    machine_ids = _dashboard_machine_ids(sector, dash_filtros)
+    hay_filtros_activo = machine_ids is not None
     show_welcome = request.args.get("welcome") == "1" or session.pop("show_welcome", False)
     show_tour = session.pop("show_tour", False)
-    start, end, period = _period_bounds(period)
+    ref = _parse_dashboard_ref()
+    start, end, period = _period_bounds(period, ref)
+    period_label = _period_display_label(period, start, end)
+    period_range = (
+        f"{start.strftime('%d/%m/%Y')} – {end.strftime('%d/%m/%Y')}"
+        if start != end
+        else start.strftime("%d/%m/%Y")
+    )
+    dash_params = _dashboard_query_params(
+        period, ref, sector, sector_locked, dash_filtros
+    )
+    period_prev_url = url_for(
+        "main.dashboard",
+        **_dashboard_query_params(
+            period, _shift_period_ref(period, ref, -1), sector, sector_locked, dash_filtros
+        ),
+    )
+    period_next_url = url_for(
+        "main.dashboard",
+        **_dashboard_query_params(
+            period, _shift_period_ref(period, ref, 1), sector, sector_locked, dash_filtros
+        ),
+    )
+    period_urls = {
+        p: url_for(
+            "main.dashboard",
+            **_dashboard_query_params(p, ref, sector, sector_locked, dash_filtros),
+        )
+        for p in ("dia", "semana", "mes", "año")
+    }
+    sector_urls = (
+        {
+            s_key: url_for(
+                "main.dashboard",
+                **_dashboard_query_params(period, ref, s_key, False, dash_filtros),
+            )
+            for s_key, _ in (
+                ("manufactura", "Manufactura"),
+                ("logistica", "Logística"),
+                ("alimentos", "Alimentos"),
+            )
+        }
+        if not sector_locked
+        else {}
+    )
+    dash_clear_filtros_url = url_for(
+        "main.dashboard", **_dashboard_query_params(period, ref, sector, sector_locked)
+    )
+    hoy = date.today()
+    periodo_anios = list(range(hoy.year - 2, hoy.year + 3))
 
-    machines_q = _machines_for_sector_query(sector)
+    machines_q = _machines_query_con_filtros(_machines_for_sector_query(sector), dash_filtros)
     total_m = machines_q.count()
     op = machines_q.filter(Machine.status == MachineStatus.OPERATIVO.value).count()
     mant = machines_q.filter(Machine.status == MachineStatus.MANTENIMIENTO.value).count()
@@ -802,24 +1163,29 @@ def dashboard():
         pct_mant = round(100.0 * mant / total_m, 1)
         pct_falla = round(100.0 * falla / total_m, 1)
 
-    wo_period = _wo_in_period_query(start, end, sector)
-    preventivas = wo_period.filter(WorkOrder.tipo == WorkOrderType.PREVENTIVO.value)
-    total_prev = preventivas.count()
-    prev_cerradas = preventivas.filter(
-        WorkOrder.status.in_(WORK_ORDER_TERMINAL_STATUSES)
-    ).count()
-    if total_prev == 0:
-        cumplimiento = 0.0
-        prev_msg = "Sin órdenes preventivas en el período"
-    else:
-        cumplimiento = round(100.0 * prev_cerradas / total_prev, 1)
-        prev_msg = f"{prev_cerradas} de {total_prev} preventivos cerrados"
-
-    criticos_q = (
-        machines_q.filter(Machine.es_critico.is_(True))
-        .order_by(Machine.nombre)
-        .limit(5)
+    ot_en_periodo = _wo_in_period_query(start, end, sector, machine_ids).count()
+    prev_data = _cumplimiento_preventivo_dashboard(
+        start,
+        end,
+        period_label,
+        sector,
+        sector_locked=sector_locked,
+        machine_ids=machine_ids,
     )
+    cumplimiento = prev_data["cumplimiento"]
+    total_prev = prev_data["total_prev"]
+    prev_completadas = prev_data["prev_completadas"]
+    prev_pendientes = prev_data["prev_pendientes"]
+    prev_completadas_items = prev_data["prev_completadas_items"]
+    if prev_data["sin_programadas"]:
+        if ot_en_periodo == 0:
+            prev_msg = f"Sin mantenimientos en {period_label}"
+        else:
+            prev_msg = f"Sin preventivos programados en {period_label}"
+    else:
+        prev_msg = prev_data["prev_msg"]
+
+    criticos_q = machines_q.filter(Machine.es_critico.is_(True)).order_by(Machine.nombre).limit(5)
     critico_items = []
     for m in criticos_q.all():
         st = machine_status_meta(m.status)
@@ -839,17 +1205,12 @@ def dashboard():
     workload_labels = []
     workload_values = []
     for t in techs:
-        wo_tech = WorkOrder.query.filter(
+        wo_tech = _wo_in_period_query(start, end, sector, machine_ids).filter(
             WorkOrder.technician_id == t.id,
-            WorkOrder.fecha_programada.isnot(None),
-            WorkOrder.fecha_programada >= start,
-            WorkOrder.fecha_programada <= end,
             WorkOrder.status.in_(
                 [WorkOrderStatus.ABIERTA.value, WorkOrderStatus.EN_PROCESO.value]
             ),
         )
-        if sector:
-            wo_tech = wo_tech.filter(_wo_for_sector(sector))
         n = wo_tech.count()
         workload_labels.append(t.nombre)
         workload_values.append(n)
@@ -857,14 +1218,24 @@ def dashboard():
     workload_empty = sum(workload_values) == 0
     workload_total = sum(workload_values)
     machines = machines_q.all()
-    kpis = _dashboard_kpis(start, end, total_m, op, sector)
+    kpis = _dashboard_kpis(start, end, total_m, op, sector, machine_ids)
     kpis = _attach_plant_kpi_cards(
-        kpis, start=start, end=end, sector=sector, machines=machines, operativos=op
+        kpis,
+        start=start,
+        end=end,
+        sector=sector,
+        sector_locked=sector_locked,
+        machines=machines,
+        operativos=op,
+        machine_ids=machine_ids,
     )
-    alertas = _dashboard_alertas(sector=sector)
-    proximos_mantenimientos = _proximos_mantenimientos(sector=sector)
-    sector_categorias = _dashboard_sector_categorias(sector)
-
+    proximos_data = _proximos_mantenimientos(
+        start, end, sector=sector, machine_ids=machine_ids
+    )
+    proximos_mantenimientos = proximos_data["items"]
+    proximos_mantenimientos_total = proximos_data["total"]
+    proximos_mantenimientos_limite = proximos_data["limit"]
+    proximos_mantenimientos_shown = proximos_data["shown"]
     empresa = current_user.empresa if current_user.is_authenticated else None
     if empresa:
         ensure_empresa_sector_setup(empresa)
@@ -873,18 +1244,33 @@ def dashboard():
     return render_template(
         "dashboard.html",
         periodo=period,
+        periodo_ref=ref.isoformat(),
+        periodo_label=period_label,
+        periodo_rango=period_range,
+        period_prev_url=period_prev_url,
+        period_next_url=period_next_url,
+        period_urls=period_urls,
+        sector_urls=sector_urls,
+        dash_params=dash_params,
+        dash_filtros=dash_filtros,
+        hay_filtros_activo=hay_filtros_activo,
+        dash_clear_filtros_url=dash_clear_filtros_url,
+        periodo_mes=ref.month,
+        periodo_anio=ref.year,
+        periodo_anios=periodo_anios,
+        meses_planeacion=MESES_PLANEACION,
         sector=sector,
         sector_locked=sector_locked,
         sector_label=SECTOR_LABELS.get(sector, sector),
-        sector_categorias=sector_categorias,
         empresa=empresa,
-        empresa_logo_url=_empresa_logo_url_or_none(empresa),
         show_welcome=show_welcome,
         show_tour=show_tour,
         kpis=kpis,
         kpi_cards=kpi_cards,
-        alertas=alertas,
         proximos_mantenimientos=proximos_mantenimientos,
+        proximos_mantenimientos_total=proximos_mantenimientos_total,
+        proximos_mantenimientos_limite=proximos_mantenimientos_limite,
+        proximos_mantenimientos_shown=proximos_mantenimientos_shown,
         health={
             "operativos": pct_op,
             "mantenimiento": pct_mant,
@@ -892,7 +1278,9 @@ def dashboard():
             "counts": {"op": op, "mant": mant, "falla": falla, "total": total_m},
         },
         cumplimiento=cumplimiento,
-        prev_cerradas=prev_cerradas,
+        prev_completadas=prev_completadas,
+        prev_pendientes=prev_pendientes,
+        prev_completadas_items=prev_completadas_items,
         total_prev=total_prev,
         prev_msg=prev_msg,
         critico_items=critico_items,
@@ -900,16 +1288,29 @@ def dashboard():
         workload_values=workload_values,
         workload_total=workload_total,
         workload_empty=workload_empty,
+        ot_en_periodo=ot_en_periodo,
     )
 
 
 # --- Activos ---
-def _machine_types_activos():
-    q = MachineType.query.filter_by(activo=True)
+def _machine_types_query():
+    q = MachineType.query
+    sector = _sector_industrial_empresa()
+    if sector:
+        q = q.filter(MachineType.sector_industrial == sector)
     eid = _current_empresa_id()
     if eid:
         q = q.filter(or_(MachineType.empresa_id == eid, MachineType.empresa_id.is_(None)))
-    return q.order_by(MachineType.orden, MachineType.nombre).all()
+    return q
+
+
+def _machine_types_activos():
+    return (
+        _machine_types_query()
+        .filter_by(activo=True)
+        .order_by(MachineType.orden, MachineType.nombre)
+        .all()
+    )
 
 
 def _machine_types_para_formulario(machine: Optional[Machine] = None):
@@ -923,10 +1324,11 @@ def _machine_types_para_formulario(machine: Optional[Machine] = None):
 
 
 def _default_machine_type_id() -> Optional[int]:
-    g = MachineType.query.filter_by(clave="general", activo=True).first()
+    q = _machine_types_query().filter_by(activo=True)
+    g = q.filter_by(clave="general").first()
     if g:
         return g.id
-    first = MachineType.query.filter_by(activo=True).order_by(MachineType.orden, MachineType.nombre).first()
+    first = q.order_by(MachineType.orden, MachineType.nombre).first()
     return first.id if first else None
 
 
@@ -936,7 +1338,7 @@ def _machine_type_id_validado(form) -> Optional[int]:
         tid = int(raw)
     except (TypeError, ValueError):
         return None
-    mt = MachineType.query.filter_by(id=tid, activo=True).first()
+    mt = _machine_types_query().filter_by(id=tid, activo=True).first()
     return mt.id if mt else None
 
 
@@ -979,9 +1381,9 @@ def activos_api_sugerir_codigo():
         tid = int(raw)
     except (TypeError, ValueError):
         tid = None
-    mt = MachineType.query.filter_by(id=tid, activo=True).first() if tid else None
+    mt = _machine_types_query().filter_by(id=tid, activo=True).first() if tid else None
     if mt is None:
-        mt = MachineType.query.filter_by(clave="general", activo=True).first()
+        mt = _machine_types_query().filter_by(clave="general", activo=True).first()
     pref = (mt.prefijo if mt else "EQ").strip().upper() or "EQ"
     return jsonify(
         {
@@ -1064,7 +1466,9 @@ def activos_new():
 
 @bp.route("/activos/<int:id>/editar", methods=["GET", "POST"])
 def activos_edit(id):
-    m = Machine.query.get_or_404(id)
+    from sqlalchemy.orm import joinedload
+
+    m = Machine.query.options(joinedload(Machine.responsable)).get_or_404(id)
     tipos = _machine_types_para_formulario(m)
     if not tipos:
         flash("No hay tipos de máquina activos.", "warning")
@@ -1126,6 +1530,7 @@ def activos_api_campos():
                 "nombre": c.nombre,
                 "tipo": c.tipo,
                 "obligatorio": c.obligatorio,
+                "opciones": c.opciones_lista(),
             }
             for c in campos
         ]
@@ -1144,11 +1549,14 @@ def activos_delete(id):
 # --- Tipos de máquina (catálogo) ---
 @bp.route("/activos/tipos")
 def activos_tipo_list():
-    tipos = MachineType.query.order_by(MachineType.orden, MachineType.nombre).all()
+    sector = _sector_industrial_empresa()
+    tipos = _machine_types_query().order_by(MachineType.orden, MachineType.nombre).all()
     return render_template(
         "activos/tipos_list.html",
         tipos=tipos,
         sector_labels=SECTOR_LABELS,
+        sector_filtro=sector,
+        sector_filtro_label=SECTOR_LABELS.get(sector, sector) if sector else None,
     )
 
 
@@ -1168,7 +1576,10 @@ def activos_tipo_new():
         else:
             base_clave = _slugify_clave(nombre)
             clave = _clave_tipo_unica(base_clave)
-            sector = _parse_sector(request.form.get("sector_industrial"))
+            sector = _sector_industrial_empresa() or _parse_sector(
+                request.form.get("sector_industrial")
+            )
+            eid = _current_empresa_id()
             db.session.add(
                 MachineType(
                     clave=clave,
@@ -1177,6 +1588,7 @@ def activos_tipo_new():
                     orden=orden,
                     activo=True,
                     sector_industrial=sector,
+                    empresa_id=eid,
                 )
             )
             try:
@@ -1188,17 +1600,23 @@ def activos_tipo_new():
                 flash("No se pudo guardar (¿prefijo o clave duplicado?).", "danger")
     siguiente_orden = db.session.query(func.max(MachineType.orden)).scalar()
     siguiente_orden = (siguiente_orden or 0) + 1
+    sector_emp = _sector_industrial_empresa()
     return render_template(
         "activos/tipo_form.html",
         tipo=None,
         siguiente_orden=siguiente_orden,
-        sectores_nav=[(k, SECTOR_LABELS[k]) for k in SECTOR_LABELS],
+        sectores_nav=_sectores_para_tipo_form(),
+        sector_locked=sector_emp is not None,
+        sector_default=sector_emp or IndustrialSector.MANUFACTURA.value,
     )
 
 
 @bp.route("/activos/tipos/<int:id>/editar", methods=["GET", "POST"])
 def activos_tipo_edit(id):
     t = MachineType.query.get_or_404(id)
+    if not _tipo_pertenece_sector_empresa(t):
+        flash("Este tipo no pertenece al sector industrial de tu empresa.", "warning")
+        return redirect(url_for("main.activos_tipo_list"))
     if request.method == "POST":
         nombre = request.form.get("nombre", "").strip()
         prefijo = (request.form.get("prefijo", "").strip() or "").upper()
@@ -1220,7 +1638,10 @@ def activos_tipo_edit(id):
                 t.prefijo = prefijo
                 t.orden = orden
                 t.activo = activo
-                t.sector_industrial = _parse_sector(request.form.get("sector_industrial"))
+                sector_emp = _sector_industrial_empresa()
+                t.sector_industrial = sector_emp or _parse_sector(
+                    request.form.get("sector_industrial")
+                )
                 try:
                     db.session.commit()
                     flash("Tipo actualizado.", "success")
@@ -1228,17 +1649,23 @@ def activos_tipo_edit(id):
                 except Exception:
                     db.session.rollback()
                     flash("No se pudo guardar.", "danger")
+    sector_emp = _sector_industrial_empresa()
     return render_template(
         "activos/tipo_form.html",
         tipo=t,
         siguiente_orden=t.orden,
-        sectores_nav=[(k, SECTOR_LABELS[k]) for k in SECTOR_LABELS],
+        sectores_nav=_sectores_para_tipo_form(),
+        sector_locked=sector_emp is not None,
+        sector_default=sector_emp or t.sector_industrial,
     )
 
 
 @bp.route("/activos/tipos/<int:id>/eliminar", methods=["POST"])
 def activos_tipo_delete(id):
     t = MachineType.query.get_or_404(id)
+    if not _tipo_pertenece_sector_empresa(t):
+        flash("Este tipo no pertenece al sector industrial de tu empresa.", "warning")
+        return redirect(url_for("main.activos_tipo_list"))
     if t.machines.count() > 0:
         flash("No se puede eliminar: hay equipos asignados a este tipo. Desactívalo en su lugar.", "danger")
         return redirect(url_for("main.activos_tipo_list"))
@@ -1509,7 +1936,33 @@ def _guardar_repuestos_orden(wo: WorkOrder) -> Optional[str]:
     return None
 
 
-def _orden_form_context(wo: Optional[WorkOrder], technicians: list) -> dict:
+def _work_order_responsables_desde_form(form) -> dict:
+    return {
+        "autorizado_por": (form.get("autorizado_por") or "").strip(),
+        "recibido_por": (form.get("recibido_por") or "").strip(),
+        "empresa_tercerizada": (form.get("empresa_tercerizada") or "").strip(),
+    }
+
+
+def _sector_empresa_actual() -> str:
+    if current_user.is_authenticated and getattr(current_user, "empresa", None):
+        return normalizar_sector(current_user.empresa.sector)
+    return normalizar_sector(None)
+
+
+def _responsables_por_maquinas_ot(machines: Optional[list]) -> dict[int, str]:
+    if not machines:
+        return {}
+    eid = _current_empresa_id()
+    if not eid:
+        return {m.id: "" for m in machines}
+    return responsables_display_por_maquinas(machines, eid, _sector_empresa_actual())
+
+
+def _orden_form_context(
+    wo: Optional[WorkOrder], technicians: list, machines: Optional[list] = None
+) -> dict:
+    responsables_map = _responsables_por_maquinas_ot(machines)
     mins = wo_tiempo_gastado_minutos(wo) if wo else None
     th, tm = minutos_a_horas_minutos(mins)
     jornadas_inicial = [_jornada_a_dict(j) for j in _jornadas_para_formulario(wo)]
@@ -1531,6 +1984,10 @@ def _orden_form_context(wo: Optional[WorkOrder], technicians: list) -> dict:
         "tiempo_horas": th,
         "tiempo_minutos": tm,
         "formatear_duracion": formatear_duracion,
+        "responsables_por_maquina": responsables_map,
+        "responsable_activo_nombre": (
+            responsables_map.get(wo.machine_id, "") if wo and wo.machine_id else ""
+        ),
         "technicians_json": json.dumps(
             [{"id": t.id, "nombre": t.nombre} for t in technicians], ensure_ascii=False
         ),
@@ -1679,23 +2136,164 @@ def ordenes_planeacion():
     )
 
 
-@bp.route("/ordenes")
-def ordenes_list():
-    status = request.args.get("status", "")
+def _parse_fecha_filtro(value: str) -> Optional[date]:
+    value = (value or "").strip()
+    if not value:
+        return None
+    try:
+        return datetime.strptime(value, "%Y-%m-%d").date()
+    except ValueError:
+        return None
+
+
+def _ordenes_filtros_desde_request() -> dict[str, str]:
+    return {
+        "numero": request.args.get("numero", "").strip(),
+        "equipo": request.args.get("equipo", "").strip(),
+        "ubicacion": request.args.get("ubicacion", "").strip(),
+        "tipo": request.args.get("tipo", "").strip(),
+        "status": request.args.get("status", "").strip(),
+        "mes": request.args.get("mes", "").strip(),
+        "anio": request.args.get("anio", "").strip(),
+        "fecha_desde": request.args.get("fecha_desde", "").strip(),
+        "fecha_hasta": request.args.get("fecha_hasta", "").strip(),
+    }
+
+
+def _parse_mes_anio_filtro(mes_s: str, anio_s: str) -> Optional[tuple[date, date]]:
+    """Rango [inicio, fin] por mes/año de fecha programada; None si no aplica."""
+    mes_s = (mes_s or "").strip()
+    anio_s = (anio_s or "").strip()
+    if anio_s.isdigit():
+        anio = int(anio_s)
+        if not (2000 <= anio <= 2100):
+            return None
+        if mes_s.isdigit():
+            mes = int(mes_s)
+            if 1 <= mes <= 12:
+                ultimo = monthrange(anio, mes)[1]
+                return date(anio, mes, 1), date(anio, mes, ultimo)
+        return date(anio, 1, 1), date(anio, 12, 31)
+    if mes_s.isdigit():
+        mes = int(mes_s)
+        if 1 <= mes <= 12:
+            anio = date.today().year
+            ultimo = monthrange(anio, mes)[1]
+            return date(anio, mes, 1), date(anio, mes, ultimo)
+    return None
+
+
+def _ordenes_list_query(filtros: Optional[dict[str, str]] = None):
     from sqlalchemy.orm import joinedload
 
-    q = (
-        WorkOrder.query.options(joinedload(WorkOrder.jornadas))
-        .order_by(WorkOrder.fecha_programada.desc(), WorkOrder.id.desc())
+    filtros = filtros if filtros is not None else _ordenes_filtros_desde_request()
+    q = _filter_work_orders_empresa(
+        WorkOrder.query.options(
+            joinedload(WorkOrder.jornadas),
+            joinedload(WorkOrder.machine),
+            joinedload(WorkOrder.technician),
+        )
     )
+
+    numero = filtros.get("numero", "")
+    if numero:
+        like = f"%{numero}%"
+        conds = [WorkOrder.numero.ilike(like)]
+        num_id = numero.lstrip("#").strip()
+        if num_id.isdigit():
+            conds.append(WorkOrder.id == int(num_id))
+        q = q.filter(or_(*conds))
+
+    equipo = filtros.get("equipo", "")
+    if equipo:
+        like = f"%{equipo}%"
+        mids = db.session.query(Machine.id).filter(
+            or_(Machine.nombre.ilike(like), Machine.codigo.ilike(like))
+        )
+        eid = _current_empresa_id()
+        if eid:
+            mids = mids.filter(Machine.empresa_id == eid)
+        q = q.filter(WorkOrder.machine_id.in_(mids))
+
+    ubicacion = filtros.get("ubicacion", "")
+    if ubicacion:
+        like = f"%{ubicacion}%"
+        mids_ub = db.session.query(Machine.id).filter(
+            or_(Machine.ubicacion.ilike(like), Machine.area.ilike(like))
+        )
+        eid = _current_empresa_id()
+        if eid:
+            mids_ub = mids_ub.filter(Machine.empresa_id == eid)
+        q = q.filter(
+            or_(
+                WorkOrder.ubicacion.ilike(like),
+                WorkOrder.area.ilike(like),
+                WorkOrder.machine_id.in_(mids_ub),
+            )
+        )
+
+    tipo = filtros.get("tipo", "")
+    if tipo:
+        q = q.filter(func.lower(WorkOrder.tipo) == tipo.lower())
+
+    status = filtros.get("status", "")
     if status:
-        q = q.filter_by(status=status)
-    return render_template("ordenes/list.html", orders=q.all(), status_filter=status)
+        q = q.filter(WorkOrder.status == status)
+
+    rango_mes = _parse_mes_anio_filtro(filtros.get("mes", ""), filtros.get("anio", ""))
+    if rango_mes:
+        inicio_mes, fin_mes = rango_mes
+        q = q.filter(
+            WorkOrder.fecha_programada.isnot(None),
+            WorkOrder.fecha_programada >= inicio_mes,
+            WorkOrder.fecha_programada <= fin_mes,
+        )
+
+    fecha_desde = _parse_fecha_filtro(filtros.get("fecha_desde", ""))
+    if fecha_desde:
+        q = q.filter(WorkOrder.fecha_programada >= fecha_desde)
+    fecha_hasta = _parse_fecha_filtro(filtros.get("fecha_hasta", ""))
+    if fecha_hasta:
+        q = q.filter(WorkOrder.fecha_programada <= fecha_hasta)
+
+    return q.order_by(WorkOrder.fecha_programada.desc(), WorkOrder.id.desc())
+
+
+@bp.route("/ordenes")
+def ordenes_list():
+    filtros = _ordenes_filtros_desde_request()
+    orders = _ordenes_list_query(filtros).all()
+    hay_filtros = any(filtros.values())
+    filtros_qs_base = {k: v for k, v in filtros.items() if v and k != "status"}
+    hoy = date.today()
+    return render_template(
+        "ordenes/list.html",
+        orders=orders,
+        filtros=filtros,
+        filtros_qs_base=filtros_qs_base,
+        status_filter=filtros.get("status", ""),
+        hay_filtros=hay_filtros,
+        meses_ot=MESES_PLANEACION,
+        anios_ot=list(range(hoy.year - 2, hoy.year + 3)),
+        tipos_ot=[
+            ("", "Todos"),
+            (WorkOrderType.PREVENTIVO.value, "Preventivo"),
+            (WorkOrderType.CORRECTIVO.value, "Correctivo"),
+            (WorkOrderType.EMERGENCIA.value, "Emergencia"),
+        ],
+    )
 
 
 @bp.route("/ordenes/nueva", methods=["GET", "POST"])
 def ordenes_new():
-    machines = _filter_empresa(Machine.query.order_by(Machine.nombre)).all()
+    from sqlalchemy.orm import joinedload
+
+    machines = (
+        _filter_empresa(
+            Machine.query.options(joinedload(Machine.responsable)).order_by(Machine.nombre),
+            Machine,
+        ).all()
+    )
     technicians = _filter_empresa(
         Technician.query.filter_by(activo=True).order_by(Technician.nombre), Technician
     ).all()
@@ -1711,6 +2309,9 @@ def ordenes_new():
             prioridad=request.form.get("prioridad") or "media",
             empresa_id=_current_empresa_id(),
             fecha_programada=fecha_prog,
+            ubicacion=request.form.get("ubicacion", "").strip(),
+            area=request.form.get("area", "").strip(),
+            **_work_order_responsables_desde_form(request.form),
             machine_id=int(request.form.get("machine_id", 0)),
             technician_id=int(request.form["technician_id"])
             if request.form.get("technician_id")
@@ -1723,8 +2324,37 @@ def ordenes_new():
         else:
             wo.tipo = tipo
             if wo.tipo == WorkOrderType.PREVENTIVO.value:
+                if not fecha_prog:
+                    flash(
+                        "La fecha programada es obligatoria para generar el calendario preventivo del año.",
+                        "danger",
+                    )
+                    return render_template(
+                        "ordenes/form.html",
+                        order=None,
+                        machines=machines,
+                        technicians=technicians,
+                        prioridades=WORK_ORDER_PRIORITIES,
+                        **_orden_form_context(None, technicians, machines),
+                    )
                 fv, fu = parse_frecuencia_form(request.form)
-                err_prev = aplicar_preventivo_a_orden(wo, wo.titulo, fv, fu)
+                ordenes, err_prev = crear_programacion_preventiva_anio(
+                    empresa_id=wo.empresa_id,
+                    machine_id=wo.machine_id,
+                    technician_id=wo.technician_id,
+                    titulo=wo.titulo,
+                    descripcion=wo.descripcion,
+                    prioridad=wo.prioridad,
+                    status=wo.status,
+                    fecha_inicio=fecha_prog,
+                    frecuencia_valor=fv,
+                    frecuencia_unidad=fu,
+                    ubicacion=wo.ubicacion,
+                    area=wo.area,
+                    autorizado_por=wo.autorizado_por,
+                    recibido_por=wo.recibido_por,
+                    empresa_tercerizada=wo.empresa_tercerizada,
+                )
                 if err_prev:
                     flash(err_prev, "danger")
                     return render_template(
@@ -1733,8 +2363,33 @@ def ordenes_new():
                         machines=machines,
                         technicians=technicians,
                         prioridades=WORK_ORDER_PRIORITIES,
-                        **_orden_form_context(None, technicians),
+                        **_orden_form_context(None, technicians, machines),
                     )
+                try:
+                    db.session.flush()
+                    numeros = [asignar_numero_ot(o) for o in ordenes]
+                    db.session.commit()
+                except Exception:
+                    db.session.rollback()
+                    flash("No se pudo guardar la programación preventiva.", "danger")
+                    return render_template(
+                        "ordenes/form.html",
+                        order=None,
+                        machines=machines,
+                        technicians=technicians,
+                        prioridades=WORK_ORDER_PRIORITIES,
+                        **_orden_form_context(None, technicians, machines),
+                    )
+                anio = date.today().year
+                if len(numeros) == 1:
+                    flash(f"Orden {numeros[0]} creada.", "success")
+                else:
+                    flash(
+                        f"Se crearon {len(numeros)} OT preventivas para {anio} "
+                        f"({frecuencia_label(fv, fu)}): {numeros[0]} … {numeros[-1]}.",
+                        "success",
+                    )
+                return redirect(url_for("main.ordenes_list"))
             else:
                 wo.preventive_plan_id = None
                 wo.frecuencia_valor = None
@@ -1747,6 +2402,7 @@ def ordenes_new():
                 db.session.rollback()
                 flash(err, "danger")
             else:
+                _aplicar_fecha_cierre_si_terminal(wo)
                 err_rep = _guardar_repuestos_orden(wo)
                 if err_rep:
                     db.session.rollback()
@@ -1761,7 +2417,7 @@ def ordenes_new():
         machines=machines,
         technicians=technicians,
         prioridades=WORK_ORDER_PRIORITIES,
-        **_orden_form_context(None, technicians),
+        **_orden_form_context(None, technicians, machines),
     )
 
 
@@ -1770,23 +2426,40 @@ def ordenes_edit(id):
     from sqlalchemy.orm import joinedload
 
     wo = WorkOrder.query.options(
+        joinedload(WorkOrder.machine).joinedload(Machine.responsable),
         joinedload(WorkOrder.jornadas),
         joinedload(WorkOrder.repuestos).joinedload(WorkOrderRepuesto.spare_part),
     ).get_or_404(id)
-    solo_lectura = not wo_es_editable(wo.status)
-    machines = _filter_empresa(Machine.query.order_by(Machine.nombre)).all()
+    solo_lectura = (not can_edit(current_user)) or (not wo_es_editable(wo.status))
+    machines = (
+        _filter_empresa(
+            Machine.query.options(joinedload(Machine.responsable)).order_by(Machine.nombre),
+            Machine,
+        ).all()
+    )
     technicians = _filter_empresa(
         Technician.query.filter_by(activo=True).order_by(Technician.nombre), Technician
     ).all()
     if request.method == "POST":
         if solo_lectura:
-            flash("Esta orden está cerrada y no puede modificarse.", "warning")
+            flash(
+                "No puedes modificar esta orden."
+                if not can_edit(current_user)
+                else "Esta orden está cerrada y no puede modificarse.",
+                "warning",
+            )
             return redirect(url_for("main.ordenes_edit", id=wo.id))
         wo.titulo = request.form.get("titulo", "").strip()
         wo.descripcion = request.form.get("descripcion", "").strip()
         wo.tipo = request.form.get("tipo") or wo.tipo
         wo.status = request.form.get("status") or wo.status
         wo.prioridad = request.form.get("prioridad") or wo.prioridad
+        wo.ubicacion = request.form.get("ubicacion", "").strip()
+        wo.area = request.form.get("area", "").strip()
+        extra = _work_order_responsables_desde_form(request.form)
+        wo.autorizado_por = extra["autorizado_por"]
+        wo.recibido_por = extra["recibido_por"]
+        wo.empresa_tercerizada = extra["empresa_tercerizada"]
         fp = request.form.get("fecha_programada")
         wo.fecha_programada = datetime.strptime(fp, "%Y-%m-%d").date() if fp else None
         wo.machine_id = int(request.form.get("machine_id", wo.machine_id))
@@ -1807,6 +2480,7 @@ def ordenes_edit(id):
                 if err:
                     flash(err, "danger")
                 else:
+                    _aplicar_fecha_cierre_si_terminal(wo)
                     err_rep = _guardar_repuestos_orden(wo)
                     if err_rep:
                         flash(err_rep, "danger")
@@ -1822,6 +2496,7 @@ def ordenes_edit(id):
             if err:
                 flash(err, "danger")
             else:
+                _aplicar_fecha_cierre_si_terminal(wo)
                 err_rep = _guardar_repuestos_orden(wo)
                 if err_rep:
                     flash(err_rep, "danger")
@@ -1836,7 +2511,7 @@ def ordenes_edit(id):
         technicians=technicians,
         prioridades=WORK_ORDER_PRIORITIES,
         solo_lectura=solo_lectura,
-        **_orden_form_context(wo, technicians),
+        **_orden_form_context(wo, technicians, machines),
     )
 
 
@@ -1954,51 +2629,284 @@ def inventario_edit(id):
     return render_template("inventario/form.html", item=p)
 
 
-# --- Equipo técnico ---
+# --- Equipo técnico (usuarios de la empresa) ---
+def _equipo_usuarios_query():
+    eid = _current_empresa_id()
+    q = User.query
+    if eid:
+        q = q.filter(User.empresa_id == eid)
+    return q.order_by(User.activo.desc(), User.nombre_visible, User.username)
+
+
+def _validar_username_equipo(username: str) -> Optional[str]:
+    u = (username or "").strip().lower()
+    if len(u) < 3:
+        return "El usuario debe tener al menos 3 caracteres."
+    if not re.match(r"^[a-z0-9._-]+$", u):
+        return "Solo letras, números, punto, guion y guion bajo."
+    return None
+
+
+def _sync_technician_for_user(user: User) -> None:
+    """Mantiene un técnico vinculado para asignar OT (roles operativos)."""
+    if not user.empresa_id:
+        return
+    tech = Technician.query.filter_by(user_id=user.id).first()
+    if normalize_rol(user.rol) != UserRole.TECNICO.value:
+        if tech:
+            tech.nombre = user.nombre_visible or user.username
+            tech.email = user.email or ""
+            tech.telefono = user.telefono or ""
+            tech.activo = user.activo
+        return
+    if not tech:
+        tech = Technician(empresa_id=user.empresa_id, user_id=user.id)
+        db.session.add(tech)
+    tech.nombre = user.nombre_visible or user.username
+    tech.email = user.email or ""
+    tech.telefono = user.telefono or ""
+    tech.activo = user.activo
+    tech.empresa_id = user.empresa_id
+
+
+def _require_admin_equipo() -> bool:
+    if not can_manage_equipo(current_user):
+        flash("No tienes permiso para gestionar el equipo.", "warning")
+        return False
+    return True
+
+
+def _sedes_empresa(empresa_id: int) -> list:
+    return (
+        Sede.query.filter_by(empresa_id=empresa_id)
+        .order_by(Sede.es_principal.desc(), Sede.nombre)
+        .all()
+    )
+
+
+def _parse_sede_equipo(form, empresa_id: int) -> tuple[Optional[int], Optional[str]]:
+    raw = (form.get("sede_id") or "").strip()
+    if not raw:
+        return None, None
+    if not raw.isdigit():
+        return None, "Selecciona una sede válida."
+    sid = int(raw)
+    if not Sede.query.filter_by(id=sid, empresa_id=empresa_id).first():
+        return None, "La sede no pertenece a tu empresa."
+    return sid, None
+
+
+def _save_user_custom_fields(user: User, form, empresa_id: int, sector: str) -> Optional[str]:
+    campos = campos_para_equipo(empresa_id, sector)
+    for campo in campos:
+        val, err = valor_campo_desde_form(campo, form)
+        if err:
+            return err
+        row = UsuarioCampoValor.query.filter_by(user_id=user.id, campo_id=campo.id).first()
+        if row:
+            row.valor = val
+        else:
+            db.session.add(
+                UsuarioCampoValor(user_id=user.id, campo_id=campo.id, valor=val)
+            )
+    return None
+
+
+def _equipo_form_context(usuario: Optional[User], empresa_id: int) -> dict:
+    emp = Empresa.query.get(empresa_id)
+    sector = normalizar_sector(emp.sector if emp else None)
+    campos = campos_para_equipo(empresa_id, sector) if empresa_id else []
+    valores = valores_campos_usuario_map(usuario) if usuario else {}
+    return {
+        "sedes": _sedes_empresa(empresa_id) if empresa_id else [],
+        "campos_personalizados": campos,
+        "valores_campos": valores,
+    }
+
+
 @bp.route("/equipo")
 def equipo_list():
     return render_template(
         "equipo/list.html",
-        technicians=Technician.query.order_by(Technician.nombre).all(),
+        usuarios=_equipo_usuarios_query().all(),
+        puede_gestionar=can_manage_equipo(current_user),
     )
 
 
 @bp.route("/equipo/nuevo", methods=["GET", "POST"])
 def equipo_new():
+    if not _require_admin_equipo():
+        return redirect(url_for("main.equipo_list"))
+    eid = _current_empresa_id()
+    if not eid:
+        flash("No hay empresa asociada a tu cuenta.", "warning")
+        return redirect(url_for("main.equipo_list"))
+    emp = Empresa.query.get(eid)
+    sector = normalizar_sector(emp.sector if emp else None)
+    roles = roles_for_select(current_user)
+    ctx = _equipo_form_context(None, eid)
+
     if request.method == "POST":
-        t = Technician(
-            nombre=request.form.get("nombre", "").strip(),
-            especialidad=request.form.get("especialidad", "").strip(),
-            telefono=request.form.get("telefono", "").strip(),
-            email=request.form.get("email", "").strip(),
-            activo=bool(request.form.get("activo")),
-        )
-        if not t.nombre:
+        username = (request.form.get("username") or "").strip().lower()
+        nombre = request.form.get("nombre_visible", "").strip()
+        area = request.form.get("area", "").strip()
+        email = request.form.get("email", "").strip()
+        telefono = request.form.get("telefono", "").strip()
+        rol = (request.form.get("rol") or UserRole.TECNICO.value).strip().lower()
+        activo = bool(request.form.get("activo"))
+        password = request.form.get("password", "")
+        password2 = request.form.get("password2", "")
+        sede_id, err_sede = _parse_sede_equipo(request.form, eid)
+
+        err_u = _validar_username_equipo(username)
+        if err_u:
+            flash(err_u, "danger")
+        elif User.query.filter_by(username=username).first():
+            flash("Ese nombre de usuario ya está en uso.", "danger")
+        elif not nombre:
             flash("El nombre es obligatorio.", "danger")
+        elif rol not in USER_ROLE_LABELS:
+            flash("Selecciona un rol válido.", "danger")
+        elif not can_assign_role(current_user, rol):
+            flash("No puedes asignar ese rol.", "danger")
+        elif err_sede:
+            flash(err_sede, "danger")
+        elif len(password) < 6:
+            flash("La contraseña debe tener al menos 6 caracteres.", "danger")
+        elif password != password2:
+            flash("Las contraseñas no coinciden.", "danger")
         else:
-            db.session.add(t)
-            db.session.commit()
-            flash("Técnico registrado.", "success")
-            return redirect(url_for("main.equipo_list"))
-    return render_template("equipo/form.html", tech=None)
+            user = User(
+                empresa_id=eid,
+                username=username,
+                nombre_visible=nombre,
+                area=area,
+                sede_id=sede_id,
+                email=email,
+                telefono=telefono,
+                rol=rol,
+                activo=activo,
+                onboarding_completado=True,
+            )
+            user.set_password(password)
+            db.session.add(user)
+            db.session.flush()
+            err_c = _save_user_custom_fields(user, request.form, eid, sector)
+            if err_c:
+                db.session.rollback()
+                flash(err_c, "danger")
+            else:
+                _sync_technician_for_user(user)
+                try:
+                    db.session.commit()
+                    flash(f"Miembro «{username}» registrado.", "success")
+                    return redirect(url_for("main.equipo_list"))
+                except Exception:
+                    db.session.rollback()
+                    flash("No se pudo guardar.", "danger")
+
+    return render_template(
+        "equipo/form.html",
+        usuario=None,
+        roles=roles,
+        es_self=False,
+        **ctx,
+    )
 
 
 @bp.route("/equipo/<int:id>/editar", methods=["GET", "POST"])
 def equipo_edit(id):
-    t = Technician.query.get_or_404(id)
+    if not _require_admin_equipo():
+        return redirect(url_for("main.equipo_list"))
+    eid = _current_empresa_id()
+    usuario = User.query.filter_by(id=id, empresa_id=eid).first_or_404()
+    emp = Empresa.query.get(eid)
+    sector = normalizar_sector(emp.sector if emp else None)
+    roles = roles_for_select(current_user)
+    es_self = usuario.id == current_user.id
+    ctx = _equipo_form_context(usuario, eid)
+
     if request.method == "POST":
-        t.nombre = request.form.get("nombre", "").strip()
-        t.especialidad = request.form.get("especialidad", "").strip()
-        t.telefono = request.form.get("telefono", "").strip()
-        t.email = request.form.get("email", "").strip()
-        t.activo = bool(request.form.get("activo"))
-        if not t.nombre:
+        nombre = request.form.get("nombre_visible", "").strip()
+        area = request.form.get("area", "").strip()
+        email = request.form.get("email", "").strip()
+        telefono = request.form.get("telefono", "").strip()
+        rol = (request.form.get("rol") or usuario.rol).strip().lower()
+        activo = bool(request.form.get("activo"))
+        password = request.form.get("password", "")
+        password2 = request.form.get("password2", "")
+        sede_id, err_sede = _parse_sede_equipo(request.form, eid)
+
+        if not nombre:
             flash("El nombre es obligatorio.", "danger")
+        elif rol not in USER_ROLE_LABELS:
+            flash("Selecciona un rol válido.", "danger")
+        elif not can_assign_role(current_user, rol):
+            flash("No puedes asignar ese rol.", "danger")
+        elif err_sede:
+            flash(err_sede, "danger")
+        elif es_self and not activo:
+            flash("No puedes desactivar tu propia cuenta.", "danger")
+        elif es_self and rol != normalize_rol(current_user.rol):
+            flash("No puedes cambiar tu propio rol.", "danger")
+        elif password and len(password) < 6:
+            flash("La contraseña debe tener al menos 6 caracteres.", "danger")
+        elif password and password != password2:
+            flash("Las contraseñas no coinciden.", "danger")
+        elif (
+            not es_self
+            and normalize_rol(usuario.rol) in (UserRole.SUPERADMIN.value, UserRole.ADMIN.value)
+            and usuario.activo
+            and (
+                not activo
+                or normalize_rol(rol)
+                not in (UserRole.SUPERADMIN.value, UserRole.ADMIN.value)
+            )
+            and User.query.filter(
+                User.empresa_id == eid,
+                User.activo.is_(True),
+                User.rol.in_(
+                    [
+                        UserRole.SUPERADMIN.value,
+                        UserRole.ADMIN.value,
+                        "supervisor",
+                    ]
+                ),
+            ).count()
+            <= 1
+        ):
+            flash("Debe quedar al menos un superadministrador o administrador activo.", "warning")
         else:
-            db.session.commit()
-            flash("Técnico actualizado.", "success")
-            return redirect(url_for("main.equipo_list"))
-    return render_template("equipo/form.html", tech=t)
+            usuario.nombre_visible = nombre
+            usuario.area = area
+            usuario.sede_id = sede_id
+            usuario.email = email
+            usuario.telefono = telefono
+            if not es_self:
+                usuario.rol = rol
+                usuario.activo = activo
+            if password:
+                usuario.set_password(password)
+            err_c = _save_user_custom_fields(usuario, request.form, eid, sector)
+            if err_c:
+                flash(err_c, "danger")
+            else:
+                _sync_technician_for_user(usuario)
+                try:
+                    db.session.commit()
+                    flash("Miembro actualizado.", "success")
+                    return redirect(url_for("main.equipo_list"))
+                except Exception:
+                    db.session.rollback()
+                    flash("No se pudo guardar.", "danger")
+
+    return render_template(
+        "equipo/form.html",
+        usuario=usuario,
+        roles=roles,
+        es_self=es_self,
+        **ctx,
+    )
 
 
 # --- Configuración empresa ---
@@ -2006,6 +2914,403 @@ def _empresa_del_usuario() -> Optional[Empresa]:
     if not current_user.is_authenticated or not current_user.empresa_id:
         return None
     return current_user.empresa
+
+
+# --- Campos personalizados (configuración) ---
+def _require_admin_empresa() -> Optional[Empresa]:
+    emp = _empresa_del_usuario()
+    if emp is None:
+        flash("No hay una empresa asociada a tu cuenta.", "warning")
+        return None
+    if not can_manage_config(current_user):
+        flash("Solo el superadministrador puede gestionar esta configuración.", "warning")
+        return None
+    return emp
+
+
+def _campos_personalizados_empresa_query(empresa_id: int, sector: str):
+    return CampoPersonalizado.query.filter_by(
+        empresa_id=empresa_id, sector=normalizar_sector(sector)
+    )
+
+
+def _categorias_seleccionadas_campo(
+    tipos: list, form=None, campo: Optional[CampoPersonalizado] = None
+) -> list[int]:
+    valid = {t.id for t in tipos}
+    if form is not None:
+        return parse_categorias_form(form, valid)
+    if campo:
+        return campo.categorias_aplicables()
+    return []
+
+
+def _seccion_campo_desde_form(form) -> str:
+    sel = (form.get("seccion") or "").strip()
+    if sel == "__nueva__":
+        nombre = (form.get("seccion_nueva") or "").strip()
+        return nombre or "general"
+    if sel in ACTIVO_SECCION_KEYS:
+        return sel
+    if sel:
+        return sel
+    return "general"
+
+
+def _categorias_campo_guardar(
+    form,
+    tipos: list,
+    empresa_id: int,
+    sector: str,
+    seccion: str,
+    entidad: str,
+) -> list[int]:
+    if entidad == CAMPO_ENTIDAD_EQUIPO:
+        return []
+    form_cats = _categorias_seleccionadas_campo(tipos, form=form)
+    if es_seccion_estandar(seccion):
+        return form_cats
+    inherited = categorias_de_seccion_personalizada(empresa_id, sector, seccion)
+    if inherited is None:
+        return form_cats
+    if inherited == []:
+        return []
+    if form_cats:
+        return form_cats
+    return inherited
+
+
+def _seccion_ancla_desde_form(
+    form, seccion: str, empresa_id: int, sector: str
+) -> str:
+    if es_seccion_estandar(seccion):
+        return ""
+    sel = (form.get("seccion") or "").strip()
+    if sel == "__nueva__":
+        return normalizar_seccion_ancla(form.get("seccion_ancla"))
+    return ancla_de_seccion_personalizada(empresa_id, sector, seccion)
+
+
+def _campo_form_context(
+    *,
+    empresa_id: int,
+    sector: str,
+    campo,
+    tipos_maquina,
+    siguiente_orden: int,
+    sector_label: str,
+    opciones_texto: str = "",
+    categorias_seleccionadas: Optional[list[int]] = None,
+    seccion_key_override: Optional[str] = None,
+    seccion_nueva_valor: str = "",
+    seccion_ancla_sel_override: Optional[str] = None,
+) -> dict:
+    cats = categorias_seleccionadas if categorias_seleccionadas is not None else (
+        campo.categorias_aplicables() if campo else []
+    )
+    entidad = (campo.entidad if campo else CAMPO_ENTIDAD_ACTIVO) or CAMPO_ENTIDAD_ACTIVO
+    sector = normalizar_sector(sector)
+    sec_raw = campo.seccion if campo else "general"
+    secciones_personalizadas = secciones_personalizadas_empresa(empresa_id, sector)
+    if campo and not es_seccion_estandar(sec_raw):
+        seccion_key = sec_raw
+    elif not campo:
+        seccion_key = "general"
+    else:
+        seccion_key = normalizar_seccion_campo(sec_raw)
+    if seccion_key_override is not None:
+        seccion_key = seccion_key_override
+    cats_default = cats
+    if (
+        entidad == CAMPO_ENTIDAD_ACTIVO
+        and seccion_key
+        and seccion_key not in ACTIVO_SECCION_KEYS
+        and seccion_key != "__nueva__"
+    ):
+        inherited_cats = categorias_de_seccion_personalizada(empresa_id, sector, seccion_key)
+        if inherited_cats is not None:
+            cats_default = inherited_cats
+    ancla_sel = ""
+    if seccion_ancla_sel_override is not None:
+        ancla_sel = seccion_ancla_sel_override
+    elif campo and not es_seccion_estandar(sec_raw):
+        ancla_sel = normalizar_seccion_ancla(campo.seccion_ancla)
+    elif not campo and seccion_key == "__nueva__":
+        ancla_sel = "general"
+    elif not campo:
+        ancla_sel = "general"
+    return {
+        "campo": campo,
+        "tipos_maquina": tipos_maquina,
+        "tipos_campo": CAMPO_TIPOS,
+        "texto_tamanos": TEXTO_TAMANOS,
+        "entidades_campo": CAMPO_ENTIDADES,
+        "entidad": entidad,
+        "activo_secciones": ACTIVO_SECCIONES,
+        "activo_seccion_keys_list": list(ACTIVO_SECCION_KEYS),
+        "seccion_key": seccion_key,
+        "seccion_nueva_valor": seccion_nueva_valor,
+        "seccion_ancla_sel": ancla_sel,
+        "secciones_personalizadas": secciones_personalizadas,
+        "siguiente_orden": siguiente_orden,
+        "sector_label": sector_label,
+        "opciones_texto": opciones_texto,
+        "categorias_seleccionadas": cats_default,
+        "todas_categorias": len(cats_default) == 0,
+        "etiqueta_seccion_campo": etiqueta_seccion_campo,
+        "etiqueta_seccion_campo_con_ancla": etiqueta_seccion_campo_con_ancla,
+    }
+
+
+@bp.route("/configuracion/campos")
+def configuracion_campos_list():
+    emp = _require_admin_empresa()
+    if emp is None:
+        return redirect(url_for("main.dashboard"))
+    sector = normalizar_sector(emp.sector)
+    campos = (
+        _campos_personalizados_empresa_query(emp.id, sector)
+        .order_by(CampoPersonalizado.orden, CampoPersonalizado.nombre)
+        .all()
+    )
+    tipos_map = {t.id: t.nombre for t in _machine_types_query().all()}
+    return render_template(
+        "configuracion/campos_list.html",
+        campos=campos,
+        empresa=emp,
+        sector_label=SECTOR_LABELS.get(sector, sector),
+        tipos_map=tipos_map,
+        etiqueta_categorias_campo=etiqueta_categorias_campo,
+        etiqueta_seccion_campo=etiqueta_seccion_campo,
+        etiqueta_seccion_campo_con_ancla=etiqueta_seccion_campo_con_ancla,
+    )
+
+
+@bp.route("/configuracion/campos/nuevo", methods=["GET", "POST"])
+def configuracion_campos_new():
+    emp = _require_admin_empresa()
+    if emp is None:
+        return redirect(url_for("main.dashboard"))
+    sector = normalizar_sector(emp.sector)
+    tipos = _machine_types_query().filter_by(activo=True).order_by(MachineType.orden).all()
+    max_orden = (
+        db.session.query(func.max(CampoPersonalizado.orden))
+        .filter_by(empresa_id=emp.id, sector=sector)
+        .scalar()
+    )
+    siguiente_orden = (max_orden or 0) + 1
+
+    if request.method == "POST":
+        nombre = request.form.get("nombre", "").strip()
+        tipo = (request.form.get("tipo") or "text").strip().lower()
+        texto_tamano = parse_texto_tamano_form(request.form, tipo)
+        entidad = (request.form.get("entidad") or CAMPO_ENTIDAD_ACTIVO).strip().lower()
+        obligatorio = bool(request.form.get("obligatorio"))
+        try:
+            orden = int(request.form.get("orden") or siguiente_orden)
+        except ValueError:
+            orden = siguiente_orden
+        seccion = _seccion_campo_desde_form(request.form) if entidad == CAMPO_ENTIDAD_ACTIVO else ""
+        cat_ids = _categorias_campo_guardar(
+            request.form, tipos, emp.id, sector, seccion, entidad
+        )
+        categorias_json = categorias_ids_a_json(cat_ids) if cat_ids else ""
+
+        if not nombre:
+            flash("El nombre del campo es obligatorio.", "danger")
+        elif tipo not in CAMPO_TIPOS_VALIDOS:
+            flash("Selecciona un tipo de campo válido.", "danger")
+        elif entidad not in (CAMPO_ENTIDAD_ACTIVO, CAMPO_ENTIDAD_EQUIPO):
+            flash("Selecciona dónde aplica el campo.", "danger")
+        elif entidad == CAMPO_ENTIDAD_ACTIVO and request.form.get("seccion") == "__nueva__" and not (request.form.get("seccion_nueva") or "").strip():
+            flash("Indica el nombre de la nueva sección personalizada.", "danger")
+        else:
+            opciones_json = ""
+            if tipo in TIPOS_CON_OPCIONES:
+                opciones_json, err = parse_opciones_texto(request.form.get("opciones", ""))
+                if err:
+                    flash(err, "danger")
+                    return render_template(
+                        "configuracion/campo_form.html",
+                        **_campo_form_context(
+                            empresa_id=emp.id,
+                            sector=sector,
+                            campo=None,
+                            tipos_maquina=tipos,
+                            siguiente_orden=siguiente_orden,
+                            sector_label=SECTOR_LABELS.get(sector, sector),
+                            opciones_texto=request.form.get("opciones", ""),
+                            categorias_seleccionadas=cat_ids,
+                            seccion_key_override=(request.form.get("seccion") or "").strip(),
+                            seccion_nueva_valor=(request.form.get("seccion_nueva") or "").strip(),
+                            seccion_ancla_sel_override=normalizar_seccion_ancla(
+                                request.form.get("seccion_ancla")
+                            ),
+                        ),
+                    )
+            clave = clave_campo_unica(
+                emp.id, sector, slugify_campo_clave(nombre), entidad=entidad
+            )
+            ancla = (
+                _seccion_ancla_desde_form(request.form, seccion, emp.id, sector)
+                if entidad == CAMPO_ENTIDAD_ACTIVO
+                else ""
+            )
+            db.session.add(
+                CampoPersonalizado(
+                    empresa_id=emp.id,
+                    sector=sector,
+                    entidad=entidad,
+                    seccion=seccion if entidad == CAMPO_ENTIDAD_ACTIVO else "",
+                    seccion_ancla=ancla,
+                    machine_type_id=None,
+                    categorias_ids=categorias_json,
+                    clave=clave,
+                    nombre=nombre,
+                    tipo=tipo,
+                    texto_tamano=texto_tamano,
+                    opciones=opciones_json,
+                    obligatorio=obligatorio,
+                    orden=orden,
+                    activo=True,
+                )
+            )
+            try:
+                db.session.commit()
+                flash(f"Campo «{nombre}» creado.", "success")
+                return redirect(url_for("main.configuracion_campos_list"))
+            except Exception:
+                db.session.rollback()
+                flash("No se pudo guardar el campo.", "danger")
+
+    return render_template(
+        "configuracion/campo_form.html",
+        **_campo_form_context(
+            empresa_id=emp.id,
+            sector=sector,
+            campo=None,
+            tipos_maquina=tipos,
+            siguiente_orden=siguiente_orden,
+            sector_label=SECTOR_LABELS.get(sector, sector),
+        ),
+    )
+
+
+@bp.route("/configuracion/campos/<int:id>/editar", methods=["GET", "POST"])
+def configuracion_campos_edit(id):
+    emp = _require_admin_empresa()
+    if emp is None:
+        return redirect(url_for("main.dashboard"))
+    sector = normalizar_sector(emp.sector)
+    campo = _campos_personalizados_empresa_query(emp.id, sector).filter_by(id=id).first_or_404()
+    tipos = _machine_types_query().filter_by(activo=True).order_by(MachineType.orden).all()
+
+    if request.method == "POST":
+        nombre = request.form.get("nombre", "").strip()
+        tipo = (request.form.get("tipo") or campo.tipo).strip().lower()
+        texto_tamano = parse_texto_tamano_form(request.form, tipo)
+        obligatorio = bool(request.form.get("obligatorio"))
+        activo = bool(request.form.get("activo"))
+        try:
+            orden = int(request.form.get("orden") or campo.orden)
+        except ValueError:
+            orden = campo.orden
+        entidad = (campo.entidad or CAMPO_ENTIDAD_ACTIVO).strip().lower()
+        seccion = _seccion_campo_desde_form(request.form) if entidad == CAMPO_ENTIDAD_ACTIVO else ""
+        cat_ids = _categorias_campo_guardar(
+            request.form, tipos, emp.id, sector, seccion, entidad
+        )
+        categorias_json = categorias_ids_a_json(cat_ids) if cat_ids else ""
+
+        if not nombre:
+            flash("El nombre del campo es obligatorio.", "danger")
+        elif tipo not in CAMPO_TIPOS_VALIDOS:
+            flash("Selecciona un tipo de campo válido.", "danger")
+        elif entidad == CAMPO_ENTIDAD_ACTIVO and request.form.get("seccion") == "__nueva__" and not (request.form.get("seccion_nueva") or "").strip():
+            flash("Indica el nombre de la nueva sección personalizada.", "danger")
+        else:
+            opciones_json = campo.opciones or ""
+            if tipo in TIPOS_CON_OPCIONES:
+                opciones_json, err = parse_opciones_texto(request.form.get("opciones", ""))
+                if err:
+                    flash(err, "danger")
+                    return render_template(
+                        "configuracion/campo_form.html",
+                        **_campo_form_context(
+                            empresa_id=emp.id,
+                            sector=sector,
+                            campo=campo,
+                            tipos_maquina=tipos,
+                            siguiente_orden=campo.orden,
+                            sector_label=SECTOR_LABELS.get(sector, sector),
+                            opciones_texto=request.form.get("opciones", ""),
+                            categorias_seleccionadas=cat_ids,
+                            seccion_key_override=(request.form.get("seccion") or "").strip(),
+                            seccion_nueva_valor=(request.form.get("seccion_nueva") or "").strip(),
+                            seccion_ancla_sel_override=normalizar_seccion_ancla(
+                                request.form.get("seccion_ancla")
+                            ),
+                        ),
+                    )
+            elif tipo not in TIPOS_CON_OPCIONES:
+                opciones_json = ""
+            campo.nombre = nombre
+            campo.tipo = tipo
+            campo.texto_tamano = texto_tamano
+            campo.opciones = opciones_json
+            campo.obligatorio = obligatorio
+            campo.orden = orden
+            campo.activo = activo
+            campo.machine_type_id = None
+            campo.categorias_ids = categorias_json
+            campo.seccion = seccion if entidad == CAMPO_ENTIDAD_ACTIVO else ""
+            campo.seccion_ancla = (
+                _seccion_ancla_desde_form(request.form, seccion, emp.id, sector)
+                if entidad == CAMPO_ENTIDAD_ACTIVO
+                else ""
+            )
+            try:
+                db.session.commit()
+                flash("Campo actualizado.", "success")
+                return redirect(url_for("main.configuracion_campos_list"))
+            except Exception:
+                db.session.rollback()
+                flash("No se pudo guardar.", "danger")
+
+    return render_template(
+        "configuracion/campo_form.html",
+        **_campo_form_context(
+            empresa_id=emp.id,
+            sector=sector,
+            campo=campo,
+            tipos_maquina=tipos,
+            siguiente_orden=campo.orden,
+            sector_label=SECTOR_LABELS.get(sector, sector),
+            opciones_texto=opciones_a_texto_form(campo),
+        ),
+    )
+
+
+@bp.route("/configuracion/campos/<int:id>/eliminar", methods=["POST"])
+def configuracion_campos_delete(id):
+    emp = _require_admin_empresa()
+    if emp is None:
+        return redirect(url_for("main.dashboard"))
+    sector = normalizar_sector(emp.sector)
+    campo = _campos_personalizados_empresa_query(emp.id, sector).filter_by(id=id).first_or_404()
+    n_valores = campo.valores.count() + campo.valores_usuario.count()
+    if n_valores > 0:
+        campo.activo = False
+        db.session.commit()
+        flash(
+            f"El campo «{campo.nombre}» se desactivó ({n_valores} registro(s) ya lo usan).",
+            "info",
+        )
+    else:
+        db.session.delete(campo)
+        db.session.commit()
+        flash("Campo eliminado.", "info")
+    return redirect(url_for("main.configuracion_campos_list"))
 
 
 def _empresa_logo_url(empresa: Optional[Empresa]) -> str:
@@ -2017,9 +3322,7 @@ def _empresa_logo_url(empresa: Optional[Empresa]) -> str:
 
 
 def _empresa_logo_url_or_none(empresa: Optional[Empresa]) -> Optional[str]:
-    if not empresa or not (empresa.logo or "").strip():
-        return None
-    return _empresa_logo_url(empresa)
+    return empresa_logo_url_or_none(empresa)
 
 
 def _guardar_logo_empresa(empresa: Empresa, archivo) -> None:
@@ -2044,8 +3347,8 @@ def configuracion_empresa():
     if emp is None:
         flash("No hay una empresa asociada a tu cuenta.", "warning")
         return redirect(url_for("main.dashboard"))
-    if current_user.rol != UserRole.ADMIN.value:
-        flash("Solo los administradores pueden modificar la configuración de la empresa.", "warning")
+    if not can_manage_config(current_user):
+        flash("Solo el superadministrador puede modificar la configuración de la empresa.", "warning")
         return redirect(url_for("main.dashboard"))
 
     sede_principal = Sede.query.filter_by(empresa_id=emp.id, es_principal=True).first()

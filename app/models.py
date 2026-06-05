@@ -9,10 +9,8 @@ from werkzeug.security import check_password_hash, generate_password_hash
 from app import db
 
 
-class UserRole(str, Enum):
-    ADMIN = "admin"
-    TECNICO = "tecnico"
-    SUPERVISOR = "supervisor"
+# Roles definidos en app.permissions (re-export para compatibilidad)
+from app.permissions import USER_ROLE_LABELS, UserRole  # noqa: E402
 
 
 class PlanTipo(str, Enum):
@@ -196,12 +194,15 @@ class User(UserMixin, db.Model):
     password_hash = db.Column(db.String(256), nullable=False)
     nombre_visible = db.Column(db.String(120), default="")
     telefono = db.Column(db.String(40), default="")
+    area = db.Column(db.String(120), default="")
+    sede_id = db.Column(db.Integer, db.ForeignKey("sedes.id"), nullable=True, index=True)
     rol = db.Column(db.String(32), default=UserRole.ADMIN.value)
     activo = db.Column(db.Boolean, default=True)
     onboarding_completado = db.Column(db.Boolean, default=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     empresa = db.relationship("Empresa", back_populates="usuarios")
+    sede = db.relationship("Sede", backref="usuarios")
 
     def set_password(self, password: str) -> None:
         self.password_hash = generate_password_hash(password)
@@ -215,6 +216,16 @@ class User(UserMixin, db.Model):
 
     def etiqueta(self) -> str:
         return (self.nombre_visible or self.username).strip() or self.username
+
+    @property
+    def rol_label(self) -> str:
+        from app.permissions import normalize_rol
+
+        return USER_ROLE_LABELS.get(normalize_rol(self.rol), self.rol or "—")
+
+    valores_campos = db.relationship(
+        "UsuarioCampoValor", back_populates="user", lazy="dynamic", cascade="all, delete-orphan"
+    )
 
 
 class MachineStatus(str, Enum):
@@ -357,24 +368,71 @@ class Machine(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     empresa_id = db.Column(db.Integer, db.ForeignKey("empresas.id"), nullable=True, index=True)
     sede_id = db.Column(db.Integer, db.ForeignKey("sedes.id"), nullable=True)
+    parent_machine_id = db.Column(
+        db.Integer, db.ForeignKey("machines.id"), nullable=True, index=True
+    )
     codigo = db.Column(db.String(64), unique=True, nullable=False)
     machine_type_id = db.Column(db.Integer, db.ForeignKey("machine_types.id"), nullable=False)
     nombre = db.Column(db.String(200), nullable=False)
+    descripcion = db.Column(db.Text, default="")
+    registro_tipo = db.Column(db.String(32), default="")
+    checklist_registro = db.Column(db.Text, default="[]")
+    etiquetas = db.Column(db.Text, default="[]")
     ubicacion = db.Column(db.String(200), default="")
+    area = db.Column(db.String(120), default="")
     marca = db.Column(db.String(120), default="")
     modelo = db.Column(db.String(120), default="")
-    descripcion = db.Column(db.Text, default="")
+    fabricante = db.Column(db.String(120), default="")
     numero_serie = db.Column(db.String(120), default="")
+    fecha_fabricacion = db.Column(db.Date, nullable=True)
+    fecha_ingreso = db.Column(db.Date, nullable=True)
     criticidad = db.Column(db.String(32), default="media")
+    fecha_instalacion = db.Column(db.Date, nullable=True)
+    fecha_puesta_marcha = db.Column(db.Date, nullable=True)
+    vida_util_anios = db.Column(db.Integer, nullable=True)
+    horas_operacion = db.Column(db.Float, nullable=True)
     fecha_compra = db.Column(db.Date, nullable=True)
+    valor_compra = db.Column(db.Float, nullable=True)
+    moneda_compra = db.Column(db.String(8), default="")
     proveedor = db.Column(db.String(200), default="")
+    tiempo_garantia_meses = db.Column(db.Integer, nullable=True)
+    garantia_hasta = db.Column(db.Date, nullable=True)
     manual_url = db.Column(db.String(500), default="")
+    ficha_tecnica_url = db.Column(db.String(500), default="")
     foto_url = db.Column(db.String(500), default="")
+    requiere_mantenimiento = db.Column(db.Boolean, default=True)
+    tipos_mantenimiento = db.Column(db.Text, default="[]")
+    frecuencia_mantenimiento = db.Column(db.String(32), default="")
+    responsable_technician_id = db.Column(
+        db.Integer, db.ForeignKey("technicians.id"), nullable=True, index=True
+    )
     status = db.Column(db.String(32), default=MachineStatus.OPERATIVO.value)
     es_critico = db.Column(db.Boolean, default=False)
     notas = db.Column(db.Text, default="")
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
+    sede = db.relationship("Sede", backref="machines")
+    parent = db.relationship("Machine", remote_side=[id], backref="hijos")
+    responsable = db.relationship(
+        "Technician",
+        foreign_keys=[responsable_technician_id],
+        backref="activos_responsable",
+    )
+
+    @property
+    def responsable_nombre(self) -> str:
+        """Nombre del técnico responsable en ficha de mantenimiento (respaldo si no hay campo personalizado)."""
+        if self.responsable and self.responsable.nombre:
+            return self.responsable.nombre
+        if not self.responsable_technician_id:
+            return ""
+        from sqlalchemy import inspect
+
+        sess = inspect(self).session
+        if sess is None:
+            return ""
+        tech = sess.get(Technician, self.responsable_technician_id)
+        return (tech.nombre or "") if tech else ""
     machine_type = db.relationship("MachineType", back_populates="machines", lazy="joined")
     work_orders = db.relationship("WorkOrder", backref="machine", lazy="dynamic")
     planificaciones_mensuales = db.relationship(
@@ -393,6 +451,18 @@ class Machine(db.Model):
     @property
     def tipo_etiqueta(self) -> str:
         return self.machine_type.nombre if self.machine_type else "—"
+
+    @property
+    def estado_garantia_etiqueta(self) -> str:
+        from app.asset_standard import estado_garantia_etiqueta
+
+        return estado_garantia_etiqueta(self.garantia_hasta)
+
+    @property
+    def estado_garantia_badge(self) -> str:
+        from app.asset_standard import estado_garantia_badge_class, estado_garantia_etiqueta
+
+        return estado_garantia_badge_class(estado_garantia_etiqueta(self.garantia_hasta))
 
     @staticmethod
     def sugerir_codigo_siguiente(prefijo: str = "EQ") -> str:
@@ -448,17 +518,23 @@ class MachineMonthlyPlan(db.Model):
 
 
 class CampoPersonalizado(db.Model):
-    """Definición de campo dinámico por sector / categoría de activo."""
+    """Definición de campo dinámico por sector (activos o equipo técnico)."""
 
     __tablename__ = "campos_personalizados"
 
     id = db.Column(db.Integer, primary_key=True)
     empresa_id = db.Column(db.Integer, db.ForeignKey("empresas.id"), nullable=True, index=True)
     sector = db.Column(db.String(32), nullable=False, index=True)
+    entidad = db.Column(db.String(16), default="activo", nullable=False, index=True)
     machine_type_id = db.Column(db.Integer, db.ForeignKey("machine_types.id"), nullable=True)
+    categorias_ids = db.Column(db.Text, default="")
     clave = db.Column(db.String(64), nullable=False)
     nombre = db.Column(db.String(120), nullable=False)
+    seccion = db.Column(db.String(80), default="", index=True)
+    seccion_ancla = db.Column(db.String(32), default="")
     tipo = db.Column(db.String(16), default="text")
+    texto_tamano = db.Column(db.String(16), default="mediano")
+    opciones = db.Column(db.Text, default="")
     obligatorio = db.Column(db.Boolean, default=False)
     orden = db.Column(db.Integer, default=0)
     activo = db.Column(db.Boolean, default=True)
@@ -466,6 +542,60 @@ class CampoPersonalizado(db.Model):
 
     machine_type = db.relationship("MachineType", backref="campos_personalizados")
     valores = db.relationship("ActivoCampoValor", back_populates="campo", lazy="dynamic")
+    valores_usuario = db.relationship("UsuarioCampoValor", back_populates="campo", lazy="dynamic")
+
+    @property
+    def entidad_label(self) -> str:
+        from app.custom_fields import CAMPO_ENTIDAD_LABEL
+
+        key = (self.entidad or "activo").strip().lower()
+        return CAMPO_ENTIDAD_LABEL.get(key, key)
+
+    @property
+    def tipo_label(self) -> str:
+        from app.custom_fields import CAMPO_TIPOS_LABEL, TEXTO_TAMANO_LABEL, normalizar_texto_tamano
+
+        key = (self.tipo or "text").lower()
+        base = CAMPO_TIPOS_LABEL.get(key, self.tipo or "—")
+        if key == "text":
+            tam = TEXTO_TAMANO_LABEL.get(normalizar_texto_tamano(self.texto_tamano), "")
+            if tam:
+                return f"{base} — {tam}"
+        return base
+
+    @property
+    def texto_tamano_efectivo(self) -> str:
+        from app.custom_fields import TEXTO_TAMANO_DEFAULT, normalizar_texto_tamano
+
+        if (self.tipo or "").lower() != "text":
+            return ""
+        return normalizar_texto_tamano(self.texto_tamano or TEXTO_TAMANO_DEFAULT)
+
+    @property
+    def columna_grid(self) -> str:
+        from app.custom_fields import columna_grid_para_campo
+
+        return columna_grid_para_campo(self.tipo, self.texto_tamano)
+
+    def opciones_lista(self) -> list[str]:
+        from app.custom_fields import opciones_desde_campo
+
+        return opciones_desde_campo(self)
+
+    def multi_seleccion_desde_valor(self, valor: str | None = "") -> set[str]:
+        from app.custom_fields import multi_seleccion_desde_valor
+
+        return multi_seleccion_desde_valor(self, valor)
+
+    def categorias_aplicables(self) -> list[int]:
+        from app.custom_fields import categorias_ids_desde_campo
+
+        return categorias_ids_desde_campo(self)
+
+    def aplica_a_tipo(self, machine_type_id: int | None) -> bool:
+        from app.custom_fields import campo_aplica_a_tipo
+
+        return campo_aplica_a_tipo(self, machine_type_id)
 
 
 class ActivoCampoValor(db.Model):
@@ -483,6 +613,23 @@ class ActivoCampoValor(db.Model):
 
     machine = db.relationship("Machine", back_populates="valores_campos")
     campo = db.relationship("CampoPersonalizado", back_populates="valores")
+
+
+class UsuarioCampoValor(db.Model):
+    __tablename__ = "usuario_campo_valores"
+    __table_args__ = (
+        db.UniqueConstraint("user_id", "campo_id", name="uq_usuario_campo"),
+    )
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False, index=True)
+    campo_id = db.Column(
+        db.Integer, db.ForeignKey("campos_personalizados.id"), nullable=False, index=True
+    )
+    valor = db.Column(db.Text, default="")
+
+    user = db.relationship("User", back_populates="valores_campos")
+    campo = db.relationship("CampoPersonalizado", back_populates="valores_usuario")
 
 
 class PlantillaDashboard(db.Model):
@@ -503,6 +650,7 @@ class Technician(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     empresa_id = db.Column(db.Integer, db.ForeignKey("empresas.id"), nullable=True, index=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=True, unique=True, index=True)
     nombre = db.Column(db.String(200), nullable=False)
     especialidad = db.Column(db.String(120), default="")
     telefono = db.Column(db.String(40), default="")
@@ -511,6 +659,7 @@ class Technician(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     work_orders = db.relationship("WorkOrder", backref="technician", lazy="dynamic")
+    user = db.relationship("User", backref=db.backref("technician", uselist=False))
 
 
 class PreventiveMaintenancePlan(db.Model):
@@ -563,6 +712,11 @@ class WorkOrder(db.Model):
     )
     frecuencia_valor = db.Column(db.Integer, nullable=True)
     frecuencia_unidad = db.Column(db.String(16), nullable=True)
+    ubicacion = db.Column(db.String(200), default="")
+    area = db.Column(db.String(120), default="")
+    autorizado_por = db.Column(db.String(120), default="")
+    recibido_por = db.Column(db.String(120), default="")
+    empresa_tercerizada = db.Column(db.String(200), default="")
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     preventive_plan = db.relationship(
@@ -850,13 +1004,40 @@ def ensure_saas_schema():
         _add_column_if_missing("users", "email", "email VARCHAR(120)")
         _add_column_if_missing("users", "telefono", "telefono VARCHAR(40)")
         _add_column_if_missing("users", "rol", "rol VARCHAR(32)")
+        _add_column_if_missing("users", "area", "area VARCHAR(120)")
+        _add_column_if_missing("users", "sede_id", "sede_id INTEGER")
         _add_column_if_missing(
             "users", "onboarding_completado", "onboarding_completado BOOLEAN DEFAULT 0"
         )
         _add_column_if_missing("machine_types", "empresa_id", "empresa_id INTEGER")
         _add_column_if_missing("machines", "empresa_id", "empresa_id INTEGER")
         _add_column_if_missing("machines", "sede_id", "sede_id INTEGER")
+        _add_column_if_missing("machines", "parent_machine_id", "parent_machine_id INTEGER")
+        _add_column_if_missing("machines", "etiquetas", "etiquetas TEXT")
+        _add_column_if_missing("machines", "area", "area VARCHAR(120)")
+        _add_column_if_missing("machines", "fabricante", "fabricante VARCHAR(120)")
+        _add_column_if_missing("machines", "anio_fabricacion", "anio_fabricacion INTEGER")
+        _add_column_if_missing("machines", "fecha_instalacion", "fecha_instalacion DATE")
+        _add_column_if_missing("machines", "fecha_puesta_marcha", "fecha_puesta_marcha DATE")
+        _add_column_if_missing("machines", "vida_util_anios", "vida_util_anios INTEGER")
+        _add_column_if_missing("machines", "horas_operacion", "horas_operacion REAL")
+        _add_column_if_missing("machines", "valor_compra", "valor_compra REAL")
+        _add_column_if_missing("machines", "garantia_hasta", "garantia_hasta DATE")
+        _add_column_if_missing("machines", "ficha_tecnica_url", "ficha_tecnica_url VARCHAR(500)")
+        _add_column_if_missing(
+            "machines", "requiere_mantenimiento", "requiere_mantenimiento BOOLEAN DEFAULT 1"
+        )
+        _add_column_if_missing("machines", "tipos_mantenimiento", "tipos_mantenimiento TEXT")
+        _add_column_if_missing(
+            "machines", "frecuencia_mantenimiento", "frecuencia_mantenimiento VARCHAR(32)"
+        )
+        _add_column_if_missing(
+            "machines", "responsable_technician_id", "responsable_technician_id INTEGER"
+        )
+        _add_column_if_missing("campos_personalizados", "seccion", "seccion VARCHAR(80)")
+        _add_column_if_missing("campos_personalizados", "seccion_ancla", "seccion_ancla VARCHAR(32)")
         _add_column_if_missing("technicians", "empresa_id", "empresa_id INTEGER")
+        _add_column_if_missing("technicians", "user_id", "user_id INTEGER")
         _add_column_if_missing("work_orders", "empresa_id", "empresa_id INTEGER")
         _add_column_if_missing("work_orders", "numero", "numero VARCHAR(32)")
         _add_column_if_missing("work_orders", "folio_anio", "folio_anio INTEGER")
@@ -904,6 +1085,23 @@ def ensure_saas_schema():
         _add_column_if_missing(
             "work_orders", "frecuencia_unidad", "frecuencia_unidad VARCHAR(16)"
         )
+        _add_column_if_missing("work_orders", "ubicacion", "ubicacion VARCHAR(200)")
+        _add_column_if_missing("work_orders", "area", "area VARCHAR(120)")
+        _add_column_if_missing("work_orders", "autorizado_por", "autorizado_por VARCHAR(120)")
+        _add_column_if_missing("work_orders", "recibido_por", "recibido_por VARCHAR(120)")
+        _add_column_if_missing(
+            "work_orders", "empresa_tercerizada", "empresa_tercerizada VARCHAR(200)"
+        )
+        _add_column_if_missing("campos_personalizados", "opciones", "opciones TEXT")
+        _add_column_if_missing("campos_personalizados", "categorias_ids", "categorias_ids TEXT")
+        _add_column_if_missing(
+            "campos_personalizados", "entidad", "entidad VARCHAR(16) DEFAULT 'activo'"
+        )
+        _add_column_if_missing(
+            "campos_personalizados",
+            "texto_tamano",
+            "texto_tamano VARCHAR(16) DEFAULT 'mediano'",
+        )
         _add_column_if_missing("empresas", "telefono", "telefono VARCHAR(40)")
         _add_column_if_missing("empresas", "email", "email VARCHAR(120)")
         ensure_asset_base_columns()
@@ -925,6 +1123,33 @@ def ensure_asset_base_columns():
     _add_column_if_missing("machines", "proveedor", "proveedor VARCHAR(200)")
     _add_column_if_missing("machines", "manual_url", "manual_url VARCHAR(500)")
     _add_column_if_missing("machines", "foto_url", "foto_url VARCHAR(500)")
+    _add_column_if_missing("machines", "registro_tipo", "registro_tipo VARCHAR(32)")
+    _add_column_if_missing("machines", "checklist_registro", "checklist_registro TEXT")
+    _add_column_if_missing("machines", "fecha_fabricacion", "fecha_fabricacion DATE")
+    _add_column_if_missing("machines", "fecha_ingreso", "fecha_ingreso DATE")
+    _add_column_if_missing("machines", "tiempo_garantia_meses", "tiempo_garantia_meses INTEGER")
+    _add_column_if_missing("machines", "moneda_compra", "moneda_compra VARCHAR(8)")
+    _migrate_anio_fabricacion_a_fecha()
+
+
+def _migrate_anio_fabricacion_a_fecha() -> None:
+    """Convierte anio_fabricacion (entero) legado a fecha_fabricacion."""
+    from sqlalchemy import inspect, text
+
+    insp = inspect(db.engine)
+    if "machines" not in insp.get_table_names():
+        return
+    cols = {c["name"] for c in insp.get_columns("machines")}
+    if "anio_fabricacion" not in cols or "fecha_fabricacion" not in cols:
+        return
+    with db.engine.begin() as conn:
+        conn.execute(
+            text(
+                "UPDATE machines SET fecha_fabricacion = "
+                "printf('%04d-01-01', anio_fabricacion) "
+                "WHERE anio_fabricacion IS NOT NULL AND fecha_fabricacion IS NULL"
+            )
+        )
 
 
 def ensure_sector_plantilla_schema():
@@ -985,7 +1210,7 @@ def ensure_default_user():
         nombre_visible="Administrador",
         activo=True,
         onboarding_completado=False,
-        rol=UserRole.ADMIN.value,
+        rol=UserRole.SUPERADMIN.value,
     )
     u.set_password(os.environ.get("DEFAULT_ADMIN_PASSWORD", "admin123"))
     db.session.add(u)

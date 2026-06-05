@@ -148,7 +148,7 @@ def completar_onboarding(
 
         telefono=admin_data.get("telefono", ""),
 
-        rol=UserRole.ADMIN.value,
+        rol=UserRole.SUPERADMIN.value,
 
         activo=True,
 

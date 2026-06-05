@@ -25,15 +25,22 @@
           </div>
           <div class="mb-3">
             <label class="form-label" for="sector_industrial">Sector industrial</label>
+            {% if sector_locked|default(false) %}
+            <input type="hidden" name="sector_industrial" value="{{ sector_default }}">
+            <input type="text" class="form-control" readonly
+                   value="{{ sectores_nav[0][1] if sectores_nav else sector_default }}">
+            <div class="form-text">Fijado al sector de tu empresa.</div>
+            {% else %}
             <select name="sector_industrial" id="sector_industrial" class="form-select" required>
               {% for s_key, s_label in sectores_nav %}
               <option value="{{ s_key }}"
-                {% if tipo and tipo.sector_industrial == s_key %}selected{% elif not tipo and s_key == 'manufactura' %}selected{% endif %}>
+                {% if tipo and tipo.sector_industrial == s_key %}selected{% elif not tipo and s_key == sector_default %}selected{% endif %}>
                 {{ s_label }}
               </option>
               {% endfor %}
             </select>
             <div class="form-text">Define qué categorías del dashboard incluyen equipos de este tipo.</div>
+            {% endif %}
           </div>
           <div class="mb-3">
             <label class="form-label">Orden en listas</label>

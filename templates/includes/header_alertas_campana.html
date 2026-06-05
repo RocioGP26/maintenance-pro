@@ -1,0 +1,43 @@
+<div class="dropdown header-alert-dropdown-wrap">
+  <button type="button"
+          class="header-alert-bell dropdown-toggle"
+          id="headerAlertBell"
+          data-bs-toggle="dropdown"
+          data-bs-auto-close="outside"
+          aria-expanded="false"
+          aria-label="Alertas críticas{% if alertas_campana.tiene_alertas %} ({{ alertas_campana.total }}){% endif %}">
+    <i class="bi bi-bell" aria-hidden="true"></i>
+    {% if alertas_campana.tiene_alertas %}
+    <span class="header-alert-dot" aria-hidden="true"></span>
+    {% endif %}
+  </button>
+  <div class="dropdown-menu dropdown-menu-end header-alert-menu" aria-labelledby="headerAlertBell">
+    <div class="header-alert-menu-head">
+      <span class="header-alert-menu-icon" aria-hidden="true"><i class="bi bi-exclamation-circle-fill"></i></span>
+      <span class="header-alert-menu-title">Alertas críticas</span>
+      <button type="button" class="header-alert-menu-close" aria-label="Cerrar" data-header-alert-close>
+        <i class="bi bi-x-lg" aria-hidden="true"></i>
+      </button>
+    </div>
+    <ul class="header-alert-menu-list list-unstyled mb-0">
+      <li>
+        <a href="{{ alertas_campana.url_vencimientos }}" class="header-alert-row">
+          <span class="header-alert-row-label">Vencimientos</span>
+          <span class="header-alert-badge header-alert-badge--danger">{{ alertas_campana.vencimientos }}</span>
+        </a>
+      </li>
+      <li>
+        <a href="{{ alertas_campana.url_programados_hoy }}" class="header-alert-row">
+          <span class="header-alert-row-label">Programados hoy</span>
+          <span class="header-alert-badge header-alert-badge--info">{{ '%02d'|format(alertas_campana.programados_hoy) }}</span>
+        </a>
+      </li>
+      <li>
+        <a href="{{ alertas_campana.url_en_proceso }}" class="header-alert-row">
+          <span class="header-alert-row-label">En proceso</span>
+          <span class="header-alert-badge header-alert-badge--warn">{{ alertas_campana.en_proceso }}</span>
+        </a>
+      </li>
+    </ul>
+  </div>
+</div>

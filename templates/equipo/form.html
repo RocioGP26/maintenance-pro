@@ -1,36 +1,109 @@
 {% extends "base.html" %}
-{% block title %}{% if tech %}Editar{% else %}Nuevo{% endif %} técnico — {{ app_name }}{% endblock %}
-{% block page_title %}{% if tech %}Editar técnico{% else %}Nuevo técnico{% endif %}{% endblock %}
+{% block title %}Equipo técnico — {% if usuario %}Editar{% else %}Nuevo{% endif %} — {{ app_name }}{% endblock %}
+{% block page_title %}{% if usuario %}Editar{% else %}Nuevo{% endif %}{% endblock %}
 
 {% block content %}
 <div class="row justify-content-center">
   <div class="col-lg-8">
+    <p class="text-muted small mb-2">Equipo técnico</p>
     <div class="card card-dashboard">
       <div class="card-body">
+        {% if es_self|default(false) %}
+        <div class="alert alert-info small py-2">Estás editando tu propia cuenta. El rol y el estado activo no se pueden cambiar aquí.</div>
+        {% endif %}
         <form method="post">
           <div class="row g-3">
             <div class="col-12">
-              <label class="form-label">Nombre completo</label>
-              <input type="text" name="nombre" class="form-control" required value="{{ tech.nombre if tech else '' }}">
-            </div>
-            <div class="col-md-6">
-              <label class="form-label">Especialidad</label>
-              <input type="text" name="especialidad" class="form-control" value="{{ tech.especialidad if tech else '' }}">
-            </div>
-            <div class="col-md-6">
-              <label class="form-label">Teléfono</label>
-              <input type="text" name="telefono" class="form-control" value="{{ tech.telefono if tech else '' }}">
+              <label class="form-label" for="username">1. Usuario de acceso *</label>
+              {% if usuario %}
+              <input type="text" class="form-control font-monospace" id="username" value="{{ usuario.username }}" readonly>
+              {% else %}
+              <input type="text" name="username" id="username" class="form-control font-monospace" required
+                     autocomplete="username" placeholder="ej. jperez" pattern="[a-z0-9._-]{3,}">
+              <div class="form-text">Mín. 3 caracteres; minúsculas, números, . _ -</div>
+              {% endif %}
             </div>
             <div class="col-12">
-              <label class="form-label">Email</label>
-              <input type="email" name="email" class="form-control" value="{{ tech.email if tech else '' }}">
+              <label class="form-label" for="nombre_visible">2. Nombre completo *</label>
+              <input type="text" name="nombre_visible" id="nombre_visible" class="form-control" required
+                     value="{{ usuario.nombre_visible if usuario else '' }}">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label" for="rol">3. Rol *</label>
+              {% if usuario and es_self|default(false) %}
+              <input type="text" class="form-control" value="{{ usuario.rol_label }}" readonly>
+              <input type="hidden" name="rol" value="{{ usuario.rol }}">
+              {% else %}
+              <select name="rol" id="rol" class="form-select" required>
+                {% for r_key, r_lbl in roles %}
+                <option value="{{ r_key }}" {% if usuario and usuario.rol == r_key %}selected{% elif not usuario and r_key == 'tecnico' %}selected{% endif %}>{{ r_lbl }}</option>
+                {% endfor %}
+              </select>
+              <div class="form-text small">
+                Superadministrador: crear, editar y eliminar.
+                Administrador: editar y eliminar.
+                Técnico: editar.
+                Usuario: solo lectura.
+              </div>
+              {% endif %}
+            </div>
+            <div class="col-md-6">
+              <label class="form-label" for="area">4. Área</label>
+              <input type="text" name="area" id="area" class="form-control"
+                     value="{{ usuario.area if usuario else '' }}"
+                     placeholder="Mantenimiento, producción…">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label" for="sede_id">5. Sede</label>
+              <select name="sede_id" id="sede_id" class="form-select">
+                <option value="">— Sin sede —</option>
+                {% for s in sedes %}
+                <option value="{{ s.id }}" {% if usuario and usuario.sede_id == s.id %}selected{% endif %}>{{ s.nombre }}{% if s.es_principal %} (principal){% endif %}</option>
+                {% endfor %}
+              </select>
+              {% if not sedes %}
+              <div class="form-text">Define sedes en Configuración → Empresa.</div>
+              {% endif %}
+            </div>
+            <div class="col-md-6">
+              <label class="form-label" for="telefono">6. Teléfono</label>
+              <input type="text" name="telefono" id="telefono" class="form-control"
+                     value="{{ usuario.telefono if usuario else '' }}">
+            </div>
+            <div class="col-12">
+              <label class="form-label" for="email">7. Correo</label>
+              <input type="email" name="email" id="email" class="form-control"
+                     value="{{ usuario.email if usuario else '' }}">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label" for="password">8. Contraseña{% if not usuario %} *{% endif %}</label>
+              <input type="password" name="password" id="password" class="form-control" autocomplete="new-password"
+                     {% if not usuario %}required minlength="6"{% endif %}>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label" for="password2">9. Confirmar{% if not usuario %} *{% endif %}</label>
+              <input type="password" name="password2" id="password2" class="form-control" autocomplete="new-password"
+                     {% if not usuario %}required minlength="6"{% endif %}>
             </div>
             <div class="col-12">
               <div class="form-check">
-                <input class="form-check-input" type="checkbox" name="activo" id="activo" {% if not tech or tech.activo %}checked{% endif %}>
-                <label class="form-check-label" for="activo">Activo (puede recibir asignaciones)</label>
+                <input class="form-check-input" type="checkbox" name="activo" value="1" id="activo"
+                       {% if not usuario or usuario.activo %}checked{% endif %}
+                       {% if usuario and es_self|default(false) %}disabled{% endif %}>
+                <label class="form-check-label" for="activo">10. Activo (puede iniciar sesión)</label>
               </div>
+              {% if usuario and es_self|default(false) %}
+              <input type="hidden" name="activo" value="1">
+              {% endif %}
             </div>
+
+            {% if campos_personalizados %}
+            <div class="col-12">
+              <hr class="my-1">
+              <h6 class="fw-semibold text-muted text-uppercase small mb-2">Campos adicionales</h6>
+            </div>
+            {% include "includes/campos_personalizados_fields.html" %}
+            {% endif %}
           </div>
           <div class="mt-4 d-flex gap-2">
             <button type="submit" class="btn btn-primary">Guardar</button>

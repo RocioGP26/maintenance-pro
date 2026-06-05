@@ -1,0 +1,9 @@
+{% for bloque in bloques %}
+<fieldset class="mb-4 form-activo-seccion seccion-campos-custom" data-seccion="{{ bloque.titulo }}">
+  {% with titulo=bloque.titulo %}{% include 'activos/_seccion_encabezado.html' %}{% endwith %}
+  <div class="row g-3{% if bloque.campos|cuatro_por_fila %} row-campos-4{% endif %}">
+    {% set campos_personalizados = bloque.campos %}
+    {% include 'includes/campos_personalizados_fields.html' %}
+  </div>
+</fieldset>
+{% endfor %}

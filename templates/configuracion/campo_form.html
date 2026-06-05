@@ -1,0 +1,290 @@
+{% extends "base.html" %}
+{% block title %}{% if campo %}Editar campo{% else %}Nuevo campo{% endif %} — {{ app_name }}{% endblock %}
+{% block page_title %}{% if campo %}Editar campo personalizado{% else %}Nuevo campo personalizado{% endif %}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-8">
+    <p class="text-muted small">Sector: <strong>{{ sector_label }}</strong></p>
+    <div class="card card-dashboard">
+      <div class="card-body">
+        <form method="post" id="formCampo">
+          <div class="mb-3">
+            <label class="form-label" for="entidad">Aplica en *</label>
+            {% if campo %}
+            <input type="text" class="form-control" value="{{ campo.entidad_label }}" readonly>
+            {% else %}
+            <select name="entidad" id="entidad" class="form-select" required>
+              {% for e_key, e_lbl in entidades_campo %}
+              <option value="{{ e_key }}" {% if entidad == e_key %}selected{% endif %}>{{ e_lbl }}</option>
+              {% endfor %}
+            </select>
+            {% endif %}
+          </div>
+          <div class="mb-3{% if entidad == 'equipo' %} d-none{% endif %}" id="wrapSeccionCampo">
+            <label class="form-label" for="seccion">Ubicación en el formulario de activo *</label>
+            <select name="seccion" id="seccion" class="form-select" required>
+              <optgroup label="Secciones estándar">
+                {% for s_key, s_lbl in activo_secciones %}
+                <option value="{{ s_key }}" {% if seccion_key == s_key %}selected{% elif not campo and s_key == 'general' %}selected{% endif %}>{{ s_lbl }}</option>
+                {% endfor %}
+              </optgroup>
+              {% if secciones_personalizadas %}
+              <optgroup label="Secciones personalizadas creadas">
+                {% for sp in secciones_personalizadas %}
+                <option value="{{ sp.nombre }}" {% if seccion_key == sp.nombre %}selected{% endif %}>
+                  {{ sp.nombre }}{% if sp.ancla_label %} (después de {{ sp.ancla_label }}){% endif %}
+                </option>
+                {% endfor %}
+              </optgroup>
+              {% endif %}
+              <option value="__nueva__" {% if seccion_key == '__nueva__' %}selected{% endif %}>+ Nueva sección personalizada…</option>
+            </select>
+            <div id="wrapSeccionNueva" class="mt-2 {% if seccion_key != '__nueva__' %}d-none{% endif %}">
+              <label class="form-label small" for="seccion_nueva">Nombre de la sección nueva</label>
+              <input type="text" name="seccion_nueva" id="seccion_nueva" class="form-control"
+                     value="{{ seccion_nueva_valor }}"
+                     placeholder="Ej. Consumo y energía, Información vehicular">
+              <label class="form-label small mt-2" for="seccion_ancla">Mostrar sección después de</label>
+              <select name="seccion_ancla" id="seccion_ancla" class="form-select">
+                {% for s_key, s_lbl in activo_secciones %}
+                <option value="{{ s_key }}" {% if seccion_ancla_sel == s_key %}selected{% endif %}>{{ s_lbl }}</option>
+                {% endfor %}
+                <option value="" {% if not seccion_ancla_sel %}selected{% endif %}>Al final del formulario</option>
+              </select>
+            </div>
+            <div class="form-text">Elige una sección estándar (campos adicionales), una sección ya creada para agregar más campos, o crea una sección nueva.</div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label" for="nombre">Nombre del campo *</label>
+            <input type="text" name="nombre" id="nombre" class="form-control" required
+                   value="{{ campo.nombre if campo else '' }}"
+                   placeholder="Ej. Color">
+            <div class="form-text" id="hintNombre">Etiqueta visible en el formulario correspondiente.</div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label" for="tipo">Tipo *</label>
+            <select name="tipo" id="tipo" class="form-select" required>
+              {% for t_key, t_lbl in tipos_campo %}
+              <option value="{{ t_key }}" {% if campo and campo.tipo == t_key %}selected{% elif not campo and t_key == 'text' %}selected{% endif %}>{{ t_lbl }}</option>
+              {% endfor %}
+            </select>
+            <div class="form-text" id="hintAnchoTipo">En el formulario de activo: <span id="hintAnchoTipoVal">texto ocupa más ancho; número y fecha, columnas más estrechas.</span></div>
+          </div>
+          <div class="mb-3{% if campo and campo.tipo != 'text' %} d-none{% endif %}" id="wrapTextoTamano">
+            <label class="form-label" for="texto_tamano">Tamaño del texto *</label>
+            <select name="texto_tamano" id="texto_tamano" class="form-select">
+              {% for tt_key, tt_lbl in texto_tamanos %}
+              <option value="{{ tt_key }}"
+                {% if campo and campo.texto_tamano_efectivo == tt_key %}selected
+                {% elif not campo and tt_key == 'mediano' %}selected{% endif %}>{{ tt_lbl }}</option>
+              {% endfor %}
+            </select>
+            <div class="form-text">
+              <strong>Corto:</strong> igual que número (4 por fila).
+              <strong>Mediano:</strong> el doble (2 por fila).
+              <strong>Largo:</strong> toda la fila.
+            </div>
+          </div>
+          <div class="mb-3{% if entidad == 'equipo' %} d-none{% endif %}" id="wrapCategoriasEquipo">
+            <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-2">
+              <label class="form-label mb-0">Categorías de equipo donde aplica</label>
+              <div class="btn-group btn-group-sm">
+                <button type="button" class="btn btn-outline-secondary" id="btnMarcarTodas">Marcar todas</button>
+                <button type="button" class="btn btn-outline-secondary" id="btnQuitarTodas">Quitar todas</button>
+              </div>
+            </div>
+            <div class="border rounded p-3 bg-light" id="wrapCategorias">
+              {% if tipos_maquina %}
+              <div class="row g-2">
+                {% for mt in tipos_maquina %}
+                <div class="col-md-6">
+                  <div class="form-check">
+                    <input class="form-check-input cat-check" type="checkbox"
+                           name="categorias_ids" value="{{ mt.id }}" id="cat_{{ mt.id }}"
+                           {% if mt.id in categorias_seleccionadas %}checked{% endif %}>
+                    <label class="form-check-label" for="cat_{{ mt.id }}">{{ mt.nombre }}</label>
+                  </div>
+                </div>
+                {% endfor %}
+              </div>
+              {% else %}
+              <p class="small text-muted mb-0">No hay tipos de equipo en tu sector. Créalos en Activos → Tipos de máquina.</p>
+              {% endif %}
+            </div>
+            <div class="form-text mt-2">
+              Marca las categorías donde aplica este campo.
+              Si agregas un campo a una <strong>sección personalizada ya creada</strong>, se usarán las mismas categorías que los demás campos de esa sección.
+            </div>
+            <p class="small mb-0 mt-1 {% if todas_categorias %}text-primary fw-semibold{% else %}text-muted{% endif %}" id="hintTodas">
+              {% if todas_categorias %}
+              Modo actual: todas las categorías (ninguna marcada).
+              {% else %}
+              Modo actual: solo las categorías marcadas.
+              {% endif %}
+            </p>
+          </div>
+          <div class="mb-3{% if not campo or campo.tipo not in ['list', 'list_multi'] %} d-none{% endif %}" id="wrapOpciones">
+            <label class="form-label" for="opciones">Opciones de la lista *</label>
+            <textarea name="opciones" id="opciones" class="form-control" rows="8"
+                      placeholder="E: Eléctrica&#10;H: Hidráulica&#10;N: Neumática">{{ opciones_texto }}</textarea>
+            <div class="form-text">Una opción por línea. En <strong>Lista múltiple</strong> el usuario podrá marcar varias.</div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label" for="orden">Orden en formulario</label>
+            <input type="number" name="orden" id="orden" class="form-control"
+                   value="{{ campo.orden if campo else siguiente_orden }}">
+          </div>
+          <div class="mb-3">
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" name="obligatorio" value="1" id="obligatorio"
+                     {% if campo and campo.obligatorio %}checked{% endif %}>
+              <label class="form-check-label" for="obligatorio">Campo obligatorio</label>
+            </div>
+          </div>
+          {% if campo %}
+          <div class="mb-3">
+            <div class="form-check form-switch">
+              <input class="form-check-input" type="checkbox" name="activo" value="1" id="activo"
+                     {% if campo.activo %}checked{% endif %}>
+              <label class="form-check-label" for="activo">Campo activo (visible en formularios)</label>
+            </div>
+            <p class="small text-muted mb-0">Clave interna: <code>{{ campo.clave }}</code></p>
+          </div>
+          {% endif %}
+          <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-primary">Guardar</button>
+            <a href="{{ url_for('main.configuracion_campos_list') }}" class="btn btn-outline-secondary">Cancelar</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function () {
+  var selEntidad = document.getElementById('entidad');
+  var wrapCats = document.getElementById('wrapCategoriasEquipo');
+  var hintNombre = document.getElementById('hintNombre');
+  var selTipo = document.getElementById('tipo');
+  var wrap = document.getElementById('wrapOpciones');
+  var txt = document.getElementById('opciones');
+  var checks = document.querySelectorAll('.cat-check');
+  var hint = document.getElementById('hintTodas');
+  var btnTodas = document.getElementById('btnMarcarTodas');
+  var btnNinguna = document.getElementById('btnQuitarTodas');
+
+  var wrapSeccion = document.getElementById('wrapSeccionCampo');
+  var selSeccion = document.getElementById('seccion');
+  var wrapSeccionNueva = document.getElementById('wrapSeccionNueva');
+  var seccionesPers = {{ secciones_personalizadas | tojson }};
+  var clavesEstandar = {{ activo_seccion_keys_list | tojson }};
+
+  function aplicarCategoriasDeSeccion(nombreSeccion) {
+    if (!checks || !nombreSeccion) return;
+    var sp = seccionesPers.find(function (s) { return s.nombre === nombreSeccion; });
+    if (!sp || !sp.categorias_ids || !sp.categorias_ids.length) {
+      checks.forEach(function (c) { c.checked = false; });
+    } else {
+      checks.forEach(function (c) {
+        var id = parseInt(c.value, 10);
+        c.checked = sp.categorias_ids.indexOf(id) >= 0;
+      });
+    }
+    syncCategorias();
+  }
+
+  function esSeccionPersonalizadaExistente(val) {
+    return val && val !== '__nueva__' && clavesEstandar.indexOf(val) < 0;
+  }
+
+  function syncSeccion() {
+    if (!selSeccion || !wrapSeccionNueva) return;
+    var val = selSeccion.value;
+    wrapSeccionNueva.classList.toggle('d-none', val !== '__nueva__');
+    if (esSeccionPersonalizadaExistente(val)) aplicarCategoriasDeSeccion(val);
+  }
+
+  function syncEntidad() {
+    var esEquipo = selEntidad && selEntidad.value === 'equipo';
+    if (wrapCats) wrapCats.classList.toggle('d-none', esEquipo);
+    if (wrapSeccion) wrapSeccion.classList.toggle('d-none', esEquipo);
+    if (hintNombre) {
+      hintNombre.textContent = esEquipo
+        ? 'Etiqueta visible en el formulario de Equipo técnico.'
+        : 'El campo aparecerá dentro de la sección elegida en el formulario de activos.';
+    }
+    if (esEquipo && checks) checks.forEach(function (c) { c.checked = false; });
+  }
+
+  var hintAncho = document.getElementById('hintAnchoTipoVal');
+  var wrapTextoTamano = document.getElementById('wrapTextoTamano');
+  var selTextoTamano = document.getElementById('texto_tamano');
+  var anchosTipo = {
+    number: '4 campos por fila',
+    date: '4 campos por fila',
+    boolean: 'columna compacta',
+    list: 'lista desplegable (una opción)',
+    list_multi: 'casillas de verificación (varias opciones), ancho completo'
+  };
+  var anchosTexto = {
+    corto: '4 campos por fila (como número)',
+    mediano: '2 campos por fila (doble de corto)',
+    largo: 'toda la fila'
+  };
+
+  function syncTipo() {
+    var t = selTipo ? selTipo.value : 'text';
+    var esLista = t === 'list' || t === 'list_multi';
+    var esTexto = t === 'text';
+    if (wrap) wrap.classList.toggle('d-none', !esLista);
+    if (txt) txt.required = esLista;
+    if (wrapTextoTamano) wrapTextoTamano.classList.toggle('d-none', !esTexto);
+    if (selTextoTamano) selTextoTamano.required = esTexto;
+    if (hintAncho && selTipo) {
+      if (esTexto && selTextoTamano) {
+        var tt = selTextoTamano.value || 'mediano';
+        hintAncho.textContent = anchosTexto[tt] || anchosTexto.mediano;
+      } else {
+        hintAncho.textContent = anchosTipo[t] || 'elige un tipo de campo';
+      }
+    }
+  }
+
+  function syncCategorias() {
+    var marcados = 0;
+    checks.forEach(function (c) { if (c.checked) marcados++; });
+    if (hint) {
+      if (marcados === 0) {
+        hint.textContent = 'Modo actual: todas las categorías (ninguna marcada).';
+        hint.className = 'small mb-0 mt-1 text-primary fw-semibold';
+      } else {
+        hint.textContent = 'Modo actual: solo las categorías marcadas (' + marcados + ').';
+        hint.className = 'small mb-0 mt-1 text-muted';
+      }
+    }
+  }
+
+  if (selSeccion) selSeccion.addEventListener('change', syncSeccion);
+  if (selEntidad) selEntidad.addEventListener('change', syncEntidad);
+  if (selTipo) selTipo.addEventListener('change', syncTipo);
+  if (selTextoTamano) selTextoTamano.addEventListener('change', syncTipo);
+  if (checks) checks.forEach(function (c) { c.addEventListener('change', syncCategorias); });
+  if (btnTodas) btnTodas.addEventListener('click', function () {
+    checks.forEach(function (c) { c.checked = true; });
+    syncCategorias();
+  });
+  if (btnNinguna) btnNinguna.addEventListener('click', function () {
+    checks.forEach(function (c) { c.checked = false; });
+    syncCategorias();
+  });
+  syncSeccion();
+  syncEntidad();
+  syncTipo();
+  syncCategorias();
+})();
+</script>
+{% endblock %}

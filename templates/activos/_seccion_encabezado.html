@@ -1,0 +1,11 @@
+{% if seccion_key is defined and activo_seccion_iconos is defined and seccion_key in activo_seccion_iconos %}
+  {% set _icono = activo_seccion_iconos[seccion_key] %}
+{% else %}
+  {% set _icono = activo_seccion_icono_default|default('bi-lightning-fill') %}
+{% endif %}
+<legend class="form-seccion-encabezado mb-3">
+  <span class="form-seccion-encabezado__bar">
+    <i class="bi {{ _icono }}" aria-hidden="true"></i>
+    <span>{{ titulo }}</span>
+  </span>
+</legend>

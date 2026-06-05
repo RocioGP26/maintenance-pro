@@ -1,0 +1,9 @@
+{% if campos_estandar.get(seccion_key) %}
+<div class="row g-3 pt-2 border-top campos-extra-seccion{% if campos_estandar[seccion_key]|cuatro_por_fila %} row-campos-4{% endif %}" data-seccion-key="{{ seccion_key }}">
+  <div class="col-12">
+    <span class="small text-muted">Campos adicionales</span>
+  </div>
+  {% set campos_personalizados = campos_estandar[seccion_key] %}
+  {% include "includes/campos_personalizados_fields.html" %}
+</div>
+{% endif %}

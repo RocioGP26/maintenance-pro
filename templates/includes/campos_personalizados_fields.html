@@ -1,0 +1,57 @@
+{% for campo in campos_personalizados %}
+<div class="{{ campo.columna_grid }} campo-dinamico campo-dinamico--{{ campo.tipo }}{% if campo.tipo == 'text' %} campo-dinamico--text-{{ campo.texto_tamano_efectivo }}{% endif %}"
+     data-campo-id="{{ campo.id }}"
+     data-campo-tipo="{{ campo.tipo }}"
+     data-categorias="{{ campo.categorias_aplicables()|tojson }}">
+  <label class="form-label" for="campo_{{ campo.id }}">
+    {{ campo.nombre }}{% if campo.obligatorio %} *{% endif %}
+  </label>
+  {% set val = valores_campos.get(campo.id, '') %}
+  {% if campo.tipo == 'date' %}
+  <input type="date" name="campo_{{ campo.id }}" id="campo_{{ campo.id }}" class="form-control"
+         value="{{ val }}" {% if campo.obligatorio %}required{% endif %}>
+  {% elif campo.tipo == 'number' %}
+  <input type="number" step="any" name="campo_{{ campo.id }}" id="campo_{{ campo.id }}" class="form-control"
+         value="{{ val }}" {% if campo.obligatorio %}required{% endif %}>
+  {% elif campo.tipo == 'boolean' %}
+  <div class="form-check mt-2">
+    <input class="form-check-input" type="checkbox" name="campo_{{ campo.id }}" id="campo_{{ campo.id }}"
+           value="1" {% if val in ('1', 'true', 'on') %}checked{% endif %}>
+    <label class="form-check-label" for="campo_{{ campo.id }}">Sí</label>
+  </div>
+  {% elif campo.tipo == 'list' %}
+  <select name="campo_{{ campo.id }}" id="campo_{{ campo.id }}" class="form-select"
+          {% if campo.obligatorio %}required{% endif %}>
+    <option value="">— Seleccionar —</option>
+    {% for op in campo.opciones_lista() %}
+    <option value="{{ op }}" {% if val == op %}selected{% endif %}>{{ op }}</option>
+    {% endfor %}
+  </select>
+  {% elif campo.tipo == 'list_multi' %}
+  {% set seleccionados = campo.multi_seleccion_desde_valor(val) %}
+  <div class="campo-lista-multi border rounded p-2 bg-light">
+    <div class="row g-1">
+      {% for op in campo.opciones_lista() %}
+      <div class="col-sm-6 col-lg-4">
+        <div class="form-check mb-0">
+          <input class="form-check-input" type="checkbox" name="campo_{{ campo.id }}"
+                 id="campo_{{ campo.id }}_{{ loop.index }}" value="{{ op }}"
+                 {% if op in seleccionados %}checked{% endif %}>
+          <label class="form-check-label small" for="campo_{{ campo.id }}_{{ loop.index }}">{{ op }}</label>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% if campo.obligatorio %}
+  <div class="form-text">Marca al menos una opción.</div>
+  {% endif %}
+  {% elif campo.tipo == 'text' and campo.texto_tamano_efectivo == 'largo' %}
+  <textarea name="campo_{{ campo.id }}" id="campo_{{ campo.id }}" class="form-control" rows="2"
+            {% if campo.obligatorio %}required{% endif %}>{{ val }}</textarea>
+  {% else %}
+  <input type="text" name="campo_{{ campo.id }}" id="campo_{{ campo.id }}" class="form-control"
+         value="{{ val }}" {% if campo.obligatorio %}required{% endif %}>
+  {% endif %}
+</div>
+{% endfor %}

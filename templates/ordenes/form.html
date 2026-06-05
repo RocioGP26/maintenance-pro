@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% block title %}{% if order %}{% if solo_lectura|default(false) %}Ver{% else %}Editar{% endif %}{% else %}Nueva{% endif %} orden — {{ app_name }}{% endblock %}
-{% block page_title %}{% if order %}{% if solo_lectura|default(false) %}Ver orden{% else %}Editar orden{% endif %}{% if order.numero %} — {{ order.numero }}{% endif %}{% else %}Nueva orden de trabajo{% endif %}{% endblock %}
+{% block page_title %}{% if order %}{% if solo_lectura|default(false) %}Ver OT{% else %}Editar OT{% endif %}{% if order.numero %} — {{ order.numero }}{% endif %}{% else %}Nueva orden de trabajo{% endif %}{% endblock %}
 
 {% block head_extra %}
 <style>
@@ -52,107 +52,171 @@
           <span>Esta orden está <strong>cerrada</strong> y no puede modificarse. Solo consulta.</span>
         </div>
         {% endif %}
-        <form method="post" id="ordenForm" data-solo-lectura="{{ '1' if solo_lectura|default(false) else '0' }}">
+        <form method="post" id="ordenForm" data-solo-lectura="{{ '1' if solo_lectura|default(false) else '0' }}" data-es-nueva="{{ '1' if not order else '0' }}">
           <input type="hidden" name="jornadas_json" id="jornadasJson" value="">
           <fieldset {% if solo_lectura|default(false) %}disabled{% endif %}>
-          <div class="row g-3">
-            {% if order and order.numero %}
-            <div class="col-md-4">
-              <label class="form-label">N° OT</label>
-              <input type="text" class="form-control fw-semibold text-primary" readonly value="{{ order.numero }}">
-            </div>
-            {% endif %}
-            <div class="col-12{% if order and order.numero %} col-md-8{% endif %}">
-              <label class="form-label" id="labelTituloActividad">{% if order and order.tipo == 'preventivo' %}Actividad{% else %}Título{% endif %}</label>
-              <input type="text" name="titulo" id="inputTituloActividad" class="form-control" required
-                     placeholder="{% if order and order.tipo == 'preventivo' %}Ej. Lubricación general{% else %}Descripción breve de la orden{% endif %}"
-                     value="{{ order.titulo if order else '' }}">
-              <div class="form-text small {% if not order or order.tipo != 'preventivo' %}d-none{% endif %}" id="hintActividadPreventiva">
-                Una misma actividad no puede repetirse en el mismo equipo mientras exista una OT preventiva abierta.
+
+          <div class="mb-4 form-ot-seccion form-activo-seccion">
+            {% with titulo='Información General', icono='bi-info-circle-fill' %}{% include 'ordenes/_seccion_encabezado.html' %}{% endwith %}
+            <div class="row g-3">
+              {% if order and order.numero %}
+              <div class="col-md-4">
+                <label class="form-label">N° OT</label>
+                <input type="text" class="form-control fw-semibold text-primary" readonly value="{{ order.numero }}">
               </div>
+              {% endif %}
+              <div class="col-md-{% if order and order.numero %}4{% else %}6{% endif %}">
+                <label class="form-label" for="inputFechaProgramada">Fecha programada</label>
+                <input type="date" name="fecha_programada" id="inputFechaProgramada" class="form-control"
+                       value="{{ order.fecha_programada.isoformat() if order and order.fecha_programada else '' }}">
+              </div>
+              <div class="col-12">
+                <label class="form-label" for="selectEquipo">Activo *</label>
+                <select name="machine_id" id="selectEquipo" class="form-select" required>
+                  <option value="">— Seleccionar activo —</option>
+                  {% for m in machines %}
+                  <option value="{{ m.id }}"
+                          data-area="{{ m.area or '' }}"
+                          data-ubicacion="{{ m.ubicacion or '' }}"
+                          data-responsable="{{ (responsables_por_maquina.get(m.id) or '')|e }}"
+                          {% if order and order.machine_id == m.id %}selected{% endif %}>{{ m.codigo }} — {{ m.nombre }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label" for="inputArea">Área</label>
+                <input type="text" name="area" id="inputArea" class="form-control"
+                       value="{% if order %}{{ order.area or (order.machine.area if order.machine else '') }}{% endif %}">
+              </div>
+              <div class="col-md-6">
+                <label class="form-label" for="inputUbicacion">Ubicación</label>
+                <input type="text" name="ubicacion" id="inputUbicacion" class="form-control"
+                       value="{% if order %}{{ order.ubicacion or (order.machine.ubicacion if order.machine else '') }}{% endif %}">
+              </div>
+              {% if order %}
+              <div class="col-12">
+                <label class="form-label" for="displayResponsableActivo">Responsable</label>
+                <input type="text" id="displayResponsableActivo" class="form-control" readonly
+                       value="{{ responsable_activo_nombre|e }}">
+                <div class="form-text small">Dato del activo (campo personalizado Responsable). Si el activo no lo tiene, queda vacío.</div>
+              </div>
+              {% else %}
+              <div class="col-12">
+                <label class="form-label" for="displayResponsableActivo">Responsable</label>
+                <input type="text" id="displayResponsableActivo" class="form-control" readonly value="">
+                <div class="form-text small">Dato del activo al seleccionar el equipo. Si el activo no lo tiene, queda vacío.</div>
+              </div>
+              {% endif %}
             </div>
-            <div class="col-12 d-none" id="seccionPreventivo">
-              <div class="border rounded p-3 bg-light">
-                <h6 class="fw-semibold mb-2"><i class="bi bi-arrow-repeat me-1"></i> Frecuencia del mantenimiento</h6>
-                <div class="row g-2 align-items-end">
-                  <div class="col-auto">
-                    <label class="form-label small mb-1">Cada</label>
-                    <input type="number" name="frecuencia_valor" id="frecuenciaValor" class="form-control form-control-sm"
-                           min="1" max="999" value="{{ frecuencia_valor }}">
-                  </div>
-                  <div class="col-md-4">
-                    <label class="form-label small mb-1">Unidad</label>
-                    <select name="frecuencia_unidad" id="frecuenciaUnidad" class="form-select form-select-sm">
-                      {% for val, lbl in frecuencia_unidades %}
-                      <option value="{{ val }}" {% if frecuencia_unidad == val %}selected{% endif %}>{{ lbl }}</option>
-                      {% endfor %}
-                    </select>
-                  </div>
-                  <div class="col-md">
-                    <p class="small text-muted mb-0" id="frecuenciaResumen">{{ frecuencia_label }}</p>
+          </div>
+
+          <div class="mb-4 form-ot-seccion form-activo-seccion">
+            {% with titulo='Clasificación', icono='bi-sliders' %}{% include 'ordenes/_seccion_encabezado.html' %}{% endwith %}
+            <div class="row g-3">
+              <div class="col-12">
+                <label class="form-label" id="labelTituloActividad" for="inputTituloActividad">Actividad *</label>
+                <input type="text" name="titulo" id="inputTituloActividad" class="form-control" required
+                       placeholder="{% if not order or order.tipo == 'preventivo' %}Ej. Lubricación general{% else %}Descripción breve de la orden{% endif %}"
+                       value="{{ order.titulo if order else '' }}">
+                <div class="form-text small {% if not order or order.tipo != 'preventivo' %}d-none{% endif %}" id="hintActividadPreventiva">
+                  Una misma actividad no puede repetirse en el mismo equipo mientras exista una OT preventiva abierta.
+                </div>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label" for="selectTipo">Tipo *</label>
+                {% set tp = order.tipo if order else '' %}
+                <select name="tipo" id="selectTipo" class="form-select" required>
+                  <option value="" {% if not tp %}selected{% endif %}>— Seleccionar —</option>
+                  <option value="preventivo" {% if tp == 'preventivo' %}selected{% endif %}>Preventivo</option>
+                  <option value="correctivo" {% if tp == 'correctivo' %}selected{% endif %}>Correctivo</option>
+                  <option value="emergencia" {% if tp == 'emergencia' %}selected{% endif %}>Emergencia</option>
+                </select>
+              </div>
+              <div class="col-12 d-none" id="seccionPreventivo">
+                <label class="form-label">Frecuencia</label>
+                <div class="border rounded p-3 bg-light">
+                  {% if not order %}
+                  <p class="small text-muted mb-2">
+                    Al guardar se crearán las OT preventivas del <strong>año en curso</strong> según esta frecuencia,
+                    a partir de la <strong>fecha programada</strong>.
+                  </p>
+                  {% endif %}
+                  <div class="row g-2 align-items-end">
+                    <div class="col-auto">
+                      <label class="form-label small mb-1" for="frecuenciaValor">Cada</label>
+                      <input type="number" name="frecuencia_valor" id="frecuenciaValor" class="form-control form-control-sm"
+                             min="1" max="999" value="{{ frecuencia_valor }}">
+                    </div>
+                    <div class="col-md-4">
+                      <label class="form-label small mb-1" for="frecuenciaUnidad">Unidad</label>
+                      <select name="frecuencia_unidad" id="frecuenciaUnidad" class="form-select form-select-sm">
+                        {% for val, lbl in frecuencia_unidades %}
+                        <option value="{{ val }}" {% if frecuencia_unidad == val %}selected{% endif %}>{{ lbl }}</option>
+                        {% endfor %}
+                      </select>
+                    </div>
+                    <div class="col-md">
+                      <p class="small text-muted mb-0" id="frecuenciaResumen">{{ frecuencia_label }}</p>
+                    </div>
                   </div>
                 </div>
               </div>
+              <div class="col-md-6">
+                <label class="form-label" for="selectPrioridad">Prioridad</label>
+                {% set pr = order.prioridad if order else 'media' %}
+                <select name="prioridad" id="selectPrioridad" class="form-select">
+                  {% for val, lbl in prioridades %}
+                  <option value="{{ val }}" {% if pr == val %}selected{% endif %}>{{ lbl }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label" for="selectEstado">Estado</label>
+                {% set st = order.status if order else 'abierta' %}
+                <select name="status" id="selectEstado" class="form-select">
+                  <option value="abierta" {% if st == 'abierta' %}selected{% endif %}>Abierta</option>
+                  <option value="en_proceso" {% if st == 'en_proceso' %}selected{% endif %}>En proceso</option>
+                  <option value="cerrada" {% if st == 'cerrada' %}selected{% endif %}>Cerrada</option>
+                  <option value="completado" {% if st == 'completado' %}selected{% endif %}>Completado</option>
+                </select>
+              </div>
+              {% if not order %}
+              <input type="hidden" name="empresa_tercerizada" value="">
+              {% endif %}
             </div>
-            <div class="col-12">
-              <label class="form-label">Descripción</label>
-              <textarea name="descripcion" class="form-control" rows="3">{{ order.descripcion if order else '' }}</textarea>
-            </div>
-            <div class="col-md-6">
-              <label class="form-label">Equipo</label>
-              <select name="machine_id" class="form-select" required>
-                <option value="">— Seleccionar —</option>
-                {% for m in machines %}
-                  <option value="{{ m.id }}" {% if order and order.machine_id == m.id %}selected{% endif %}>{{ m.codigo }} — {{ m.nombre }}</option>
-                {% endfor %}
-              </select>
-            </div>
-            <div class="col-md-6">
-              <label class="form-label">Técnico asignado (orden)</label>
-              <select name="technician_id" class="form-select">
-                <option value="">— Sin asignar —</option>
-                {% for t in technicians %}
-                  <option value="{{ t.id }}" {% if order and order.technician_id == t.id %}selected{% endif %}>{{ t.nombre }}</option>
-                {% endfor %}
-              </select>
-            </div>
-            <div class="col-md-4">
-              <label class="form-label">Tipo</label>
-              {% set tp = order.tipo if order else '' %}
-              <select name="tipo" id="selectTipo" class="form-select" required>
-                <option value="" {% if not tp %}selected{% endif %}>— Seleccionar —</option>
-                <option value="preventivo" {% if tp == 'preventivo' %}selected{% endif %}>Preventivo</option>
-                <option value="correctivo" {% if tp == 'correctivo' %}selected{% endif %}>Correctivo</option>
-                <option value="emergencia" {% if tp == 'emergencia' %}selected{% endif %}>Emergencia</option>
-              </select>
-            </div>
-            <div class="col-md-4">
-              <label class="form-label">Estado</label>
-              {% set st = order.status if order else 'abierta' %}
-              <select name="status" class="form-select">
-                <option value="abierta" {% if st == 'abierta' %}selected{% endif %}>Abierta</option>
-                <option value="en_proceso" {% if st == 'en_proceso' %}selected{% endif %}>En proceso</option>
-                <option value="cerrada" {% if st == 'cerrada' %}selected{% endif %}>Cerrada</option>
-                <option value="completado" {% if st == 'completado' %}selected{% endif %}>Completado</option>
-              </select>
-            </div>
-            <div class="col-md-4">
-              <label class="form-label">Prioridad</label>
-              {% set pr = order.prioridad if order else 'media' %}
-              <select name="prioridad" class="form-select">
-                {% for val, lbl in prioridades %}
-                <option value="{{ val }}" {% if pr == val %}selected{% endif %}>{{ lbl }}</option>
-                {% endfor %}
-              </select>
-            </div>
-            <div class="col-md-4">
-              <label class="form-label">Fecha programada</label>
-              <input type="date" name="fecha_programada" class="form-control"
-                     value="{{ order.fecha_programada.isoformat() if order and order.fecha_programada else '' }}">
-            </div>
+          </div>
+
+          {% if order %}
+          <div class="mb-4 form-ot-seccion form-activo-seccion">
+            {% with titulo='Asignación y Ejecución', icono='bi-tools' %}{% include 'ordenes/_seccion_encabezado.html' %}{% endwith %}
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label class="form-label" for="autorizado_por">Autorizado por</label>
+                <input type="text" name="autorizado_por" id="autorizado_por" class="form-control"
+                       placeholder="Nombre o cargo" value="{{ order.autorizado_por or '' }}">
+              </div>
+              <div class="col-md-6">
+                <label class="form-label" for="empresa_tercerizada">Empresa</label>
+                <input type="text" name="empresa_tercerizada" id="empresa_tercerizada" class="form-control"
+                       placeholder="Si el mantenimiento es tercerizado"
+                       value="{{ order.empresa_tercerizada or '' }}">
+              </div>
+              <div class="col-md-6">
+                <label class="form-label" for="selectTecnicoAsignado">Técnico asignado</label>
+                <select name="technician_id" id="selectTecnicoAsignado" class="form-select">
+                  <option value="">— Sin asignar —</option>
+                  {% for t in technicians %}
+                  <option value="{{ t.id }}" {% if order.technician_id == t.id %}selected{% endif %}>{{ t.nombre }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label" for="recibido_por">Recibido por</label>
+                <input type="text" name="recibido_por" id="recibido_por" class="form-control"
+                       placeholder="Nombre o cargo" value="{{ order.recibido_por or '' }}">
+              </div>
 
             <div class="col-12 d-none" id="seccionRepuestos">
-              <hr class="my-1">
               <h6 class="fw-semibold mb-2"><i class="bi bi-box-seam me-1"></i> Repuestos (inventario)</h6>
               <div class="form-check mb-2">
                 <input class="form-check-input" type="checkbox" name="usa_repuestos" value="1" id="usa_repuestos"
@@ -187,8 +251,7 @@
               <input type="hidden" name="repuestos_json" id="repuestosJson" value="">
             </div>
 
-            <div class="col-12">
-              <hr class="my-1">
+            <div class="col-12" id="seccionJornadas">
               <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-2">
                 <div>
                   <h6 class="fw-semibold mb-0">Jornadas de trabajo</h6>
@@ -237,7 +300,21 @@
                 </label>
               </div>
             </div>
+            </div>
           </div>
+          {% endif %}
+
+          <div class="mb-4 form-ot-seccion form-activo-seccion">
+            {% with titulo='Observaciones', icono='bi-journal-text' %}{% include 'ordenes/_seccion_encabezado.html' %}{% endwith %}
+            <div class="row g-3">
+              <div class="col-12">
+                <label class="form-label" for="inputObservaciones">Observaciones</label>
+                <textarea name="descripcion" id="inputObservaciones" class="form-control" rows="3"
+                          placeholder="Notas u observaciones de la orden">{{ order.descripcion if order else '' }}</textarea>
+              </div>
+            </div>
+          </div>
+
           </fieldset>
           <div class="mt-4 d-flex gap-2">
             {% if not solo_lectura|default(false) %}
@@ -251,6 +328,7 @@
   </div>
 </div>
 
+{% if order %}
 <div class="modal fade modal-jornada" id="modalJornada" tabindex="-1" aria-labelledby="modalJornadaLabel" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered modal-lg">
     <div class="modal-content">
@@ -304,6 +382,7 @@
     </div>
   </div>
 </div>
+{% endif %}
 {% endblock %}
 
 {% block scripts %}
@@ -315,6 +394,7 @@
   var techById = {};
   technicians.forEach(function (t) { techById[String(t.id)] = t.nombre; });
 
+  {% if order %}
   var jornadas = {{ jornadas_inicial|tojson }};
 
   var editIndex = -1;
@@ -537,6 +617,37 @@
   syncHidden();
   renderLista();
   toggleManual();
+  {% endif %}
+
+  var selectEquipo = document.getElementById('selectEquipo');
+  var inputArea = document.getElementById('inputArea');
+  var inputUbicacion = document.getElementById('inputUbicacion');
+  var displayResponsableActivo = document.getElementById('displayResponsableActivo');
+
+  function datosEquipoSeleccionado() {
+    if (!selectEquipo) return { area: '', ubicacion: '', responsable: '' };
+    var opt = selectEquipo.options[selectEquipo.selectedIndex];
+    if (!opt || !opt.value) return { area: '', ubicacion: '', responsable: '' };
+    return {
+      area: opt.getAttribute('data-area') || '',
+      ubicacion: opt.getAttribute('data-ubicacion') || '',
+      responsable: opt.getAttribute('data-responsable') || ''
+    };
+  }
+
+  function aplicarDatosEquipo() {
+    var d = datosEquipoSeleccionado();
+    if (inputArea) inputArea.value = d.area;
+    if (inputUbicacion) inputUbicacion.value = d.ubicacion;
+    if (displayResponsableActivo) displayResponsableActivo.value = d.responsable;
+  }
+
+  if (selectEquipo && !soloLectura) {
+    selectEquipo.addEventListener('change', aplicarDatosEquipo);
+  }
+  if (selectEquipo && displayResponsableActivo) {
+    aplicarDatosEquipo();
+  }
 
   var selectTipo = document.getElementById('selectTipo');
   var seccionPrev = document.getElementById('seccionPreventivo');
@@ -550,11 +661,14 @@
 
   function actualizarSeccionPreventivo() {
     var esPrev = selectTipo && selectTipo.value === 'preventivo';
+    var formOrden = document.getElementById('ordenForm');
+    var esNueva = formOrden && formOrden.getAttribute('data-es-nueva') === '1';
+    var usarActividad = esPrev || esNueva;
     if (seccionPrev) seccionPrev.classList.toggle('d-none', !esPrev);
-    if (labelTitulo) labelTitulo.textContent = esPrev ? 'Actividad' : 'Título';
+    if (labelTitulo) labelTitulo.textContent = usarActividad ? 'Actividad' : 'Título';
     if (hintPrev) hintPrev.classList.toggle('d-none', !esPrev);
     if (inputTitulo) {
-      inputTitulo.placeholder = esPrev
+      inputTitulo.placeholder = usarActividad
         ? 'Ej. Lubricación general'
         : 'Descripción breve de la orden';
     }

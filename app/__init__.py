@@ -27,30 +27,44 @@ def create_app():
     db.init_app(app)
     login_manager.init_app(app)
 
-    from app.branding import APP_LOGO_PATH, APP_NAME, APP_TAGLINE
+    from app.branding import APP_LOGO_PATH, APP_NAME, APP_TAGLINE, empresa_logo_url_or_none
 
     from app.money import formato_moneda
-    from app.models import wo_es_editable, wo_status_meta, wo_tipo_meta
+    from app.models import machine_status_meta, wo_es_editable, wo_status_meta, wo_tipo_meta
+    from app.alertas_service import resumen_alertas_campana
+    from app.permissions import permission_flags
 
     app.jinja_env.globals["wo_status_meta"] = wo_status_meta
+    app.jinja_env.globals["machine_status_meta"] = machine_status_meta
     app.jinja_env.globals["formato_moneda"] = formato_moneda
     app.jinja_env.globals["wo_es_editable"] = wo_es_editable
     app.jinja_env.globals["wo_tipo_meta"] = wo_tipo_meta
+
+    from app.custom_fields import seccion_campos_cuatro_por_fila
+
+    app.jinja_env.filters["cuatro_por_fila"] = seccion_campos_cuatro_por_fila
 
     @app.context_processor
     def inject_globals():
         empresa_actual = None
         if current_user.is_authenticated and getattr(current_user, "empresa", None):
             empresa_actual = current_user.empresa
+        perm = permission_flags(current_user) if current_user.is_authenticated else permission_flags(
+            None
+        )
         return {
             "app_name": APP_NAME,
             "app_tagline": APP_TAGLINE,
             "app_logo_path": APP_LOGO_PATH,
             "empresa_actual": empresa_actual,
+            "empresa_logo_url": empresa_logo_url_or_none(empresa_actual),
+            "alertas_campana": resumen_alertas_campana(),
             "wo_status_meta": wo_status_meta,
+            "machine_status_meta": machine_status_meta,
             "wo_es_editable": wo_es_editable,
             "wo_tipo_meta": wo_tipo_meta,
             "formato_moneda": formato_moneda,
+            "perm": perm,
         }
 
     from app import models  # noqa: F401
