@@ -73,6 +73,7 @@ from app.models import (
     User,
     WORK_ORDER_PRIORITIES,
     WorkOrder,
+    WorkOrderEjecucionTipo,
     WorkOrderJornada,
     WorkOrderRepuesto,
     WorkOrderStatus,
@@ -2012,6 +2013,144 @@ def _maquina_requirio_paro_desde_form(form, tipo: str) -> bool:
     return (form.get("maquina_requirio_paro") or "").strip() == "1"
 
 
+def _proveedores_para_ot() -> list[Proveedor]:
+    return (
+        _filter_empresa(
+            Proveedor.query.filter(
+                Proveedor.activo.is_(True),
+                Proveedor.tipo.in_(
+                    (ProveedorTipo.SERVICIO.value, ProveedorTipo.AMBOS.value)
+                ),
+            ).order_by(Proveedor.nombre),
+            Proveedor,
+        ).all()
+    )
+
+
+def _proveedor_ot_dict(p: Proveedor) -> dict:
+    tm = proveedor_tipo_meta(p.tipo)
+    return {
+        "id": p.id,
+        "nombre": p.nombre,
+        "nit": p.nit or "",
+        "contacto_nombre": p.contacto_nombre or "",
+        "contacto_email": p.contacto_email or "",
+        "contacto_telefono": p.contacto_telefono or "",
+        "tipo": p.tipo,
+        "tipo_label": tm["label"],
+        "badge_class": tm["badge_class"],
+        "iniciales": p.iniciales,
+    }
+
+
+def _historial_proveedor_ot(proveedor_id: int, limit: int = 5) -> list:
+    """OT cerradas/completadas ejecutadas por un proveedor concreto (no todas las del sistema)."""
+    return (
+        _filter_work_orders_empresa(
+            WorkOrder.query.filter(
+                WorkOrder.proveedor_id == proveedor_id,
+                WorkOrder.ejecucion_tipo == WorkOrderEjecucionTipo.EXTERNO.value,
+                WorkOrder.status.in_(WORK_ORDER_TERMINAL_STATUSES),
+            )
+        )
+        .order_by(
+            WorkOrder.fecha_cierre.desc(),
+            WorkOrder.fecha_programada.desc(),
+            WorkOrder.id.desc(),
+        )
+        .limit(limit)
+        .all()
+    )
+
+
+def _historial_proveedor_json(proveedores: list[Proveedor], wo: Optional[WorkOrder] = None) -> dict:
+    _ = wo
+    out: dict[str, list] = {}
+    for p in proveedores:
+        out[str(p.id)] = _historial_proveedor_payload(_historial_proveedor_ot(p.id))
+    return out
+
+
+def _historial_proveedor_payload(rows: list) -> list[dict]:
+    return [
+        {
+            "numero": w.numero or f"OT-{w.id}",
+            "titulo": w.titulo,
+            "status": w.status,
+            "status_label": wo_status_meta(w.status)["label"],
+            "fecha": (
+                w.fecha_cierre.strftime("%d/%m/%Y")
+                if w.fecha_cierre
+                else (
+                    w.fecha_programada.strftime("%d/%m/%Y")
+                    if w.fecha_programada
+                    else ""
+                )
+            ),
+        }
+        for w in rows
+    ]
+
+
+def _aplicar_ejecucion_desde_form(wo: WorkOrder, form) -> Optional[str]:
+    ejec = (form.get("ejecucion_tipo") or WorkOrderEjecucionTipo.INTERNO.value).strip().lower()
+    if ejec not in (WorkOrderEjecucionTipo.INTERNO.value, WorkOrderEjecucionTipo.EXTERNO.value):
+        ejec = WorkOrderEjecucionTipo.INTERNO.value
+    wo.ejecucion_tipo = ejec
+
+    fl = (form.get("fecha_limite") or "").strip()
+    if fl:
+        try:
+            wo.fecha_limite = datetime.strptime(fl, "%Y-%m-%d").date()
+        except ValueError:
+            wo.fecha_limite = None
+    else:
+        wo.fecha_limite = None
+
+    if ejec == WorkOrderEjecucionTipo.INTERNO.value:
+        wo.proveedor_id = None
+        wo.supervisor_technician_id = None
+        wo.contacto_proveedor = ""
+        wo.numero_cotizacion = ""
+        wo.costo_estimado = None
+        wo.proveedor_incluye_insumos = False
+        wo.empresa_tercerizada = ""
+        wo.technician_id = (
+            int(form["technician_id"]) if form.get("technician_id") else None
+        )
+        return None
+
+    wo.technician_id = None
+    pid_raw = (form.get("proveedor_id") or "").strip()
+    if not pid_raw.isdigit():
+        return "Selecciona un proveedor externo."
+    proveedor = _filter_empresa(
+        Proveedor.query.filter_by(id=int(pid_raw), activo=True), Proveedor
+    ).first()
+    if not proveedor:
+        return "Proveedor no válido o inactivo."
+    wo.proveedor_id = proveedor.id
+    wo.empresa_tercerizada = proveedor.nombre
+    wo.supervisor_technician_id = (
+        int(form["supervisor_technician_id"])
+        if form.get("supervisor_technician_id")
+        else None
+    )
+    wo.contacto_proveedor = (form.get("contacto_proveedor") or "").strip() or (
+        proveedor.contacto_nombre or ""
+    )
+    wo.numero_cotizacion = (form.get("numero_cotizacion") or "").strip()
+    raw_est = (form.get("costo_estimado") or "").strip()
+    wo.costo_estimado = _parse_costo(raw_est) if raw_est else None
+    wo.proveedor_incluye_insumos = form.get("proveedor_incluye_insumos") == "1"
+    raw_real = (form.get("costo_real") or "").strip()
+    if raw_real:
+        wo.costo_real = _parse_costo(raw_real)
+    elif wo.costo_real is None:
+        wo.costo_real = None
+    return None
+
+
 def _sector_empresa_actual() -> str:
     if current_user.is_authenticated and getattr(current_user, "empresa", None):
         return normalizar_sector(current_user.empresa.sector)
@@ -2041,6 +2180,11 @@ def _orden_form_context(
     if wo and wo.preventive_plan and not wo.frecuencia_valor:
         fv = wo.preventive_plan.frecuencia_valor or 1
         fu = wo.preventive_plan.frecuencia_unidad or "meses"
+    proveedores_ot = _proveedores_para_ot()
+    ejecucion_tipo = (
+        wo.ejecucion_tipo if wo else WorkOrderEjecucionTipo.INTERNO.value
+    )
+    historial_map = _historial_proveedor_json(proveedores_ot, wo)
     return {
         "jornadas_inicial": jornadas_inicial,
         "repuestos_inicial": repuestos_inicial,
@@ -2072,6 +2216,15 @@ def _orden_form_context(
                 for p in catalogo
             ],
             ensure_ascii=False,
+        ),
+        "proveedores_ot": proveedores_ot,
+        "proveedores_ot_json": json.dumps(
+            [_proveedor_ot_dict(p) for p in proveedores_ot], ensure_ascii=False
+        ),
+        "historial_proveedor_json": json.dumps(historial_map, ensure_ascii=False),
+        "ejecucion_tipo": ejecucion_tipo,
+        "wo_es_terminal": bool(
+            wo and wo.status in WORK_ORDER_TERMINAL_STATUSES
         ),
     }
 
@@ -2478,9 +2631,6 @@ def ordenes_new():
             area=request.form.get("area", "").strip(),
             **_work_order_responsables_desde_form(request.form),
             machine_id=int(request.form.get("machine_id", 0)),
-            technician_id=int(request.form["technician_id"])
-            if request.form.get("technician_id")
-            else None,
         )
         if not wo.titulo or not wo.machine_id:
             flash("Actividad y equipo son obligatorios.", "danger")
@@ -2491,6 +2641,12 @@ def ordenes_new():
 
             wo.status = estado_inicial_por_fecha(fecha_prog)
             wo.maquina_requirio_paro = _maquina_requirio_paro_desde_form(request.form, wo.tipo)
+            fl = (request.form.get("fecha_limite") or "").strip()
+            if fl:
+                try:
+                    wo.fecha_limite = datetime.strptime(fl, "%Y-%m-%d").date()
+                except ValueError:
+                    wo.fecha_limite = None
             if wo.tipo == WorkOrderType.PREVENTIVO.value:
                 if not fecha_prog:
                     flash(
@@ -2532,6 +2688,12 @@ def ordenes_new():
                         prioridades=WORK_ORDER_PRIORITIES,
                         **_orden_form_context(None, technicians, machines),
                     )
+                delta_limite = None
+                if wo.fecha_limite and fecha_prog:
+                    delta_limite = wo.fecha_limite - fecha_prog
+                for o in ordenes:
+                    if delta_limite is not None and o.fecha_programada:
+                        o.fecha_limite = o.fecha_programada + delta_limite
                 try:
                     db.session.flush()
                     numeros = [asignar_numero_ot(o) for o in ordenes]
@@ -2588,6 +2750,15 @@ def ordenes_new():
     )
 
 
+@bp.route("/ordenes/api/historial-proveedor/<int:proveedor_id>")
+def ordenes_api_historial_proveedor(proveedor_id: int):
+    proveedor = _filter_empresa(
+        Proveedor.query.filter_by(id=proveedor_id, activo=True), Proveedor
+    ).first_or_404()
+    rows = _historial_proveedor_ot(proveedor.id)
+    return jsonify(_historial_proveedor_payload(rows))
+
+
 @bp.route("/ordenes/<int:id>/editar", methods=["GET", "POST"])
 def ordenes_edit(id):
     from sqlalchemy.orm import joinedload
@@ -2597,6 +2768,8 @@ def ordenes_edit(id):
         joinedload(WorkOrder.machine).joinedload(Machine.responsable),
         joinedload(WorkOrder.jornadas),
         joinedload(WorkOrder.repuestos).joinedload(WorkOrderRepuesto.spare_part),
+        joinedload(WorkOrder.proveedor),
+        joinedload(WorkOrder.supervisor),
     )
     solo_lectura = (not can_edit(current_user)) or (not wo_es_editable(wo.status))
     machines = (
@@ -2627,14 +2800,13 @@ def ordenes_edit(id):
         extra = _work_order_responsables_desde_form(request.form)
         wo.autorizado_por = extra["autorizado_por"]
         wo.recibido_por = extra["recibido_por"]
-        wo.empresa_tercerizada = extra["empresa_tercerizada"]
         fp = request.form.get("fecha_programada")
         wo.fecha_programada = datetime.strptime(fp, "%Y-%m-%d").date() if fp else None
         wo.machine_id = int(request.form.get("machine_id", wo.machine_id))
-        wo.technician_id = (
-            int(request.form["technician_id"]) if request.form.get("technician_id") else None
-        )
-        if not wo.titulo:
+        err_ej = _aplicar_ejecucion_desde_form(wo, request.form)
+        if err_ej:
+            flash(err_ej, "danger")
+        elif not wo.titulo:
             flash("La actividad es obligatoria.", "danger")
         elif wo.tipo == WorkOrderType.PREVENTIVO.value:
             fv, fu = parse_frecuencia_form(request.form)

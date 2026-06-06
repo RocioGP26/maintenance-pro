@@ -290,6 +290,17 @@ class WorkOrderStatus(str, Enum):
     COMPLETADO = "completado"
 
 
+class WorkOrderEjecucionTipo(str, Enum):
+    INTERNO = "interno"
+    EXTERNO = "externo"
+
+
+WORK_ORDER_EJECUCION_LABELS = {
+    WorkOrderEjecucionTipo.INTERNO.value: "Interno",
+    WorkOrderEjecucionTipo.EXTERNO.value: "Externo",
+}
+
+
 WORK_ORDER_TERMINAL_STATUSES = (
     WorkOrderStatus.CERRADA.value,
     WorkOrderStatus.COMPLETADO.value,
@@ -678,7 +689,12 @@ class Technician(db.Model):
     activo = db.Column(db.Boolean, default=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
-    work_orders = db.relationship("WorkOrder", backref="technician", lazy="dynamic")
+    work_orders = db.relationship(
+        "WorkOrder",
+        foreign_keys="WorkOrder.technician_id",
+        backref=db.backref("technician"),
+        lazy="dynamic",
+    )
     user = db.relationship("User", backref=db.backref("technician", uselist=False))
 
 
@@ -827,7 +843,29 @@ class WorkOrder(db.Model):
     recibido_por = db.Column(db.String(120), default="")
     empresa_tercerizada = db.Column(db.String(200), default="")
     maquina_requirio_paro = db.Column(db.Boolean, default=False, nullable=False)
+    ejecucion_tipo = db.Column(
+        db.String(16), default=WorkOrderEjecucionTipo.INTERNO.value, nullable=False
+    )
+    proveedor_id = db.Column(
+        db.Integer, db.ForeignKey("proveedores.id"), nullable=True, index=True
+    )
+    supervisor_technician_id = db.Column(
+        db.Integer, db.ForeignKey("technicians.id"), nullable=True, index=True
+    )
+    contacto_proveedor = db.Column(db.String(200), default="")
+    numero_cotizacion = db.Column(db.String(64), default="")
+    costo_estimado = db.Column(db.Float, nullable=True)
+    costo_real = db.Column(db.Float, nullable=True)
+    proveedor_incluye_insumos = db.Column(db.Boolean, default=False)
+    fecha_limite = db.Column(db.Date, nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    proveedor = db.relationship("Proveedor", backref=db.backref("work_orders", lazy="dynamic"))
+    supervisor = db.relationship(
+        "Technician",
+        foreign_keys=[supervisor_technician_id],
+        backref=db.backref("ordenes_supervisadas", lazy="dynamic"),
+    )
 
     preventive_plan = db.relationship(
         "PreventiveMaintenancePlan", back_populates="work_orders"
@@ -865,6 +903,15 @@ class WorkOrder(db.Model):
     @property
     def es_editable(self) -> bool:
         return wo_es_editable(self.status)
+
+    @property
+    def es_ejecucion_externa(self) -> bool:
+        return (self.ejecucion_tipo or "").strip().lower() == WorkOrderEjecucionTipo.EXTERNO.value
+
+    @property
+    def ejecucion_label(self) -> str:
+        key = (self.ejecucion_tipo or WorkOrderEjecucionTipo.INTERNO.value).strip().lower()
+        return WORK_ORDER_EJECUCION_LABELS.get(key, key)
 
 
 class WorkOrderJornada(db.Model):
@@ -1224,6 +1271,27 @@ def ensure_saas_schema():
             "maquina_requirio_paro",
             "maquina_requirio_paro BOOLEAN DEFAULT 0",
         )
+        _add_column_if_missing(
+            "work_orders", "ejecucion_tipo", "ejecucion_tipo VARCHAR(16) DEFAULT 'interno'"
+        )
+        _add_column_if_missing("work_orders", "proveedor_id", "proveedor_id INTEGER")
+        _add_column_if_missing(
+            "work_orders", "supervisor_technician_id", "supervisor_technician_id INTEGER"
+        )
+        _add_column_if_missing(
+            "work_orders", "contacto_proveedor", "contacto_proveedor VARCHAR(200)"
+        )
+        _add_column_if_missing(
+            "work_orders", "numero_cotizacion", "numero_cotizacion VARCHAR(64)"
+        )
+        _add_column_if_missing("work_orders", "costo_estimado", "costo_estimado REAL")
+        _add_column_if_missing("work_orders", "costo_real", "costo_real REAL")
+        _add_column_if_missing(
+            "work_orders",
+            "proveedor_incluye_insumos",
+            "proveedor_incluye_insumos BOOLEAN DEFAULT 0",
+        )
+        _add_column_if_missing("work_orders", "fecha_limite", "fecha_limite DATE")
         _add_column_if_missing("campos_personalizados", "opciones", "opciones TEXT")
         _add_column_if_missing("campos_personalizados", "categorias_ids", "categorias_ids TEXT")
         _add_column_if_missing(

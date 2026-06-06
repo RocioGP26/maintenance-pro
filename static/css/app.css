@@ -313,7 +313,10 @@ button.sidebar-nav-toggle:focus {
   background: var(--dash-header-bg);
   border-bottom: 1px solid var(--dash-header-border);
   box-shadow: 0 1px 0 var(--dash-header-border);
+  overflow: visible;
   padding: 1rem 1.5rem;
+  position: relative;
+  z-index: 1030;
 }
 
 .page-title {
@@ -325,13 +328,20 @@ button.sidebar-nav-toggle:focus {
 
 .header-user-toolbar {
   flex-shrink: 0;
+  overflow: visible;
 }
 
 .header-actions-pill {
   background: rgba(4, 44, 83, 0.06);
   border: 1px solid var(--border-soft);
   border-radius: 0.65rem;
+  overflow: visible;
   padding: 0.2rem;
+}
+
+.header-alert-dropdown-wrap {
+  position: relative;
+  flex-shrink: 0;
 }
 
 .header-alert-bell {
@@ -370,15 +380,31 @@ button.sidebar-nav-toggle:focus {
   width: 0.55rem;
 }
 
+.header-alert-dropdown-wrap .dropdown-menu {
+  inset: auto 0 auto auto !important;
+  position: absolute !important;
+  top: calc(100% + 0.35rem) !important;
+  transform: none !important;
+}
+
 .header-alert-menu {
   background: var(--dash-card-bg);
   border: 1px solid var(--dash-card-border);
   border-radius: 0.85rem;
   box-shadow: var(--card-shadow-hover);
   margin-top: 0.55rem !important;
-  min-width: 17rem;
+  min-width: 18rem;
+  width: 18rem;
+  max-width: min(20rem, calc(100vw - 1.5rem));
   overflow: hidden;
   padding: 0;
+  z-index: 1050;
+}
+
+.header-alert-dropdown-wrap .dropdown-menu.show {
+  display: block;
+  min-width: 18rem;
+  width: 18rem;
 }
 
 .header-alert-menu-head {
@@ -443,8 +469,10 @@ button.sidebar-nav-toggle:focus {
 }
 
 .header-alert-row-label {
+  flex: 1 1 auto;
   font-size: 0.85rem;
   font-weight: 500;
+  min-width: 0;
 }
 
 .header-alert-badge {

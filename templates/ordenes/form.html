@@ -38,12 +38,40 @@
   .jornadas-table tbody td.col-tecnico { text-align: left; white-space: nowrap; }
   .jornadas-table tbody tr:hover { background-color: #f8f9fa; }
   #jornadasVacio { border: 1px dashed #ced4da; border-radius: 8px; padding: 1.25rem; text-align: center; color: #6c757d; background: #fafbfc; font-size: 0.875rem; }
+  .ot-ejec-grid { display: grid; gap: 0.65rem; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  @media (max-width: 575.98px) { .ot-ejec-grid { grid-template-columns: 1fr; } }
+  .ot-ejec-card { cursor: pointer; margin: 0; }
+  .ot-ejec-radio { clip: rect(0,0,0,0); position: absolute; }
+  .ot-ejec-card-inner {
+    background: #fff; border: 1px solid #e5e7eb; border-radius: 0.65rem;
+    display: flex; flex-direction: column; gap: 0.15rem; height: 100%;
+    padding: 0.85rem 0.75rem; text-align: center; transition: border-color .15s, box-shadow .15s;
+  }
+  .ot-ejec-radio:checked + .ot-ejec-card-inner--interno { border-color: #2563eb; box-shadow: 0 0 0 1px #2563eb; }
+  .ot-ejec-radio:checked + .ot-ejec-card-inner--externo { border-color: #7c3aed; box-shadow: 0 0 0 1px #7c3aed; }
+  .ot-ejec-icon { color: #6b7280; font-size: 1.25rem; }
+  .ot-ejec-title { font-size: 0.875rem; font-weight: 600; }
+  .ot-ejec-hint { color: #9ca3af; font-size: 0.72rem; }
+  .ot-prov-suggest {
+    background: #fff; border: 1px solid #dee2e6; border-radius: 0.5rem;
+    box-shadow: 0 4px 12px rgba(0,0,0,.08); left: 0; max-height: 14rem;
+    overflow-y: auto; position: absolute; right: 0; top: 100%; z-index: 20;
+  }
+  .ot-prov-suggest-item {
+    border: 0; background: none; display: block; padding: 0.5rem 0.75rem;
+    text-align: left; width: 100%;
+  }
+  .ot-prov-suggest-item:hover { background: #f8f9fa; }
+  .ot-prov-selected { background: #f8fafc; border: 1px solid #e5e7eb; border-radius: 0.65rem; padding: 0.75rem; }
+  .ot-resumen-list .badge { font-size: 0.65rem; }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="row justify-content-center">
-  <div class="col-lg-10">
+  <div class="col-12">
+    <div class="row g-3">
+      <div class="col-lg-{{ '8' if order else '12' }}">
     <div class="card card-dashboard">
       <div class="card-body">
         {% if solo_lectura|default(false) %}
@@ -69,6 +97,11 @@
                 <label class="form-label" for="inputFechaProgramada">Fecha programada</label>
                 <input type="date" name="fecha_programada" id="inputFechaProgramada" class="form-control"
                        value="{{ order.fecha_programada.isoformat() if order and order.fecha_programada else '' }}">
+              </div>
+              <div class="col-md-{% if order and order.numero %}4{% else %}6{% endif %}">
+                <label class="form-label" for="inputFechaLimite">Fecha límite</label>
+                <input type="date" name="fecha_limite" id="inputFechaLimite" class="form-control"
+                       value="{{ order.fecha_limite.isoformat() if order and order.fecha_limite else '' }}">
               </div>
               <div class="col-12">
                 <label class="form-label" for="selectEquipo">Activo *</label>
@@ -194,33 +227,19 @@
 
           {% if order %}
           <div class="mb-4 form-ot-seccion form-activo-seccion">
-            {% with titulo='Asignación y Ejecución', icono='bi-tools' %}{% include 'ordenes/_seccion_encabezado.html' %}{% endwith %}
+            {% with titulo='Ejecución', icono='bi-tools' %}{% include 'ordenes/_seccion_encabezado.html' %}{% endwith %}
             <div class="row g-3">
               <div class="col-md-6">
                 <label class="form-label" for="autorizado_por">Autorizado por</label>
                 <input type="text" name="autorizado_por" id="autorizado_por" class="form-control"
-                       placeholder="Nombre o cargo" value="{{ order.autorizado_por or '' }}">
-              </div>
-              <div class="col-md-6">
-                <label class="form-label" for="empresa_tercerizada">Empresa</label>
-                <input type="text" name="empresa_tercerizada" id="empresa_tercerizada" class="form-control"
-                       placeholder="Si el mantenimiento es tercerizado"
-                       value="{{ order.empresa_tercerizada or '' }}">
-              </div>
-              <div class="col-md-6">
-                <label class="form-label" for="selectTecnicoAsignado">Técnico asignado</label>
-                <select name="technician_id" id="selectTecnicoAsignado" class="form-select">
-                  <option value="">— Sin asignar —</option>
-                  {% for t in technicians %}
-                  <option value="{{ t.id }}" {% if order.technician_id == t.id %}selected{% endif %}>{{ t.nombre }}</option>
-                  {% endfor %}
-                </select>
+                       placeholder="Nombre o cargo" value="{{ order.autorizado_por if order else '' }}">
               </div>
               <div class="col-md-6">
                 <label class="form-label" for="recibido_por">Recibido por</label>
                 <input type="text" name="recibido_por" id="recibido_por" class="form-control"
-                       placeholder="Nombre o cargo" value="{{ order.recibido_por or '' }}">
+                       placeholder="Nombre o cargo" value="{{ order.recibido_por if order else '' }}">
               </div>
+              {% include 'ordenes/_ejecucion_ot.html' %}
 
             <div class="col-md-6">
               <label class="form-label" for="selectEstadoManual">Acción manual</label>
@@ -366,6 +385,13 @@
           </div>
         </form>
       </div>
+    </div>
+      </div>
+      {% if order %}
+      <div class="col-lg-4 d-none d-lg-block">
+        {% include 'ordenes/_sidebar_ot.html' %}
+      </div>
+      {% endif %}
     </div>
   </div>
 </div>
@@ -989,5 +1015,182 @@
   togglePanelRep();
   renderRepuestos();
 })();
+
+{% if order %}
+(function () {
+  var historialApiUrl = {{ url_for('main.ordenes_api_historial_proveedor', proveedor_id=0)|tojson }}.replace('/0', '/');
+  var catalogoProv = {{ proveedores_ot_json|safe }};
+  var radiosEj = document.querySelectorAll('.ot-ejec-radio');
+  var panelInt = document.getElementById('panelEjecucionInterno');
+  var panelExt = document.getElementById('panelEjecucionExterno');
+  var buscarProv = document.getElementById('buscarProveedorOt');
+  var listaProv = document.getElementById('listaProveedorOt');
+  var provHidden = document.getElementById('proveedorIdHidden');
+  var tarjetaProv = document.getElementById('tarjetaProveedorOt');
+  var btnCambiar = document.getElementById('btnCambiarProveedor');
+  var contactoProv = document.getElementById('contactoProveedorOt');
+  var selectEquipo = document.getElementById('selectEquipo');
+  var inputFechaProg = document.getElementById('inputFechaProgramada');
+  var selectTipo = document.getElementById('selectTipo');
+  var costoEst = document.getElementById('costoEstimadoOt');
+
+  function fmtMoney(n) {
+    if (n === null || n === undefined || n === '') return '—';
+    var v = Number(n);
+    if (isNaN(v)) return '—';
+    return '$' + v.toLocaleString('es-CO', { maximumFractionDigits: 0 });
+  }
+
+  function pintarHistorial(rows, provId) {
+    var lista = document.getElementById('historialProveedorLista');
+    var pie = document.getElementById('historialProveedorPie');
+    if (!lista) return;
+    if (!provId) {
+      lista.innerHTML = '<p class="text-muted mb-0">Selecciona un proveedor externo para consultar su historial en esta OT.</p>';
+      if (pie) pie.textContent = '';
+      return;
+    }
+    if (!rows.length) {
+      lista.innerHTML = '<p class="text-muted mb-0">Este proveedor aún no tiene OT cerradas o completadas.</p>';
+      if (pie) pie.textContent = '0 OT cerradas con este proveedor';
+      return;
+    }
+    var html = '<ul class="list-unstyled mb-0">';
+    rows.forEach(function (r) {
+      html += '<li class="border-bottom py-2">' +
+        '<div class="fw-medium">' + (r.numero || '') + ' — ' + (r.titulo || '') + '</div>' +
+        '<div class="text-muted">' + (r.fecha || '') + ' · ' + (r.status_label || '') + '</div></li>';
+    });
+    html += '</ul>';
+    lista.innerHTML = html;
+    if (pie) pie.textContent = rows.length + ' OT cerradas o completadas con este proveedor';
+  }
+
+  function renderHistorial(provId) {
+    if (!provId) {
+      pintarHistorial([], '');
+      return;
+    }
+    fetch(historialApiUrl + encodeURIComponent(provId))
+      .then(function (r) { return r.ok ? r.json() : []; })
+      .then(function (rows) { pintarHistorial(rows || [], provId); })
+      .catch(function () { pintarHistorial([], provId); });
+  }
+
+  function actualizarResumenSidebar() {
+    var resActivo = document.getElementById('resActivo');
+    var resTipo = document.getElementById('resTipo');
+    var resEjec = document.getElementById('resEjecucion');
+    var resProv = document.getElementById('resProveedor');
+    var resFecha = document.getElementById('resFechaProg');
+    var resCosto = document.getElementById('resCostoEst');
+    if (selectEquipo && resActivo) {
+      var opt = selectEquipo.options[selectEquipo.selectedIndex];
+      resActivo.textContent = opt && opt.value ? (opt.textContent.split('—')[0] || opt.textContent).trim() : '—';
+    }
+    if (selectTipo && resTipo) {
+      var lbl = selectTipo.options[selectTipo.selectedIndex];
+      resTipo.textContent = lbl && lbl.value ? lbl.text : '—';
+    }
+    var esExt = document.querySelector('.ot-ejec-radio[value="externo"]')?.checked;
+    if (resEjec) {
+      resEjec.innerHTML = esExt
+        ? '<span class="badge badge-prov-ambos">Externo</span>'
+        : '<span class="badge bg-light text-dark border">Interno</span>';
+    }
+    var pid = provHidden ? provHidden.value : '';
+    var prov = catalogoProv.find(function (p) { return String(p.id) === String(pid); });
+    if (resProv) resProv.textContent = prov ? prov.nombre : '—';
+    if (inputFechaProg && resFecha) {
+      if (inputFechaProg.value) {
+        var p = inputFechaProg.value.split('-');
+        resFecha.textContent = p[2] + '/' + p[1] + '/' + p[0];
+      } else resFecha.textContent = '—';
+    }
+    if (costoEst && resCosto) resCosto.textContent = fmtMoney(costoEst.value.replace(/\./g, '').replace(',', '.'));
+    renderHistorial(pid);
+  }
+
+  function toggleEjecucion() {
+    var esExt = document.querySelector('.ot-ejec-radio[value="externo"]')?.checked;
+    if (panelInt) panelInt.classList.toggle('d-none', !!esExt);
+    if (panelExt) panelExt.classList.toggle('d-none', !esExt);
+    var techSel = document.getElementById('selectTecnicoAsignado');
+    if (techSel) techSel.disabled = !!esExt;
+    if (panelExt) {
+      panelExt.querySelectorAll('input, select, button').forEach(function (el) {
+        if (el.id === 'btnCambiarProveedor') el.disabled = !esExt;
+        else el.disabled = !esExt;
+      });
+    }
+    actualizarResumenSidebar();
+  }
+
+  function seleccionarProveedor(p) {
+    if (!p) return;
+    if (provHidden) provHidden.value = p.id;
+    if (buscarProv) buscarProv.value = p.nombre;
+    if (tarjetaProv) tarjetaProv.classList.remove('d-none');
+    var elNom = document.getElementById('provNombreLabel');
+    var elNit = document.getElementById('provNitLabel');
+    var elTipo = document.getElementById('provTipoBadge');
+    var elAv = document.getElementById('provAvatarLabel');
+    var elCon = document.getElementById('provContactoLabel');
+    if (elNom) elNom.textContent = p.nombre;
+    if (elNit) elNit.textContent = 'NIT ' + (p.nit || '—');
+    if (elTipo) { elTipo.textContent = p.tipo_label; elTipo.className = 'badge ' + p.badge_class; }
+    if (elAv) { elAv.textContent = p.iniciales; elAv.className = 'prov-avatar ' + (p.tipo === 'insumos' ? 'prov-avatar--insumos' : (p.tipo === 'ambos' ? 'prov-avatar--ambos' : 'prov-avatar--servicio')); }
+    if (elCon) elCon.textContent = p.contacto_nombre || '';
+    if (contactoProv && !contactoProv.value) contactoProv.value = p.contacto_nombre || '';
+    if (listaProv) listaProv.classList.add('d-none');
+    actualizarResumenSidebar();
+  }
+
+  function filtrarProveedores(q) {
+    if (!listaProv) return;
+    q = (q || '').toLowerCase().trim();
+    var hits = catalogoProv.filter(function (p) {
+      return !q || p.nombre.toLowerCase().indexOf(q) >= 0 || (p.nit || '').toLowerCase().indexOf(q) >= 0;
+    }).slice(0, 8);
+    if (!hits.length) { listaProv.classList.add('d-none'); return; }
+    listaProv.innerHTML = hits.map(function (p) {
+      return '<button type="button" class="ot-prov-suggest-item" data-id="' + p.id + '">' +
+        '<span class="fw-medium">' + p.nombre + '</span>' +
+        '<span class="small text-muted d-block">' + (p.nit || '') + '</span></button>';
+    }).join('');
+    listaProv.classList.remove('d-none');
+    listaProv.querySelectorAll('.ot-prov-suggest-item').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var p = catalogoProv.find(function (x) { return String(x.id) === btn.getAttribute('data-id'); });
+        seleccionarProveedor(p);
+      });
+    });
+  }
+
+  radiosEj.forEach(function (r) { r.addEventListener('change', toggleEjecucion); });
+  if (buscarProv) {
+    buscarProv.addEventListener('input', function () { filtrarProveedores(buscarProv.value); });
+    buscarProv.addEventListener('focus', function () { filtrarProveedores(buscarProv.value); });
+  }
+  if (btnCambiar) btnCambiar.addEventListener('click', function () {
+    if (provHidden) provHidden.value = '';
+    if (tarjetaProv) tarjetaProv.classList.add('d-none');
+    if (buscarProv) { buscarProv.value = ''; buscarProv.focus(); }
+    actualizarResumenSidebar();
+  });
+  if (selectEquipo) selectEquipo.addEventListener('change', actualizarResumenSidebar);
+  if (selectTipo) selectTipo.addEventListener('change', actualizarResumenSidebar);
+  if (inputFechaProg) inputFechaProg.addEventListener('change', actualizarResumenSidebar);
+  if (costoEst) costoEst.addEventListener('input', actualizarResumenSidebar);
+
+  toggleEjecucion();
+  if (provHidden && provHidden.value) {
+    var ini = catalogoProv.find(function (p) { return String(p.id) === String(provHidden.value); });
+    if (ini) seleccionarProveedor(ini);
+  } else {
+    actualizarResumenSidebar();
+  }
+})();
+{% endif %}
 </script>
 {% endblock %}

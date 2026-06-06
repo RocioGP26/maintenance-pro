@@ -1,0 +1,64 @@
+<div class="ot-sidebar sticky-top" style="top: 1rem;">
+  <div class="card card-dashboard mb-3">
+    <div class="card-body py-3">
+      <h6 class="fw-semibold mb-3">Resumen de la OT</h6>
+      <ul class="list-unstyled ot-resumen-list mb-0 small">
+        <li class="d-flex justify-content-between gap-2 py-1 border-bottom">
+          <span class="text-muted">Activo</span>
+          <span class="fw-medium text-end" id="resActivo">
+            {% if order and order.machine %}{{ order.machine.codigo }}{% else %}—{% endif %}
+          </span>
+        </li>
+        <li class="d-flex justify-content-between gap-2 py-1 border-bottom">
+          <span class="text-muted">Tipo</span>
+          <span id="resTipo">
+            {% if order %}{% set tm = wo_tipo_meta(order.tipo) %}<span class="badge {{ tm.badge_class }}">{{ tm.label }}</span>{% else %}—{% endif %}
+          </span>
+        </li>
+        <li class="d-flex justify-content-between gap-2 py-1 border-bottom">
+          <span class="text-muted">Ejecución</span>
+          <span id="resEjecucion">
+            {% if order %}
+            <span class="badge {% if order.es_ejecucion_externa %}badge-prov-ambos{% else %}badge bg-light text-dark border{% endif %}">{{ order.ejecucion_label }}</span>
+            {% else %}—{% endif %}
+          </span>
+        </li>
+        <li class="d-flex justify-content-between gap-2 py-1 border-bottom">
+          <span class="text-muted">Proveedor</span>
+          <span class="text-end" id="resProveedor">
+            {% if order and order.proveedor %}{{ order.proveedor.nombre }}{% else %}—{% endif %}
+          </span>
+        </li>
+        <li class="d-flex justify-content-between gap-2 py-1 border-bottom">
+          <span class="text-muted">Programada</span>
+          <span id="resFechaProg">
+            {% if order and order.fecha_programada %}{{ order.fecha_programada.strftime('%d/%m/%Y') }}{% else %}—{% endif %}
+          </span>
+        </li>
+        <li class="d-flex justify-content-between gap-2 py-1 border-bottom">
+          <span class="text-muted">Costo est.</span>
+          <span id="resCostoEst">
+            {% if order and order.costo_estimado %}${{ '{:,.0f}'.format(order.costo_estimado) }}{% else %}—{% endif %}
+          </span>
+        </li>
+        <li class="d-flex justify-content-between gap-2 py-1">
+          <span class="text-muted">Estado</span>
+          <span id="resEstado">
+            {% if order %}{% set sm = wo_status_meta(order.status) %}<span class="badge {{ sm.badge_class }}">{{ sm.label }}</span>{% else %}—{% endif %}
+          </span>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="card card-dashboard" id="cardHistorialProveedor">
+    <div class="card-body py-3">
+      <h6 class="fw-semibold mb-2">Historial del proveedor</h6>
+      <p class="text-muted small mb-2">Solo OT cerradas o completadas asignadas a ese proveedor.</p>
+      <div id="historialProveedorLista" class="small">
+        <p class="text-muted mb-0">Selecciona un proveedor externo para consultar su historial en esta OT.</p>
+      </div>
+      <p class="text-muted small mb-0 mt-2" id="historialProveedorPie"></p>
+    </div>
+  </div>
+</div>
