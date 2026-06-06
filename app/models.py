@@ -138,6 +138,7 @@ class Empresa(db.Model):
     ciudad = db.Column(db.String(120), default="")
     pais = db.Column(db.String(120), default="Colombia")
     sector = db.Column(db.String(32), default="manufactura")
+    slug = db.Column(db.String(48), unique=True, nullable=True, index=True)
     logo = db.Column(db.String(255), default="")
     telefono = db.Column(db.String(40), default="")
     email = db.Column(db.String(120), default="")
@@ -843,10 +844,12 @@ class Incident(db.Model):
     titulo = db.Column(db.String(200), nullable=False)
     descripcion = db.Column(db.Text, default="")
     machine_id = db.Column(db.Integer, db.ForeignKey("machines.id"), nullable=True)
+    empresa_id = db.Column(db.Integer, db.ForeignKey("empresas.id"), nullable=True, index=True)
     reportado_en = db.Column(db.DateTime, default=datetime.utcnow)
     resuelto = db.Column(db.Boolean, default=False)
 
     machine = db.relationship("Machine", backref="incidents")
+    empresa = db.relationship("Empresa", backref="incidents")
 
 
 def ensure_machine_tipo_equipo_column():
@@ -994,6 +997,21 @@ def _add_column_if_missing(table: str, column: str, ddl: str) -> None:
             conn.execute(text(f"ALTER TABLE {table} ADD COLUMN {ddl}"))
 
 
+def _backfill_empresa_slugs() -> None:
+    """Asigna slug a empresas existentes sin slug (JWT / identificación)."""
+    from sqlalchemy import or_
+
+    from app.tenancy.slug import slug_unico_empresa
+
+    pendientes = Empresa.query.filter(or_(Empresa.slug.is_(None), Empresa.slug == "")).all()
+    if not pendientes:
+        return
+    for emp in pendientes:
+        emp.slug = slug_unico_empresa(emp.razon_social or f"empresa-{emp.id}", excluir_id=emp.id)
+        db.session.add(emp)
+    db.session.commit()
+
+
 def ensure_saas_schema():
     """Columnas multi-empresa, prioridad en OT y tablas de onboarding."""
     from sqlalchemy import inspect, text
@@ -1104,7 +1122,10 @@ def ensure_saas_schema():
         )
         _add_column_if_missing("empresas", "telefono", "telefono VARCHAR(40)")
         _add_column_if_missing("empresas", "email", "email VARCHAR(120)")
+        _add_column_if_missing("empresas", "slug", "slug VARCHAR(48)")
+        _add_column_if_missing("incidents", "empresa_id", "empresa_id INTEGER")
         ensure_asset_base_columns()
+        _backfill_empresa_slugs()
         ensure_sector_plantilla_schema()
         migrate_legacy_tenant()
         from app.wo_numbering import backfill_work_order_numeros
@@ -1191,7 +1212,7 @@ def migrate_legacy_tenant():
         u.onboarding_completado = True
         if not u.rol:
             u.rol = UserRole.ADMIN.value
-    for table in ("machines", "technicians", "work_orders", "spare_parts"):
+    for table in ("machines", "technicians", "work_orders", "spare_parts", "incidents"):
         try:
             db.session.execute(
                 text(f"UPDATE {table} SET empresa_id = :e WHERE empresa_id IS NULL"),
@@ -1199,6 +1220,21 @@ def migrate_legacy_tenant():
             )
         except Exception:
             pass
+    try:
+        db.session.execute(
+            text(
+                """
+                UPDATE incidents
+                SET empresa_id = (
+                    SELECT machines.empresa_id FROM machines
+                    WHERE machines.id = incidents.machine_id
+                )
+                WHERE empresa_id IS NULL AND machine_id IS NOT NULL
+                """
+            )
+        )
+    except Exception:
+        pass
     db.session.commit()
 
 

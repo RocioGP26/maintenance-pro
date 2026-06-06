@@ -14,9 +14,9 @@ from app.models import Machine, WorkOrder, WorkOrderStatus
 
 
 def _current_empresa_id() -> int | None:
-    if not current_user.is_authenticated:
-        return None
-    return current_user.empresa_id
+    from app.tenancy.context import current_empresa_id
+
+    return current_empresa_id()
 
 
 def _machine_ids_for_empresa():

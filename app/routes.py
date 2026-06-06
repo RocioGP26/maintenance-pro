@@ -184,9 +184,9 @@ def _is_safe_url(target: str) -> bool:
 
 
 def _current_empresa_id() -> Optional[int]:
-    if not current_user.is_authenticated:
-        return None
-    return current_user.empresa_id
+    from app.tenancy.context import current_empresa_id
+
+    return current_empresa_id()
 
 
 def _filter_empresa(query, model=Machine):
@@ -485,6 +485,17 @@ def _filter_work_orders_empresa(q):
             WorkOrder.machine_id.in_(_machine_ids_for_empresa()),
         )
     )
+
+
+def _get_work_order_or_404(order_id: int, *options):
+    q = _filter_work_orders_empresa(WorkOrder.query.filter_by(id=order_id))
+    if options:
+        q = q.options(*options)
+    return q.first_or_404()
+
+
+def _get_spare_part_or_404(part_id: int) -> SparePart:
+    return _filter_empresa(SparePart.query.filter_by(id=part_id), SparePart).first_or_404()
 
 
 def _wo_status_terminal_filter():
@@ -1201,7 +1212,9 @@ def dashboard():
             }
         )
 
-    techs = Technician.query.filter_by(activo=True).order_by(Technician.nombre).all()
+    techs = _filter_empresa(
+        Technician.query.filter_by(activo=True).order_by(Technician.nombre), Technician
+    ).all()
     workload_labels = []
     workload_values = []
     for t in techs:
@@ -1304,6 +1317,10 @@ def _machine_types_query():
     return q
 
 
+def _get_machine_type_or_404(type_id: int) -> MachineType:
+    return _machine_types_query().filter_by(id=type_id).first_or_404()
+
+
 def _machine_types_activos():
     return (
         _machine_types_query()
@@ -1319,7 +1336,7 @@ def _machine_types_para_formulario(machine: Optional[Machine] = None):
         return base
     if any(mt.id == machine.machine_type_id for mt in base):
         return base
-    cur = MachineType.query.get(machine.machine_type_id)
+    cur = _machine_types_query().filter_by(id=machine.machine_type_id).first()
     return [cur] + base if cur else base
 
 
@@ -1351,7 +1368,7 @@ def _slugify_clave(nombre: str) -> str:
 def _clave_tipo_unica(base: str) -> str:
     c = base[:48]
     n = 2
-    while MachineType.query.filter_by(clave=c).first():
+    while _machine_types_query().filter_by(clave=c).first():
         suffix = f"_{n}"
         c = (base[: 48 - len(suffix)] + suffix)[:48]
         n += 1
@@ -1360,18 +1377,38 @@ def _clave_tipo_unica(base: str) -> str:
 
 @bp.route("/activos")
 def activos_list():
-    q = request.args.get("q", "").strip()
+    from app.activos_list_service import activos_kpis_for_machines, build_activos_list_items
+
     query = _filter_empresa(Machine.query.order_by(Machine.codigo))
-    if q:
-        like = f"%{q}%"
-        query = query.filter(
-            or_(
-                Machine.codigo.ilike(like),
-                Machine.nombre.ilike(like),
-                Machine.ubicacion.ilike(like),
-            )
-        )
-    return render_template("activos/list.html", machines=query.all(), q=q)
+    machines = query.all()
+    items = build_activos_list_items(machines)
+    kpis = activos_kpis_for_machines(machines)
+    tipos = _machine_types_activos()
+    return render_template(
+        "activos/list.html",
+        activos_items=items,
+        activos_kpis=kpis,
+        machine_types=tipos,
+    )
+
+
+@bp.route("/activos/<int:id>/toggle-critico", methods=["POST"])
+def activos_toggle_critico(id):
+    m = _filter_empresa(Machine.query.filter_by(id=id)).first_or_404()
+    m.es_critico = not m.es_critico
+    db.session.commit()
+    machines = _filter_empresa(Machine.query).all()
+    from app.activos_list_service import activos_kpis_for_machines
+
+    kpis = activos_kpis_for_machines(machines)
+    return jsonify(
+        {
+            "ok": True,
+            "id": m.id,
+            "es_critico": m.es_critico,
+            "criticos": kpis["criticos"],
+        }
+    )
 
 
 @bp.route("/activos/api/sugerir-codigo")
@@ -1468,7 +1505,9 @@ def activos_new():
 def activos_edit(id):
     from sqlalchemy.orm import joinedload
 
-    m = Machine.query.options(joinedload(Machine.responsable)).get_or_404(id)
+    m = _filter_empresa(
+        Machine.query.options(joinedload(Machine.responsable)).filter_by(id=id), Machine
+    ).first_or_404()
     tipos = _machine_types_para_formulario(m)
     if not tipos:
         flash("No hay tipos de máquina activos.", "warning")
@@ -1539,7 +1578,7 @@ def activos_api_campos():
 
 @bp.route("/activos/<int:id>/eliminar", methods=["POST"])
 def activos_delete(id):
-    m = Machine.query.get_or_404(id)
+    m = _filter_empresa(Machine.query.filter_by(id=id), Machine).first_or_404()
     db.session.delete(m)
     db.session.commit()
     flash("Activo eliminado.", "info")
@@ -1613,7 +1652,7 @@ def activos_tipo_new():
 
 @bp.route("/activos/tipos/<int:id>/editar", methods=["GET", "POST"])
 def activos_tipo_edit(id):
-    t = MachineType.query.get_or_404(id)
+    t = _get_machine_type_or_404(id)
     if not _tipo_pertenece_sector_empresa(t):
         flash("Este tipo no pertenece al sector industrial de tu empresa.", "warning")
         return redirect(url_for("main.activos_tipo_list"))
@@ -1630,7 +1669,9 @@ def activos_tipo_edit(id):
         elif not re.match(r"^[A-Z0-9]{2,8}$", prefijo):
             flash("El prefijo debe tener entre 2 y 8 letras o números.", "danger")
         else:
-            other = MachineType.query.filter(MachineType.prefijo == prefijo, MachineType.id != t.id).first()
+            other = _machine_types_query().filter(
+                MachineType.prefijo == prefijo, MachineType.id != t.id
+            ).first()
             if other:
                 flash("Ese prefijo ya lo usa otro tipo.", "danger")
             else:
@@ -1662,7 +1703,7 @@ def activos_tipo_edit(id):
 
 @bp.route("/activos/tipos/<int:id>/eliminar", methods=["POST"])
 def activos_tipo_delete(id):
-    t = MachineType.query.get_or_404(id)
+    t = _get_machine_type_or_404(id)
     if not _tipo_pertenece_sector_empresa(t):
         flash("Este tipo no pertenece al sector industrial de tu empresa.", "warning")
         return redirect(url_for("main.activos_tipo_list"))
@@ -1794,11 +1835,7 @@ def _guardar_jornadas_orden(wo: WorkOrder) -> Optional[str]:
 
 
 def _spare_parts_para_formulario() -> list:
-    eid = _current_empresa_id()
-    q = SparePart.query.order_by(SparePart.nombre)
-    if eid:
-        q = q.filter(or_(SparePart.empresa_id == eid, SparePart.empresa_id.is_(None)))
-    return q.all()
+    return _filter_empresa(SparePart.query.order_by(SparePart.nombre), SparePart).all()
 
 
 def _planeacion_filas(anio: int, mes: int) -> list[dict]:
@@ -1915,7 +1952,7 @@ def _guardar_repuestos_orden(wo: WorkOrder) -> Optional[str]:
         part = db.session.get(SparePart, item["spare_part_id"])
         if part is None:
             return "Uno de los repuestos seleccionados ya no existe."
-        if eid and part.empresa_id not in (None, eid):
+        if eid and part.empresa_id != eid:
             return f"El repuesto {part.sku} no pertenece a tu empresa."
         if (part.cantidad or 0) < item["cantidad"]:
             return (
@@ -2425,11 +2462,12 @@ def ordenes_new():
 def ordenes_edit(id):
     from sqlalchemy.orm import joinedload
 
-    wo = WorkOrder.query.options(
+    wo = _get_work_order_or_404(
+        id,
         joinedload(WorkOrder.machine).joinedload(Machine.responsable),
         joinedload(WorkOrder.jornadas),
         joinedload(WorkOrder.repuestos).joinedload(WorkOrderRepuesto.spare_part),
-    ).get_or_404(id)
+    )
     solo_lectura = (not can_edit(current_user)) or (not wo_es_editable(wo.status))
     machines = (
         _filter_empresa(
@@ -2523,15 +2561,13 @@ def calendario():
     start = date(year, month, 1)
     _, last = monthrange(year, month)
     end = date(year, month, last)
-    orders = (
+    orders = _filter_work_orders_empresa(
         WorkOrder.query.filter(
             WorkOrder.fecha_programada.isnot(None),
             WorkOrder.fecha_programada >= start,
             WorkOrder.fecha_programada <= end,
         )
-        .order_by(WorkOrder.fecha_programada)
-        .all()
-    )
+    ).order_by(WorkOrder.fecha_programada).all()
     by_day = {}
     for o in orders:
         d = o.fecha_programada.isoformat()
@@ -2606,7 +2642,7 @@ def inventario_new():
 
 @bp.route("/inventario/<int:id>/editar", methods=["GET", "POST"])
 def inventario_edit(id):
-    p = SparePart.query.get_or_404(id)
+    p = _get_spare_part_or_404(id)
     if request.method == "POST":
         p.sku = request.form.get("sku", "").strip()
         p.nombre = request.form.get("nombre", "").strip()
@@ -3430,21 +3466,24 @@ def configuracion_empresa():
 # --- Reportes ---
 @bp.route("/reportes")
 def reportes():
-    total_m = Machine.query.count()
+    m_q = _filter_empresa(Machine.query, Machine)
+    wo_q = _filter_work_orders_empresa(WorkOrder.query)
+    sp_q = _filter_empresa(SparePart.query, SparePart)
+    total_m = m_q.count()
     by_status = (
-        db.session.query(Machine.status, func.count(Machine.id))
+        m_q.with_entities(Machine.status, func.count(Machine.id))
         .group_by(Machine.status)
         .all()
     )
     wo_by_type = (
-        db.session.query(WorkOrder.tipo, func.count(WorkOrder.id)).group_by(WorkOrder.tipo).all()
+        wo_q.with_entities(WorkOrder.tipo, func.count(WorkOrder.id)).group_by(WorkOrder.tipo).all()
     )
     wo_by_status = (
-        db.session.query(WorkOrder.status, func.count(WorkOrder.id))
+        wo_q.with_entities(WorkOrder.status, func.count(WorkOrder.id))
         .group_by(WorkOrder.status)
         .all()
     )
-    bajo_minimo = SparePart.query.filter(SparePart.cantidad < SparePart.stock_minimo).count()
+    bajo_minimo = sp_q.filter(SparePart.cantidad < SparePart.stock_minimo).count()
     return render_template(
         "reportes.html",
         total_m=total_m,
@@ -3466,13 +3505,23 @@ def reportes():
 # --- Incidencias ---
 @bp.route("/incidencia", methods=["GET", "POST"])
 def incidencia():
-    machines = Machine.query.order_by(Machine.nombre).all()
+    eid = _current_empresa_id()
+    machines = _filter_empresa(Machine.query.order_by(Machine.nombre), Machine).all()
     if request.method == "POST":
         mid = request.form.get("machine_id")
+        machine_id = int(mid) if mid else None
+        if machine_id:
+            machine = _filter_empresa(Machine.query.filter_by(id=machine_id), Machine).first()
+            if machine is None:
+                flash("El activo seleccionado no pertenece a tu empresa.", "danger")
+                return render_template("incidencia.html", machines=machines)
+        else:
+            machine = None
         inc = Incident(
             titulo=request.form.get("titulo", "").strip(),
             descripcion=request.form.get("descripcion", "").strip(),
-            machine_id=int(mid) if mid else None,
+            machine_id=machine.id if machine else None,
+            empresa_id=eid,
         )
         if not inc.titulo:
             flash("Describe brevemente la incidencia.", "danger")

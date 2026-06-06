@@ -27,6 +27,10 @@ def create_app():
     db.init_app(app)
     login_manager.init_app(app)
 
+    from app.tenancy.middleware import register_tenancy_middleware
+
+    register_tenancy_middleware(app)
+
     from app.branding import APP_LOGO_PATH, APP_NAME, APP_TAGLINE, empresa_logo_url_or_none
 
     from app.money import formato_moneda
@@ -90,8 +94,12 @@ def create_app():
 
     from app import routes
     from app.onboarding_routes import onboarding_bp
+    from app.tenancy.admin_routes import admin_bp
+    from app.tenancy.api_routes import tenancy_api_bp
 
     app.register_blueprint(routes.bp)
     app.register_blueprint(onboarding_bp)
+    app.register_blueprint(tenancy_api_bp)
+    app.register_blueprint(admin_bp)
 
     return app

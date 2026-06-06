@@ -18,6 +18,8 @@ instance/
 *.db
 *.sqlite3
 static/uploads/
+# Legacy: BDs por tenant (arquitectura antigua; ya no se usa)
+data/tenants/
 
 # IDE
 .idea/

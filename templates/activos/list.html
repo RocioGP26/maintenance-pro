@@ -1,78 +1,443 @@
 {% extends "base.html" %}
 {% block title %}Activos — {{ app_name }}{% endblock %}
-{% block page_title %}Activos (Equipos){% endblock %}
+{% block page_title %}Activos{% endblock %}
+
+{% block header_toolbar %}
+<span class="activos-header-count badge rounded-pill text-bg-light border" id="activosHeaderCount">{{ activos_kpis.total }} equipos</span>
+{% if perm.crear %}
+<a href="{{ url_for('main.activos_new') }}" class="btn btn-outline-primary btn-sm">
+  <i class="bi bi-plus-lg"></i> Nuevo activo
+</a>
+{% endif %}
+{% endblock %}
 
 {% block content %}
-<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-2">
-  <form class="d-flex gap-1 flex-grow-1" method="get" action="{{ url_for('main.activos_list') }}" style="max-width: 22rem;">
-    <input type="search" name="q" value="{{ q }}" class="form-control form-control-sm"
-           placeholder="Código, nombre, ubicación…">
-    <button class="btn btn-outline-primary btn-sm py-0 px-2" type="submit" title="Buscar">
-      <i class="bi bi-search"></i>
-    </button>
-  </form>
-  {% if perm.crear %}<a href="{{ url_for('main.activos_new') }}" class="btn btn-primary btn-sm py-0 px-2">
-    <i class="bi bi-plus-lg"></i> Nuevo
-  </a>{% endif %}
-</div>
+<div class="activos-list-page" id="activosListPage"
+     data-toggle-url="{{ url_for('main.activos_toggle_critico', id=0) }}"
+     data-can-edit="{{ '1' if perm.editar else '0' }}"
+     data-total="{{ activos_kpis.total }}">
 
-<div class="card card-dashboard">
-  <div class="table-responsive">
-    <table class="table table-sm table-hover table-activos-list align-middle mb-0">
-      <thead class="table-light">
-        <tr>
-          <th>Activo</th>
-          <th>Tipo</th>
-          <th>Ubicación</th>
-          <th class="text-center col-estado">Estado</th>
-          <th class="text-center col-crit" title="Crítico">!</th>
-          <th class="col-acciones"></th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for m in machines %}
-        {% set st = machine_status_meta(m.status) %}
-        <tr>
-          <td class="celda-activo-principal">
-            <span class="fw-medium celda-truncate d-block" title="{{ m.nombre }}">{{ m.nombre }}</span>
-            <span class="font-monospace text-muted activo-codigo-inline">{{ m.codigo }}</span>
-          </td>
-          <td class="celda-truncate celda-tipo" title="{{ m.tipo_etiqueta }}">
-            <span class="badge badge-activos-list text-bg-light text-dark border">{{ m.tipo_etiqueta }}</span>
-          </td>
-          <td class="celda-truncate text-muted" title="{{ m.ubicacion or '' }}">{{ m.ubicacion or '—' }}</td>
-          <td class="text-center">
-            <span class="badge badge-activos-list badge-estado-activo badge-estado-activo--{{ st.slug }}">{{ st.label }}</span>
-          </td>
-          <td class="text-center text-muted">
-            {% if m.es_critico %}<i class="bi bi-star-fill text-warning" title="Crítico"></i>{% else %}—{% endif %}
-          </td>
-          <td class="text-end text-nowrap col-acciones">
-            <div class="d-inline-flex gap-1 acciones-activos-list">
-              {% if perm.editar or perm.solo_lectura %}
-              <a href="{{ url_for('main.activos_edit', id=m.id) }}" class="btn btn-outline-secondary btn-sm py-0 px-2"
-                 title="{% if perm.editar %}Editar{% else %}Ver{% endif %}">
-                <i class="bi bi-{% if perm.editar %}pencil{% else %}eye{% endif %}"></i>
-              </a>
-              {% endif %}
-              {% if perm.eliminar %}
-              <form action="{{ url_for('main.activos_delete', id=m.id) }}" method="post" class="d-inline m-0"
-                    onsubmit="return confirm('¿Eliminar este activo?');">
-                <button type="submit" class="btn btn-outline-danger btn-sm py-0 px-2" title="Eliminar">
-                  <i class="bi bi-trash"></i>
+  <div class="activos-kpi-row row g-3 mb-3">
+    <div class="col-6 col-lg-3">
+      <div class="activos-kpi-card activos-kpi-card--operativo">
+        <div class="activos-kpi-card-head">
+          <span class="activos-kpi-dot activos-kpi-dot--operativo" aria-hidden="true"></span>
+          <span class="activos-kpi-label">Operativos</span>
+        </div>
+        <p class="activos-kpi-value mb-0" id="kpiOperativos">{{ activos_kpis.operativos }}</p>
+        <p class="activos-kpi-sub mb-0" id="kpiOperativosSub">{{ activos_kpis.pct_operativos }}% del total</p>
+      </div>
+    </div>
+    <div class="col-6 col-lg-3">
+      <div class="activos-kpi-card activos-kpi-card--mantenimiento">
+        <div class="activos-kpi-card-head">
+          <span class="activos-kpi-dot activos-kpi-dot--mantenimiento" aria-hidden="true"></span>
+          <span class="activos-kpi-label">En mantenimiento</span>
+        </div>
+        <p class="activos-kpi-value mb-0" id="kpiMantenimiento">{{ activos_kpis.mantenimiento }}</p>
+        <p class="activos-kpi-sub mb-0" id="kpiMantenimientoSub">{{ activos_kpis.pct_mantenimiento }}% del total</p>
+      </div>
+    </div>
+    <div class="col-6 col-lg-3">
+      <div class="activos-kpi-card activos-kpi-card--falla">
+        <div class="activos-kpi-card-head">
+          <span class="activos-kpi-dot activos-kpi-dot--falla" aria-hidden="true"></span>
+          <span class="activos-kpi-label">En falla</span>
+        </div>
+        <p class="activos-kpi-value mb-0" id="kpiFalla">{{ activos_kpis.falla }}</p>
+        <p class="activos-kpi-sub mb-0" id="kpiFallaSub">{% if activos_kpis.falla %} {{ activos_kpis.pct_falla }}% del total{% else %}Sin incidencias{% endif %}</p>
+      </div>
+    </div>
+    <div class="col-6 col-lg-3">
+      <div class="activos-kpi-card activos-kpi-card--critico">
+        <div class="activos-kpi-card-head">
+          <i class="bi bi-star activos-kpi-star" aria-hidden="true"></i>
+          <span class="activos-kpi-label">Críticos</span>
+        </div>
+        <p class="activos-kpi-value mb-0" id="kpiCriticos">{{ activos_kpis.criticos }}</p>
+        <p class="activos-kpi-sub mb-0">Marcados como críticos</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="activos-toolbar card card-dashboard mb-3">
+    <div class="card-body py-2 px-3">
+      <div class="activos-toolbar-row">
+        <div class="activos-toolbar-filters">
+          <div class="activos-search-wrap">
+            <i class="bi bi-search activos-search-icon" aria-hidden="true"></i>
+            <input type="search" id="activosSearch" class="form-control form-control-sm activos-search-input"
+                   placeholder="Buscar código, nombre, ubicación…" autocomplete="off">
+          </div>
+          <select id="activosFilterStatus" class="form-select form-select-sm activos-filter-select" aria-label="Filtrar por estado">
+            <option value="">Todos los estados</option>
+            <option value="operativo">Operativo</option>
+            <option value="mantenimiento">En mantenimiento</option>
+            <option value="falla">En falla</option>
+          </select>
+          <select id="activosFilterTipo" class="form-select form-select-sm activos-filter-select" aria-label="Filtrar por tipo">
+            <option value="">Todos los tipos</option>
+            {% for mt in machine_types %}
+            <option value="{{ mt.id }}">{{ mt.nombre }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="activos-view-toggle btn-group btn-group-sm" role="group" aria-label="Vista de listado">
+          <button type="button" class="btn btn-outline-secondary active" id="activosViewList" title="Vista lista" aria-pressed="true">
+            <i class="bi bi-list-ul"></i>
+          </button>
+          <button type="button" class="btn btn-outline-secondary" id="activosViewGrid" title="Vista tarjetas" aria-pressed="false">
+            <i class="bi bi-grid"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card card-dashboard activos-list-card">
+    <div id="activosTableView" class="table-responsive">
+      <table class="table table-sm table-hover table-activos-list align-middle mb-0">
+        <thead class="table-light">
+          <tr>
+            <th class="col-check"><input type="checkbox" class="form-check-input" id="activosSelectAll" aria-label="Seleccionar todos"></th>
+            <th>Activo</th>
+            <th>Tipo</th>
+            <th>Ubicación</th>
+            <th class="text-center col-estado">Estado</th>
+            <th class="text-center col-crit">Criticidad</th>
+            <th class="col-mant">Mantenimiento</th>
+            <th class="col-acciones"></th>
+          </tr>
+        </thead>
+        <tbody id="activosTableBody">
+          {% for item in activos_items %}
+          <tr class="activos-data-row"
+              data-id="{{ item.id }}"
+              data-status="{{ item.status_slug }}"
+              data-tipo="{{ item.tipo_id }}"
+              data-critico="{{ '1' if item.es_critico else '0' }}"
+              data-search="{{ item.search_blob }}">
+            <td class="col-check">
+              <input type="checkbox" class="form-check-input activos-row-check" aria-label="Seleccionar {{ item.nombre }}">
+            </td>
+            <td class="celda-activo-principal">
+              <span class="fw-medium celda-truncate d-block" title="{{ item.nombre }}">{{ item.nombre }}</span>
+              <span class="font-monospace text-muted activo-codigo-inline">{{ item.codigo }}</span>
+            </td>
+            <td class="celda-truncate celda-tipo" title="{{ item.tipo_etiqueta }}">
+              <span class="badge badge-activos-list text-bg-light text-dark border">{{ item.tipo_etiqueta }}</span>
+            </td>
+            <td class="celda-truncate text-muted" title="{{ item.ubicacion }}">{{ item.ubicacion }}</td>
+            <td class="text-center">
+              <span class="badge badge-activos-list badge-estado-activo badge-estado-activo--{{ item.status_slug }}">{{ item.status_label }}</span>
+            </td>
+            <td class="text-center">
+              <div class="activos-crit-cell">
+                <span class="activos-crit-dots activos-crit-dots--{{ item.criticidad }}" title="{{ item.criticidad_label }}" aria-label="Criticidad {{ item.criticidad_label }}">
+                  {% for i in range(3) %}
+                  <span class="activos-crit-dot{% if i < item.criticidad_nivel %} is-on{% endif %}"></span>
+                  {% endfor %}
+                </span>
+                <button type="button"
+                        class="activos-star-btn{% if item.es_critico %} is-active{% endif %}"
+                        data-id="{{ item.id }}"
+                        title="{% if item.es_critico %}Quitar marca crítica{% else %}Marcar como crítico{% endif %}"
+                        aria-label="Marcar crítico"
+                        aria-pressed="{{ 'true' if item.es_critico else 'false' }}"
+                        {% if not perm.editar %}disabled{% endif %}>
+                  <i class="bi bi-star{% if item.es_critico %}-fill{% endif %}"></i>
                 </button>
-              </form>
+              </div>
+            </td>
+            <td class="col-mant">
+              <div class="activos-mant-cell">
+                <span class="activos-mant-line"><span class="activos-mant-label">Últ.</span> {{ item.ultimo_mant }}</span>
+                <span class="activos-mant-line"><span class="activos-mant-label">Próx.</span> {{ item.proximo_mant }}</span>
+              </div>
+            </td>
+            <td class="text-end text-nowrap col-acciones">
+              <div class="d-inline-flex gap-1 acciones-activos-list">
+                {% if perm.editar or perm.solo_lectura %}
+                <a href="{{ item.href }}" class="btn btn-outline-secondary btn-sm py-0 px-2"
+                   title="{% if perm.editar %}Editar{% else %}Ver{% endif %}">
+                  <i class="bi bi-{% if perm.editar %}pencil{% else %}eye{% endif %}"></i>
+                </a>
+                {% endif %}
+                {% if perm.eliminar %}
+                <form action="{{ item.delete_url }}" method="post" class="d-inline m-0"
+                      onsubmit="return confirm('¿Eliminar este activo?');">
+                  <button type="submit" class="btn btn-outline-danger btn-sm py-0 px-2" title="Eliminar">
+                    <i class="bi bi-trash"></i>
+                  </button>
+                </form>
+                {% endif %}
+              </div>
+            </td>
+          </tr>
+          {% else %}
+          <tr class="activos-empty-row">
+            <td colspan="8" class="text-center text-muted py-4">No hay equipos registrados.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <div id="activosGridView" class="activos-grid-view d-none">
+      <div class="activos-grid-inner row g-3 p-3" id="activosGridInner">
+        {% for item in activos_items %}
+        <div class="col-12 col-sm-6 col-xl-4 activos-grid-item activos-data-row"
+             data-id="{{ item.id }}"
+             data-status="{{ item.status_slug }}"
+             data-tipo="{{ item.tipo_id }}"
+             data-critico="{{ '1' if item.es_critico else '0' }}"
+             data-search="{{ item.search_blob }}">
+          <article class="activos-grid-card h-100">
+            <div class="activos-grid-card-media">
+              {% if item.foto_url %}
+              <img src="{{ item.foto_url }}" alt="{{ item.nombre }}" class="activos-grid-photo">
+              {% else %}
+              <div class="activos-grid-photo-placeholder">
+                <i class="bi bi-hdd-stack" aria-hidden="true"></i>
+              </div>
               {% endif %}
+              <span class="badge badge-activos-list badge-estado-activo badge-estado-activo--{{ item.status_slug }} activos-grid-status">{{ item.status_label }}</span>
             </div>
-          </td>
-        </tr>
-        {% else %}
-        <tr>
-          <td colspan="6" class="text-center text-muted py-3 small">No hay equipos registrados.</td>
-        </tr>
+            <div class="activos-grid-card-body">
+              <h3 class="activos-grid-title">{{ item.nombre }}</h3>
+              <p class="activos-grid-codigo mb-1">{{ item.codigo }}</p>
+              <p class="activos-grid-meta mb-2">{{ item.tipo_etiqueta }} · {{ item.ubicacion }}</p>
+              <div class="activos-grid-footer">
+                <div class="activos-crit-cell">
+                  <span class="activos-crit-dots activos-crit-dots--{{ item.criticidad }}" title="{{ item.criticidad_label }}">
+                    {% for i in range(3) %}
+                    <span class="activos-crit-dot{% if i < item.criticidad_nivel %} is-on{% endif %}"></span>
+                    {% endfor %}
+                  </span>
+                  <button type="button"
+                          class="activos-star-btn{% if item.es_critico %} is-active{% endif %}"
+                          data-id="{{ item.id }}"
+                          aria-pressed="{{ 'true' if item.es_critico else 'false' }}"
+                          {% if not perm.editar %}disabled{% endif %}>
+                    <i class="bi bi-star{% if item.es_critico %}-fill{% endif %}"></i>
+                  </button>
+                </div>
+                <div class="activos-grid-actions acciones-activos-list">
+                  {% if perm.editar or perm.solo_lectura %}
+                  <a href="{{ item.href }}" class="btn btn-outline-secondary btn-sm py-0 px-2"><i class="bi bi-{% if perm.editar %}pencil{% else %}eye{% endif %}"></i></a>
+                  {% endif %}
+                </div>
+              </div>
+              <div class="activos-mant-cell mt-2">
+                <span class="activos-mant-line"><span class="activos-mant-label">Últ.</span> {{ item.ultimo_mant }}</span>
+                <span class="activos-mant-line"><span class="activos-mant-label">Próx.</span> {{ item.proximo_mant }}</span>
+              </div>
+            </div>
+          </article>
+        </div>
         {% endfor %}
-      </tbody>
-    </table>
+      </div>
+    </div>
+
+    <div class="activos-list-footer d-flex flex-wrap justify-content-between align-items-center gap-2 px-3 py-2 border-top">
+      <p class="small text-muted mb-0" id="activosShowingText">Mostrando {{ activos_kpis.total }} de {{ activos_kpis.total }} activos</p>
+      <nav aria-label="Paginación de activos" id="activosPagination" class="activos-pagination"></nav>
+    </div>
   </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function () {
+  var page = document.getElementById('activosListPage');
+  if (!page) return;
+
+  var PAGE_SIZE = 10;
+  var canEdit = page.dataset.canEdit === '1';
+  var toggleUrlTemplate = page.dataset.toggleUrl || '';
+
+  var searchEl = document.getElementById('activosSearch');
+  var statusEl = document.getElementById('activosFilterStatus');
+  var tipoEl = document.getElementById('activosFilterTipo');
+  var tableBody = document.getElementById('activosTableBody');
+  var gridInner = document.getElementById('activosGridInner');
+  var tableView = document.getElementById('activosTableView');
+  var gridView = document.getElementById('activosGridView');
+  var viewListBtn = document.getElementById('activosViewList');
+  var viewGridBtn = document.getElementById('activosViewGrid');
+  var showingText = document.getElementById('activosShowingText');
+  var paginationEl = document.getElementById('activosPagination');
+  var headerCount = document.getElementById('activosHeaderCount');
+
+  var kpiEls = {
+    operativos: document.getElementById('kpiOperativos'),
+    operativosSub: document.getElementById('kpiOperativosSub'),
+    mantenimiento: document.getElementById('kpiMantenimiento'),
+    mantenimientoSub: document.getElementById('kpiMantenimientoSub'),
+    falla: document.getElementById('kpiFalla'),
+    fallaSub: document.getElementById('kpiFallaSub'),
+    criticos: document.getElementById('kpiCriticos'),
+  };
+
+  var currentPage = 1;
+  var gridMode = false;
+  var totalAssets = parseInt(page.dataset.total || '0', 10) || 0;
+
+  function assetRows() {
+    return Array.prototype.slice.call(
+      document.querySelectorAll('#activosTableBody .activos-data-row')
+    );
+  }
+
+  function rowsForAssetId(id) {
+    return document.querySelectorAll('.activos-data-row[data-id="' + id + '"]');
+  }
+
+  function setAssetVisible(id, visible, pageVisible) {
+    rowsForAssetId(id).forEach(function (el) {
+      el.classList.toggle('d-none', !visible);
+      el.classList.toggle('activos-page-visible', !!(visible && pageVisible));
+    });
+  }
+
+  function matchesFilters(row) {
+    var q = (searchEl.value || '').trim().toLowerCase();
+    var st = statusEl.value;
+    var tp = tipoEl.value;
+    if (q && (row.dataset.search || '').indexOf(q) === -1) return false;
+    if (st && row.dataset.status !== st) return false;
+    if (tp && row.dataset.tipo !== tp) return false;
+    return true;
+  }
+
+  function filteredAssets() {
+    return assetRows().filter(matchesFilters);
+  }
+
+  function renderPagination(totalVisible) {
+    var pages = Math.max(1, Math.ceil(totalVisible / PAGE_SIZE));
+    if (currentPage > pages) currentPage = pages;
+    paginationEl.innerHTML = '';
+    if (totalVisible <= PAGE_SIZE) return;
+
+    function btn(label, page, disabled, active) {
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'btn btn-sm ' + (active ? 'btn-primary' : 'btn-outline-secondary');
+      b.textContent = label;
+      b.disabled = !!disabled;
+      if (!disabled && !active) {
+        b.addEventListener('click', function () { currentPage = page; applyFilters(); });
+      }
+      return b;
+    }
+
+    paginationEl.appendChild(btn('‹', currentPage - 1, currentPage <= 1, false));
+    for (var p = 1; p <= pages; p++) {
+      paginationEl.appendChild(btn(String(p), p, false, p === currentPage));
+    }
+    paginationEl.appendChild(btn('›', currentPage + 1, currentPage >= pages, false));
+  }
+
+  function applyFilters() {
+    var all = assetRows();
+    var filtered = filteredAssets();
+    var totalAll = totalAssets || all.length;
+
+    all.forEach(function (row) {
+      setAssetVisible(row.dataset.id, false, false);
+    });
+
+    var start = (currentPage - 1) * PAGE_SIZE;
+    var pageRows = filtered.slice(start, start + PAGE_SIZE);
+    pageRows.forEach(function (row) {
+      setAssetVisible(row.dataset.id, true, true);
+    });
+
+    var visible = filtered.length;
+    var shown = pageRows.length;
+    showingText.textContent = visible
+      ? 'Mostrando ' + shown + ' de ' + visible + ' activos' + (visible < totalAll ? ' (filtrados de ' + totalAll + ')' : '')
+      : 'Mostrando 0 de ' + totalAll + ' activos';
+
+    renderPagination(visible);
+
+    var emptyRow = document.querySelector('.activos-empty-row');
+    if (emptyRow) emptyRow.classList.toggle('d-none', totalAll > 0);
+  }
+
+  function setViewMode(grid) {
+    gridMode = grid;
+    tableView.classList.toggle('d-none', grid);
+    gridView.classList.toggle('d-none', !grid);
+    viewListBtn.classList.toggle('active', !grid);
+    viewGridBtn.classList.toggle('active', grid);
+    viewListBtn.setAttribute('aria-pressed', grid ? 'false' : 'true');
+    viewGridBtn.setAttribute('aria-pressed', grid ? 'true' : 'false');
+    applyFilters();
+  }
+
+  function syncStarButtons(id, active, criticos) {
+    document.querySelectorAll('.activos-star-btn[data-id="' + id + '"]').forEach(function (btn) {
+      btn.classList.toggle('is-active', active);
+      btn.setAttribute('aria-pressed', active ? 'true' : 'false');
+      btn.title = active ? 'Quitar marca crítica' : 'Marcar como crítico';
+      var icon = btn.querySelector('i');
+      if (icon) icon.className = 'bi bi-star' + (active ? '-fill' : '');
+    });
+    document.querySelectorAll('.activos-data-row[data-id="' + id + '"]').forEach(function (row) {
+      row.dataset.critico = active ? '1' : '0';
+    });
+    if (typeof criticos === 'number') {
+      kpiEls.criticos.textContent = criticos;
+    }
+    applyFilters();
+  }
+
+  function toggleCritico(id, btn) {
+    if (!canEdit) return;
+    var url = toggleUrlTemplate.replace('/0/', '/' + id + '/');
+    btn.disabled = true;
+    fetch(url, {
+      method: 'POST',
+      headers: { 'X-Requested-With': 'XMLHttpRequest' },
+      credentials: 'same-origin',
+    })
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        if (data.ok) syncStarButtons(String(data.id), data.es_critico, data.criticos);
+      })
+      .catch(function () { /* silencioso */ })
+      .finally(function () { btn.disabled = false; });
+  }
+
+  [searchEl, statusEl, tipoEl].forEach(function (el) {
+    el.addEventListener('input', function () { currentPage = 1; applyFilters(); });
+    el.addEventListener('change', function () { currentPage = 1; applyFilters(); });
+  });
+
+  viewListBtn.addEventListener('click', function () { setViewMode(false); });
+  viewGridBtn.addEventListener('click', function () { setViewMode(true); });
+
+  page.addEventListener('click', function (e) {
+    var star = e.target.closest('.activos-star-btn');
+    if (star && !star.disabled) {
+      e.preventDefault();
+      toggleCritico(star.dataset.id, star);
+    }
+  });
+
+  var selectAll = document.getElementById('activosSelectAll');
+  if (selectAll) {
+    selectAll.addEventListener('change', function () {
+      document.querySelectorAll('.activos-page-visible .activos-row-check').forEach(function (cb) {
+        cb.checked = selectAll.checked;
+      });
+    });
+  }
+
+  applyFilters();
+})();
+</script>
 {% endblock %}

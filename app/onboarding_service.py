@@ -94,9 +94,15 @@ def completar_onboarding(
 
     sector = normalizar_sector(empresa_data.get("sector"))
 
+    from app.tenancy.slug import slug_unico_empresa
+
+    slug = slug_unico_empresa(empresa_data["razon_social"])
+
     empresa = Empresa(
 
         razon_social=empresa_data["razon_social"],
+
+        slug=slug,
 
         nit=empresa_data.get("nit", ""),
 
@@ -121,8 +127,6 @@ def completar_onboarding(
     db.session.add(empresa)
 
     db.session.flush()
-
-
 
     sede = Sede(empresa_id=empresa.id, nombre=sede_nombre or "Sede principal", es_principal=True)
 
