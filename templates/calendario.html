@@ -2,6 +2,20 @@
 {% block title %}Calendario — {{ app_name }}{% endblock %}
 {% block page_title %}Calendario Maestro{% endblock %}
 
+{% block head_extra %}
+<style>
+  .cal-ot-badge { line-height: 1.25; padding: 0.35em 0.45em; }
+  .cal-ot-codigo {
+    font-family: var(--bs-font-monospace);
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    opacity: 0.95;
+  }
+  .cal-ot-titulo { font-size: 0.72rem; font-weight: 500; }
+</style>
+{% endblock %}
+
 {% block content %}
 {% set month_names = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'] %}
 {% set prev = start.replace(month=start.month - 1) if start.month > 1 else start.replace(year=start.year - 1, month=12) %}
@@ -39,8 +53,15 @@
           {% if by_day.get(cell_date) %}
             {% for o in by_day[cell_date] %}
               <div class="small mb-1">
-                <a href="{{ url_for('main.ordenes_edit', id=o.id) }}" class="text-decoration-none d-block" title="{{ o.titulo }}">
-                  <span class="badge text-bg-primary text-wrap text-start w-100">{{ o.titulo[:36] }}{% if o.titulo|length > 36 %}…{% endif %}</span>
+                {% set codigo_activo = o.machine.codigo if o.machine else '' %}
+                <a href="{{ url_for('main.ordenes_edit', id=o.id) }}" class="text-decoration-none d-block"
+                   title="{% if codigo_activo %}{{ codigo_activo }} — {% endif %}{{ o.titulo }}">
+                  <span class="badge text-bg-primary text-wrap text-start w-100 cal-ot-badge">
+                    {% if codigo_activo %}
+                    <span class="d-block cal-ot-codigo">{{ codigo_activo }}</span>
+                    {% endif %}
+                    <span class="d-block cal-ot-titulo">{{ o.titulo[:32] }}{% if o.titulo|length > 32 %}…{% endif %}</span>
+                  </span>
                 </a>
               </div>
             {% endfor %}

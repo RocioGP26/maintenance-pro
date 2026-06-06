@@ -1,0 +1,341 @@
+{% extends "base.html" %}
+{% block title %}Proveedores — {{ app_name }}{% endblock %}
+{% block page_title %}Proveedores{% endblock %}
+
+{% block content %}
+<div class="proveedores-page">
+  <div class="row g-2 mb-3 prov-kpi-row">
+    <div class="col-6 col-lg-3">
+      <div class="prov-kpi-card">
+        <div class="prov-kpi-card-top">
+          <span class="prov-kpi-label">Total proveedores</span>
+          <i class="bi bi-shop prov-kpi-icon" aria-hidden="true"></i>
+        </div>
+        <p class="prov-kpi-value">{{ kpis.total }}</p>
+        <p class="prov-kpi-sub">{{ kpis.total }} registrados</p>
+      </div>
+    </div>
+    <div class="col-6 col-lg-3">
+      <a href="{{ url_for('main.proveedores_list', tipo='servicio', q=q, estado=estado_f) }}"
+         class="prov-kpi-card prov-kpi-card--link prov-kpi-card--servicio{% if tipo_f == 'servicio' %} prov-kpi-card--active{% endif %}">
+        <div class="prov-kpi-card-top">
+          <span class="prov-kpi-label">Servicio</span>
+          <span class="badge badge-prov-tipo badge-prov-servicio">Serv</span>
+        </div>
+        <p class="prov-kpi-value prov-kpi-value--servicio">{{ kpis.servicio }}</p>
+        <p class="prov-kpi-sub">mantenimientos</p>
+      </a>
+    </div>
+    <div class="col-6 col-lg-3">
+      <a href="{{ url_for('main.proveedores_list', tipo='insumos', q=q, estado=estado_f) }}"
+         class="prov-kpi-card prov-kpi-card--link prov-kpi-card--insumos{% if tipo_f == 'insumos' %} prov-kpi-card--active{% endif %}">
+        <div class="prov-kpi-card-top">
+          <span class="prov-kpi-label">Insumos</span>
+          <span class="badge badge-prov-tipo badge-prov-insumos">Ins</span>
+        </div>
+        <p class="prov-kpi-value prov-kpi-value--insumos">{{ kpis.insumos }}</p>
+        <p class="prov-kpi-sub">repuestos y materiales</p>
+      </a>
+    </div>
+    <div class="col-6 col-lg-3">
+      <a href="{{ url_for('main.proveedores_list', tipo='ambos', q=q, estado=estado_f) }}"
+         class="prov-kpi-card prov-kpi-card--link prov-kpi-card--ambos{% if tipo_f == 'ambos' %} prov-kpi-card--active{% endif %}">
+        <div class="prov-kpi-card-top">
+          <span class="prov-kpi-label">Ambos</span>
+          <span class="badge badge-prov-tipo badge-prov-ambos">Amb</span>
+        </div>
+        <p class="prov-kpi-value prov-kpi-value--ambos">{{ kpis.ambos }}</p>
+        <p class="prov-kpi-sub">servicio e insumos</p>
+      </a>
+    </div>
+  </div>
+
+  <div class="card card-dashboard mb-3">
+    <div class="card-body py-2 px-3">
+      <div class="prov-toolbar-row">
+        <form method="get" action="{{ url_for('main.proveedores_list') }}" class="prov-toolbar-form">
+          <div class="prov-search-wrap">
+            <i class="bi bi-search prov-search-icon" aria-hidden="true"></i>
+            <input type="search" name="q" value="{{ q }}" class="form-control form-control-sm prov-search-input"
+                   placeholder="Buscar empresa, NIT o contacto…" autocomplete="off">
+          </div>
+          <select name="tipo" class="form-select form-select-sm prov-filter-select" aria-label="Filtrar por tipo">
+            {% for val, lbl in tipos_proveedor %}
+            <option value="{{ val }}" {% if tipo_f == val %}selected{% endif %}>{{ lbl }}</option>
+            {% endfor %}
+          </select>
+          <select name="estado" class="form-select form-select-sm prov-filter-select" aria-label="Filtrar por estado">
+            <option value="" {% if not estado_f %}selected{% endif %}>Todos los estados</option>
+            <option value="activo" {% if estado_f == 'activo' %}selected{% endif %}>Activos</option>
+            <option value="inactivo" {% if estado_f == 'inactivo' %}selected{% endif %}>Inactivos</option>
+          </select>
+          <button type="submit" class="btn btn-sm btn-primary">Buscar</button>
+          {% if q or tipo_f or estado_f %}
+          <a href="{{ url_for('main.proveedores_list') }}" class="btn btn-sm btn-outline-secondary">Limpiar</a>
+          {% endif %}
+        </form>
+        {% if perm.crear %}
+        <button type="button" class="btn btn-primary btn-sm flex-shrink-0" id="btnNuevoProveedor"
+                data-bs-toggle="offcanvas" data-bs-target="#drawerProveedor">
+          <i class="bi bi-plus-lg"></i> Nuevo proveedor
+        </button>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <div class="card card-dashboard">
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0 prov-list-table">
+        <thead class="table-light">
+          <tr>
+            <th>Empresa</th>
+            <th>NIT / CC</th>
+            <th>Contacto</th>
+            <th>Teléfono</th>
+            <th>Estado</th>
+            <th class="text-end" style="width:6rem;"></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for p in items %}
+          {% set tm = proveedor_tipo_meta(p.tipo) %}
+          <tr class="{% if not p.activo %}table-secondary{% endif %} prov-row-edit"
+              data-id="{{ p.id }}" role="button" tabindex="0">
+            <td>
+              <div class="d-flex align-items-center gap-2">
+                <span class="prov-avatar {{ tm.avatar_class }}" aria-hidden="true">{{ p.iniciales }}</span>
+                <div class="min-w-0">
+                  <div class="d-flex flex-wrap align-items-center gap-1">
+                    <span class="fw-semibold text-truncate">{{ p.nombre }}</span>
+                    <span class="badge {{ tm.badge_class }}">{{ tm.label }}</span>
+                  </div>
+                  {% if p.direccion %}
+                  <div class="small text-muted text-truncate">{{ p.direccion }}</div>
+                  {% endif %}
+                </div>
+              </div>
+            </td>
+            <td class="font-monospace small">{{ p.nit or '—' }}</td>
+            <td>
+              {% if p.contacto_nombre %}
+              <div class="small fw-medium">{{ p.contacto_nombre }}</div>
+              {% if p.contacto_cargo %}<div class="small text-muted">{{ p.contacto_cargo }}</div>{% endif %}
+              {% else %}—{% endif %}
+            </td>
+            <td class="small">{{ p.contacto_telefono or '—' }}</td>
+            <td>
+              {% if p.activo %}
+              <span class="badge text-bg-success">Activo</span>
+              {% else %}
+              <span class="badge text-bg-secondary">Inactivo</span>
+              {% endif %}
+            </td>
+            <td class="text-end">
+              {% if perm.editar or perm.eliminar %}
+              <div class="btn-group btn-group-sm" role="group">
+                {% if perm.editar %}
+                <button type="button" class="btn btn-outline-secondary btn-edit-prov" data-id="{{ p.id }}" title="Editar">
+                  <i class="bi bi-pencil"></i>
+                </button>
+                {% endif %}
+                {% if perm.eliminar %}
+                <form method="post" action="{{ url_for('main.proveedores_delete', id=p.id) }}" class="d-inline"
+                      onsubmit="return confirm('¿Eliminar este proveedor?');">
+                  <button type="submit" class="btn btn-outline-danger" title="Eliminar">
+                    <i class="bi bi-trash"></i>
+                  </button>
+                </form>
+                {% endif %}
+              </div>
+              {% endif %}
+            </td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="6" class="text-center text-muted py-4">
+              {% if q or tipo_f or estado_f %}No hay proveedores con estos filtros.{% else %}No hay proveedores registrados.{% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% if items %}
+    <div class="card-footer bg-white border-top-0 py-2 px-3">
+      <p class="small text-muted mb-0">Mostrando {{ items|length }} de {{ kpis.total }} proveedores</p>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+{% if perm.crear or perm.editar %}
+<div class="offcanvas offcanvas-end prov-drawer" tabindex="-1" id="drawerProveedor" aria-labelledby="drawerProveedorLabel">
+  <div class="offcanvas-header border-bottom">
+    <h5 class="offcanvas-title d-flex align-items-center gap-2" id="drawerProveedorLabel">
+      <i class="bi bi-shop text-primary"></i>
+      <span id="drawerProveedorTitulo">Nuevo proveedor</span>
+    </h5>
+    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Cerrar"></button>
+  </div>
+  <form method="post" action="{{ url_for('main.proveedores_guardar') }}" id="formProveedor">
+    <div class="offcanvas-body prov-drawer-body">
+      <input type="hidden" name="id" id="provId" value="">
+
+      <p class="prov-drawer-seccion">Información de la empresa</p>
+      <div class="mb-3">
+        <label class="form-label" for="provNombre">Nombre de la empresa *</label>
+        <input type="text" name="nombre" id="provNombre" class="form-control" required
+               placeholder="Ej: Lubricantes del Norte S.A.S">
+      </div>
+      <div class="row g-2 mb-3">
+        <div class="col-md-6">
+          <label class="form-label" for="provNit">NIT o CC</label>
+          <input type="text" name="nit" id="provNit" class="form-control" placeholder="900.123.456-7">
+        </div>
+        <div class="col-md-6">
+          <label class="form-label" for="provDireccion">Dirección</label>
+          <input type="text" name="direccion" id="provDireccion" class="form-control" placeholder="Calle, ciudad">
+        </div>
+      </div>
+
+      <p class="prov-drawer-seccion">Persona de contacto</p>
+      <div class="row g-2 mb-3">
+        <div class="col-md-6">
+          <label class="form-label" for="provContactoNombre">Nombre completo</label>
+          <input type="text" name="contacto_nombre" id="provContactoNombre" class="form-control">
+        </div>
+        <div class="col-md-6">
+          <label class="form-label" for="provContactoCargo">Cargo</label>
+          <input type="text" name="contacto_cargo" id="provContactoCargo" class="form-control">
+        </div>
+        <div class="col-md-6">
+          <label class="form-label" for="provContactoEmail">Correo electrónico</label>
+          <input type="email" name="contacto_email" id="provContactoEmail" class="form-control">
+        </div>
+        <div class="col-md-6">
+          <label class="form-label" for="provContactoTel">Teléfono / Celular</label>
+          <input type="text" name="contacto_telefono" id="provContactoTel" class="form-control">
+        </div>
+      </div>
+
+      <p class="prov-drawer-seccion">Tipo de proveedor</p>
+      <div class="prov-tipo-grid mb-3">
+        {% for tkey in ['servicio', 'insumos', 'ambos'] %}
+        {% set tm = proveedor_tipo_meta(tkey) %}
+        <label class="prov-tipo-card">
+          <input type="radio" name="tipo" value="{{ tkey }}" class="prov-tipo-radio" {% if tkey == 'servicio' %}checked{% endif %}>
+          <span class="prov-tipo-card-inner prov-tipo-card-inner--{{ tkey }}">
+            <i class="bi {{ tm.icon }} prov-tipo-icon"></i>
+            <span class="prov-tipo-title">{{ tm.label }}</span>
+            <span class="prov-tipo-hint">{{ tm.hint }}</span>
+          </span>
+        </label>
+        {% endfor %}
+      </div>
+
+      <p class="prov-drawer-seccion">Observaciones</p>
+      <div class="mb-3">
+        <textarea name="observaciones" id="provObservaciones" class="form-control" rows="3"
+                  placeholder="Notas adicionales sobre el proveedor"></textarea>
+      </div>
+
+      <div class="form-check mb-0">
+        <input class="form-check-input" type="checkbox" name="activo" value="1" id="provActivo" checked>
+        <label class="form-check-label" for="provActivo">Proveedor activo</label>
+      </div>
+    </div>
+    <div class="offcanvas-footer border-top p-3 d-flex justify-content-end gap-2">
+      <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="offcanvas">Cancelar</button>
+      <button type="submit" class="btn btn-primary">
+        <i class="bi bi-save me-1"></i> Guardar proveedor
+      </button>
+    </div>
+  </form>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+{% if perm.crear or perm.editar %}
+<script>
+(function () {
+  var catalogo = {{ proveedores_json|tojson }};
+  var porId = {};
+  catalogo.forEach(function (p) { porId[p.id] = p; });
+
+  var drawerEl = document.getElementById('drawerProveedor');
+  var form = document.getElementById('formProveedor');
+  if (!drawerEl || !form) return;
+
+  var titulo = document.getElementById('drawerProveedorTitulo');
+  var idInput = document.getElementById('provId');
+  var radios = form.querySelectorAll('.prov-tipo-radio');
+
+  function marcarTipo(val) {
+    radios.forEach(function (r) {
+      r.checked = r.value === val;
+      var card = r.closest('.prov-tipo-card');
+      if (card) card.classList.toggle('prov-tipo-card--selected', r.checked);
+    });
+  }
+
+  radios.forEach(function (r) {
+    r.addEventListener('change', function () { marcarTipo(r.value); });
+  });
+
+  function limpiarFormulario() {
+    form.reset();
+    idInput.value = '';
+    if (titulo) titulo.textContent = 'Nuevo proveedor';
+    document.getElementById('provActivo').checked = true;
+    marcarTipo('servicio');
+  }
+
+  function cargarProveedor(id) {
+    var p = porId[id];
+    if (!p) return;
+    idInput.value = p.id;
+    if (titulo) titulo.textContent = 'Editar proveedor';
+    document.getElementById('provNombre').value = p.nombre || '';
+    document.getElementById('provNit').value = p.nit || '';
+    document.getElementById('provDireccion').value = p.direccion || '';
+    document.getElementById('provContactoNombre').value = p.contacto_nombre || '';
+    document.getElementById('provContactoCargo').value = p.contacto_cargo || '';
+    document.getElementById('provContactoEmail').value = p.contacto_email || '';
+    document.getElementById('provContactoTel').value = p.contacto_telefono || '';
+    document.getElementById('provObservaciones').value = p.observaciones || '';
+    document.getElementById('provActivo').checked = !!p.activo;
+    marcarTipo(p.tipo || 'servicio');
+  }
+
+  function abrirDrawer(id) {
+    if (id) cargarProveedor(id);
+    else limpiarFormulario();
+    bootstrap.Offcanvas.getOrCreateInstance(drawerEl).show();
+  }
+
+  document.getElementById('btnNuevoProveedor')?.addEventListener('click', function () {
+    limpiarFormulario();
+  });
+
+  document.querySelectorAll('.btn-edit-prov, .prov-row-edit').forEach(function (el) {
+    el.addEventListener('click', function (ev) {
+      if (ev.target.closest('form') || ev.target.closest('button[type="submit"]')) return;
+      var id = parseInt(el.getAttribute('data-id') || el.closest('[data-id]')?.getAttribute('data-id'), 10);
+      if (id) abrirDrawer(id);
+    });
+    el.addEventListener('keydown', function (ev) {
+      if (ev.key === 'Enter' || ev.key === ' ') {
+        ev.preventDefault();
+        el.click();
+      }
+    });
+  });
+
+  drawerEl.addEventListener('hidden.bs.offcanvas', limpiarFormulario);
+  marcarTipo('servicio');
+})();
+</script>
+{% endif %}
+{% endblock %}

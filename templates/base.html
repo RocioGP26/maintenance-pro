@@ -85,6 +85,9 @@
         <a class="nav-link {% if request.endpoint and request.endpoint.startswith('main.inventario') %}active{% endif %}" href="{{ url_for('main.inventario_list') }}">
           <i class="bi bi-box-seam me-2"></i> Inventario de Repuestos
         </a>
+        <a id="tour-nav-proveedores" class="nav-link {% if request.endpoint and request.endpoint.startswith('main.proveedores') %}active{% endif %}" href="{{ url_for('main.proveedores_list') }}">
+          <i class="bi bi-shop me-2"></i> Proveedores
+        </a>
         <a class="nav-link {% if request.endpoint and request.endpoint.startswith('main.equipo') %}active{% endif %}" href="{{ url_for('main.equipo_list') }}">
           <i class="bi bi-people me-2"></i> Equipo Técnico
         </a>

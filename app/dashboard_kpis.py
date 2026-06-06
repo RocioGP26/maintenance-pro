@@ -241,8 +241,9 @@ def build_plant_kpi_cards(
             "mttr_prom",
             "MTTR prom.",
             _fmt_hours(mttr),
-            f"Reparación ({mes_label})",
+            f"Correctivos con paro ({mes_label})",
             "neutral",
+            "Promedio de horas en OT correctivas cerradas donde la máquina estuvo parada",
         ),
     ]
     return cards

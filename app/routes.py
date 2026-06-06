@@ -65,6 +65,9 @@ from app.models import (
     Sede,
     MachineMonthlyPlan,
     SparePart,
+    Proveedor,
+    PROVEEDOR_TIPOS_VALIDOS,
+    ProveedorTipo,
     Technician,
     UsuarioCampoValor,
     User,
@@ -75,9 +78,11 @@ from app.models import (
     WorkOrderStatus,
     WorkOrderType,
     WORK_ORDER_TERMINAL_STATUSES,
+    WORK_ORDER_PENDING_STATUSES,
     wo_es_editable,
     wo_status_meta,
     wo_tipo_meta,
+    proveedor_tipo_meta,
     machine_status_meta,
 )
 from app.asset_standard import (
@@ -665,7 +670,7 @@ def _dashboard_kpis(
     sector: Optional[str] = None,
     machine_ids: Optional[list[int]] = None,
 ) -> dict:
-    open_statuses = [WorkOrderStatus.ABIERTA.value, WorkOrderStatus.EN_PROCESO.value]
+    open_statuses = list(WORK_ORDER_PENDING_STATUSES)
     wo_period = _wo_in_period_query(start, end, sector, machine_ids)
     ordenes_abiertas = wo_period.filter(WorkOrder.status.in_(open_statuses)).count()
     mantenimientos_pendientes = wo_period.filter(
@@ -686,8 +691,13 @@ def _dashboard_kpis(
     )
     eid_kpi = _current_empresa_id()
     emp = Empresa.query.get(eid_kpi) if eid_kpi else None
+    mttr_wos = [
+        wo
+        for wo in closed_repairs
+        if wo.tipo == WorkOrderType.CORRECTIVO.value and wo.maquina_requirio_paro
+    ]
     repair_hours = []
-    for wo in closed_repairs:
+    for wo in mttr_wos:
         mins = wo_tiempo_gastado_minutos(wo, emp)
         if mins is not None:
             repair_hours.append(mins / 60.0)
@@ -785,7 +795,12 @@ _KPI_UI = {
     "ordenes_abiertas": ("neutral", "bi-clipboard-check", None, None),
     "mantenimientos_pendientes": ("warning", "bi-wrench-adjustable", None, None),
     "disponibilidad": ("success", "bi-speedometer2", None, None),
-    "mttr": ("neutral", "bi-stopwatch", "T. reparación", "Tiempo medio de reparación"),
+    "mttr": (
+        "neutral",
+        "bi-stopwatch",
+        "T. reparación",
+        "Promedio de horas en correctivos cerrados donde la máquina estuvo parada",
+    ),
     "mtbf": ("neutral", "bi-arrow-repeat", "T. entre fallas", "Tiempo medio entre fallas"),
     "disponibilidad_global": (
         "success",
@@ -1220,9 +1235,7 @@ def dashboard():
     for t in techs:
         wo_tech = _wo_in_period_query(start, end, sector, machine_ids).filter(
             WorkOrder.technician_id == t.id,
-            WorkOrder.status.in_(
-                [WorkOrderStatus.ABIERTA.value, WorkOrderStatus.EN_PROCESO.value]
-            ),
+            WorkOrder.status.in_(list(WORK_ORDER_PENDING_STATUSES)),
         )
         n = wo_tech.count()
         workload_labels.append(t.nombre)
@@ -1834,6 +1847,18 @@ def _guardar_jornadas_orden(wo: WorkOrder) -> Optional[str]:
     return None
 
 
+def _aplicar_estado_orden_desde_formulario(wo: WorkOrder) -> None:
+    from app.work_order_status import resolver_estado_al_guardar
+
+    tiene_jornadas = request.form.get("tiempo_manual") != "1" and bool(wo.jornadas)
+    resolver_estado_al_guardar(
+        wo,
+        status_manual=request.form.get("status_manual"),
+        jornada_estado_ot=request.form.get("jornada_estado_ot"),
+        tiene_jornadas=tiene_jornadas,
+    )
+
+
 def _spare_parts_para_formulario() -> list:
     return _filter_empresa(SparePart.query.order_by(SparePart.nombre), SparePart).all()
 
@@ -1979,6 +2004,12 @@ def _work_order_responsables_desde_form(form) -> dict:
         "recibido_por": (form.get("recibido_por") or "").strip(),
         "empresa_tercerizada": (form.get("empresa_tercerizada") or "").strip(),
     }
+
+
+def _maquina_requirio_paro_desde_form(form, tipo: str) -> bool:
+    if tipo != WorkOrderType.CORRECTIVO.value:
+        return False
+    return (form.get("maquina_requirio_paro") or "").strip() == "1"
 
 
 def _sector_empresa_actual() -> str:
@@ -2194,6 +2225,7 @@ def _ordenes_filtros_desde_request() -> dict[str, str]:
         "anio": request.args.get("anio", "").strip(),
         "fecha_desde": request.args.get("fecha_desde", "").strip(),
         "fecha_hasta": request.args.get("fecha_hasta", "").strip(),
+        "alerta": request.args.get("alerta", "").strip(),
     }
 
 
@@ -2273,45 +2305,141 @@ def _ordenes_list_query(filtros: Optional[dict[str, str]] = None):
     if tipo:
         q = q.filter(func.lower(WorkOrder.tipo) == tipo.lower())
 
-    status = filtros.get("status", "")
-    if status:
-        q = q.filter(WorkOrder.status == status)
+    alerta = filtros.get("alerta", "")
+    if alerta:
+        from app.alertas_service import aplicar_filtro_alerta_orden
 
-    rango_mes = _parse_mes_anio_filtro(filtros.get("mes", ""), filtros.get("anio", ""))
-    if rango_mes:
-        inicio_mes, fin_mes = rango_mes
-        q = q.filter(
-            WorkOrder.fecha_programada.isnot(None),
-            WorkOrder.fecha_programada >= inicio_mes,
-            WorkOrder.fecha_programada <= fin_mes,
-        )
+        q = aplicar_filtro_alerta_orden(q, alerta)
+    else:
+        status = filtros.get("status", "")
+        if status:
+            q = q.filter(WorkOrder.status == status)
 
-    fecha_desde = _parse_fecha_filtro(filtros.get("fecha_desde", ""))
-    if fecha_desde:
-        q = q.filter(WorkOrder.fecha_programada >= fecha_desde)
-    fecha_hasta = _parse_fecha_filtro(filtros.get("fecha_hasta", ""))
-    if fecha_hasta:
-        q = q.filter(WorkOrder.fecha_programada <= fecha_hasta)
+        rango_mes = _parse_mes_anio_filtro(filtros.get("mes", ""), filtros.get("anio", ""))
+        if rango_mes:
+            inicio_mes, fin_mes = rango_mes
+            q = q.filter(
+                WorkOrder.fecha_programada.isnot(None),
+                WorkOrder.fecha_programada >= inicio_mes,
+                WorkOrder.fecha_programada <= fin_mes,
+            )
+
+        fecha_desde = _parse_fecha_filtro(filtros.get("fecha_desde", ""))
+        if fecha_desde:
+            q = q.filter(WorkOrder.fecha_programada >= fecha_desde)
+        fecha_hasta = _parse_fecha_filtro(filtros.get("fecha_hasta", ""))
+        if fecha_hasta:
+            q = q.filter(WorkOrder.fecha_programada <= fecha_hasta)
 
     return q.order_by(WorkOrder.fecha_programada.desc(), WorkOrder.id.desc())
+
+
+_OT_LIST_TIPOS_ORDER = (
+    WorkOrderType.PREVENTIVO.value,
+    WorkOrderType.CORRECTIVO.value,
+    WorkOrderType.EMERGENCIA.value,
+)
+
+_OT_LIST_ESTADOS_ORDER = (
+    WorkOrderStatus.PROGRAMADA.value,
+    WorkOrderStatus.ABIERTA.value,
+    WorkOrderStatus.EN_PROCESO.value,
+    WorkOrderStatus.VENCIDA.value,
+    WorkOrderStatus.COMPLETADO.value,
+    WorkOrderStatus.CERRADA.value,
+)
+
+
+def _ordenes_list_resumen(orders: list) -> dict:
+    tipos_count = {k: 0 for k in _OT_LIST_TIPOS_ORDER}
+    estados_count = {k: 0 for k in _OT_LIST_ESTADOS_ORDER}
+    prev_key = WorkOrderType.PREVENTIVO.value
+    prev_programadas = 0
+    prev_abiertas = 0
+    for o in orders:
+        tk = (o.tipo or "").strip().lower()
+        if tk in tipos_count:
+            tipos_count[tk] += 1
+        sk = (o.status or "").strip().lower()
+        if sk in estados_count:
+            estados_count[sk] += 1
+        if tk == prev_key:
+            if sk == WorkOrderStatus.PROGRAMADA.value:
+                prev_programadas += 1
+            elif sk == WorkOrderStatus.ABIERTA.value:
+                prev_abiertas += 1
+
+    corr_key = WorkOrderType.CORRECTIVO.value
+    emer_key = WorkOrderType.EMERGENCIA.value
+    venc_key = WorkOrderStatus.VENCIDA.value
+
+    return {
+        "total": len(orders),
+        "preventivas": {
+            "key": prev_key,
+            "count": tipos_count[prev_key],
+            "sub": f"{prev_programadas} programadas · {prev_abiertas} abiertas",
+            **wo_tipo_meta(prev_key),
+        },
+        "correctivas": {
+            "key": corr_key,
+            "count": tipos_count[corr_key],
+            "sub": f"{tipos_count[emer_key]} emergencias",
+            **wo_tipo_meta(corr_key),
+        },
+        "vencidas": {
+            "key": venc_key,
+            "count": estados_count[venc_key],
+            "sub": "requiere atención",
+            **wo_status_meta(venc_key),
+        },
+        "estados": [
+            {"key": k, "count": estados_count[k], **wo_status_meta(k)}
+            for k in _OT_LIST_ESTADOS_ORDER
+        ],
+        "estados_por_key": estados_count,
+    }
+
+
+_OT_LIST_STATUS_PILLS = (
+    ("", "Todas"),
+    (WorkOrderStatus.ABIERTA.value, "Abiertas"),
+    (WorkOrderStatus.PROGRAMADA.value, "Programadas"),
+    (WorkOrderStatus.EN_PROCESO.value, "En proceso"),
+    (WorkOrderStatus.VENCIDA.value, "Vencidas"),
+    (WorkOrderStatus.COMPLETADO.value, "Completadas"),
+    (WorkOrderStatus.CERRADA.value, "Cerradas"),
+)
 
 
 @bp.route("/ordenes")
 def ordenes_list():
     filtros = _ordenes_filtros_desde_request()
     orders = _ordenes_list_query(filtros).all()
+    filtros_stats = {**filtros, "status": "", "alerta": ""}
+    ot_resumen = _ordenes_list_resumen(_ordenes_list_query(filtros_stats).all())
     hay_filtros = any(filtros.values())
-    filtros_qs_base = {k: v for k, v in filtros.items() if v and k != "status"}
-    hoy = date.today()
+    filtros_qs_base = {
+        k: v for k, v in filtros.items() if v and k not in ("status", "alerta", "tipo")
+    }
+    status_filter = filtros.get("status", "")
+    alerta = filtros.get("alerta", "")
+    if alerta == "vencimientos":
+        status_filter = WorkOrderStatus.VENCIDA.value
+    elif alerta == WorkOrderStatus.EN_PROCESO.value or alerta == "en_proceso":
+        status_filter = WorkOrderStatus.EN_PROCESO.value
     return render_template(
         "ordenes/list.html",
         orders=orders,
+        ot_resumen=ot_resumen,
+        ot_status_pills=_OT_LIST_STATUS_PILLS,
         filtros=filtros,
         filtros_qs_base=filtros_qs_base,
-        status_filter=filtros.get("status", ""),
+        status_filter=status_filter,
+        alerta_filtro=alerta,
         hay_filtros=hay_filtros,
         meses_ot=MESES_PLANEACION,
-        anios_ot=list(range(hoy.year - 2, hoy.year + 3)),
+        anios_ot=list(range(date.today().year - 2, date.today().year + 3)),
         tipos_ot=[
             ("", "Todos"),
             (WorkOrderType.PREVENTIVO.value, "Preventivo"),
@@ -2342,7 +2470,7 @@ def ordenes_new():
             titulo=request.form.get("titulo", "").strip(),
             descripcion=request.form.get("descripcion", "").strip(),
             tipo=tipo or WorkOrderType.CORRECTIVO.value,
-            status=request.form.get("status") or WorkOrderStatus.ABIERTA.value,
+            status=WorkOrderStatus.ABIERTA.value,
             prioridad=request.form.get("prioridad") or "media",
             empresa_id=_current_empresa_id(),
             fecha_programada=fecha_prog,
@@ -2359,7 +2487,10 @@ def ordenes_new():
         elif not tipo:
             flash("Selecciona el tipo de orden.", "danger")
         else:
-            wo.tipo = tipo
+            from app.work_order_status import estado_inicial_por_fecha
+
+            wo.status = estado_inicial_por_fecha(fecha_prog)
+            wo.maquina_requirio_paro = _maquina_requirio_paro_desde_form(request.form, wo.tipo)
             if wo.tipo == WorkOrderType.PREVENTIVO.value:
                 if not fecha_prog:
                     flash(
@@ -2382,7 +2513,6 @@ def ordenes_new():
                     titulo=wo.titulo,
                     descripcion=wo.descripcion,
                     prioridad=wo.prioridad,
-                    status=wo.status,
                     fecha_inicio=fecha_prog,
                     frecuencia_valor=fv,
                     frecuencia_unidad=fu,
@@ -2490,7 +2620,7 @@ def ordenes_edit(id):
         wo.titulo = request.form.get("titulo", "").strip()
         wo.descripcion = request.form.get("descripcion", "").strip()
         wo.tipo = request.form.get("tipo") or wo.tipo
-        wo.status = request.form.get("status") or wo.status
+        wo.maquina_requirio_paro = _maquina_requirio_paro_desde_form(request.form, wo.tipo)
         wo.prioridad = request.form.get("prioridad") or wo.prioridad
         wo.ubicacion = request.form.get("ubicacion", "").strip()
         wo.area = request.form.get("area", "").strip()
@@ -2518,6 +2648,7 @@ def ordenes_edit(id):
                 if err:
                     flash(err, "danger")
                 else:
+                    _aplicar_estado_orden_desde_formulario(wo)
                     _aplicar_fecha_cierre_si_terminal(wo)
                     err_rep = _guardar_repuestos_orden(wo)
                     if err_rep:
@@ -2534,6 +2665,7 @@ def ordenes_edit(id):
             if err:
                 flash(err, "danger")
             else:
+                _aplicar_estado_orden_desde_formulario(wo)
                 _aplicar_fecha_cierre_si_terminal(wo)
                 err_rep = _guardar_repuestos_orden(wo)
                 if err_rep:
@@ -2556,13 +2688,15 @@ def ordenes_edit(id):
 # --- Calendario ---
 @bp.route("/calendario")
 def calendario():
+    from sqlalchemy.orm import joinedload
+
     year = int(request.args.get("y", date.today().year))
     month = int(request.args.get("m", date.today().month))
     start = date(year, month, 1)
     _, last = monthrange(year, month)
     end = date(year, month, last)
     orders = _filter_work_orders_empresa(
-        WorkOrder.query.filter(
+        WorkOrder.query.options(joinedload(WorkOrder.machine)).filter(
             WorkOrder.fecha_programada.isnot(None),
             WorkOrder.fecha_programada >= start,
             WorkOrder.fecha_programada <= end,
@@ -2590,6 +2724,144 @@ def calendario():
         last_day=last,
         weeks=weeks,
     )
+
+
+def _proveedores_kpis(proveedores: list) -> dict:
+    total = len(proveedores)
+    servicio = sum(1 for p in proveedores if p.tipo == ProveedorTipo.SERVICIO.value)
+    insumos = sum(1 for p in proveedores if p.tipo == ProveedorTipo.INSUMOS.value)
+    ambos = sum(1 for p in proveedores if p.tipo == ProveedorTipo.AMBOS.value)
+    activos = sum(1 for p in proveedores if p.activo)
+    return {
+        "total": total,
+        "servicio": servicio,
+        "insumos": insumos,
+        "ambos": ambos,
+        "activos": activos,
+    }
+
+
+def _proveedor_desde_form(form) -> dict:
+    tipo = (form.get("tipo") or ProveedorTipo.SERVICIO.value).strip().lower()
+    if tipo not in PROVEEDOR_TIPOS_VALIDOS:
+        tipo = ProveedorTipo.SERVICIO.value
+    return {
+        "nombre": (form.get("nombre") or "").strip(),
+        "nit": (form.get("nit") or "").strip(),
+        "direccion": (form.get("direccion") or "").strip(),
+        "contacto_nombre": (form.get("contacto_nombre") or "").strip(),
+        "contacto_cargo": (form.get("contacto_cargo") or "").strip(),
+        "contacto_email": (form.get("contacto_email") or "").strip(),
+        "contacto_telefono": (form.get("contacto_telefono") or "").strip(),
+        "tipo": tipo,
+        "observaciones": (form.get("observaciones") or "").strip(),
+        "activo": form.get("activo") == "1",
+    }
+
+
+def _proveedor_a_dict(p: Proveedor) -> dict:
+    return {
+        "id": p.id,
+        "nombre": p.nombre,
+        "nit": p.nit or "",
+        "direccion": p.direccion or "",
+        "contacto_nombre": p.contacto_nombre or "",
+        "contacto_cargo": p.contacto_cargo or "",
+        "contacto_email": p.contacto_email or "",
+        "contacto_telefono": p.contacto_telefono or "",
+        "tipo": p.tipo,
+        "observaciones": p.observaciones or "",
+        "activo": p.activo,
+    }
+
+
+# --- Proveedores ---
+@bp.route("/proveedores")
+def proveedores_list():
+    q = request.args.get("q", "").strip()
+    tipo_f = (request.args.get("tipo") or "").strip().lower()
+    estado_f = (request.args.get("estado") or "").strip().lower()
+
+    base = _filter_empresa(Proveedor.query.order_by(Proveedor.nombre), Proveedor)
+    todos = base.all()
+    kpis = _proveedores_kpis(todos)
+
+    query = base
+    if q:
+        like = f"%{q}%"
+        query = query.filter(
+            or_(
+                Proveedor.nombre.ilike(like),
+                Proveedor.nit.ilike(like),
+                Proveedor.contacto_nombre.ilike(like),
+                Proveedor.contacto_email.ilike(like),
+                Proveedor.contacto_telefono.ilike(like),
+            )
+        )
+    if tipo_f in PROVEEDOR_TIPOS_VALIDOS:
+        query = query.filter(Proveedor.tipo == tipo_f)
+    if estado_f == "activo":
+        query = query.filter(Proveedor.activo.is_(True))
+    elif estado_f == "inactivo":
+        query = query.filter(Proveedor.activo.is_(False))
+
+    items = query.all()
+    return render_template(
+        "proveedores/list.html",
+        items=items,
+        kpis=kpis,
+        q=q,
+        tipo_f=tipo_f,
+        estado_f=estado_f,
+        proveedores_json=[_proveedor_a_dict(p) for p in todos],
+        tipos_proveedor=[
+            ("", "Todos los tipos"),
+            (ProveedorTipo.SERVICIO.value, "Servicio"),
+            (ProveedorTipo.INSUMOS.value, "Insumos"),
+            (ProveedorTipo.AMBOS.value, "Ambos"),
+        ],
+    )
+
+
+@bp.route("/proveedores/guardar", methods=["POST"])
+def proveedores_guardar():
+    datos = _proveedor_desde_form(request.form)
+    if not datos["nombre"]:
+        flash("El nombre de la empresa es obligatorio.", "danger")
+        return redirect(url_for("main.proveedores_list"))
+
+    pid = request.form.get("id", "").strip()
+    if pid:
+        p = _filter_empresa(Proveedor.query.filter_by(id=int(pid)), Proveedor).first_or_404()
+    else:
+        if not can_create(current_user):
+            flash("No tienes permiso para crear proveedores.", "warning")
+            return redirect(url_for("main.proveedores_list"))
+        p = Proveedor(empresa_id=_current_empresa_id())
+
+    for k, v in datos.items():
+        setattr(p, k, v)
+    db.session.add(p)
+    try:
+        db.session.commit()
+        flash("Proveedor actualizado." if pid else "Proveedor registrado.", "success")
+    except Exception:
+        db.session.rollback()
+        flash("No se pudo guardar el proveedor.", "danger")
+    return redirect(url_for("main.proveedores_list"))
+
+
+@bp.route("/proveedores/<int:id>/eliminar", methods=["POST"])
+def proveedores_delete(id):
+    p = _filter_empresa(Proveedor.query.filter_by(id=id), Proveedor).first_or_404()
+    db.session.delete(p)
+    try:
+        db.session.commit()
+        flash("Proveedor eliminado.", "success")
+    except Exception:
+        db.session.rollback()
+        flash("No se pudo eliminar el proveedor.", "danger")
+    return redirect(url_for("main.proveedores_list"))
 
 
 # --- Inventario ---

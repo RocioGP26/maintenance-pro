@@ -47,6 +47,16 @@ def _load_from_session_user() -> None:
         g.empresa_slug = empresa.slug
 
 
+def _sync_ordenes_vencidas() -> None:
+    eid = getattr(g, "empresa_id", None)
+    if not eid or getattr(g, "_ot_vencidas_synced", False):
+        return
+    from app.work_order_status import sincronizar_estados_ordenes
+
+    sincronizar_estados_ordenes(int(eid))
+    g._ot_vencidas_synced = True
+
+
 def register_tenancy_middleware(app: Flask) -> None:
     @app.before_request
     def middleware_tenancy():
@@ -72,9 +82,11 @@ def register_tenancy_middleware(app: Flask) -> None:
             g.empresa_id = payload.get("empresa_id")
             g.empresa_slug = payload.get("empresa_slug")
             g.user_rol = payload.get("rol")
+            _sync_ordenes_vencidas()
             return None
 
         _load_from_session_user()
+        _sync_ordenes_vencidas()
         return None
 
     @app.teardown_appcontext

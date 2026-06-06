@@ -136,5 +136,6 @@ DELETE_ENDPOINTS = frozenset(
         "main.activos_delete",
         "main.activos_tipo_delete",
         "main.configuracion_campos_delete",
+        "main.proveedores_delete",
     }
 )

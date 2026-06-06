@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import date, timedelta
+from datetime import date
 from typing import Any
 
 from flask import url_for
@@ -39,6 +39,29 @@ def _filter_work_orders_empresa(q):
     )
 
 
+OT_ALERT_ABIERTAS = (WorkOrderStatus.ABIERTA.value, WorkOrderStatus.EN_PROCESO.value)
+
+
+def _base_ordenes_empresa():
+    return _filter_work_orders_empresa(WorkOrder.query)
+
+
+def aplicar_filtro_alerta_orden(q, alerta: str, hoy: date | None = None):
+    """Misma lógica que la campana del header → lista de OT."""
+    hoy = hoy or date.today()
+    key = (alerta or "").strip().lower()
+    if key == "vencimientos":
+        return q.filter(WorkOrder.status == WorkOrderStatus.VENCIDA.value)
+    if key == "programados_hoy":
+        return q.filter(
+            WorkOrder.fecha_programada == hoy,
+            WorkOrder.status.in_(OT_ALERT_ABIERTAS),
+        )
+    if key == "en_proceso":
+        return q.filter(WorkOrder.status == WorkOrderStatus.EN_PROCESO.value)
+    return q
+
+
 def resumen_alertas_campana() -> dict[str, Any]:
     vacio: dict[str, Any] = {
         "vencimientos": 0,
@@ -54,22 +77,14 @@ def resumen_alertas_campana() -> dict[str, Any]:
         return vacio
 
     hoy = date.today()
-    ayer = hoy - timedelta(days=1)
-    abiertas = [WorkOrderStatus.ABIERTA.value, WorkOrderStatus.EN_PROCESO.value]
-    base = _filter_work_orders_empresa(WorkOrder.query)
+    from app.work_order_status import sincronizar_estados_ordenes
 
-    vencimientos = base.filter(
-        WorkOrder.status.in_(abiertas),
-        WorkOrder.fecha_programada.isnot(None),
-        WorkOrder.fecha_programada < hoy,
-    ).count()
+    sincronizar_estados_ordenes(_current_empresa_id(), hoy)
+    base = _base_ordenes_empresa()
 
-    programados_hoy = base.filter(
-        WorkOrder.fecha_programada == hoy,
-        WorkOrder.status.in_(abiertas),
-    ).count()
-
-    en_proceso = base.filter(WorkOrder.status == WorkOrderStatus.EN_PROCESO.value).count()
+    vencimientos = aplicar_filtro_alerta_orden(base, "vencimientos", hoy).count()
+    programados_hoy = aplicar_filtro_alerta_orden(base, "programados_hoy", hoy).count()
+    en_proceso = aplicar_filtro_alerta_orden(base, "en_proceso", hoy).count()
     total = vencimientos + programados_hoy + en_proceso
 
     return {
@@ -78,11 +93,7 @@ def resumen_alertas_campana() -> dict[str, Any]:
         "en_proceso": en_proceso,
         "total": total,
         "tiene_alertas": total > 0,
-        "url_vencimientos": url_for("main.ordenes_list", fecha_hasta=ayer.isoformat()),
-        "url_programados_hoy": url_for(
-            "main.ordenes_list",
-            fecha_desde=hoy.isoformat(),
-            fecha_hasta=hoy.isoformat(),
-        ),
-        "url_en_proceso": url_for("main.ordenes_list", status=WorkOrderStatus.EN_PROCESO.value),
+        "url_vencimientos": url_for("main.ordenes_list", alerta="vencimientos"),
+        "url_programados_hoy": url_for("main.ordenes_list", alerta="programados_hoy"),
+        "url_en_proceso": url_for("main.ordenes_list", alerta="en_proceso"),
     }

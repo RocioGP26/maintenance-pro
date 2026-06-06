@@ -11,7 +11,6 @@ from app import db
 from app.models import (
     PreventiveMaintenancePlan,
     WorkOrder,
-    WorkOrderStatus,
     WorkOrderType,
     WORK_ORDER_TERMINAL_STATUSES,
 )
@@ -50,25 +49,51 @@ def frecuencia_label(valor: Optional[int], unidad: Optional[str]) -> str:
     return f"Cada {valor} {labels.get(unidad, unidad)}"
 
 
-def preventive_wo_activa(
-    machine_id: int, actividad: str, exclude_wo_id: Optional[int] = None
+def ot_preventiva_misma_actividad(
+    machine_id: int,
+    actividad: str,
+    *,
+    fecha: Optional[date] = None,
+    exclude_wo_id: Optional[int] = None,
 ) -> Optional[WorkOrder]:
+    """OT preventiva existente: mismo equipo y misma actividad (opcionalmente misma fecha)."""
     key = actividad_key(actividad)
     if not key:
         return None
-    plan = PreventiveMaintenancePlan.query.filter_by(
-        machine_id=machine_id, actividad_key=key
-    ).first()
-    if not plan:
-        return None
     q = WorkOrder.query.filter(
-        WorkOrder.preventive_plan_id == plan.id,
+        WorkOrder.machine_id == machine_id,
         WorkOrder.tipo == WorkOrderType.PREVENTIVO.value,
         ~WorkOrder.status.in_(WORK_ORDER_TERMINAL_STATUSES),
     )
+    if fecha is not None:
+        q = q.filter(WorkOrder.fecha_programada == fecha)
     if exclude_wo_id:
         q = q.filter(WorkOrder.id != exclude_wo_id)
-    return q.first()
+    for wo in q.all():
+        if actividad_key(wo.titulo) == key:
+            return wo
+        if wo.preventive_plan_id:
+            plan = db.session.get(PreventiveMaintenancePlan, wo.preventive_plan_id)
+            if plan and plan.actividad_key == key:
+                return wo
+    return None
+
+
+def validar_actividad_preventiva_nueva(
+    machine_id: int, actividad: str, exclude_wo_id: Optional[int] = None
+) -> Optional[str]:
+    """Impide crear calendario/OT si ya hay preventivo activo con la misma actividad."""
+    existente = ot_preventiva_misma_actividad(
+        machine_id, actividad, exclude_wo_id=exclude_wo_id
+    )
+    if not existente:
+        return None
+    num = existente.numero or f"#{existente.id}"
+    act = (existente.titulo or actividad).strip()
+    return (
+        f"Ya existe una OT preventiva «{act}» en este equipo ({num}). "
+        "No se puede repetir la misma actividad hasta cerrar o completar la existente."
+    )
 
 
 def get_or_create_plan(
@@ -115,13 +140,9 @@ def aplicar_preventivo_a_orden(
     # Al editar una OT ya existente (p. ej. marcar completado) no se valida duplicado:
     # el calendario preventivo puede tener varias OT del mismo plan en el año.
     if exclude_wo_id is None:
-        existente = preventive_wo_activa(wo.machine_id, actividad)
-        if existente:
-            num = existente.numero or f"#{existente.id}"
-            return (
-                f"Ya existe una OT preventiva activa para esta actividad en el equipo "
-                f"({num}). Ciérrala antes de crear otra con la misma actividad."
-            )
+        err = validar_actividad_preventiva_nueva(wo.machine_id, actividad)
+        if err:
+            return err
 
     unidad = (frecuencia_unidad or "meses").lower()
     if unidad not in {u for u, _ in PREVENTIVE_FREQUENCY_UNITS}:
@@ -195,7 +216,14 @@ def fechas_preventivas_anio(
     return fechas
 
 
-def _ot_preventiva_programada_existe(plan_id: int, fecha: date) -> bool:
+def _ot_preventiva_programada_existe(
+    machine_id: int, actividad: str, fecha: date, plan_id: Optional[int] = None
+) -> bool:
+    dup = ot_preventiva_misma_actividad(machine_id, actividad, fecha=fecha)
+    if dup:
+        return True
+    if plan_id is None:
+        return False
     return (
         WorkOrder.query.filter(
             WorkOrder.preventive_plan_id == plan_id,
@@ -214,7 +242,6 @@ def crear_programacion_preventiva_anio(
     titulo: str,
     descripcion: str,
     prioridad: str,
-    status: str,
     fecha_inicio: date,
     frecuencia_valor: int,
     frecuencia_unidad: str,
@@ -233,6 +260,10 @@ def crear_programacion_preventiva_anio(
         return [], "La actividad es obligatoria para mantenimiento preventivo."
     if not fecha_inicio:
         return [], "Indica la primera fecha programada para generar el calendario del año."
+
+    err_dup = validar_actividad_preventiva_nueva(machine_id, actividad)
+    if err_dup:
+        return [], err_dup
 
     unidad = (frecuencia_unidad or "meses").lower()
     if unidad not in {u for u, _ in PREVENTIVE_FREQUENCY_UNITS}:
@@ -255,16 +286,18 @@ def crear_programacion_preventiva_anio(
         frecuencia_unidad=unidad,
     )
 
+    from app.work_order_status import estado_inicial_por_fecha
+
     ordenes: List[WorkOrder] = []
     for fecha_prog in fechas:
-        if _ot_preventiva_programada_existe(plan.id, fecha_prog):
+        if _ot_preventiva_programada_existe(machine_id, actividad, fecha_prog, plan.id):
             continue
         wo = WorkOrder(
             empresa_id=empresa_id,
             titulo=plan.actividad,
             descripcion=(descripcion or "").strip(),
             tipo=WorkOrderType.PREVENTIVO.value,
-            status=status or WorkOrderStatus.ABIERTA.value,
+            status=estado_inicial_por_fecha(fecha_prog),
             prioridad=prioridad or "media",
             fecha_programada=fecha_prog,
             machine_id=machine_id,

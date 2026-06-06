@@ -34,7 +34,7 @@ def create_app():
     from app.branding import APP_LOGO_PATH, APP_NAME, APP_TAGLINE, empresa_logo_url_or_none
 
     from app.money import formato_moneda
-    from app.models import machine_status_meta, wo_es_editable, wo_status_meta, wo_tipo_meta
+    from app.models import machine_status_meta, proveedor_tipo_meta, wo_es_editable, wo_status_meta, wo_tipo_meta
     from app.alertas_service import resumen_alertas_campana
     from app.permissions import permission_flags
 
@@ -43,6 +43,7 @@ def create_app():
     app.jinja_env.globals["formato_moneda"] = formato_moneda
     app.jinja_env.globals["wo_es_editable"] = wo_es_editable
     app.jinja_env.globals["wo_tipo_meta"] = wo_tipo_meta
+    app.jinja_env.globals["proveedor_tipo_meta"] = proveedor_tipo_meta
 
     from app.custom_fields import seccion_campos_cuatro_por_fila
 
@@ -67,6 +68,7 @@ def create_app():
             "machine_status_meta": machine_status_meta,
             "wo_es_editable": wo_es_editable,
             "wo_tipo_meta": wo_tipo_meta,
+            "proveedor_tipo_meta": proveedor_tipo_meta,
             "formato_moneda": formato_moneda,
             "perm": perm,
         }
@@ -91,6 +93,9 @@ def create_app():
         models.seed_machine_types_if_empty()
         models.ensure_machines_machine_type_fk()
         models.seed_if_empty()
+        from app.work_order_status import sincronizar_estados_ordenes
+
+        sincronizar_estados_ordenes()
 
     from app import routes
     from app.onboarding_routes import onboarding_bp

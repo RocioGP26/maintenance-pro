@@ -5,8 +5,103 @@
 {% block head_extra %}
 <style>
   .ot-list-toolbar { margin-bottom: 0.65rem; }
-  .ot-list-toolbar .btn { padding: 0.2rem 0.55rem; font-size: 0.75rem; }
   .ot-list-toolbar .btn-primary { padding: 0.25rem 0.65rem; font-size: 0.8125rem; }
+  .ot-stats-section { margin-bottom: 0.85rem; }
+  .ot-stats-cards.row { --bs-gutter-x: 0.65rem; --bs-gutter-y: 0.65rem; }
+  .ot-stats-card {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.75rem;
+    display: block;
+    height: 100%;
+    padding: 0.9rem 1rem;
+    text-decoration: none;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  }
+  a.ot-stats-card:hover {
+    border-color: #cbd5e1;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06);
+  }
+  a.ot-stats-card.ot-stats-card--active {
+    border-color: var(--bs-primary);
+    box-shadow: 0 0 0 1px var(--bs-primary);
+  }
+  .ot-stats-card-top {
+    align-items: flex-start;
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.35rem;
+  }
+  .ot-stats-card-title {
+    color: #374151;
+    font-size: 0.875rem;
+    font-weight: 600;
+  }
+  .ot-stats-card-icon {
+    color: #9ca3af;
+    font-size: 1rem;
+    line-height: 1;
+  }
+  .ot-stats-card .badge {
+    font-size: 0.65rem;
+    font-weight: 600;
+    padding: 0.22em 0.5em;
+  }
+  .ot-stats-card-value {
+    font-size: 2rem;
+    font-weight: 700;
+    line-height: 1.1;
+    margin: 0.15rem 0 0.35rem;
+  }
+  .ot-stats-card-value--total { color: #111827; }
+  .ot-stats-card-value--preventivo { color: #2563eb; }
+  .ot-stats-card-value--correctivo { color: #ea580c; }
+  .ot-stats-card-value--vencida { color: #b91c1c; }
+  .ot-stats-card-sub {
+    color: #9ca3af;
+    font-size: 0.75rem;
+    margin: 0;
+  }
+  .ot-stats-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+    margin-top: 0.85rem;
+  }
+  .ot-stats-pill {
+    background: #fff;
+    border: 1px solid #dee2e6;
+    border-radius: 999px;
+    color: #374151;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    padding: 0.38rem 0.9rem;
+    text-decoration: none;
+    white-space: nowrap;
+  }
+  .ot-stats-pill:hover {
+    background: #f8f9fa;
+    border-color: #adb5bd;
+    color: #111827;
+  }
+  .ot-stats-pill.active {
+    background: #1e3a5f;
+    border-color: #1e3a5f;
+    color: #fff;
+  }
+  .ot-stats-pill.active:hover {
+    background: #162d4a;
+    border-color: #162d4a;
+    color: #fff;
+  }
+  .ot-stats-toolbar {
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.65rem;
+    justify-content: space-between;
+    margin-bottom: 0.85rem;
+  }
   .ot-filtros-card { margin-bottom: 0.75rem; }
   .ot-filtros-card .card-body { padding: 0.75rem 1rem; }
   .ot-filtros-card .form-label { font-size: 0.7rem; margin-bottom: 0.15rem; color: #6c757d; }
@@ -128,26 +223,86 @@
 {% endblock %}
 
 {% block content %}
-<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 ot-list-toolbar">
-  <div class="btn-group btn-group-sm">
-    <a href="{{ url_for('main.ordenes_list', **filtros_qs_base) }}"
-       class="btn btn-outline-secondary {% if not status_filter %}active{% endif %}">Todas</a>
-    <a href="{{ url_for('main.ordenes_list', status='abierta', **filtros_qs_base) }}"
-       class="btn btn-outline-secondary {% if status_filter == 'abierta' %}active{% endif %}">Abiertas</a>
-    <a href="{{ url_for('main.ordenes_list', status='en_proceso', **filtros_qs_base) }}"
-       class="btn btn-outline-secondary {% if status_filter == 'en_proceso' %}active{% endif %}">En proceso</a>
-    <a href="{{ url_for('main.ordenes_list', status='cerrada', **filtros_qs_base) }}"
-       class="btn btn-outline-secondary {% if status_filter == 'cerrada' %}active{% endif %}">Cerradas</a>
-    <a href="{{ url_for('main.ordenes_list', status='completado', **filtros_qs_base) }}"
-       class="btn btn-outline-secondary {% if status_filter == 'completado' %}active{% endif %}">Completadas</a>
+{% set prev = ot_resumen.preventivas %}
+{% set corr = ot_resumen.correctivas %}
+{% set venc = ot_resumen.vencidas %}
+<div class="ot-stats-section">
+  <div class="row ot-stats-cards g-2">
+    <div class="col-6 col-lg-3">
+      <div class="ot-stats-card">
+        <div class="ot-stats-card-top">
+          <span class="ot-stats-card-title">Total OT</span>
+          <i class="bi bi-clipboard-check ot-stats-card-icon" aria-hidden="true"></i>
+        </div>
+        <p class="ot-stats-card-value ot-stats-card-value--total">{{ ot_resumen.total }}</p>
+        <p class="ot-stats-card-sub">todas las órdenes</p>
+      </div>
+    </div>
+    <div class="col-6 col-lg-3">
+      <a href="{{ url_for('main.ordenes_list', tipo=prev.key, **filtros_qs_base) }}"
+         class="ot-stats-card{% if filtros.tipo == prev.key %} ot-stats-card--active{% endif %}">
+        <div class="ot-stats-card-top">
+          <span class="ot-stats-card-title">Preventivas</span>
+          <span class="badge {{ prev.badge_class }}">{{ prev.short }}</span>
+        </div>
+        <p class="ot-stats-card-value ot-stats-card-value--preventivo">{{ prev.count }}</p>
+        <p class="ot-stats-card-sub">{{ prev.sub }}</p>
+      </a>
+    </div>
+    <div class="col-6 col-lg-3">
+      <a href="{{ url_for('main.ordenes_list', tipo=corr.key, **filtros_qs_base) }}"
+         class="ot-stats-card{% if filtros.tipo == corr.key %} ot-stats-card--active{% endif %}">
+        <div class="ot-stats-card-top">
+          <span class="ot-stats-card-title">Correctivas</span>
+          <span class="badge {{ corr.badge_class }}">{{ corr.short }}</span>
+        </div>
+        <p class="ot-stats-card-value ot-stats-card-value--correctivo">{{ corr.count }}</p>
+        <p class="ot-stats-card-sub">{{ corr.sub }}</p>
+      </a>
+    </div>
+    <div class="col-6 col-lg-3">
+      <a href="{{ url_for('main.ordenes_list', status=venc.key, **filtros_qs_base) }}"
+         class="ot-stats-card{% if status_filter == venc.key %} ot-stats-card--active{% endif %}">
+        <div class="ot-stats-card-top">
+          <span class="ot-stats-card-title">Vencidas</span>
+          <span class="badge {{ venc.badge_class }}">{{ venc.label }}</span>
+        </div>
+        <p class="ot-stats-card-value ot-stats-card-value--vencida">{{ venc.count }}</p>
+        <p class="ot-stats-card-sub">{{ venc.sub }}</p>
+      </a>
+    </div>
   </div>
-  {% if perm.crear %}<a href="{{ url_for('main.ordenes_new') }}" class="btn btn-primary btn-sm"><i class="bi bi-plus-lg"></i> Nueva</a>{% endif %}
+
+  <div class="ot-stats-toolbar">
+    <div class="ot-stats-filters mb-0">
+      {% for pill_key, pill_label in ot_status_pills %}
+      {% if pill_key %}
+      <a href="{{ url_for('main.ordenes_list', status=pill_key, **filtros_qs_base) }}"
+         class="ot-stats-pill{% if status_filter == pill_key %} active{% endif %}">
+        {{ pill_label }} {{ ot_resumen.estados_por_key.get(pill_key, 0) }}
+      </a>
+      {% else %}
+      <a href="{{ url_for('main.ordenes_list', **filtros_qs_base) }}"
+         class="ot-stats-pill{% if not status_filter %} active{% endif %}">
+        {{ pill_label }} {{ ot_resumen.total }}
+      </a>
+      {% endif %}
+      {% endfor %}
+    </div>
+    {% if perm.crear %}
+    <a href="{{ url_for('main.ordenes_new') }}" class="btn btn-primary btn-sm">
+      <i class="bi bi-plus-lg"></i> Nueva
+    </a>
+    {% endif %}
+  </div>
 </div>
 
 <div class="card card-dashboard ot-filtros-card">
   <div class="card-body">
     <form method="get" action="{{ url_for('main.ordenes_list') }}" class="row g-2 align-items-end">
-      {% if status_filter %}
+      {% if alerta_filtro %}
+      <input type="hidden" name="alerta" value="{{ alerta_filtro }}">
+      {% elif status_filter %}
       <input type="hidden" name="status" value="{{ status_filter }}">
       {% endif %}
       <div class="col-6 col-md-2">
@@ -207,7 +362,13 @@
       </div>
     </form>
     {% if hay_filtros %}
-    <p class="small text-muted mb-0 mt-2">{{ orders|length }} resultado(s) con los filtros aplicados.</p>
+    <p class="small text-muted mb-0 mt-2">
+      {{ orders|length }} resultado(s)
+      {% if alerta_filtro == 'vencimientos' %} — vencimientos pendientes
+      {% elif alerta_filtro == 'programados_hoy' %} — programados hoy
+      {% elif alerta_filtro == 'en_proceso' %} — en proceso
+      {% else %} con los filtros aplicados{% endif %}.
+    </p>
     {% endif %}
   </div>
 </div>

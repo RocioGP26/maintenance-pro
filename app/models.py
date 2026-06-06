@@ -75,6 +75,16 @@ WORK_ORDER_STATUS_META = {
         "badge_class": "badge-wo-estado badge-wo-completado",
         "color": "#0d9488",
     },
+    "vencida": {
+        "label": "Vencida",
+        "badge_class": "badge-wo-estado badge-wo-vencida",
+        "color": "#dc2626",
+    },
+    "programada": {
+        "label": "Programada",
+        "badge_class": "badge-wo-estado badge-wo-programada",
+        "color": "#6366f1",
+    },
 }
 
 
@@ -272,8 +282,10 @@ class WorkOrderType(str, Enum):
 
 
 class WorkOrderStatus(str, Enum):
+    PROGRAMADA = "programada"
     ABIERTA = "abierta"
     EN_PROCESO = "en_proceso"
+    VENCIDA = "vencida"
     CERRADA = "cerrada"
     COMPLETADO = "completado"
 
@@ -281,6 +293,13 @@ class WorkOrderStatus(str, Enum):
 WORK_ORDER_TERMINAL_STATUSES = (
     WorkOrderStatus.CERRADA.value,
     WorkOrderStatus.COMPLETADO.value,
+)
+
+WORK_ORDER_PENDING_STATUSES = (
+    WorkOrderStatus.PROGRAMADA.value,
+    WorkOrderStatus.ABIERTA.value,
+    WorkOrderStatus.EN_PROCESO.value,
+    WorkOrderStatus.VENCIDA.value,
 )
 
 
@@ -663,6 +682,95 @@ class Technician(db.Model):
     user = db.relationship("User", backref=db.backref("technician", uselist=False))
 
 
+class ProveedorTipo(str, Enum):
+    SERVICIO = "servicio"
+    INSUMOS = "insumos"
+    AMBOS = "ambos"
+
+
+PROVEEDOR_TIPOS_VALIDOS = frozenset(t.value for t in ProveedorTipo)
+
+PROVEEDOR_TIPO_META = {
+    ProveedorTipo.SERVICIO.value: {
+        "label": "Servicio",
+        "hint": "Hace el mantenimiento",
+        "badge_class": "badge-prov-tipo badge-prov-servicio",
+        "avatar_class": "prov-avatar prov-avatar--servicio",
+        "kpi_class": "prov-kpi-card--servicio",
+        "icon": "bi-wrench",
+        "color": "#2563eb",
+    },
+    ProveedorTipo.INSUMOS.value: {
+        "label": "Insumos",
+        "hint": "Repuestos y materiales",
+        "badge_class": "badge-prov-tipo badge-prov-insumos",
+        "avatar_class": "prov-avatar prov-avatar--insumos",
+        "kpi_class": "prov-kpi-card--insumos",
+        "icon": "bi-box-seam",
+        "color": "#16a34a",
+    },
+    ProveedorTipo.AMBOS.value: {
+        "label": "Ambos",
+        "hint": "Servicio e insumos",
+        "badge_class": "badge-prov-tipo badge-prov-ambos",
+        "avatar_class": "prov-avatar prov-avatar--ambos",
+        "kpi_class": "prov-kpi-card--ambos",
+        "icon": "bi-arrow-left-right",
+        "color": "#7c3aed",
+    },
+}
+
+
+def proveedor_tipo_meta(tipo: str) -> dict:
+    key = (tipo or "").strip().lower()
+    default = {
+        "label": tipo or "—",
+        "hint": "",
+        "badge_class": "badge-prov-tipo badge-prov-desconocido",
+        "avatar_class": "prov-avatar",
+        "kpi_class": "",
+        "icon": "bi-building",
+        "color": "#6c757d",
+    }
+    return {**default, **PROVEEDOR_TIPO_META.get(key, {})}
+
+
+def proveedor_iniciales(nombre: str) -> str:
+    palabras = [p for p in (nombre or "").split() if p.strip()]
+    if not palabras:
+        return "?"
+    if len(palabras) == 1:
+        return palabras[0][:2].upper()
+    return (palabras[0][0] + palabras[1][0]).upper()
+
+
+class Proveedor(db.Model):
+    __tablename__ = "proveedores"
+
+    id = db.Column(db.Integer, primary_key=True)
+    empresa_id = db.Column(db.Integer, db.ForeignKey("empresas.id"), nullable=True, index=True)
+    nombre = db.Column(db.String(200), nullable=False)
+    nit = db.Column(db.String(32), default="")
+    direccion = db.Column(db.String(255), default="")
+    contacto_nombre = db.Column(db.String(200), default="")
+    contacto_cargo = db.Column(db.String(120), default="")
+    contacto_email = db.Column(db.String(120), default="")
+    contacto_telefono = db.Column(db.String(40), default="")
+    tipo = db.Column(db.String(16), default=ProveedorTipo.SERVICIO.value, nullable=False)
+    observaciones = db.Column(db.Text, default="")
+    activo = db.Column(db.Boolean, default=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    @property
+    def iniciales(self) -> str:
+        return proveedor_iniciales(self.nombre)
+
+    @property
+    def tipo_meta(self) -> dict:
+        return proveedor_tipo_meta(self.tipo)
+
+
 class PreventiveMaintenancePlan(db.Model):
     """Programa de mantenimiento preventivo: una actividad por activo (sin repetir)."""
 
@@ -718,6 +826,7 @@ class WorkOrder(db.Model):
     autorizado_por = db.Column(db.String(120), default="")
     recibido_por = db.Column(db.String(120), default="")
     empresa_tercerizada = db.Column(db.String(200), default="")
+    maquina_requirio_paro = db.Column(db.Boolean, default=False, nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     preventive_plan = db.relationship(
@@ -1110,6 +1219,11 @@ def ensure_saas_schema():
         _add_column_if_missing(
             "work_orders", "empresa_tercerizada", "empresa_tercerizada VARCHAR(200)"
         )
+        _add_column_if_missing(
+            "work_orders",
+            "maquina_requirio_paro",
+            "maquina_requirio_paro BOOLEAN DEFAULT 0",
+        )
         _add_column_if_missing("campos_personalizados", "opciones", "opciones TEXT")
         _add_column_if_missing("campos_personalizados", "categorias_ids", "categorias_ids TEXT")
         _add_column_if_missing(
@@ -1212,7 +1326,7 @@ def migrate_legacy_tenant():
         u.onboarding_completado = True
         if not u.rol:
             u.rol = UserRole.ADMIN.value
-    for table in ("machines", "technicians", "work_orders", "spare_parts", "incidents"):
+    for table in ("machines", "technicians", "work_orders", "spare_parts", "incidents", "proveedores"):
         try:
             db.session.execute(
                 text(f"UPDATE {table} SET empresa_id = :e WHERE empresa_id IS NULL"),

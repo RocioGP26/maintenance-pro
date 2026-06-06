@@ -171,17 +171,23 @@
                 </select>
               </div>
               <div class="col-md-6">
-                <label class="form-label" for="selectEstado">Estado</label>
-                {% set st = order.status if order else 'abierta' %}
-                <select name="status" id="selectEstado" class="form-select">
-                  <option value="abierta" {% if st == 'abierta' %}selected{% endif %}>Abierta</option>
-                  <option value="en_proceso" {% if st == 'en_proceso' %}selected{% endif %}>En proceso</option>
-                  <option value="cerrada" {% if st == 'cerrada' %}selected{% endif %}>Cerrada</option>
-                  <option value="completado" {% if st == 'completado' %}selected{% endif %}>Completado</option>
-                </select>
+                <label class="form-label">Estado</label>
+                {% if order %}
+                {% set sm = wo_status_meta(order.status) %}
+                <div class="mb-2">
+                  <span class="badge {{ sm.badge_class }}" id="estadoOtBadge">{{ sm.label }}</span>
+                </div>
+                <p class="form-text small mb-0">Automático por fecha y jornadas.</p>
+                {% else %}
+                <div class="mb-2">
+                  <span class="badge badge-wo-estado badge-wo-desconocido" id="estadoOtBadge">—</span>
+                </div>
+                <p class="form-text small mb-0" id="estadoPrevistoAyuda">Según la fecha programada al guardar.</p>
+                {% endif %}
               </div>
               {% if not order %}
               <input type="hidden" name="empresa_tercerizada" value="">
+              <input type="hidden" name="maquina_requirio_paro" value="0">
               {% endif %}
             </div>
           </div>
@@ -215,6 +221,42 @@
                 <input type="text" name="recibido_por" id="recibido_por" class="form-control"
                        placeholder="Nombre o cargo" value="{{ order.recibido_por or '' }}">
               </div>
+
+            <div class="col-md-6">
+              <label class="form-label" for="selectEstadoManual">Acción manual</label>
+              <select name="status_manual" id="selectEstadoManual" class="form-select" {% if solo_lectura|default(false) %}disabled{% endif %}>
+                <option value="">— Automático —</option>
+                <option value="cerrada" {% if order.status == 'cerrada' %}selected{% endif %}>Cerrar OT</option>
+              </select>
+              <p class="form-text small mb-0" id="estadoOtAyuda">
+                Para marcar la OT como completada, indícalo al registrar una jornada. Use esta acción solo para cerrar la orden.
+              </p>
+              <input type="hidden" name="jornada_estado_ot" id="jornadaEstadoOtHidden" value="">
+            </div>
+
+            <div class="col-12 d-none" id="seccionParoMaquina">
+              <label class="form-label">¿Requirió parar la máquina?</label>
+              <div class="border rounded p-3 bg-light">
+                {% set paro = order.maquina_requirio_paro %}
+                <div class="form-check">
+                  <input class="form-check-input" type="radio" name="maquina_requirio_paro" value="1" id="paroMaquinaSi"
+                         {% if paro %}checked{% endif %}>
+                  <label class="form-check-label" for="paroMaquinaSi">
+                    Sí, la máquina estuvo parada
+                  </label>
+                </div>
+                <div class="form-check">
+                  <input class="form-check-input" type="radio" name="maquina_requirio_paro" value="0" id="paroMaquinaNo"
+                         {% if not paro %}checked{% endif %}>
+                  <label class="form-check-label" for="paroMaquinaNo">
+                    No, no se requirió parar la máquina
+                  </label>
+                </div>
+                <p class="form-text small mb-0 mt-2">
+                  Solo las OT correctivas con paro de máquina cuentan para el indicador MTTR del dashboard.
+                </p>
+              </div>
+            </div>
 
             <div class="col-12 d-none" id="seccionRepuestos">
               <h6 class="fw-semibold mb-2"><i class="bi bi-box-seam me-1"></i> Repuestos (inventario)</h6>
@@ -371,6 +413,21 @@
             <textarea class="form-control" id="jornadaDescripcion" rows="3"
                       placeholder="Ej. Trabajo de 8:00 a 9:30, limpieza y revisión..."></textarea>
           </div>
+          <div class="col-12 border-top pt-3">
+            <label class="form-label fw-semibold d-block mb-2">¿Cómo queda la OT tras esta jornada?</label>
+            <div class="form-check">
+              <input class="form-check-input" type="radio" name="jornadaEstadoOt" id="jornadaEstadoProceso" value="en_proceso" checked>
+              <label class="form-check-label" for="jornadaEstadoProceso">En proceso (el trabajo continúa)</label>
+            </div>
+            <div class="form-check">
+              <input class="form-check-input" type="radio" name="jornadaEstadoOt" id="jornadaEstadoAbierta" value="abierta">
+              <label class="form-check-label" for="jornadaEstadoAbierta">Abierta (solo registro de horas)</label>
+            </div>
+            <div class="form-check">
+              <input class="form-check-input" type="radio" name="jornadaEstadoOt" id="jornadaEstadoCompletada" value="completado">
+              <label class="form-check-label" for="jornadaEstadoCompletada">Completada (trabajo terminado)</label>
+            </div>
+          </div>
         </div>
       </div>
       <div class="modal-footer">
@@ -394,6 +451,37 @@
   var techById = {};
   technicians.forEach(function (t) { techById[String(t.id)] = t.nombre; });
 
+  var ESTADO_META = {
+    programada: { label: 'Programada', cls: 'badge-wo-estado badge-wo-programada' },
+    abierta: { label: 'Abierta', cls: 'badge-wo-estado badge-wo-abierta' },
+    en_proceso: { label: 'En proceso', cls: 'badge-wo-estado badge-wo-en-proceso' },
+    vencida: { label: 'Vencida', cls: 'badge-wo-estado badge-wo-vencida' },
+    completado: { label: 'Completado', cls: 'badge-wo-estado badge-wo-completado' },
+    cerrada: { label: 'Cerrada', cls: 'badge-wo-estado badge-wo-cerrada' }
+  };
+
+  function estadoPorFecha(iso) {
+    if (!iso) return null;
+    var hoy = hoyISO();
+    if (iso < hoy) return 'vencida';
+    var pHoy = hoy.split('-');
+    var pF = iso.split('-');
+    if (pF[0] === pHoy[0] && pF[1] === pHoy[1]) return 'abierta';
+    return 'programada';
+  }
+
+  function actualizarBadgeEstado(key) {
+    var badge = document.getElementById('estadoOtBadge');
+    if (!badge || !key || !ESTADO_META[key]) return;
+    badge.className = 'badge ' + ESTADO_META[key].cls;
+    badge.textContent = ESTADO_META[key].label;
+  }
+
+  function hoyISO() {
+    var d = new Date();
+    return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+  }
+
   {% if order %}
   var jornadas = {{ jornadas_inicial|tojson }};
 
@@ -413,11 +501,6 @@
     btnAgregar.classList.add('d-none');
     btnAgregar.removeAttribute('data-bs-toggle');
     btnAgregar.removeAttribute('data-bs-target');
-  }
-
-  function hoyISO() {
-    var d = new Date();
-    return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
   }
 
   function fmtFecha(iso) {
@@ -505,10 +588,28 @@
         syncHidden();
         renderLista();
         recalcularTotal();
+        aplicarEstadoDesdeJornadasUI();
       });
     });
     syncHidden();
     recalcularTotal();
+    aplicarEstadoDesdeJornadasUI();
+  }
+
+  function aplicarEstadoDesdeJornadasUI() {
+    var hiddenEst = document.getElementById('jornadaEstadoOtHidden');
+    var manualSel = document.getElementById('selectEstadoManual');
+    if (manualSel && manualSel.value) return;
+    if (!jornadas.length) {
+      if (hiddenEst) hiddenEst.value = '';
+      var fp = document.getElementById('inputFechaProgramada');
+      if (fp && fp.value) actualizarBadgeEstado(estadoPorFecha(fp.value));
+      return;
+    }
+    var picked = document.querySelector('input[name="jornadaEstadoOt"]:checked');
+    var accion = picked ? picked.value : 'en_proceso';
+    if (hiddenEst) hiddenEst.value = accion;
+    actualizarBadgeEstado(accion);
   }
 
   function toggleTecnicoNombre() {
@@ -597,6 +698,11 @@
     } else {
       jornadas.push(item);
     }
+    var picked = document.querySelector('input[name="jornadaEstadoOt"]:checked');
+    var accion = picked ? picked.value : 'en_proceso';
+    var hiddenEst = document.getElementById('jornadaEstadoOtHidden');
+    if (hiddenEst) hiddenEst.value = accion;
+    actualizarBadgeEstado(accion);
     syncHidden();
     renderLista();
     if (modal) modal.hide();
@@ -618,6 +724,28 @@
   renderLista();
   toggleManual();
   {% endif %}
+
+  var inputFechaProg = document.getElementById('inputFechaProgramada');
+  var selectEstadoManual = document.getElementById('selectEstadoManual');
+  function refrescarEstadoPorFecha() {
+    if (!inputFechaProg || !inputFechaProg.value) return;
+    if (selectEstadoManual && selectEstadoManual.value) return;
+    {% if order %}
+    if (typeof jornadas !== 'undefined' && jornadas.length) return;
+    {% endif %}
+    actualizarBadgeEstado(estadoPorFecha(inputFechaProg.value));
+  }
+  if (inputFechaProg) {
+    inputFechaProg.addEventListener('change', refrescarEstadoPorFecha);
+    var formOt = document.getElementById('ordenForm');
+    if (formOt && formOt.dataset.esNueva === '1') refrescarEstadoPorFecha();
+  }
+  if (selectEstadoManual) {
+    selectEstadoManual.addEventListener('change', function () {
+      if (selectEstadoManual.value === 'cerrada') actualizarBadgeEstado('cerrada');
+      else refrescarEstadoPorFecha();
+    });
+  }
 
   var selectEquipo = document.getElementById('selectEquipo');
   var inputArea = document.getElementById('inputArea');
@@ -651,6 +779,7 @@
 
   var selectTipo = document.getElementById('selectTipo');
   var seccionPrev = document.getElementById('seccionPreventivo');
+  var seccionParo = document.getElementById('seccionParoMaquina');
   var labelTitulo = document.getElementById('labelTituloActividad');
   var hintPrev = document.getElementById('hintActividadPreventiva');
   var inputTitulo = document.getElementById('inputTituloActividad');
@@ -661,10 +790,12 @@
 
   function actualizarSeccionPreventivo() {
     var esPrev = selectTipo && selectTipo.value === 'preventivo';
+    var esCorrectivo = selectTipo && selectTipo.value === 'correctivo';
     var formOrden = document.getElementById('ordenForm');
     var esNueva = formOrden && formOrden.getAttribute('data-es-nueva') === '1';
     var usarActividad = esPrev || esNueva;
     if (seccionPrev) seccionPrev.classList.toggle('d-none', !esPrev);
+    if (seccionParo) seccionParo.classList.toggle('d-none', !esCorrectivo);
     if (labelTitulo) labelTitulo.textContent = usarActividad ? 'Actividad' : 'Título';
     if (hintPrev) hintPrev.classList.toggle('d-none', !esPrev);
     if (inputTitulo) {
