@@ -96,6 +96,7 @@
 </form>
 
 <form method="post" id="formPlaneacion">
+  {% include "_csrf.html" %}
   <input type="hidden" name="mes" value="{{ mes }}">
   <input type="hidden" name="anio" value="{{ anio }}">
 

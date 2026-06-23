@@ -1,0 +1,118 @@
+{% extends "platform/base.html" %}
+{% block title %}Facturación — Mantis Platform{% endblock %}
+
+{% block content %}
+<div class="platform-page-header">
+  <h1>Facturación</h1>
+  <p>Todas las facturas de tenants — registro manual de pagos (Etapa 1).</p>
+</div>
+
+<div class="platform-kpi-grid">
+  <div class="platform-kpi">
+    <div class="platform-kpi-label">Pendientes</div>
+    <div class="platform-kpi-value">{{ kpis.pendientes }}</div>
+    <div class="platform-kpi-sub">Por cobrar: {{ formato_moneda(kpis.por_cobrar) }}</div>
+  </div>
+  <div class="platform-kpi">
+    <div class="platform-kpi-label">Vencidas</div>
+    <div class="platform-kpi-value">{{ kpis.vencidas }}</div>
+    <div class="platform-kpi-sub">Requieren seguimiento</div>
+  </div>
+  <div class="platform-kpi">
+    <div class="platform-kpi-label">Pagadas este mes</div>
+    <div class="platform-kpi-value">{{ kpis.pagadas_mes }}</div>
+    <div class="platform-kpi-sub">Cobrado: {{ formato_moneda(kpis.cobrado_mes) }}</div>
+  </div>
+  <div class="platform-kpi">
+    <div class="platform-kpi-label">Modo</div>
+    <div class="platform-kpi-value" style="font-size:1.25rem;">Manual</div>
+    <div class="platform-kpi-sub">Sin pasarela (Etapa 1)</div>
+  </div>
+</div>
+
+<form class="platform-filters" method="get" action="{{ url_for('platform.facturacion') }}">
+  <div class="platform-search-wrap">
+    <i class="bi bi-search"></i>
+    <input type="search" name="q" class="platform-search" placeholder="Empresa o N° factura…"
+           value="{{ filtros.q }}">
+  </div>
+  <select name="estado" class="platform-select" onchange="this.form.submit()">
+    {% for val, lbl in estados_factura %}
+    <option value="{{ val }}" {% if filtros.estado == val %}selected{% endif %}>{{ lbl }}</option>
+    {% endfor %}
+  </select>
+  <button type="submit" class="platform-btn platform-btn-outline">Buscar</button>
+  {% if filtros.q or filtros.estado %}
+  <a href="{{ url_for('platform.facturacion') }}" class="platform-btn platform-btn-outline">Limpiar</a>
+  {% endif %}
+</form>
+
+<div class="platform-card">
+  <div class="table-responsive">
+    <table class="platform-table">
+      <thead>
+        <tr>
+          <th>Factura</th>
+          <th>Empresa</th>
+          <th>Periodo</th>
+          <th>Monto</th>
+          <th>Estado</th>
+          <th>Emisión</th>
+          <th>Vence</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for f in facturas %}
+        {% set emp = f.empresa %}
+        <tr>
+          <td><span class="text-white fw-semibold small">{{ f.numero }}</span></td>
+          <td>
+            {% if emp %}
+            <a href="{{ url_for('platform.empresa_detail', id=emp.id) }}" class="platform-link small">
+              {{ emp.razon_social }}
+            </a>
+            {% else %}—{% endif %}
+          </td>
+          <td class="small text-secondary">{{ f.periodo or '—' }}</td>
+          <td class="text-nowrap">{{ formato_moneda(f.monto, f.moneda) }}</td>
+          <td>
+            <span class="platform-factura-estado platform-factura-estado--{{ f.estado }}">
+              {{ factura_estado_label(f.estado) }}
+            </span>
+          </td>
+          <td class="small text-secondary text-nowrap">
+            {% if f.fecha_emision %}{{ f.fecha_emision.strftime('%d/%m/%Y') }}{% else %}—{% endif %}
+          </td>
+          <td class="small text-secondary text-nowrap">
+            {% if f.fecha_vencimiento %}{{ f.fecha_vencimiento.strftime('%d/%m/%Y') }}{% else %}—{% endif %}
+          </td>
+          <td class="text-end">
+            {% if f.estado in ('pendiente', 'vencida') %}
+            <form method="post" action="{{ url_for('platform.facturacion_pagar', factura_id=f.id) }}"
+                  class="d-inline-flex gap-1 flex-wrap justify-content-end align-items-center">
+              {% include "_csrf.html" %}
+              <input type="text" name="referencia" class="platform-select platform-select--sm"
+                     placeholder="Ref. pago" required>
+              <button type="submit" class="platform-btn platform-btn-outline platform-btn--sm">Marcar pagada</button>
+            </form>
+            {% elif f.fecha_pago %}
+            <span class="small text-secondary">Pagada {{ f.fecha_pago.strftime('%d/%m/%Y') }}</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="8" class="text-center text-secondary py-4 small">
+            No hay facturas{% if filtros.q or filtros.estado %} con estos filtros{% endif %}.
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div class="platform-table-footer">
+    <span>Mostrando {{ facturas|length }} factura(s)</span>
+  </div>
+</div>
+{% endblock %}

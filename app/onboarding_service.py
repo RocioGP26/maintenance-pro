@@ -46,35 +46,7 @@ from app.sector_templates import normalizar_sector
 
 
 
-def _crear_plan(empresa: Empresa, plan_key: str) -> PlanSuscripcion:
-
-    meta = PLAN_CATALOG.get(plan_key, PLAN_CATALOG[PlanTipo.TRIAL.value])
-
-    inicio = date.today()
-
-    fin = None
-
-    if meta.get("dias"):
-
-        fin = inicio + timedelta(days=int(meta["dias"]))
-
-    ps = PlanSuscripcion(
-
-        empresa_id=empresa.id,
-
-        plan=plan_key,
-
-        fecha_inicio=inicio,
-
-        fecha_fin=fin,
-
-        activo=True,
-
-    )
-
-    db.session.add(ps)
-
-    return ps
+from app.subscription_service import crear_suscripcion_trial
 
 
 
@@ -136,7 +108,7 @@ def completar_onboarding(
 
 
 
-    _crear_plan(empresa, plan_key)
+    crear_suscripcion_trial(empresa, plan_key)
 
 
 

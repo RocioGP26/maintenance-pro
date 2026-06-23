@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ app_name }} — CMMS que se adapta a tu industria</title>
+  <meta name="description" content="Gestiona activos, órdenes de trabajo, proveedores e inventario desde un solo lugar. Prueba gratis {{ trial_dias }} días.">
+  {% from "_cdn_assets.html" import google_fonts_inter_extra_bold, bootstrap_icons_css %}
+  {{ google_fonts_inter_extra_bold() }}
+  {{ bootstrap_icons_css() }}
+  <link href="{{ url_for('static', filename='css/landing.css') }}" rel="stylesheet">
+</head>
+<body class="landing-body">
+  <header class="landing-nav-wrap">
+    <nav class="landing-nav container-xl">
+      <a href="{{ url_for('main.index') }}" class="landing-brand">
+        <span class="landing-brand-logo-panel">
+          <img src="{{ url_for('static', filename=app_logo_path) }}" alt="{{ app_name }} CMMS" class="landing-brand-logo">
+        </span>
+      </a>
+      <div class="landing-nav-links d-none d-md-flex">
+        <a href="#caracteristicas">Características</a>
+        <a href="#sectores">Sectores</a>
+        <a href="#precios">Precios</a>
+        <a href="#contacto">Contacto</a>
+      </div>
+      <div class="landing-nav-actions">
+        {% if current_user.is_authenticated %}
+        <a href="{{ url_for('main.dashboard') }}" class="landing-btn landing-btn-primary">
+          <i class="bi bi-grid"></i> Ir al panel
+        </a>
+        {% else %}
+        <a href="{{ url_for('main.login') }}" class="landing-btn landing-btn-ghost">Iniciar sesión</a>
+        <button type="button" class="landing-btn landing-btn-outline"
+                data-send-prompt="Quiero probar Mantis gratis"
+                data-prompt-url="{{ url_for('onboarding.wizard') }}">
+          Probar gratis
+        </button>
+        {% endif %}
+      </div>
+    </nav>
+  </header>
+
+  <main>
+    <section class="landing-hero">
+      <div class="container-xl landing-hero-grid">
+        <div class="landing-hero-copy">
+          <span class="landing-pill">
+            <i class="bi bi-stars"></i> {{ trial_dias }} días gratis · sin tarjeta
+          </span>
+          <h1>El CMMS que se adapta a <span class="landing-accent">tu industria</span>, no al revés</h1>
+          <p class="landing-lead">
+            Gestiona activos, órdenes de trabajo, proveedores e inventario desde un solo lugar.
+            Campos personalizados para cualquier sector: logística, manufactura, alimentos o industrial.
+          </p>
+          <div class="landing-hero-ctas">
+            <button type="button" class="landing-btn landing-btn-primary"
+                    data-send-prompt="Quiero empezar gratis con Mantis"
+                    data-prompt-url="{{ url_for('onboarding.wizard') }}">
+              <i class="bi bi-rocket-takeoff"></i> Empieza gratis
+            </button>
+            <button type="button" class="landing-btn landing-btn-outline"
+                    data-send-prompt="Quiero ver una demo de Mantis"
+                    data-prompt-action="contact">
+              Ver demo
+            </button>
+          </div>
+          <p class="landing-hero-note">Sin tarjeta de crédito · cancela cuando quieras</p>
+        </div>
+
+        <div class="landing-mockup" aria-hidden="true">
+          <div class="landing-mockup-window">
+            <div class="landing-mockup-bar">
+              <span></span><span></span><span></span>
+              <span class="landing-mockup-title">{{ mockup.empresa }}</span>
+            </div>
+            <div class="landing-mockup-body">
+              <div class="landing-mockup-kpis">
+                {% for kpi in mockup.kpis %}
+                <div class="landing-mockup-kpi">
+                  <div class="landing-mockup-kpi-label">{{ kpi.label }}</div>
+                  <div class="landing-mockup-kpi-value landing-mockup-kpi-value--{{ kpi.tone }}">{{ kpi.valor }}</div>
+                </div>
+                {% endfor %}
+              </div>
+              <ul class="landing-mockup-list">
+                {% for a in mockup.activos %}
+                <li class="landing-mockup-item landing-mockup-item--{{ a.tone }}">
+                  <div>
+                    <div class="landing-mockup-item-name">{{ a.nombre }}</div>
+                    <div class="landing-mockup-item-sub">{{ a.codigo }} · Sede principal</div>
+                  </div>
+                  <span class="landing-mockup-tag landing-mockup-tag--{{ a.tone }}">{{ a.estado }}</span>
+                </li>
+                {% endfor %}
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="landing-stats">
+      <div class="container-xl landing-stats-grid">
+        {% for item in estadisticas.filas %}
+        <div class="landing-stat">
+          <div class="landing-stat-value">{{ item.valor }}</div>
+          <div class="landing-stat-label">{{ item.etiqueta }}</div>
+        </div>
+        {% endfor %}
+      </div>
+    </section>
+
+    <section id="caracteristicas" class="landing-section">
+      <div class="container-xl">
+        <p class="landing-eyebrow">Características</p>
+        <h2 class="landing-section-title">Todo lo que necesitas, en un solo lugar</h2>
+        <p class="landing-section-sub">
+          Diseñado para equipos de mantenimiento que necesitan visibilidad total sin complicarse con configuraciones técnicas.
+        </p>
+        <div class="landing-features-grid">
+          {% for f in features %}
+          <article class="landing-feature-card">
+            <div class="landing-feature-icon"><i class="bi {{ f.icon }}"></i></div>
+            <h3>{{ f.title }}</h3>
+            <p>{{ f.text }}</p>
+          </article>
+          {% endfor %}
+        </div>
+      </div>
+    </section>
+
+    <section id="sectores" class="landing-section landing-section--soft">
+      <div class="container-xl text-center">
+        <p class="landing-eyebrow">Sectores</p>
+        <h2 class="landing-section-title">Funciona en cualquier industria</h2>
+        <div class="landing-sectors">
+          {% for s in sectores %}
+          <span class="landing-sector-pill"><i class="bi {{ s.icon }}"></i> {{ s.etiqueta }}</span>
+          {% endfor %}
+        </div>
+      </div>
+    </section>
+
+    <section id="precios" class="landing-section">
+      <div class="container-xl">
+        <p class="landing-eyebrow">Precios</p>
+        <h2 class="landing-section-title">Un plan para cada etapa</h2>
+        <p class="landing-section-sub text-center mx-auto">
+          Empieza gratis {{ trial_dias }} días. Cambia de plan cuando lo necesites, sin contratos forzosos.
+        </p>
+        <div class="landing-pricing-grid">
+          {% for plan in planes %}
+          <article class="landing-price-card {% if plan.destacado %}landing-price-card--featured{% endif %}">
+            {% if plan.destacado %}
+            <span class="landing-price-badge">Más popular</span>
+            {% endif %}
+            <h3>{{ plan.short_label }}</h3>
+            <div class="landing-price-amount">
+              {{ plan.precio_label }} <small>COP / mes</small>
+            </div>
+            <ul class="landing-price-features">
+              {% for line in plan.features %}
+              <li><i class="bi bi-check2"></i> {{ line }}</li>
+              {% endfor %}
+            </ul>
+            <button type="button"
+                    class="landing-btn {% if plan.destacado %}landing-btn-primary{% else %}landing-btn-outline{% endif %} w-100"
+                    data-send-prompt="{{ plan.cta_prompt }}"
+                    data-prompt-url="{{ url_for('onboarding.wizard') }}"
+                    data-prompt-action="{{ 'contact' if plan.key == 'enterprise' else 'start' }}">
+              {{ plan.cta }}
+            </button>
+          </article>
+          {% endfor %}
+        </div>
+      </div>
+    </section>
+
+    <section id="contacto" class="landing-cta-band">
+      <div class="container-xl text-center">
+        <h2>Empieza a controlar tu mantenimiento hoy</h2>
+        <p>{{ trial_dias }} días gratis · sin tarjeta de crédito · configura tu empresa en minutos</p>
+        <button type="button" class="landing-btn landing-btn-light"
+                data-send-prompt="Quiero crear mi cuenta gratis en Mantis"
+                data-prompt-url="{{ url_for('onboarding.wizard') }}">
+          <i class="bi bi-rocket-takeoff"></i> Crear mi cuenta gratis
+        </button>
+      </div>
+    </section>
+  </main>
+
+  <footer class="landing-footer">
+    <div class="container-xl landing-footer-inner">
+      <span>© {{ now_year }} {{ app_name }} · CMMS Industrial</span>
+      <span>Bogotá, Colombia</span>
+    </div>
+  </footer>
+
+  <script src="{{ url_for('static', filename='js/landing.js') }}"></script>
+</body>
+</html>

@@ -60,6 +60,7 @@
               </a>
               <form method="post" action="{{ url_for('main.configuracion_campos_delete', id=c.id) }}" class="d-inline m-0"
                     onsubmit="return confirm('¿Eliminar o desactivar este campo?');">
+                {% include "_csrf.html" %}
                 <button type="submit" class="btn btn-outline-danger btn-sm py-0 px-2" title="Eliminar">
                   <i class="bi bi-trash"></i>
                 </button>

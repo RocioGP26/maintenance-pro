@@ -1,0 +1,183 @@
+{% extends "base.html" %}
+{% block title %}{{ inc.numero or 'Incidencia' }} — {{ app_name }}{% endblock %}
+{% block page_title %}{{ inc.numero or ('Incidencia #' ~ inc.id) }}{% endblock %}
+
+{% block content %}
+{% set pm = inc.prioridad_meta %}
+<div class="row g-3">
+  <div class="col-lg-8">
+    <div class="card card-dashboard mb-3">
+      <div class="card-body">
+        <div class="d-flex flex-wrap align-items-start justify-content-between gap-2 mb-3">
+          <div>
+            <h5 class="fw-semibold mb-1">{{ inc.titulo }}</h5>
+            <div class="d-flex flex-wrap gap-2 align-items-center">
+              <span class="badge {{ pm.badge_class }}">{{ pm.label }}</span>
+              <span class="badge {% if inc.resuelto %}badge-inc-estado badge-inc-resuelta{% else %}badge-inc-estado badge-inc-pendiente{% endif %}">
+                {{ inc.estado_label }}
+              </span>
+              {% if inc.equipo_detenido %}
+              <span class="badge bg-danger-subtle text-danger border border-danger-subtle">Equipo detenido</span>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+
+        <div class="row g-3 small mb-3">
+          <div class="col-md-6">
+            <div class="text-muted text-uppercase fw-semibold mb-1" style="font-size:0.65rem;letter-spacing:.06em;">Reportante</div>
+            <div class="fw-medium">{{ inc.reportado_por or '—' }}</div>
+            {% if inc.cargo_reportante %}<div class="text-muted">{{ inc.cargo_reportante }}</div>{% endif %}
+            {% if inc.telefono_contacto %}<div class="text-muted"><i class="bi bi-telephone me-1"></i>{{ inc.telefono_contacto }}</div>{% endif %}
+          </div>
+          <div class="col-md-6">
+            <div class="text-muted text-uppercase fw-semibold mb-1" style="font-size:0.65rem;letter-spacing:.06em;">Ubicación</div>
+            <div><strong>Área:</strong> {{ inc.area or '—' }}</div>
+            <div><strong>Lugar:</strong> {{ inc.ubicacion or '—' }}</div>
+          </div>
+          <div class="col-md-6">
+            <div class="text-muted text-uppercase fw-semibold mb-1" style="font-size:0.65rem;letter-spacing:.06em;">Equipo</div>
+            <div>
+              {% if inc.machine %}
+              {{ inc.machine.codigo }} — {{ inc.machine.nombre }}
+              {% else %}
+              <span class="text-muted">No especificado</span>
+              {% endif %}
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="text-muted text-uppercase fw-semibold mb-1" style="font-size:0.65rem;letter-spacing:.06em;">Evento</div>
+            <div><strong>Tipo:</strong> {{ inc.tipo_label }}</div>
+            <div>
+              <strong>Cuándo:</strong>
+              {% if inc.fecha_evento %}
+              {{ inc.fecha_evento.strftime('%d/%m/%Y') }}{% if inc.hora_evento %} {{ inc.hora_evento }}{% endif %}
+              {% else %}
+              —
+              {% endif %}
+            </div>
+          </div>
+        </div>
+
+        <div class="mb-0">
+          <div class="text-muted text-uppercase fw-semibold mb-1" style="font-size:0.65rem;letter-spacing:.06em;">Descripción</div>
+          <p class="mb-0" style="white-space:pre-wrap;">{{ inc.descripcion or '—' }}</p>
+        </div>
+      </div>
+    </div>
+
+    {% if inc.resuelto %}
+    <div class="card card-dashboard mb-3 border-success border-opacity-25">
+      <div class="card-body">
+        <h6 class="fw-semibold text-success mb-2"><i class="bi bi-check-circle me-1"></i> Resolución</h6>
+        <div class="small mb-2">
+          Cerrada el {{ inc.resuelto_en.strftime('%d/%m/%Y %H:%M') if inc.resuelto_en else '—' }}
+          {% if inc.resuelto_por %} por {{ inc.resuelto_por.etiqueta() }}{% endif %}
+        </div>
+        {% if inc.notas_resolucion %}
+        <p class="mb-0 small" style="white-space:pre-wrap;">{{ inc.notas_resolucion }}</p>
+        {% endif %}
+      </div>
+    </div>
+    {% elif puede_gestionar %}
+    <div class="card card-dashboard mb-3">
+      <div class="card-body">
+        <h6 class="fw-semibold mb-2">Marcar como resuelta</h6>
+        <form method="post" action="{{ url_for('main.incidencias_resolver', id=inc.id) }}">
+          {% include "_csrf.html" %}
+          <div class="mb-3">
+            <label class="form-label" for="notasResolucion">Notas de cierre (opcional)</label>
+            <textarea name="notas_resolucion" id="notasResolucion" class="form-control" rows="3"
+                      placeholder="Acción tomada, OT vinculada, observaciones…"></textarea>
+          </div>
+          <button type="submit" class="btn btn-success">
+            <i class="bi bi-check-lg"></i> Resolver incidencia
+          </button>
+        </form>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+
+  <div class="col-lg-4">
+    <div class="inc-detail-sidebar sticky-top" style="top: 1rem;">
+    <div class="card card-dashboard mb-3">
+      <div class="card-body py-3 small">
+        <div class="mb-3">
+          <div class="text-muted text-uppercase fw-semibold mb-1" style="font-size:0.65rem;letter-spacing:.06em;">Nº de reporte</div>
+          <div class="fw-semibold text-primary fs-5">{{ inc.numero or ('#' ~ inc.id) }}</div>
+        </div>
+        <div class="mb-3">
+          <div class="text-muted text-uppercase fw-semibold mb-1" style="font-size:0.65rem;letter-spacing:.06em;">Reportado</div>
+          <div>{{ inc.reportado_en.strftime('%d/%m/%Y %H:%M') if inc.reportado_en else '—' }}</div>
+          {% if inc.usuario %}
+          <div class="text-muted">Usuario: {{ inc.usuario.etiqueta() }}</div>
+          {% endif %}
+        </div>
+        {% if inc.work_order %}
+        <div class="mb-3">
+          <div class="text-muted text-uppercase fw-semibold mb-1" style="font-size:0.65rem;letter-spacing:.06em;">OT vinculada</div>
+          <a href="{{ url_for('main.ordenes_edit', id=inc.work_order.id) }}">{{ inc.work_order.numero }}</a>
+          <span class="badge {{ wo_status_meta(inc.work_order.status).badge_class }} ms-1">{{ wo_status_meta(inc.work_order.status).label }}</span>
+        </div>
+        {% endif %}
+        <div>
+          <div class="text-muted text-uppercase fw-semibold mb-1" style="font-size:0.65rem;letter-spacing:.06em;">Flujo</div>
+          <ol class="ps-3 mb-0">
+            <li class="mb-1{% if inc.reportado_en %} text-success{% endif %}">Reporte enviado</li>
+            <li class="mb-1{% if inc.work_order_id %} text-success{% endif %}">OT creada (si aplica)</li>
+            <li class="{% if inc.resuelto %} text-success{% endif %}">Incidencia resuelta</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+
+    {% if not inc.resuelto and not puede_gestionar %}
+    <div class="alert alert-info small">
+      Tu reporte está en revisión por mantenimiento. Recibirás seguimiento cuando se cree una OT o se cierre el caso.
+    </div>
+    {% endif %}
+
+    <div class="d-none d-lg-flex flex-column gap-2 mt-2">
+      <a href="{{ url_for('main.incidencias_list') }}" class="btn btn-outline-secondary w-100">
+        <i class="bi bi-arrow-left"></i> Volver al listado
+      </a>
+      {% if puede_crear_ot and not inc.resuelto and not inc.work_order_id %}
+      <form method="post" action="{{ url_for('main.incidencias_crear_ot', id=inc.id) }}">
+        {% include "_csrf.html" %}
+        <button type="submit" class="btn btn-primary w-100" {% if not inc.machine_id %}disabled title="Sin equipo relacionado"{% endif %}>
+          <i class="bi bi-wrench"></i> Crear OT
+        </button>
+      </form>
+      {% endif %}
+      {% if inc.work_order %}
+      <a href="{{ url_for('main.ordenes_edit', id=inc.work_order.id) }}" class="btn btn-outline-primary w-100">
+        <i class="bi bi-box-arrow-up-right"></i> Ver OT {{ inc.work_order.numero }}
+      </a>
+      {% endif %}
+    </div>
+    </div>
+  </div>
+
+  <div class="col-12 d-lg-none">
+    <div class="d-flex flex-wrap gap-2 mt-1">
+      <a href="{{ url_for('main.incidencias_list') }}" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left"></i> Volver al listado
+      </a>
+      {% if puede_crear_ot and not inc.resuelto and not inc.work_order_id %}
+      <form method="post" action="{{ url_for('main.incidencias_crear_ot', id=inc.id) }}" class="d-inline">
+        {% include "_csrf.html" %}
+        <button type="submit" class="btn btn-primary" {% if not inc.machine_id %}disabled title="Sin equipo relacionado"{% endif %}>
+          <i class="bi bi-wrench"></i> Crear OT
+        </button>
+      </form>
+      {% endif %}
+      {% if inc.work_order %}
+      <a href="{{ url_for('main.ordenes_edit', id=inc.work_order.id) }}" class="btn btn-outline-primary">
+        <i class="bi bi-box-arrow-up-right"></i> Ver OT {{ inc.work_order.numero }}
+      </a>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -2,35 +2,238 @@
 {% block title %}Reportar incidencia — {{ app_name }}{% endblock %}
 {% block page_title %}Reportar incidencia{% endblock %}
 
+{% block head_extra %}
+<style>
+  .inc-prioridad-grid { display: grid; gap: 0.55rem; grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  @media (max-width: 767.98px) { .inc-prioridad-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  .inc-prioridad-card { cursor: pointer; margin: 0; }
+  .inc-prioridad-radio { clip: rect(0,0,0,0); position: absolute; }
+  .inc-prioridad-inner {
+    border: 1px solid var(--dash-card-border); border-radius: 0.65rem; padding: 0.65rem 0.4rem;
+    text-align: center; transition: border-color .15s, box-shadow .15s; background: #fff;
+  }
+  .inc-prioridad-radio:checked + .inc-prioridad-inner--baja { border-color: #6b7280; box-shadow: 0 0 0 1px #6b7280; }
+  .inc-prioridad-radio:checked + .inc-prioridad-inner--media { border-color: #b45309; box-shadow: 0 0 0 1px #b45309; }
+  .inc-prioridad-radio:checked + .inc-prioridad-inner--alta { border-color: #ea580c; box-shadow: 0 0 0 1px #ea580c; }
+  .inc-prioridad-radio:checked + .inc-prioridad-inner--critica { border-color: #dc2626; box-shadow: 0 0 0 1px #dc2626; }
+  .inc-reporter-card {
+    background: var(--dash-list-hover); border: 1px solid var(--dash-card-border);
+    border-radius: 0.65rem; padding: 0.85rem 1rem;
+  }
+  .inc-evidencia-drop {
+    border: 2px dashed var(--dash-card-border); border-radius: 0.65rem; color: var(--dash-text-muted);
+    min-height: 7rem; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 0.35rem; text-align: center; padding: 1rem;
+  }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="row justify-content-center">
-  <div class="col-lg-7">
-    <div class="card card-dashboard border-danger border-opacity-25">
-      <div class="card-body">
-        <p class="text-muted">Registra una incidencia o falla para que el equipo de mantenimiento pueda dar seguimiento.</p>
-        <form method="post">
-          <div class="mb-3">
-            <label class="form-label">Título breve</label>
-            <input type="text" name="titulo" class="form-control" required placeholder="Ej. Vibración anómala en compresor">
+{% set f = form %}
+{% set nombre_usuario = current_user.etiqueta() %}
+{% set partes_nombre = nombre_usuario.split() %}
+{% set iniciales = (partes_nombre[0][:1] ~ partes_nombre[1][:1])|upper if partes_nombre|length >= 2 else nombre_usuario[:2]|upper %}
+
+<div class="row g-3">
+  <div class="col-lg-8">
+    <form method="post" id="formIncidencia">
+      {% include "_csrf.html" %}
+      <div class="card card-dashboard mb-3">
+        <div class="card-body">
+          {% with titulo='Quién reporta', icono='bi-person-badge' %}{% include 'ordenes/_seccion_encabezado.html' %}{% endwith %}
+          <div class="inc-reporter-card mb-3">
+            <div class="d-flex align-items-center gap-3 flex-wrap">
+              <span class="header-user-avatar flex-shrink-0">{{ iniciales }}</span>
+              <div class="flex-grow-1 min-w-0">
+                <div class="fw-semibold">{{ nombre_usuario }}</div>
+                {% if empresa_actual %}
+                <div class="small text-muted">{{ empresa_actual.razon_social }}</div>
+                {% endif %}
+              </div>
+              <span class="badge bg-success-subtle text-success border border-success-subtle">Sesión activa</span>
+            </div>
           </div>
-          <div class="mb-3">
-            <label class="form-label">Equipo relacionado (opcional)</label>
-            <select name="machine_id" class="form-select">
-              <option value="">— No especificado —</option>
-              {% for m in machines %}
-                <option value="{{ m.id }}">{{ m.codigo }} — {{ m.nombre }}</option>
-              {% endfor %}
-            </select>
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label" for="reportadoPor">Nombre de quien reporta *</label>
+              <input type="text" name="reportado_por" id="reportadoPor" class="form-control" required
+                     value="{{ f.reportado_por }}">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label" for="cargoReportante">Cargo / rol</label>
+              <input type="text" name="cargo_reportante" id="cargoReportante" class="form-control"
+                     placeholder="Ej: Operario de planta"
+                     value="{{ f.cargo_reportante }}">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label" for="telefonoContacto">Teléfono de contacto</label>
+              <input type="tel" name="telefono_contacto" id="telefonoContacto" class="form-control"
+                     placeholder="Ej: 300 123 4567"
+                     value="{{ f.telefono_contacto }}">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label" for="areaIncidencia">Área / Departamento *</label>
+              <select name="area" id="areaIncidencia" class="form-select" required>
+                <option value="">Seleccionar área…</option>
+                {% for a in areas %}
+                <option value="{{ a }}" {% if f.area == a %}selected{% endif %}>{{ a }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="col-12">
+              <label class="form-label" for="ubicacionIncidencia">Ubicación específica</label>
+              <input type="text" name="ubicacion" id="ubicacionIncidencia" class="form-control"
+                     placeholder="Ej: Planta A, piso 2, zona 3"
+                     value="{{ f.ubicacion }}">
+            </div>
           </div>
-          <div class="mb-3">
-            <label class="form-label">Descripción</label>
-            <textarea name="descripcion" class="form-control" rows="4" placeholder="Detalle del problema, hora aproximada, síntomas…"></textarea>
+        </div>
+      </div>
+
+      <div class="card card-dashboard mb-3">
+        <div class="card-body">
+          {% with titulo='Detalle de la incidencia', icono='bi-exclamation-triangle' %}{% include 'ordenes/_seccion_encabezado.html' %}{% endwith %}
+          <div class="row g-3">
+            <div class="col-12">
+              <label class="form-label" for="tituloIncidencia">Título breve *</label>
+              <input type="text" name="titulo" id="tituloIncidencia" class="form-control" required
+                     placeholder="Ej: Vibración anómala en compresor"
+                     value="{{ f.titulo }}">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label" for="equipoIncidencia">Equipo relacionado</label>
+              <select name="machine_id" id="equipoIncidencia" class="form-select">
+                <option value="">— No especificado —</option>
+                {% for m in machines %}
+                <option value="{{ m.id }}" {% if f.machine_id|string == m.id|string %}selected{% endif %}>
+                  {{ m.codigo }} — {{ m.nombre }}
+                </option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label" for="tipoIncidencia">Tipo de incidencia *</label>
+              <select name="tipo" id="tipoIncidencia" class="form-select" required>
+                <option value="">Seleccionar…</option>
+                {% for val, lbl in tipos_incidencia %}
+                <option value="{{ val }}" {% if f.tipo == val %}selected{% endif %}>{{ lbl }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="col-12">
+              <label class="form-label" for="descripcionIncidencia">Descripción detallada *</label>
+              <textarea name="descripcion" id="descripcionIncidencia" class="form-control" rows="4" required
+                        placeholder="Hora aproximada, síntomas observados, ¿el equipo está detenido?">{{ f.descripcion }}</textarea>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label" for="fechaEvento">Fecha aproximada del evento</label>
+              <input type="date" name="fecha_evento" id="fechaEvento" class="form-control"
+                     value="{{ f.fecha_evento }}">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label" for="horaEvento">Hora aproximada</label>
+              <input type="time" name="hora_evento" id="horaEvento" class="form-control"
+                     value="{{ f.hora_evento }}">
+            </div>
           </div>
-          <div class="d-flex gap-2">
-            <button type="submit" class="btn btn-danger"><i class="bi bi-send"></i> Enviar reporte</button>
-            <a href="{{ url_for('main.dashboard') }}" class="btn btn-outline-secondary">Volver al dashboard</a>
+        </div>
+      </div>
+
+      <div class="card card-dashboard mb-3">
+        <div class="card-body">
+          {% with titulo='Prioridad / Urgencia', icono='bi-speedometer2' %}{% include 'ordenes/_seccion_encabezado.html' %}{% endwith %}
+          <label class="form-label d-block mb-2">Nivel de urgencia *</label>
+          <div class="inc-prioridad-grid mb-3">
+            {% for val, lbl in prioridades_incidencia %}
+            <label class="inc-prioridad-card">
+              <input type="radio" name="prioridad" value="{{ val }}" class="inc-prioridad-radio"
+                     {% if f.prioridad == val %}checked{% endif %}>
+              <span class="inc-prioridad-inner inc-prioridad-inner--{{ val }}">{{ lbl }}</span>
+            </label>
+            {% endfor %}
           </div>
-        </form>
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" name="equipo_detenido" value="1" id="equipoDetenido"
+                   {% if f.equipo_detenido %}checked{% endif %}>
+            <label class="form-check-label" for="equipoDetenido">
+              El equipo está detenido o fuera de servicio actualmente
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <div class="card card-dashboard mb-3">
+        <div class="card-body">
+          {% with titulo='Evidencia fotográfica (opcional)', icono='bi-camera' %}{% include 'ordenes/_seccion_encabezado.html' %}{% endwith %}
+          <div class="inc-evidencia-drop">
+            <i class="bi bi-cloud-arrow-up fs-3"></i>
+            <span class="small">Agregar foto o video</span>
+            <span class="small text-muted">Próximamente — adjuntar evidencia al reporte</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="d-flex gap-2 d-lg-none">
+        <button type="submit" class="btn btn-danger"><i class="bi bi-send"></i> Enviar reporte</button>
+        <a href="{{ url_for('main.dashboard') }}" class="btn btn-outline-secondary">Volver al dashboard</a>
+      </div>
+    </form>
+  </div>
+
+  <div class="col-lg-4">
+    <div class="inc-sidebar sticky-top" style="top: 1rem;">
+      <div class="alert alert-info small py-3 mb-3">
+        <div class="fw-semibold mb-2"><i class="bi bi-lightbulb me-1"></i> ¿Qué incluir?</div>
+        <ul class="mb-0 ps-3">
+          <li>Hora y lugar del evento</li>
+          <li>Si el equipo está detenido</li>
+          <li>Síntomas observados</li>
+          <li>Fotos del daño o anomalía</li>
+        </ul>
+      </div>
+
+      <div class="card card-dashboard mb-3">
+        <div class="card-body py-3 small">
+          <div class="mb-2">
+            <div class="text-muted text-uppercase fw-semibold" style="font-size:0.65rem;letter-spacing:.06em;">Empresa</div>
+            <div class="fw-medium">
+              {% if empresa_actual %}
+              {{ empresa_actual.razon_social }}{% if empresa_actual.ciudad %}, {{ empresa_actual.ciudad }}{% endif %}{% if empresa_actual.pais %}, {{ empresa_actual.pais }}{% endif %}
+              {% else %}—{% endif %}
+            </div>
+          </div>
+          <div class="mb-2">
+            <div class="text-muted text-uppercase fw-semibold" style="font-size:0.65rem;letter-spacing:.06em;">Fecha y hora</div>
+            <div>{{ ahora.strftime('%d') }} de {{ ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'][ahora.month - 1] }} de {{ ahora.year }}, {{ ahora.strftime('%I:%M %p').lower().replace('am','a. m.').replace('pm','p. m.') }}</div>
+          </div>
+          <div>
+            <div class="text-muted text-uppercase fw-semibold" style="font-size:0.65rem;letter-spacing:.06em;">Nº de reporte</div>
+            <div class="fw-semibold text-primary">{{ preview_numero }}</div>
+            <div class="text-muted">Se asignará al enviar</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card card-dashboard mb-3">
+        <div class="card-body py-3">
+          <h6 class="fw-semibold mb-3">¿Qué pasa después?</h6>
+          <ol class="small mb-0 ps-3 inc-flujo-list">
+            <li class="mb-2">Reporte enviado al equipo de mantenimiento</li>
+            <li class="mb-2">Revisión y clasificación de la incidencia</li>
+            <li class="mb-2">Creación de OT correctiva si aplica</li>
+            <li>Notificación de cierre al reportante</li>
+          </ol>
+        </div>
+      </div>
+
+      <div class="d-none d-lg-flex flex-column gap-2">
+        <button type="submit" form="formIncidencia" class="btn btn-danger w-100">
+          <i class="bi bi-send"></i> Enviar reporte
+        </button>
+        <a href="{{ url_for('main.incidencias_list') }}" class="btn btn-outline-primary w-100">
+          <i class="bi bi-list-ul"></i> Ver incidencias
+        </a>
+        <a href="{{ url_for('main.dashboard') }}" class="btn btn-outline-secondary w-100">Volver al dashboard</a>
       </div>
     </div>
   </div>

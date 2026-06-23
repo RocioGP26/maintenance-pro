@@ -1,0 +1,261 @@
+{% extends "platform/base.html" %}
+{% block title %}Configuración — Mantis Platform{% endblock %}
+
+{% block content %}
+<div class="platform-page-header">
+  <h1>Configuración</h1>
+  <p>Planes, precios, límites y reglas globales de Mantis.</p>
+</div>
+
+<ul class="nav nav-tabs platform-tabs mb-4">
+  <li class="nav-item">
+    <a class="nav-link {% if tab == 'planes' %}active{% endif %}"
+       href="{{ url_for('platform.configuracion', tab='planes') }}">Planes y precios</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link {% if tab == 'reglas' %}active{% endif %}"
+       href="{{ url_for('platform.configuracion', tab='reglas') }}">Trial y reglas</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link {% if tab == 'sectores' %}active{% endif %}"
+       href="{{ url_for('platform.configuracion', tab='sectores') }}">Sectores</a>
+  </li>
+</ul>
+
+{% if tab == 'planes' %}
+<div class="platform-plan-grid">
+  {% for plan in planes %}
+  {% set meta = planes_meta[loop.index0] %}
+  <form method="post" action="{{ url_for('platform.configuracion_plan_guardar', plan_id=plan.id) }}"
+        class="platform-plan-card {% if plan.destacado %}platform-plan-card--featured{% endif %}">
+    {% include "_csrf.html" %}
+    {% if plan.destacado %}
+    <div class="platform-plan-badge-popular">MÁS POPULAR</div>
+    {% endif %}
+    <div class="platform-plan-card-head">
+      <h3 class="platform-plan-card-title">{{ plan.short_label }}</h3>
+      <label class="platform-toggle small">
+        <input type="checkbox" name="visible_registro" value="1" {% if plan.visible_registro %}checked{% endif %}>
+        <span>Plan activo y visible</span>
+      </label>
+    </div>
+
+    <div class="platform-plan-price-row">
+      <div class="platform-plan-price-field">
+        <label class="platform-field-label">Precio mensual (COP)</label>
+        <div class="platform-price-input-wrap">
+          <span class="platform-price-prefix">$</span>
+          <input type="number" name="precio_mensual" class="platform-price-input" min="0" step="1000"
+                 value="{{ plan.precio_mensual|int }}">
+          <span class="platform-price-suffix">/ mes</span>
+        </div>
+      </div>
+      <div class="platform-plan-price-field">
+        <label class="platform-field-label">Precio anual (COP)</label>
+        <input type="number" name="precio_anual" class="platform-select w-100" min="0" step="1000"
+               value="{{ plan.precio_anual|int if plan.precio_anual else '' }}" placeholder="Opcional">
+      </div>
+    </div>
+
+    <input type="hidden" name="label" value="{{ plan.label }}">
+    <input type="hidden" name="short_label" value="{{ plan.short_label }}">
+    <input type="hidden" name="descripcion" value="{{ plan.descripcion }}">
+
+    <div class="platform-plan-limits">
+      <div>
+        <label class="platform-field-label">Usuarios máx.</label>
+        <input type="number" name="max_usuarios" class="platform-select w-100" min="1"
+               value="{{ plan.max_usuarios or '' }}">
+      </div>
+      <div>
+        <label class="platform-field-label">Activos máx.</label>
+        <input type="number" name="max_activos" class="platform-select w-100" min="1"
+               value="{{ plan.max_activos or '' }}">
+      </div>
+      <div>
+        <label class="platform-field-label">Storage (MB)</label>
+        <input type="number" name="storage_mb" class="platform-select w-100" min="1"
+               value="{{ plan.storage_mb or '' }}">
+      </div>
+      <div>
+        <label class="platform-field-label">Soporte</label>
+        <select name="soporte" class="platform-select w-100">
+          {% for val in ['Email', 'Chat', 'Dedicado'] %}
+          <option value="{{ val }}" {% if plan.soporte == val %}selected{% endif %}>{{ val }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+
+    <div class="platform-plan-features">
+      <div class="platform-field-label mb-2">Características</div>
+      {% for feat in plan.caracteristicas() %}
+      <div class="platform-feat-row">
+        <input type="text" name="feat_text" class="platform-select flex-grow-1" value="{{ feat.text }}">
+        <label class="platform-feat-check">
+          <input type="checkbox" name="feat_included" value="{{ loop.index0 }}"
+                 {% if feat.included %}checked{% endif %}>
+          <i class="bi bi-check-lg"></i>
+        </label>
+      </div>
+      {% endfor %}
+      {% for i in range(2) %}
+      <div class="platform-feat-row">
+        <input type="text" name="feat_text" class="platform-select flex-grow-1" placeholder="Nueva característica…">
+        <label class="platform-feat-check">
+          <input type="checkbox" name="feat_included" value="{{ plan.caracteristicas()|length + i }}">
+          <i class="bi bi-check-lg"></i>
+        </label>
+      </div>
+      {% endfor %}
+    </div>
+
+    <label class="platform-toggle small mt-2">
+      <input type="checkbox" name="destacado" value="1" {% if plan.destacado %}checked{% endif %}>
+      <span>Destacar como «Más popular»</span>
+    </label>
+
+    <button type="submit" class="platform-btn platform-btn-outline w-100 mt-3">Guardar {{ plan.short_label }}</button>
+  </form>
+  {% endfor %}
+
+  <div class="platform-plan-card platform-plan-card--new">
+    <form method="post" action="{{ url_for('platform.configuracion_plan_nuevo') }}" class="h-100 d-flex flex-column">
+      {% include "_csrf.html" %}
+      <div class="platform-plan-card-new-inner flex-grow-1">
+        <i class="bi bi-plus-lg fs-3"></i>
+        <span>Crear nuevo plan</span>
+      </div>
+      <div class="p-3 border-top border-secondary">
+        <input type="text" name="clave" class="platform-select w-100 mb-2" placeholder="clave (ej. premium)" required>
+        <input type="text" name="label" class="platform-select w-100 mb-2" placeholder="Nombre del plan" required>
+        <input type="text" name="short_label" class="platform-select w-100 mb-2" placeholder="Etiqueta corta">
+        <button type="submit" class="platform-btn platform-btn-outline w-100">Crear</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+{% elif tab == 'reglas' %}
+<div class="row g-4">
+  <div class="col-lg-7">
+    <form method="post" action="{{ url_for('platform.configuracion_reglas_guardar') }}" class="platform-card p-4">
+      {% include "_csrf.html" %}
+      <h2 class="platform-section-title h6 mb-3">Periodo de prueba</h2>
+      <div class="mb-4">
+        <label class="platform-field-label" for="trial_dias">Días de trial sin tarjeta</label>
+        <input type="number" id="trial_dias" name="trial_dias" class="platform-select" min="1" max="90"
+               value="{{ reglas.trial_dias }}" required>
+        <p class="small text-secondary mt-1 mb-0">
+          Actualmente los nuevos tenants reciben {{ trial_dias }} días. Cambiar aquí afecta a registros futuros.
+        </p>
+      </div>
+
+      <h2 class="platform-section-title h6 mb-3">Facturación y mora</h2>
+      <div class="row g-3 mb-3">
+        <div class="col-md-6">
+          <label class="platform-field-label" for="dias_gracia_mora">Días de gracia para pagar</label>
+          <input type="number" id="dias_gracia_mora" name="dias_gracia_mora" class="platform-select w-100" min="0"
+                 value="{{ reglas.dias_gracia_mora }}" required>
+        </div>
+        <div class="col-md-6">
+          <label class="platform-field-label" for="dias_periodo_pago">Días por ciclo de facturación</label>
+          <input type="number" id="dias_periodo_pago" name="dias_periodo_pago" class="platform-select w-100" min="1"
+                 value="{{ reglas.dias_periodo_pago }}" required>
+        </div>
+        <div class="col-md-6">
+          <label class="platform-field-label" for="dias_alerta_mora">Días de alerta antes de suspender</label>
+          <input type="number" id="dias_alerta_mora" name="dias_alerta_mora" class="platform-select w-100" min="0"
+                 value="{{ reglas.dias_alerta_mora }}">
+        </div>
+        <div class="col-md-6">
+          <label class="platform-field-label" for="plan_tras_trial">Plan al terminar el trial</label>
+          <select id="plan_tras_trial" name="plan_tras_trial" class="platform-select w-100">
+            {% for p in planes %}
+            <option value="{{ p.clave }}" {% if reglas.plan_tras_trial == p.clave %}selected{% endif %}>
+              {{ p.short_label }}
+            </option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+
+      <button type="submit" class="platform-btn platform-btn-outline">Guardar reglas</button>
+    </form>
+  </div>
+  <div class="col-lg-5">
+    <div class="platform-etapa-info">
+      <strong class="text-white d-block mb-2">Sin deploy</strong>
+      Estas reglas las lee el cron de vencimientos y el onboarding al crear suscripciones.
+      Si bajas el trial de 14 a 7 días, el cambio aplica en el próximo registro.
+    </div>
+  </div>
+</div>
+
+{% elif tab == 'sectores' %}
+<div class="platform-card">
+  <div class="table-responsive">
+    <table class="platform-table">
+      <thead>
+        <tr>
+          <th>Clave</th>
+          <th>Etiqueta</th>
+          <th>Registro</th>
+          <th>Filtros</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for s in sectores %}
+        <tr>
+            <td class="small text-secondary font-monospace">{{ s.clave }}</td>
+            <td>
+              <input type="text" name="etiqueta" form="sector-form-{{ s.id }}" class="platform-select"
+                     value="{{ s.etiqueta }}" required>
+            </td>
+            <td>
+              <label class="platform-toggle small mb-0">
+                <input type="checkbox" name="visible_registro" form="sector-form-{{ s.id }}" value="1"
+                       {% if s.visible_registro %}checked{% endif %}>
+                <span>Visible</span>
+              </label>
+            </td>
+            <td>
+              <label class="platform-toggle small mb-0">
+                <input type="checkbox" name="activo" form="sector-form-{{ s.id }}" value="1"
+                       {% if s.activo %}checked{% endif %}>
+                <span>Activo</span>
+              </label>
+            </td>
+            <td class="text-end">
+              <form id="sector-form-{{ s.id }}" method="post"
+                    action="{{ url_for('platform.configuracion_sector_guardar', sector_id=s.id) }}"
+                    class="d-inline">
+                {% include "_csrf.html" %}
+                <button type="submit" class="platform-btn platform-btn-outline platform-btn--sm">Guardar</button>
+              </form>
+            </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<form method="post" action="{{ url_for('platform.configuracion_sector_nuevo') }}"
+      class="platform-card p-3 mt-3 d-flex flex-wrap gap-2 align-items-end">
+  <div>
+    <label class="platform-field-label">Clave</label>
+    <input type="text" name="clave" class="platform-select" placeholder="ej. energia" required>
+  </div>
+  <div class="flex-grow-1">
+    <label class="platform-field-label">Etiqueta</label>
+    <input type="text" name="etiqueta" class="platform-select w-100" placeholder="Ej. Energía" required>
+  </div>
+  <button type="submit" class="platform-btn platform-btn-outline">Agregar sector</button>
+</form>
+<p class="small text-secondary mt-2 mb-0">
+  Alimenta el dropdown del registro y el filtro de Empresas. Las empresas existentes conservan su sector aunque lo ocultes.
+</p>
+{% endif %}
+{% endblock %}

@@ -4,10 +4,16 @@ from __future__ import annotations
 
 from datetime import date
 
-from sqlalchemy import extract, or_
+from sqlalchemy import extract, exists, or_
 
 from app import db
-from app.models import Machine, WorkOrder, WorkOrderStatus, WORK_ORDER_TERMINAL_STATUSES
+from app.models import (
+    Machine,
+    WorkOrder,
+    WorkOrderJornada,
+    WorkOrderStatus,
+    WORK_ORDER_TERMINAL_STATUSES,
+)
 
 _ESTADOS_VENCEN = (
     WorkOrderStatus.ABIERTA.value,
@@ -26,6 +32,12 @@ def _filter_ordenes_empresa(q, empresa_id: int | None):
             WorkOrder.machine_id.in_(machine_ids),
         )
     )
+
+
+def _solo_sin_jornadas(q):
+    """OT con jornadas registradas: el estado lo define el avance, no la fecha programada."""
+    tiene_jornadas = exists().where(WorkOrderJornada.work_order_id == WorkOrder.id)
+    return q.filter(~tiene_jornadas)
 
 
 def mismo_mes_programacion(fecha: date, hoy: date) -> bool:
@@ -59,7 +71,7 @@ def promover_programadas_abiertas(empresa_id: int | None = None, hoy: date | Non
         extract("month", WorkOrder.fecha_programada) == hoy.month,
         WorkOrder.fecha_programada >= hoy,
     )
-    q = _filter_ordenes_empresa(q, empresa_id)
+    q = _solo_sin_jornadas(_filter_ordenes_empresa(q, empresa_id))
     n = q.update({WorkOrder.status: WorkOrderStatus.ABIERTA.value}, synchronize_session=False)
     if n:
         db.session.commit()
@@ -78,7 +90,7 @@ def reprogramar_abiertas_fuera_de_mes(empresa_id: int | None = None, hoy: date |
             extract("month", WorkOrder.fecha_programada) != hoy.month,
         ),
     )
-    q = _filter_ordenes_empresa(q, empresa_id)
+    q = _solo_sin_jornadas(_filter_ordenes_empresa(q, empresa_id))
     n = q.update({WorkOrder.status: WorkOrderStatus.PROGRAMADA.value}, synchronize_session=False)
     if n:
         db.session.commit()
@@ -93,7 +105,7 @@ def marcar_ordenes_vencidas(empresa_id: int | None = None, hoy: date | None = No
         WorkOrder.fecha_programada.isnot(None),
         WorkOrder.fecha_programada < hoy,
     )
-    q = _filter_ordenes_empresa(q, empresa_id)
+    q = _solo_sin_jornadas(_filter_ordenes_empresa(q, empresa_id))
     n = q.update({WorkOrder.status: WorkOrderStatus.VENCIDA.value}, synchronize_session=False)
     if n:
         db.session.commit()

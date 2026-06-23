@@ -1,0 +1,50 @@
+{% extends "platform/base.html" %}
+{% block title %}Acceso plataforma — Mantis{% endblock %}
+
+{% block layout %}
+<div class="platform-login-wrap w-100">
+  <div class="platform-login-card">
+    <div class="platform-brand-mark mb-4">
+      <div class="platform-brand-logo-panel platform-brand-logo-panel--login">
+        <img src="{{ url_for('static', filename=app_logo_path) }}" alt="{{ app_name }} CMMS" class="platform-brand-logo">
+      </div>
+      <p class="platform-brand-sub mb-0 mt-2 text-center">Superadministración SaaS</p>
+    </div>
+    {% if sin_clave %}
+    <div class="alert alert-warning small">
+      Configura la variable de entorno <code>PLATFORM_ADMIN_KEY</code> para habilitar el acceso.
+      <hr class="my-2 opacity-25">
+      <strong>Desarrollo local:</strong> crea un archivo <code>.env</code> en la raíz del proyecto (puedes copiar <code>.env.example</code>) con:
+      <pre class="mb-0 mt-2 small bg-dark text-light p-2 rounded">PLATFORM_ADMIN_KEY=tu-clave-secreta</pre>
+      Reinicia el servidor después de guardar el archivo.
+    </div>
+    {% elif mfa_step %}
+    <p class="text-secondary small mb-3">Clave verificada. Introduce el código de tu aplicación de autenticación.</p>
+    <form method="post">
+      {% include "_csrf.html" %}
+      <input type="hidden" name="action" value="totp">
+      {% if request.args.get('next') %}
+      <input type="hidden" name="next" value="{{ request.args.get('next') }}">
+      {% endif %}
+      <label class="form-label small text-secondary" for="totp">Código de 6 dígitos</label>
+      <input type="text" class="form-control mb-3 font-monospace text-center" id="totp" name="totp"
+             inputmode="numeric" pattern="[0-9]{6}" maxlength="6" minlength="6" required autofocus
+             autocomplete="one-time-code" placeholder="000000">
+      <button type="submit" class="btn btn-primary w-100 mb-2">Verificar</button>
+    </form>
+    <a href="{{ url_for('platform.login', cancel=1) }}" class="small text-secondary">Cancelar y volver</a>
+    {% else %}
+    <p class="text-secondary small mb-3">Vista de negocio para gestionar todos los tenants de Mantis.</p>
+    {% if totp_habilitado %}
+    <p class="small text-muted mb-3"><i class="bi bi-shield-lock me-1"></i> Autenticación en dos pasos activa (TOTP).</p>
+    {% endif %}
+    <form method="post">
+      {% include "_csrf.html" %}
+      <label class="form-label small text-secondary" for="clave">Clave de plataforma</label>
+      <input type="password" class="form-control mb-3" id="clave" name="clave" required autofocus>
+      <button type="submit" class="btn btn-primary w-100">Continuar</button>
+    </form>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

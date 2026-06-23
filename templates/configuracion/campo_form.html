@@ -9,6 +9,7 @@
     <div class="card card-dashboard">
       <div class="card-body">
         <form method="post" id="formCampo">
+          {% include "_csrf.html" %}
           <div class="mb-3">
             <label class="form-label" for="entidad">Aplica en *</label>
             {% if campo %}

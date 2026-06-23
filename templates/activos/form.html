@@ -12,6 +12,7 @@
           Los campos adicionales se configuran en <strong>Configuración → Campos personalizados</strong>.
         </p>
         <form method="post" id="form-activo">
+          {% include "_csrf.html" %}
           {# 1. Información General #}
           <fieldset class="mb-4 form-activo-seccion">
             {% with titulo=activo_secciones_labels.general, seccion_key='general' %}{% include 'activos/_seccion_encabezado.html' %}{% endwith %}

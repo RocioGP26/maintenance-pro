@@ -12,10 +12,14 @@ from flask import (
 from flask_login import current_user, login_user
 
 from app import db
-from app.models import PLAN_CATALOG, User
-from app.sector_templates import SECTOR_LABELS, normalizar_sector
+from app.models import User
+from app.landing_service import formato_precio_landing
+from app.platform_config_service import planes_para_registro, sectores_para_registro
+from app.sector_templates import normalizar_sector
 from app.branding import APP_NAME
 from app.onboarding_service import completar_onboarding
+from app.onboarding_session import clear_onboarding_password, pop_onboarding_password, store_onboarding_password
+from app.password_policy import validar_password
 
 onboarding_bp = Blueprint("onboarding", __name__)
 
@@ -34,6 +38,7 @@ def _wizard_data() -> dict:
 def _clear_wizard() -> None:
     session.pop("onboarding_wizard", None)
     session.pop("onboarding_step", None)
+    clear_onboarding_password()
 
 
 @onboarding_bp.route("/onboarding", methods=["GET", "POST"])
@@ -43,6 +48,9 @@ def wizard():
 
     step = int(session.get("onboarding_step", 1))
     data = _wizard_data()
+    prompt = (request.args.get("prompt") or "").strip()
+    if prompt:
+        session["onboarding_prompt"] = prompt
 
     if request.method == "POST":
         action = request.form.get("action", "next")
@@ -80,6 +88,10 @@ def wizard():
             if password != password2:
                 flash("Las contraseñas no coinciden.", "danger")
                 return redirect(url_for("onboarding.wizard"))
+            err_pwd = validar_password(password)
+            if err_pwd:
+                flash(err_pwd, "danger")
+                return redirect(url_for("onboarding.wizard"))
             if User.query.filter_by(username=username).first():
                 flash("Ese nombre de usuario ya está en uso.", "danger")
                 return redirect(url_for("onboarding.wizard"))
@@ -88,8 +100,8 @@ def wizard():
                 "email": email,
                 "nombre": request.form.get("nombre", "").strip(),
                 "telefono": request.form.get("telefono", "").strip(),
-                "password": password,
             }
+            store_onboarding_password(password)
             session["onboarding_step"] = 3
 
         elif step == 3:
@@ -98,13 +110,22 @@ def wizard():
             session["onboarding_step"] = 4
 
         elif step == 4:
-            plan = request.form.get("plan", "trial")
-            if plan not in PLAN_CATALOG:
-                plan = "trial"
+            # Solo trial en registro público; planes de pago tras facturación confirmada.
+            plan = "trial"
+            admin_data = dict(data.get("admin") or {})
+            password = pop_onboarding_password()
+            if not password:
+                flash(
+                    "La sesión de registro expiró. Vuelve al paso de administrador e indica tu contraseña.",
+                    "danger",
+                )
+                session["onboarding_step"] = 2
+                return redirect(url_for("onboarding.wizard"))
+            admin_data["password"] = password
             try:
                 user, empresa = completar_onboarding(
                     data["empresa"],
-                    data["admin"],
+                    admin_data,
                     data.get("sede_nombre", "Sede principal"),
                     plan,
                 )
@@ -129,9 +150,11 @@ def wizard():
         step=step,
         steps=STEPS,
         data=data,
-        sectores=list(SECTOR_LABELS.items()),
-        planes=list(PLAN_CATALOG.items()),
+        sectores=sectores_para_registro(),
+        planes=planes_para_registro(),
         total_steps=len(STEPS),
+        formato_precio_landing=formato_precio_landing,
+        sales_prompt=session.get("onboarding_prompt", ""),
     )
 
 

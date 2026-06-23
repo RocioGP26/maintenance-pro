@@ -142,6 +142,7 @@
                 {% if perm.eliminar %}
                 <form method="post" action="{{ url_for('main.proveedores_delete', id=p.id) }}" class="d-inline"
                       onsubmit="return confirm('¿Eliminar este proveedor?');">
+                  {% include "_csrf.html" %}
                   <button type="submit" class="btn btn-outline-danger" title="Eliminar">
                     <i class="bi bi-trash"></i>
                   </button>
@@ -179,6 +180,7 @@
     <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Cerrar"></button>
   </div>
   <form method="post" action="{{ url_for('main.proveedores_guardar') }}" id="formProveedor">
+    {% include "_csrf.html" %}
     <div class="offcanvas-body prov-drawer-body">
       <input type="hidden" name="id" id="provId" value="">
 

@@ -1,0 +1,368 @@
+{% extends "platform/base.html" %}
+
+{% block title %}{{ fila.empresa.razon_social }} — Mantis Platform{% endblock %}
+
+
+
+{% block content %}
+
+{% set e = fila.empresa %}
+
+{% set sm = estado_meta.get(fila.estado, {}) %}
+
+<div class="platform-page-header d-flex flex-wrap justify-content-between align-items-start gap-2">
+
+  <div>
+
+  <p class="mb-1"><a href="{{ url_for('platform.empresas') }}" class="platform-link small"><i class="bi bi-arrow-left"></i> Empresas</a></p>
+
+  <h1>{{ e.razon_social }}</h1>
+
+  <p>
+
+    <span class="{{ sm.badge_class }} me-2">
+
+      {% if sm.icon %}<i class="bi {{ sm.icon }}"></i>{% endif %}
+
+      {{ sm.label }}
+
+    </span>
+
+    <span class="{{ fila.plan_badge_class }}">{{ fila.plan_short }}</span>
+
+    <span class="text-secondary ms-2">{{ e.sector_label }}</span>
+
+  </p>
+
+  </div>
+
+  <div class="platform-avatar" style="background: {{ fila.avatar_color }}; width:3rem; height:3rem; font-size:1rem;">{{ e.iniciales() }}</div>
+
+</div>
+
+
+
+<div class="platform-detail-grid">
+
+  <div class="platform-detail-card">
+
+    <h3>Contacto admin</h3>
+
+    <p>{{ fila.admin_nombre }}</p>
+
+    {% if fila.admin_email %}<p class="small text-secondary mt-1 mb-0">{{ fila.admin_email }}</p>{% endif %}
+
+    {% if e.telefono %}<p class="small text-secondary mt-1 mb-0">{{ e.telefono }}</p>{% endif %}
+
+    {% if e.email %}<p class="small text-secondary mt-1 mb-0">{{ e.email }}</p>{% endif %}
+
+  </div>
+
+  <div class="platform-detail-card">
+
+    <h3>Activos</h3>
+
+    <p>{% if fila.max_activos %}{{ fila.activos }} / {{ fila.max_activos }}{% else %}{{ fila.activos }} (ilimitado){% endif %}</p>
+
+    {% if fila.uso_pct is not none %}
+
+    <div class="platform-usage-bar mt-2">
+
+      <div class="platform-usage-fill{% if fila.uso_pct >= 90 %} platform-usage-fill--danger{% elif fila.uso_pct >= 75 %} platform-usage-fill--warn{% endif %}"
+
+           style="width: {{ fila.uso_pct }}%;"></div>
+
+    </div>
+
+    {% endif %}
+
+  </div>
+
+  <div class="platform-detail-card">
+
+    <h3>Usuarios activos</h3>
+
+    <p>{{ fila.usuarios }}</p>
+
+  </div>
+
+  <div class="platform-detail-card">
+
+    <h3>Almacenamiento</h3>
+
+    <p>{{ fila.storage_label }}</p>
+
+  </div>
+
+  <div class="platform-detail-card">
+
+    <h3>MRR (facturación real)</h3>
+
+    <p>{{ formato_moneda(fila.mrr) }}</p>
+
+  </div>
+
+  <div class="platform-detail-card">
+
+    <h3>Registro</h3>
+
+    <p>{% if e.fecha_registro %}{{ e.fecha_registro.strftime('%d/%m/%Y') }}{% else %}—{% endif %}</p>
+
+  </div>
+
+</div>
+
+
+
+<div class="platform-actions">
+
+  {% if e.suspendida or fila.estado == 'suspendida' %}
+
+  <form method="post" action="{{ url_for('platform.empresa_reactivar', id=e.id) }}">
+    {% include "_csrf.html" %}
+
+    <button type="submit" class="platform-btn platform-btn-success">Reactivar empresa</button>
+
+  </form>
+
+  {% else %}
+
+  <form method="post" action="{{ url_for('platform.empresa_suspender', id=e.id) }}"
+
+        onsubmit="return confirm('¿Suspender esta empresa? Los usuarios no podrán operar.');">
+    {% include "_csrf.html" %}
+
+    <button type="submit" class="platform-btn platform-btn-danger">Suspender</button>
+
+  </form>
+
+  {% endif %}
+
+  <form method="post" action="{{ url_for('platform.empresa_impersonar', id=e.id) }}"
+
+        onsubmit="return confirm('Entrarás al CMMS como el superadmin de esta empresa. ¿Continuar?');">
+    {% include "_csrf.html" %}
+
+    <button type="submit" class="platform-btn platform-btn-outline">
+
+      <i class="bi bi-person-badge"></i> Impersonar (soporte)
+
+    </button>
+
+  </form>
+
+</div>
+
+<div class="platform-etapa-info mt-4">
+  <strong>Etapa 1 — sin pasarela.</strong>
+  Trial 14 días → al vencer el cron genera factura pendiente (mora, acceso bloqueado) →
+  registras el pago aquí → suscripción activa.
+  Sin pago en 5 días → suspendida.
+  Campos <code>pasarela_*</code> listos para Wompi/Stripe en Etapa 2.
+</div>
+
+<div class="platform-section mt-4">
+
+  <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+
+    <h2 class="platform-section-title mb-0">Facturación</h2>
+
+    <form method="post" action="{{ url_for('platform.empresa_nueva_factura', id=e.id) }}" class="d-flex flex-wrap gap-2 align-items-center">
+      {% include "_csrf.html" %}
+
+      <input type="month" name="periodo" class="platform-select" value="" style="color-scheme: dark;">
+
+      <input type="number" name="monto" class="platform-select" placeholder="Monto" min="0" step="1000"
+
+             value="{{ monto_sugerido|int if monto_sugerido else '' }}" style="width:8rem;">
+
+      <button type="submit" class="platform-btn platform-btn-outline">+ Nueva factura</button>
+
+    </form>
+
+  </div>
+
+  <div class="platform-card">
+
+    <div class="table-responsive">
+
+      <table class="platform-table">
+
+        <thead>
+
+          <tr>
+
+            <th>N°</th>
+
+            <th>Periodo</th>
+
+            <th>Concepto</th>
+
+            <th>Monto</th>
+
+            <th>Estado</th>
+
+            <th>Vence</th>
+
+            <th></th>
+
+          </tr>
+
+        </thead>
+
+        <tbody>
+
+          {% for f in facturas %}
+
+          <tr>
+
+            <td>{{ f.numero }}</td>
+
+            <td>{{ f.periodo or '—' }}</td>
+
+            <td class="small">{{ f.concepto }}</td>
+
+            <td>{{ formato_moneda(f.monto, f.moneda) }}</td>
+
+            <td>
+
+              <span class="platform-factura-estado platform-factura-estado--{{ f.estado }}">
+
+                {{ factura_estado_label(f.estado) }}
+
+              </span>
+
+            </td>
+
+            <td class="small text-secondary">{% if f.fecha_vencimiento %}{{ f.fecha_vencimiento.strftime('%d/%m/%Y') }}{% else %}—{% endif %}</td>
+
+            <td class="text-end">
+
+              {% if f.estado in ('pendiente', 'vencida') %}
+
+              <form method="post" action="{{ url_for('platform.empresa_pagar_factura', id=e.id, factura_id=f.id) }}" class="d-inline-flex gap-1 flex-wrap justify-content-end">
+                {% include "_csrf.html" %}
+
+                <input type="text" name="referencia" class="platform-select platform-select--sm" placeholder="Ref. pago" required>
+
+                <button type="submit" class="platform-btn platform-btn-outline platform-btn--sm">Registrar pago</button>
+
+              </form>
+
+              {% elif f.fecha_pago %}
+
+              <span class="small text-secondary">Pagada {{ f.fecha_pago.strftime('%d/%m/%Y') }}</span>
+
+              {% endif %}
+
+            </td>
+
+          </tr>
+
+          {% else %}
+
+          <tr><td colspan="7" class="text-center text-secondary py-3 small">Sin facturas. Crea la primera con el botón de arriba.</td></tr>
+
+          {% endfor %}
+
+        </tbody>
+
+      </table>
+
+    </div>
+
+  </div>
+
+</div>
+
+
+
+<div class="platform-section mt-4">
+
+  <h2 class="platform-section-title">Log de actividad</h2>
+
+  <div class="platform-card">
+
+    <div class="table-responsive">
+
+      <table class="platform-table">
+
+        <thead>
+
+          <tr>
+
+            <th>Fecha</th>
+
+            <th>Usuario</th>
+
+            <th>Evento</th>
+
+            <th>Detalle</th>
+
+            <th>IP</th>
+
+          </tr>
+
+        </thead>
+
+        <tbody>
+
+          {% for a in actividad %}
+
+          <tr>
+
+            <td class="small text-nowrap">{{ a.created_at.strftime('%d/%m/%Y %H:%M') if a.created_at else '—' }}</td>
+
+            <td class="small">{{ a.username or '—' }}</td>
+
+            <td class="small">{{ activity_labels.get(a.tipo, a.tipo) }}</td>
+
+            <td class="small text-secondary">{{ a.detalle or '—' }}</td>
+
+            <td class="small text-secondary">{{ a.ip_address or '—' }}</td>
+
+          </tr>
+
+          {% else %}
+
+          <tr><td colspan="5" class="text-center text-secondary py-3 small">Aún no hay actividad registrada.</td></tr>
+
+          {% endfor %}
+
+        </tbody>
+
+      </table>
+
+    </div>
+
+  </div>
+
+</div>
+
+{% endblock %}
+
+
+
+{% block scripts %}
+
+<script>
+
+(function () {
+
+  var inp = document.querySelector('input[name="periodo"]');
+
+  if (inp && !inp.value) {
+
+    var d = new Date();
+
+    inp.value = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
+
+  }
+
+})();
+
+</script>
+
+{% endblock %}
+
+

@@ -8,6 +8,7 @@
     <div class="card card-dashboard">
       <div class="card-body">
         <form method="post">
+          {% include "_csrf.html" %}
           <div class="mb-3">
             <label class="form-label">Nombre visible</label>
             <input type="text" name="nombre" class="form-control" required

@@ -572,25 +572,19 @@
 
 
 {% block head_extra %}
-
+{% from "_cdn_assets.html" import driver_css %}
 {% if show_tour %}
-
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/driver.js@1.3.1/dist/driver.css">
-
+{{ driver_css() }}
 {% endif %}
-
 {% endblock %}
 
 
 
 {% block scripts %}
-
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
-
+{% from "_cdn_assets.html" import chart_js, driver_js %}
+{{ chart_js() }}
 {% if show_tour %}
-
-<script src="https://cdn.jsdelivr.net/npm/driver.js@1.3.1/dist/driver.js.iife.js"></script>
-
+{{ driver_js() }}
 <script>
 
 document.addEventListener('DOMContentLoaded', function () {
@@ -630,7 +624,6 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 
 </script>
-
 {% endif %}
 
 <script>

@@ -166,6 +166,7 @@
                 {% if perm.eliminar %}
                 <form action="{{ item.delete_url }}" method="post" class="d-inline m-0"
                       onsubmit="return confirm('¿Eliminar este activo?');">
+                  {% include "_csrf.html" %}
                   <button type="submit" class="btn btn-outline-danger btn-sm py-0 px-2" title="Eliminar">
                     <i class="bi bi-trash"></i>
                   </button>

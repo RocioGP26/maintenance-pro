@@ -1,0 +1,287 @@
+{% extends "platform/base.html" %}
+{% block title %}Usuarios globales — Mantis Platform{% endblock %}
+
+{% block content %}
+<div class="platform-page-header">
+  <h1>Usuarios globales</h1>
+  <p>Todos los usuarios de todas las empresas registradas en Mantis.</p>
+</div>
+
+{% if temp_password %}
+<div class="alert alert-warning border-warning mb-4" role="alert">
+  <h2 class="h6 fw-semibold mb-2">Contraseña temporal — {{ temp_password.nombre }}</h2>
+  <p class="mb-2 small">Usuario: <code>{{ temp_password.username }}</code></p>
+  <p class="mb-2">
+    Contraseña:
+    <code id="tempPasswordValue" class="user-select-all">{{ temp_password.password }}</code>
+  </p>
+  <p class="mb-0 small text-muted">Comunícala por un canal seguro. Esta pantalla no se volverá a mostrar al recargar.</p>
+</div>
+{% endif %}
+
+<div class="platform-kpi-grid">
+  <div class="platform-kpi">
+    <div class="platform-kpi-label">Usuarios totales</div>
+    <div class="platform-kpi-value">{{ kpis.total }}</div>
+    <div class="platform-kpi-sub">en {{ kpis.empresas }} empresa(s)</div>
+  </div>
+  <div class="platform-kpi">
+    <div class="platform-kpi-label">Activos (30 días)</div>
+    <div class="platform-kpi-value">{{ kpis.activos_30 }}</div>
+    <div class="platform-kpi-sub">{{ kpis.pct_activos_30 }}% del total</div>
+  </div>
+  <div class="platform-kpi">
+    <div class="platform-kpi-label">Administradores</div>
+    <div class="platform-kpi-value">{{ kpis.admins }}</div>
+    <div class="platform-kpi-sub">promedio {{ kpis.promedio_admin }} por empresa</div>
+  </div>
+  <div class="platform-kpi">
+    <div class="platform-kpi-label">Bloqueados</div>
+    <div class="platform-kpi-value">{{ kpis.bloqueados }}</div>
+    <div class="platform-kpi-sub">requieren revisión</div>
+  </div>
+</div>
+
+<form class="platform-filters" method="get" action="{{ url_for('platform.usuarios') }}">
+  <div class="platform-search-wrap">
+    <i class="bi bi-search"></i>
+    <input type="search" name="q" class="platform-search" placeholder="Nombre, email o usuario…"
+           value="{{ filtros.q }}">
+  </div>
+  <select name="empresa_id" class="platform-select" onchange="this.form.submit()">
+    {% for val, lbl in empresas_filtro %}
+    <option value="{{ val }}" {% if filtros.empresa_id == val %}selected{% endif %}>{{ lbl }}</option>
+    {% endfor %}
+  </select>
+  <select name="rol" class="platform-select" onchange="this.form.submit()">
+    {% for val, lbl in roles_filtro %}
+    <option value="{{ val }}" {% if filtros.rol == val %}selected{% endif %}>{{ lbl }}</option>
+    {% endfor %}
+  </select>
+  <select name="estado" class="platform-select" onchange="this.form.submit()">
+    {% for val, lbl in estados_filtro %}
+    <option value="{{ val }}" {% if filtros.estado == val %}selected{% endif %}>{{ lbl }}</option>
+    {% endfor %}
+  </select>
+  <button type="submit" class="platform-btn platform-btn-outline">Buscar</button>
+  {% if filtros.q or filtros.empresa_id or filtros.rol or filtros.estado %}
+  <a href="{{ url_for('platform.usuarios') }}" class="platform-btn platform-btn-outline">Limpiar</a>
+  {% endif %}
+</form>
+
+<div class="platform-card">
+  <div class="table-responsive">
+    <table class="platform-table">
+      <thead>
+        <tr>
+          <th>Usuario</th>
+          <th>Empresa</th>
+          <th>Rol</th>
+          <th>Estado</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for f in filas %}
+        {% set u = f.user %}
+        <tr>
+          <td>
+            <div class="platform-empresa-cell">
+              <div class="platform-avatar" style="background: {{ f.avatar_color }};">{{ f.iniciales }}</div>
+              <div>
+                <div class="platform-empresa-nombre">{{ u.nombre_visible or u.username }}</div>
+                <div class="platform-empresa-nit">{% if u.email %}{{ u.email }}{% else %}@{{ u.username }}{% endif %}</div>
+              </div>
+            </div>
+          </td>
+          <td>
+            {% if u.empresa_id %}
+            <a href="{{ url_for('platform.empresa_detail', id=u.empresa_id) }}" class="platform-link small">
+              {{ f.empresa_nombre }}
+            </a>
+            {% else %}—{% endif %}
+          </td>
+          <td><span class="{{ f.rol_badge }}">{{ f.rol_label }}</span></td>
+          <td><span class="{{ f.estado_badge }}">{{ f.estado_label }}</span></td>
+          <td class="text-end">
+            <div class="dropdown">
+              <button class="platform-btn platform-btn-outline platform-btn--sm dropdown-toggle"
+                      type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                Acciones
+              </button>
+              <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end platform-dropdown-menu">
+                <li>
+                  <button type="button" class="dropdown-item"
+                          data-bs-toggle="modal" data-bs-target="#modal-impersonar-{{ u.id }}"
+                          {% if f.estado == 'bloqueado' %}disabled{% endif %}>
+                    <i class="bi bi-box-arrow-in-right me-2"></i> Impersonar
+                  </button>
+                </li>
+                <li>
+                  <button type="button" class="dropdown-item"
+                          data-bs-toggle="modal" data-bs-target="#modal-reset-{{ u.id }}">
+                    <i class="bi bi-key me-2"></i> Resetear contraseña
+                  </button>
+                </li>
+                <li><hr class="dropdown-divider"></li>
+                {% if f.estado == 'bloqueado' %}
+                <li>
+                  <button type="button" class="dropdown-item text-success"
+                          data-bs-toggle="modal" data-bs-target="#modal-desbloquear-{{ u.id }}">
+                    <i class="bi bi-unlock me-2"></i> Desbloquear
+                  </button>
+                </li>
+                {% else %}
+                <li>
+                  <button type="button" class="dropdown-item text-danger"
+                          data-bs-toggle="modal" data-bs-target="#modal-bloquear-{{ u.id }}">
+                    <i class="bi bi-slash-circle me-2"></i> Bloquear acceso
+                  </button>
+                </li>
+                {% endif %}
+              </ul>
+            </div>
+          </td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="5" class="text-center text-secondary py-4 small">
+            No hay usuarios{% if filtros.q or filtros.empresa_id or filtros.rol or filtros.estado %} con estos filtros{% endif %}.
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div class="platform-table-footer">
+    <span>Mostrando {{ filas|length }} de {{ filas|length }} usuario(s)</span>
+  </div>
+</div>
+
+{% for f in filas %}
+{% set u = f.user %}
+
+<div class="modal fade platform-modal" id="modal-impersonar-{{ u.id }}" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <form method="post" action="{{ url_for('platform.usuario_impersonar', user_id=u.id) }}">
+        {% include "_csrf.html" %}
+        <div class="modal-header border-secondary">
+          <h5 class="modal-title">Impersonar usuario</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+        </div>
+        <div class="modal-body">
+          <p class="mb-3">
+            Vas a ingresar como <strong class="text-white">{{ u.etiqueta() }}</strong>
+            en <strong class="text-white">{{ f.empresa_nombre }}</strong>.
+          </p>
+          <div class="platform-audit-notice">
+            <i class="bi bi-shield-check me-2"></i>
+            <div>
+              <strong>Auditoría obligatoria</strong>
+              <p class="mb-0 small mt-1">
+                Esta acción queda registrada con tu identidad de soporte, fecha y hora.
+                El administrador de la empresa puede ver este registro en su configuración.
+              </p>
+            </div>
+          </div>
+          <div class="form-check mt-3">
+            <input class="form-check-input" type="checkbox" name="confirmar_auditoria" value="1"
+                   id="confirm-audit-{{ u.id }}" required>
+            <label class="form-check-label small" for="confirm-audit-{{ u.id }}">
+              Entiendo que la impersonación queda registrada y es visible para el cliente
+            </label>
+          </div>
+        </div>
+        <div class="modal-footer border-secondary">
+          <button type="button" class="platform-btn platform-btn-outline" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="platform-btn platform-btn-outline">Impersonar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade platform-modal" id="modal-reset-{{ u.id }}" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <form method="post" action="{{ url_for('platform.usuario_reset_password', user_id=u.id) }}">
+        {% include "_csrf.html" %}
+        <div class="modal-header border-secondary">
+          <h5 class="modal-title">Resetear contraseña</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+        </div>
+        <div class="modal-body">
+          <p class="mb-2">
+            Soporte normal: genera una contraseña temporal para
+            <strong class="text-white">{{ u.etiqueta() }}</strong>.
+          </p>
+          <p class="small text-secondary mb-0">
+            La contraseña se mostrará una vez. Comunícala por un canal seguro.
+            La acción queda en el log de auditoría visible para el cliente.
+          </p>
+        </div>
+        <div class="modal-footer border-secondary">
+          <button type="button" class="platform-btn platform-btn-outline" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="platform-btn platform-btn-outline">Generar contraseña temporal</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade platform-modal" id="modal-bloquear-{{ u.id }}" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <form method="post" action="{{ url_for('platform.usuario_bloquear', user_id=u.id) }}">
+        {% include "_csrf.html" %}
+        <div class="modal-header border-secondary">
+          <h5 class="modal-title text-danger">Bloquear acceso</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+        </div>
+        <div class="modal-body">
+          <p class="mb-3">
+            Acción de <strong class="text-white">seguridad</strong>: revoca el acceso inmediato de
+            <strong class="text-white">{{ u.etiqueta() }}</strong> sin esperar al admin de la empresa.
+          </p>
+          <label class="form-label small" for="motivo-{{ u.id }}">Motivo (opcional)</label>
+          <textarea class="form-control platform-textarea" id="motivo-{{ u.id }}" name="motivo" rows="2"
+                    placeholder="Ej. Empleado desvinculado — solicitud del cliente"></textarea>
+          <p class="small text-secondary mt-2 mb-0">
+            No es lo mismo que resetear contraseña. El usuario no podrá iniciar sesión hasta que lo desbloquees.
+          </p>
+        </div>
+        <div class="modal-footer border-secondary">
+          <button type="button" class="platform-btn platform-btn-outline" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="platform-btn platform-btn-danger">Bloquear usuario</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade platform-modal" id="modal-desbloquear-{{ u.id }}" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <form method="post" action="{{ url_for('platform.usuario_desbloquear', user_id=u.id) }}">
+        {% include "_csrf.html" %}
+        <div class="modal-header border-secondary">
+          <h5 class="modal-title">Desbloquear usuario</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+        </div>
+        <div class="modal-body">
+          <p class="mb-0">
+            ¿Restaurar el acceso de <strong class="text-white">{{ u.etiqueta() }}</strong>?
+            Podrá iniciar sesión con su contraseña actual (o una nueva si se restableció).
+          </p>
+        </div>
+        <div class="modal-footer border-secondary">
+          <button type="button" class="platform-btn platform-btn-outline" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="platform-btn platform-btn-success">Desbloquear</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endfor %}
+{% endblock %}

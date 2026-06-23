@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from flask import Blueprint, current_app, g, jsonify, request
 
-from app import db
+from app import limiter
 from app.models import Machine, User
 from app.permissions import normalize_rol
 from app.tenancy.decorators import rol_required, tenant_required
@@ -15,6 +15,7 @@ tenancy_api_bp = Blueprint("tenancy_api", __name__)
 
 
 @tenancy_api_bp.route("/api/auth/login", methods=["POST"])
+@limiter.limit("5 per 15 minutes")
 def login():
     """Login API: devuelve JWT con empresa_id firmado."""
     data = request.get_json(silent=True) or {}
@@ -23,8 +24,8 @@ def login():
     if not username or not password:
         return jsonify({"error": "Usuario y contraseña requeridos"}), 400
 
-    user = User.query.filter_by(username=username, activo=True).first()
-    if user is None or not user.check_password(password):
+    user = User.query.filter_by(username=username).first()
+    if user is None or not user.check_password(password) or not user.is_active:
         return jsonify({"error": "Credenciales inválidas"}), 401
     if not user.empresa_id or not user.empresa:
         return jsonify({"error": "Usuario sin empresa asignada"}), 403

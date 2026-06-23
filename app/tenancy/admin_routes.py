@@ -3,12 +3,12 @@
 from __future__ import annotations
 
 import os
-from datetime import date, timedelta
 
 from flask import Blueprint, jsonify, request
 
-from app import db
-from app.models import Empresa, PLAN_CATALOG, PlanSuscripcion, PlanTipo, Sede
+from app import db, limiter
+from app.models import Empresa, PlanTipo, Sede
+from app.subscription_service import crear_suscripcion_trial
 from app.tenancy.slug import slug_unico_empresa, slugify_empresa
 
 admin_bp = Blueprint("admin", __name__)
@@ -22,6 +22,7 @@ def _verificar_clave_plataforma() -> bool:
 
 
 @admin_bp.route("/admin/empresas", methods=["POST"])
+@limiter.limit("10 per 15 minutes")
 def crear_empresa():
     """
     Registra empresa en mantenimiento.db (misma BD que web y API).
@@ -39,7 +40,6 @@ def crear_empresa():
     slug = slug_unico_empresa(slug)
 
     plan_key = (data.get("plan") or PlanTipo.TRIAL.value).strip()
-    meta = PLAN_CATALOG.get(plan_key, PLAN_CATALOG[PlanTipo.TRIAL.value])
 
     empresa = Empresa(
         razon_social=razon_social,
@@ -62,17 +62,7 @@ def crear_empresa():
         )
     )
 
-    inicio = date.today()
-    fin = inicio + timedelta(days=int(meta["dias"])) if meta.get("dias") else None
-    db.session.add(
-        PlanSuscripcion(
-            empresa_id=empresa.id,
-            plan=plan_key,
-            fecha_inicio=inicio,
-            fecha_fin=fin,
-            activo=True,
-        )
-    )
+    crear_suscripcion_trial(empresa, plan_key)
     db.session.commit()
 
     return jsonify(
@@ -85,6 +75,7 @@ def crear_empresa():
 
 
 @admin_bp.route("/admin/empresas", methods=["GET"])
+@limiter.limit("30 per 15 minutes")
 def listar_empresas():
     if not _verificar_clave_plataforma():
         return jsonify({"error": "No autorizado"}), 403

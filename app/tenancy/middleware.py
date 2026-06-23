@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import jwt
-from flask import Flask, g, jsonify, request
+from flask import Flask, g, jsonify, redirect, request, url_for
 from flask_login import current_user
 
 from app.tenancy.db import close_db
@@ -12,10 +12,14 @@ from app.tenancy.jwt_auth import verificar_token
 _PUBLIC_PREFIXES = (
     "static",
     "onboarding.",
+    "platform.",
 )
 _PUBLIC_EXACT = {
+    "main.index",
     "main.login",
     "main.logout",
+    "main.cuenta_suspendida",
+    "main.salir_impersonacion",
     "tenancy_api.login",
     "admin.crear_empresa",
 }
@@ -57,6 +61,26 @@ def _sync_ordenes_vencidas() -> None:
     g._ot_vencidas_synced = True
 
 
+def _verificar_bloqueo_tenant(endpoint: str):
+    from app.models import Empresa
+    from app.tenant_activity import empresa_puede_operar, endpoint_exento_bloqueo
+
+    if _is_public_endpoint(endpoint) or endpoint_exento_bloqueo(endpoint):
+        return None
+    eid = getattr(g, "empresa_id", None)
+    if not eid:
+        return None
+    empresa = Empresa.query.get(int(eid))
+    puede, codigo, mensaje = empresa_puede_operar(empresa)
+    if puede:
+        return None
+    if request.path.startswith("/api/"):
+        return jsonify({"error": mensaje, "codigo": codigo}), 403
+    if endpoint == "main.cuenta_suspendida":
+        return None
+    return redirect(url_for("main.cuenta_suspendida", motivo=codigo))
+
+
 def register_tenancy_middleware(app: Flask) -> None:
     @app.before_request
     def middleware_tenancy():
@@ -83,10 +107,16 @@ def register_tenancy_middleware(app: Flask) -> None:
             g.empresa_slug = payload.get("empresa_slug")
             g.user_rol = payload.get("rol")
             _sync_ordenes_vencidas()
+            bloqueo = _verificar_bloqueo_tenant(endpoint)
+            if bloqueo is not None:
+                return bloqueo
             return None
 
         _load_from_session_user()
         _sync_ordenes_vencidas()
+        bloqueo = _verificar_bloqueo_tenant(endpoint)
+        if bloqueo is not None:
+            return bloqueo
         return None
 
     @app.teardown_appcontext

@@ -1,19 +1,19 @@
-import json
-import os
+from datetime import date
 import re
 import unicodedata
 from calendar import monthrange
 from datetime import date, datetime, timedelta
 from typing import Any, List, Optional, Tuple
-from urllib.parse import urljoin, urlparse
 
-from flask import Blueprint, current_app, flash, jsonify, redirect, render_template, request, session, url_for
+from flask import Blueprint, abort, current_app, flash, jsonify, redirect, render_template, request, session, url_for
 from werkzeug.utils import secure_filename
 from flask_login import current_user, login_user, logout_user
-from sqlalchemy import and_, func, or_
+from sqlalchemy import and_, false, func, or_
 
-from app import db
-from app.branding import APP_LOGO_PATH, empresa_logo_url_or_none
+from app import db, limiter
+from app.url_utils import is_safe_redirect
+from app.password_policy import validar_password
+from app.branding import APP_LOGO_PATH, empresa_logo_url_or_none, normalizar_logo_empresa
 from app.permissions import (
     CONFIG_ENDPOINT_PREFIX,
     CREATE_GET_ENDPOINTS,
@@ -55,6 +55,11 @@ from app.models import (
     CampoPersonalizado,
     Empresa,
     Incident,
+    INCIDENT_AREAS_BASE,
+    INCIDENT_PRIORIDADES,
+    INCIDENT_TIPOS,
+    IncidentPrioridad,
+    incident_prioridad_meta,
     IndustrialSector,
     Machine,
     MachineStatus,
@@ -155,7 +160,7 @@ from app.work_time import (
     wo_tiempo_gastado_minutos,
 )
 
-EMPRESA_LOGO_EXTENSIONS = {"png", "jpg", "jpeg", "webp", "svg"}
+EMPRESA_LOGO_EXTENSIONS = {"png", "jpg", "jpeg", "webp"}
 ZONAS_EMPRESA = (
     ("America/Bogota", "América / Bogotá"),
     ("America/Mexico_City", "América / Ciudad de México"),
@@ -182,11 +187,7 @@ MESES_CORTO = (
 
 
 def _is_safe_url(target: str) -> bool:
-    if not target:
-        return False
-    ref = urlparse(request.host_url)
-    test = urlparse(urljoin(request.host_url, target))
-    return test.scheme in ("http", "https") and ref.netloc == test.netloc
+    return is_safe_redirect(target, request.host_url)
 
 
 def _current_empresa_id() -> Optional[int]:
@@ -199,13 +200,33 @@ def _filter_empresa(query, model=Machine):
     eid = _current_empresa_id()
     if eid and hasattr(model, "empresa_id"):
         return query.filter(model.empresa_id == eid)
+    if hasattr(model, "empresa_id"):
+        return query.filter(false())
     return query
+
+
+def _validar_machine_id_tenant(machine_id: int) -> Tuple[Optional[Machine], Optional[str]]:
+    if not machine_id:
+        return None, "Selecciona un equipo válido."
+    m = _filter_empresa(Machine.query.filter_by(id=machine_id), Machine).first()
+    if not m:
+        return None, "El equipo seleccionado no pertenece a tu empresa."
+    return m, None
+
+
+def _validar_technician_id_tenant(tech_id: Optional[int], label: str = "técnico") -> Optional[str]:
+    if tech_id is None:
+        return None
+    t = _filter_empresa(Technician.query.filter_by(id=tech_id), Technician).first()
+    if not t:
+        return f"El {label} seleccionado no pertenece a tu empresa."
+    return None
 
 
 @bp.before_request
 def _require_login():
     ep = request.endpoint or ""
-    if ep.startswith("onboarding.") or ep == "main.login":
+    if ep.startswith("onboarding.") or ep in ("main.login", "main.index"):
         return
     if not current_user.is_authenticated:
         return redirect(url_for("main.login", next=request.url))
@@ -217,7 +238,7 @@ def _require_login():
 def _enforce_role_permissions():
     """Aplica permisos por rol en rutas de escritura y formularios."""
     ep = request.endpoint or ""
-    if ep.startswith("onboarding.") or ep == "main.login":
+    if ep.startswith("onboarding.") or ep in ("main.login", "main.index"):
         return
     if not current_user.is_authenticated:
         return
@@ -266,6 +287,7 @@ def _enforce_role_permissions():
 
 
 @bp.route("/login", methods=["GET", "POST"])
+@limiter.limit("5 per 15 minutes", methods=["POST"])
 def login():
     if current_user.is_authenticated:
         if not current_user.onboarding_completado:
@@ -276,24 +298,96 @@ def login():
         password = request.form.get("password", "")
         remember = bool(request.form.get("remember"))
         user = User.query.filter_by(username=username).first()
-        if user is not None and user.activo and user.check_password(password):
-            login_user(user, remember=remember)
-            flash("Sesión iniciada correctamente.", "success")
-            if not user.onboarding_completado:
-                return redirect(url_for("onboarding.wizard"))
-            nxt = request.form.get("next") or request.args.get("next")
-            if nxt and _is_safe_url(nxt):
-                return redirect(nxt)
-            return redirect(url_for("main.dashboard"))
+        if user is not None and user.check_password(password):
+            if user.bloqueado or not user.activo:
+                flash("Usuario o contraseña incorrectos.", "danger")
+            else:
+                login_user(user, remember=remember)
+                if user.empresa_id:
+                    from app.tenant_activity import registrar_actividad_tenant
+
+                    registrar_actividad_tenant(
+                        user.empresa_id,
+                        "login",
+                        user_id=user.id,
+                        username=user.username,
+                        detalle="Inicio de sesión web",
+                    )
+                    db.session.commit()
+                flash("Sesión iniciada correctamente.", "success")
+                if not user.onboarding_completado:
+                    return redirect(url_for("onboarding.wizard"))
+                nxt = request.form.get("next") or request.args.get("next")
+                if nxt and _is_safe_url(nxt):
+                    return redirect(nxt)
+                return redirect(url_for("main.dashboard"))
         flash("Usuario o contraseña incorrectos.", "danger")
     return render_template("login.html")
 
 
 @bp.route("/logout", methods=["POST"])
 def logout():
+    if current_user.is_authenticated and current_user.empresa_id:
+        from app.tenant_activity import registrar_actividad_tenant
+
+        registrar_actividad_tenant(
+            current_user.empresa_id,
+            "logout",
+            user_id=current_user.id,
+            username=current_user.username,
+        )
+        db.session.commit()
     logout_user()
     flash("Sesión cerrada.", "info")
-    return redirect(url_for("main.login"))
+    return redirect(url_for("main.index"))
+
+
+@bp.route("/cuenta-suspendida")
+def cuenta_suspendida():
+    motivo = request.args.get("motivo", "suspendida")
+    mensajes = {
+        "suspendida": "Esta cuenta está suspendida. Contacta a soporte de Mantis para reactivarla.",
+        "mora": "Hay pagos pendientes. Regulariza la facturación para continuar usando Mantis.",
+    }
+    return render_template(
+        "cuenta_suspendida.html",
+        motivo=motivo,
+        mensaje=mensajes.get(motivo, mensajes["suspendida"]),
+    )
+
+
+@bp.route("/salir-impersonacion", methods=["POST"])
+def salir_impersonacion():
+    from flask import session
+
+    if not session.pop("platform_impersonating", None):
+        flash("No hay sesión de impersonación activa.", "warning")
+        return redirect(url_for("main.dashboard"))
+    empresa_id = getattr(current_user, "empresa_id", None)
+    user_id = getattr(current_user, "id", None)
+    username = getattr(current_user, "username", "")
+    logout_user()
+    if empresa_id:
+        from app.platform_audit import registrar_auditoria_plataforma
+        from app.tenant_activity import registrar_actividad_tenant
+
+        registrar_auditoria_plataforma(
+            "impersonate_end",
+            empresa_id=empresa_id,
+            user_id=user_id,
+            detalle=f"Fin de impersonación de @{username}",
+        )
+        registrar_actividad_tenant(
+            empresa_id,
+            "impersonate_end",
+            user_id=user_id,
+            username=username,
+            detalle="Fin de sesión de soporte",
+        )
+        db.session.commit()
+    session["platform_admin"] = True
+    flash("Volviste al panel de plataforma.", "info")
+    return redirect(url_for("platform.empresas"))
 
 
 def _period_bounds(period: str, ref: Optional[date] = None) -> Tuple[date, date, str]:
@@ -894,7 +988,7 @@ def _moneda_empresa_activo(machine: Optional[Machine] = None) -> str:
     return "COP"
 
 
-def _apply_machine_base_fields(machine: Machine, form) -> None:
+def _apply_machine_base_fields(machine: Machine, form) -> Optional[str]:
     machine.nombre = form.get("nombre", "").strip()
     machine.descripcion = form.get("descripcion", "").strip()
     machine.registro_tipo = ""
@@ -930,11 +1024,19 @@ def _apply_machine_base_fields(machine: Machine, form) -> None:
     machine.tipos_mantenimiento = tipos_mantenimiento_from_form(form)
     machine.frecuencia_mantenimiento = (form.get("frecuencia_mantenimiento") or "").strip()
     raw_resp = (form.get("responsable_technician_id") or "").strip()
-    machine.responsable_technician_id = int(raw_resp) if raw_resp.isdigit() else None
+    if raw_resp.isdigit():
+        tid = int(raw_resp)
+        err = _validar_technician_id_tenant(tid, "responsable")
+        if err:
+            return err
+        machine.responsable_technician_id = tid
+    else:
+        machine.responsable_technician_id = None
     machine.criticidad = form.get("criticidad") or "media"
     machine.status = form.get("status") or MachineStatus.OPERATIVO.value
     machine.notas = form.get("notas", "").strip()
     machine.sync_criticidad_critico()
+    return None
 
 
 def _save_machine_custom_fields(
@@ -1118,6 +1220,16 @@ def _proximos_mantenimientos(
 
 
 @bp.route("/")
+def index():
+    """Página pública de inicio (landing). Siempre en /, con o sin sesión."""
+    from app.landing_service import landing_context
+
+    ctx = landing_context()
+    ctx["now_year"] = date.today().year
+    return render_template("landing/index.html", **ctx)
+
+
+@bp.route("/dashboard")
 def dashboard():
     period = request.args.get("periodo", "mes")
     sector, sector_locked = _sector_for_dashboard()
@@ -1481,22 +1593,25 @@ def activos_new():
                 machine_type_id=mt_id,
                 nombre=nombre,
             )
-            _apply_machine_base_fields(m, request.form)
-            db.session.add(m)
-            db.session.flush()
-            sector = normalizar_sector(current_user.empresa.sector if current_user.empresa else None)
-            err_campo = _save_machine_custom_fields(m, request.form, eid, sector, mt_id) if eid else None
-            if err_campo:
-                db.session.rollback()
-                flash(err_campo, "danger")
+            err_resp = _apply_machine_base_fields(m, request.form)
+            if err_resp:
+                flash(err_resp, "danger")
             else:
-                try:
-                    db.session.commit()
-                    flash(f"Activo registrado con código {m.codigo}.", "success")
-                    return redirect(url_for("main.activos_list"))
-                except Exception:
+                db.session.add(m)
+                db.session.flush()
+                sector = normalizar_sector(current_user.empresa.sector if current_user.empresa else None)
+                err_campo = _save_machine_custom_fields(m, request.form, eid, sector, mt_id) if eid else None
+                if err_campo:
                     db.session.rollback()
-                    flash("No se pudo guardar (¿código duplicado?).", "danger")
+                    flash(err_campo, "danger")
+                else:
+                    try:
+                        db.session.commit()
+                        flash(f"Activo registrado con código {m.codigo}.", "success")
+                        return redirect(url_for("main.activos_list"))
+                    except Exception:
+                        db.session.rollback()
+                        flash("No se pudo guardar (¿código duplicado?).", "danger")
 
     preview_id = _default_machine_type_id()
     if request.method == "POST":
@@ -1532,8 +1647,10 @@ def activos_edit(id):
         m.codigo = request.form.get("codigo", "").strip()
         if mt_id:
             m.machine_type_id = mt_id
-        _apply_machine_base_fields(m, request.form)
-        if not m.codigo or not m.nombre:
+        _apply_err = _apply_machine_base_fields(m, request.form)
+        if _apply_err:
+            flash(_apply_err, "danger")
+        elif not m.codigo or not m.nombre:
             flash("Código y nombre son obligatorios.", "danger")
         elif not mt_id:
             flash("Selecciona un tipo de máquina válido.", "danger")
@@ -1791,6 +1908,10 @@ def _parse_jornadas_json() -> Tuple[list[dict], Optional[str]]:
             except (TypeError, ValueError):
                 return [], f"Jornada {i}: técnico no válido."
 
+        if tech_id is not None:
+            if not _filter_empresa(Technician.query.filter_by(id=tech_id), Technician).first():
+                return [], f"Jornada {i}: técnico no pertenece a tu empresa."
+
         nombre = (item.get("tecnico_nombre") or "").strip()
         if tech_id is None and not nombre:
             return [], f"Jornada {i}: indica el técnico realizador o su nombre."
@@ -1852,10 +1973,13 @@ def _aplicar_estado_orden_desde_formulario(wo: WorkOrder) -> None:
     from app.work_order_status import resolver_estado_al_guardar
 
     tiene_jornadas = request.form.get("tiempo_manual") != "1" and bool(wo.jornadas)
+    jornada_estado = (request.form.get("jornada_estado_ot") or "").strip()
+    if tiene_jornadas and not jornada_estado:
+        jornada_estado = WorkOrderStatus.EN_PROCESO.value
     resolver_estado_al_guardar(
         wo,
         status_manual=request.form.get("status_manual"),
-        jornada_estado_ot=request.form.get("jornada_estado_ot"),
+        jornada_estado_ot=jornada_estado or None,
         tiene_jornadas=tiene_jornadas,
     )
 
@@ -2118,6 +2242,9 @@ def _aplicar_ejecucion_desde_form(wo: WorkOrder, form) -> Optional[str]:
         wo.technician_id = (
             int(form["technician_id"]) if form.get("technician_id") else None
         )
+        err = _validar_technician_id_tenant(wo.technician_id)
+        if err:
+            return err
         return None
 
     wo.technician_id = None
@@ -2136,6 +2263,9 @@ def _aplicar_ejecucion_desde_form(wo: WorkOrder, form) -> Optional[str]:
         if form.get("supervisor_technician_id")
         else None
     )
+    err = _validar_technician_id_tenant(wo.supervisor_technician_id, "supervisor")
+    if err:
+        return err
     wo.contacto_proveedor = (form.get("contacto_proveedor") or "").strip() or (
         proveedor.contacto_nombre or ""
     )
@@ -2166,6 +2296,15 @@ def _responsables_por_maquinas_ot(machines: Optional[list]) -> dict[int, str]:
     return responsables_display_por_maquinas(machines, eid, _sector_empresa_actual())
 
 
+def _jornada_estado_desde_status(status: str | None) -> str:
+    key = (status or "").strip().lower()
+    if key in (WorkOrderStatus.COMPLETADO.value, WorkOrderStatus.CERRADA.value):
+        return WorkOrderStatus.COMPLETADO.value
+    if key == WorkOrderStatus.ABIERTA.value:
+        return WorkOrderStatus.ABIERTA.value
+    return WorkOrderStatus.EN_PROCESO.value
+
+
 def _orden_form_context(
     wo: Optional[WorkOrder], technicians: list, machines: Optional[list] = None
 ) -> dict:
@@ -2173,6 +2312,9 @@ def _orden_form_context(
     mins = wo_tiempo_gastado_minutos(wo) if wo else None
     th, tm = minutos_a_horas_minutos(mins)
     jornadas_inicial = [_jornada_a_dict(j) for j in _jornadas_para_formulario(wo)]
+    jornada_estado_inicial = (
+        _jornada_estado_desde_status(wo.status) if wo and jornadas_inicial else ""
+    )
     catalogo = _spare_parts_para_formulario()
     repuestos_inicial = [_repuesto_linea_a_dict(r) for r in (wo.repuestos if wo else [])]
     fv = wo.frecuencia_valor if wo and wo.frecuencia_valor else 1
@@ -2184,9 +2326,9 @@ def _orden_form_context(
     ejecucion_tipo = (
         wo.ejecucion_tipo if wo else WorkOrderEjecucionTipo.INTERNO.value
     )
-    historial_map = _historial_proveedor_json(proveedores_ot, wo)
     return {
         "jornadas_inicial": jornadas_inicial,
+        "jornada_estado_inicial": jornada_estado_inicial,
         "repuestos_inicial": repuestos_inicial,
         "usa_repuestos_inicial": bool(wo and wo.repuestos),
         "frecuencia_unidades": PREVENTIVE_FREQUENCY_UNITS,
@@ -2200,28 +2342,20 @@ def _orden_form_context(
         "responsable_activo_nombre": (
             responsables_map.get(wo.machine_id, "") if wo and wo.machine_id else ""
         ),
-        "technicians_json": json.dumps(
-            [{"id": t.id, "nombre": t.nombre} for t in technicians], ensure_ascii=False
-        ),
-        "repuestos_catalog_json": json.dumps(
-            [
-                {
-                    "id": p.id,
-                    "sku": p.sku,
-                    "nombre": p.nombre,
-                    "stock": p.cantidad or 0,
-                    "unidad": p.unidad or "pza",
-                    "costo_unitario": float(p.costo_unitario or 0),
-                }
-                for p in catalogo
-            ],
-            ensure_ascii=False,
-        ),
+        "technicians_data": [{"id": t.id, "nombre": t.nombre} for t in technicians],
+        "repuestos_catalog_data": [
+            {
+                "id": p.id,
+                "sku": p.sku,
+                "nombre": p.nombre,
+                "stock": p.cantidad or 0,
+                "unidad": p.unidad or "pza",
+                "costo_unitario": float(p.costo_unitario or 0),
+            }
+            for p in catalogo
+        ],
         "proveedores_ot": proveedores_ot,
-        "proveedores_ot_json": json.dumps(
-            [_proveedor_ot_dict(p) for p in proveedores_ot], ensure_ascii=False
-        ),
-        "historial_proveedor_json": json.dumps(historial_map, ensure_ascii=False),
+        "proveedores_ot_data": [_proveedor_ot_dict(p) for p in proveedores_ot],
         "ejecucion_tipo": ejecucion_tipo,
         "wo_es_terminal": bool(
             wo and wo.status in WORK_ORDER_TERMINAL_STATUSES
@@ -2484,7 +2618,11 @@ def _ordenes_list_query(filtros: Optional[dict[str, str]] = None):
         if fecha_hasta:
             q = q.filter(WorkOrder.fecha_programada <= fecha_hasta)
 
-    return q.order_by(WorkOrder.fecha_programada.desc(), WorkOrder.id.desc())
+    return q.order_by(
+        WorkOrder.folio_anio.desc().nullslast(),
+        WorkOrder.folio_seq.desc().nullslast(),
+        WorkOrder.id.desc(),
+    )
 
 
 _OT_LIST_TIPOS_ORDER = (
@@ -2632,8 +2770,11 @@ def ordenes_new():
             **_work_order_responsables_desde_form(request.form),
             machine_id=int(request.form.get("machine_id", 0)),
         )
+        _, err_machine = _validar_machine_id_tenant(wo.machine_id)
         if not wo.titulo or not wo.machine_id:
             flash("Actividad y equipo son obligatorios.", "danger")
+        elif err_machine:
+            flash(err_machine, "danger")
         elif not tipo:
             flash("Selecciona el tipo de orden.", "danger")
         else:
@@ -2731,6 +2872,7 @@ def ordenes_new():
                 db.session.rollback()
                 flash(err, "danger")
             else:
+                _aplicar_estado_orden_desde_formulario(wo)
                 _aplicar_fecha_cierre_si_terminal(wo)
                 err_rep = _guardar_repuestos_orden(wo)
                 if err_rep:
@@ -2802,7 +2944,20 @@ def ordenes_edit(id):
         wo.recibido_por = extra["recibido_por"]
         fp = request.form.get("fecha_programada")
         wo.fecha_programada = datetime.strptime(fp, "%Y-%m-%d").date() if fp else None
-        wo.machine_id = int(request.form.get("machine_id", wo.machine_id))
+        new_mid = int(request.form.get("machine_id", wo.machine_id))
+        _, err_machine = _validar_machine_id_tenant(new_mid)
+        if err_machine:
+            flash(err_machine, "danger")
+            return render_template(
+                "ordenes/form.html",
+                order=wo,
+                machines=machines,
+                technicians=technicians,
+                prioridades=WORK_ORDER_PRIORITIES,
+                solo_lectura=solo_lectura,
+                **_orden_form_context(wo, technicians, machines),
+            )
+        wo.machine_id = new_mid
         err_ej = _aplicar_ejecucion_desde_form(wo, request.form)
         if err_ej:
             flash(err_ej, "danger")
@@ -3251,8 +3406,8 @@ def equipo_new():
             flash("No puedes asignar ese rol.", "danger")
         elif err_sede:
             flash(err_sede, "danger")
-        elif len(password) < 6:
-            flash("La contraseña debe tener al menos 6 caracteres.", "danger")
+        elif err_pwd := validar_password(password):
+            flash(err_pwd, "danger")
         elif password != password2:
             flash("Las contraseñas no coinciden.", "danger")
         else:
@@ -3329,8 +3484,8 @@ def equipo_edit(id):
             flash("No puedes desactivar tu propia cuenta.", "danger")
         elif es_self and rol != normalize_rol(current_user.rol):
             flash("No puedes cambiar tu propio rol.", "danger")
-        elif password and len(password) < 6:
-            flash("La contraseña debe tener al menos 6 caracteres.", "danger")
+        elif password and (err_pwd := validar_password(password)):
+            flash(err_pwd, "danger")
         elif password and password != password2:
             flash("Las contraseñas no coinciden.", "danger")
         elif (
@@ -3811,7 +3966,7 @@ def _guardar_logo_empresa(empresa: Empresa, archivo) -> None:
     nombre = secure_filename(archivo.filename)
     ext = nombre.rsplit(".", 1)[-1].lower() if "." in nombre else ""
     if ext not in EMPRESA_LOGO_EXTENSIONS:
-        raise ValueError("Formato de imagen no permitido. Use PNG, JPG, WEBP o SVG.")
+        raise ValueError("Formato de imagen no permitido. Use PNG, JPG o WEBP.")
     carpeta = os.path.join(
         current_app.static_folder, "uploads", "empresas", str(empresa.id)
     )
@@ -3874,7 +4029,11 @@ def configuracion_empresa():
         emp.zona_horaria = request.form.get("zona_horaria", emp.zona_horaria) or "America/Bogota"
         logo_url = request.form.get("logo_url", "").strip()
         if logo_url:
-            emp.logo = logo_url
+            logo_norm = normalizar_logo_empresa(logo_url)
+            if logo_norm is None:
+                flash("URL de logo no válida. Use https:// o una ruta bajo uploads/.", "danger")
+                return redirect(url_for("main.configuracion_empresa"))
+            emp.logo = logo_norm
         if not emp.razon_social:
             flash("La razón social es obligatoria.", "danger")
             return redirect(url_for("main.configuracion_empresa"))
@@ -3892,7 +4051,11 @@ def configuracion_empresa():
             db.session.rollback()
             flash("No se pudo guardar la configuración.", "danger")
 
-    plan_meta = PLAN_CATALOG.get(plan.plan, {}) if plan else {}
+    from app.platform_config_service import catalogo_plan_meta
+
+    plan_meta = catalogo_plan_meta(plan.plan) if plan else {}
+    from app.platform_audit import PLATFORM_AUDIT_LABELS, auditoria_visible_empresa
+
     return render_template(
         "configuracion/empresa.html",
         empresa=emp,
@@ -3904,6 +4067,8 @@ def configuracion_empresa():
         monedas=MONEDAS_EMPRESA,
         zonas=ZONAS_EMPRESA,
         logo_url=_empresa_logo_url(emp),
+        auditoria_plataforma=auditoria_visible_empresa(emp.id),
+        audit_labels=PLATFORM_AUDIT_LABELS,
     )
 
 
@@ -3947,31 +4112,377 @@ def reportes():
 
 
 # --- Incidencias ---
+def _areas_incidencia_empresa(empresa_id: Optional[int]) -> list[str]:
+    areas = {a.strip() for a in INCIDENT_AREAS_BASE if a.strip()}
+    if current_user.is_authenticated and (current_user.area or "").strip():
+        areas.add(current_user.area.strip())
+    if empresa_id:
+        q = db.session.query(Machine.area).filter(
+            Machine.empresa_id == empresa_id,
+            Machine.area.isnot(None),
+            Machine.area != "",
+        ).distinct()
+        areas.update((row[0] or "").strip() for row in q if (row[0] or "").strip())
+    return sorted(areas, key=str.lower)
+
+
+def _incidencia_form_defaults() -> dict:
+    u = current_user if current_user.is_authenticated else None
+    tel = (getattr(u, "telefono", None) or "").strip() if u else ""
+    area = (getattr(u, "area", None) or "").strip() if u else ""
+    return {
+        "reportado_por": u.etiqueta() if u else "",
+        "cargo_reportante": u.rol_label if u else "",
+        "telefono_contacto": tel,
+        "area": area,
+        "ubicacion": "",
+        "titulo": "",
+        "machine_id": "",
+        "tipo": "",
+        "descripcion": "",
+        "prioridad": IncidentPrioridad.MEDIA.value,
+        "equipo_detenido": False,
+        "fecha_evento": "",
+        "hora_evento": "",
+    }
+
+
+def _incidencia_desde_form(form) -> tuple[dict, Optional[str]]:
+    data = {
+        "reportado_por": (form.get("reportado_por") or "").strip(),
+        "cargo_reportante": (form.get("cargo_reportante") or "").strip(),
+        "telefono_contacto": (form.get("telefono_contacto") or "").strip(),
+        "area": (form.get("area") or "").strip(),
+        "ubicacion": (form.get("ubicacion") or "").strip(),
+        "titulo": (form.get("titulo") or "").strip(),
+        "machine_id": (form.get("machine_id") or "").strip(),
+        "tipo": (form.get("tipo") or "").strip(),
+        "descripcion": (form.get("descripcion") or "").strip(),
+        "prioridad": (form.get("prioridad") or IncidentPrioridad.MEDIA.value).strip().lower(),
+        "equipo_detenido": form.get("equipo_detenido") == "1",
+        "fecha_evento": (form.get("fecha_evento") or "").strip(),
+        "hora_evento": (form.get("hora_evento") or "").strip(),
+    }
+    if not data["reportado_por"]:
+        return data, "Indica el nombre de quien reporta la falla."
+    if not data["area"]:
+        return data, "Selecciona el área o departamento."
+    if not data["titulo"]:
+        return data, "Describe brevemente la incidencia."
+    if not data["tipo"]:
+        return data, "Selecciona el tipo de incidencia."
+    if not data["descripcion"]:
+        return data, "Incluye una descripción detallada."
+    valid_prioridades = {p[0] for p in INCIDENT_PRIORIDADES}
+    if data["prioridad"] not in valid_prioridades:
+        data["prioridad"] = IncidentPrioridad.MEDIA.value
+    valid_tipos = {t[0] for t in INCIDENT_TIPOS}
+    if data["tipo"] not in valid_tipos:
+        return data, "Tipo de incidencia no válido."
+    if data["fecha_evento"]:
+        try:
+            datetime.strptime(data["fecha_evento"], "%Y-%m-%d")
+        except ValueError:
+            return data, "Fecha del evento no válida."
+    if data["hora_evento"]:
+        try:
+            datetime.strptime(data["hora_evento"], "%H:%M")
+        except ValueError:
+            return data, "Hora del evento no válida."
+    return data, None
+
+
+def _asignar_numero_incidencia(inc: Incident) -> str:
+    year = date.today().year % 100
+    prefix = f"INC-{year:02d}-"
+    q = Incident.query.filter(Incident.numero.like(f"{prefix}%"))
+    if inc.empresa_id:
+        q = q.filter(Incident.empresa_id == inc.empresa_id)
+    last = q.order_by(Incident.id.desc()).first()
+    seq = 1
+    if last and last.numero:
+        try:
+            seq = int(str(last.numero).split("-")[-1]) + 1
+        except ValueError:
+            seq = 1
+    inc.numero = f"{prefix}{seq:04d}"
+    return inc.numero
+
+
+def _incidencia_preview_numero(empresa_id: Optional[int]) -> str:
+    year = date.today().year % 100
+    prefix = f"INC-{year:02d}-"
+    q = Incident.query.filter(Incident.numero.like(f"{prefix}%"))
+    if empresa_id:
+        q = q.filter(Incident.empresa_id == empresa_id)
+    last = q.order_by(Incident.id.desc()).first()
+    seq = 1
+    if last and last.numero:
+        try:
+            seq = int(str(last.numero).split("-")[-1]) + 1
+        except ValueError:
+            seq = 1
+    return f"{prefix}{seq:04d}"
+
+
 @bp.route("/incidencia", methods=["GET", "POST"])
 def incidencia():
     eid = _current_empresa_id()
     machines = _filter_empresa(Machine.query.order_by(Machine.nombre), Machine).all()
+    areas = _areas_incidencia_empresa(eid)
+    form_data = _incidencia_form_defaults()
+    ahora = datetime.now()
+    preview_numero = _incidencia_preview_numero(eid)
+
     if request.method == "POST":
-        mid = request.form.get("machine_id")
-        machine_id = int(mid) if mid else None
-        if machine_id:
-            machine = _filter_empresa(Machine.query.filter_by(id=machine_id), Machine).first()
-            if machine is None:
-                flash("El activo seleccionado no pertenece a tu empresa.", "danger")
-                return render_template("incidencia.html", machines=machines)
+        form_data, err = _incidencia_desde_form(request.form)
+        if err:
+            flash(err, "danger")
         else:
+            mid = form_data["machine_id"]
+            machine_id = int(mid) if mid.isdigit() else None
             machine = None
-        inc = Incident(
-            titulo=request.form.get("titulo", "").strip(),
-            descripcion=request.form.get("descripcion", "").strip(),
-            machine_id=machine.id if machine else None,
-            empresa_id=eid,
-        )
-        if not inc.titulo:
-            flash("Describe brevemente la incidencia.", "danger")
-        else:
+            if machine_id:
+                machine = _filter_empresa(
+                    Machine.query.filter_by(id=machine_id), Machine
+                ).first()
+                if machine is None:
+                    flash("El activo seleccionado no pertenece a tu empresa.", "danger")
+                    return render_template(
+                        "incidencia.html",
+                        machines=machines,
+                        areas=areas,
+                        form=form_data,
+                        tipos_incidencia=INCIDENT_TIPOS,
+                        prioridades_incidencia=INCIDENT_PRIORIDADES,
+                        preview_numero=preview_numero,
+                        ahora=ahora,
+                    )
+            fecha_ev = None
+            if form_data["fecha_evento"]:
+                fecha_ev = datetime.strptime(form_data["fecha_evento"], "%Y-%m-%d").date()
+            inc = Incident(
+                titulo=form_data["titulo"],
+                descripcion=form_data["descripcion"],
+                machine_id=machine.id if machine else None,
+                empresa_id=eid,
+                user_id=current_user.id if current_user.is_authenticated else None,
+                reportado_por=form_data["reportado_por"],
+                cargo_reportante=form_data["cargo_reportante"],
+                telefono_contacto=form_data["telefono_contacto"],
+                area=form_data["area"],
+                ubicacion=form_data["ubicacion"],
+                tipo=form_data["tipo"],
+                prioridad=form_data["prioridad"],
+                equipo_detenido=form_data["equipo_detenido"],
+                fecha_evento=fecha_ev,
+                hora_evento=form_data["hora_evento"],
+            )
             db.session.add(inc)
+            db.session.flush()
+            numero = _asignar_numero_incidencia(inc)
             db.session.commit()
-            flash("Incidencia registrada. El supervisor será notificado.", "success")
-            return redirect(url_for("main.dashboard"))
-    return render_template("incidencia.html", machines=machines)
+            flash(f"Incidencia {numero} registrada. El supervisor será notificado.", "success")
+            return redirect(url_for("main.incidencias_detail", id=inc.id))
+
+    return render_template(
+        "incidencia.html",
+        machines=machines,
+        areas=areas,
+        form=form_data,
+        tipos_incidencia=INCIDENT_TIPOS,
+        prioridades_incidencia=INCIDENT_PRIORIDADES,
+        preview_numero=preview_numero,
+        ahora=ahora,
+    )
+
+
+def _filter_incidents_empresa(q):
+    eid = _current_empresa_id()
+    if not eid:
+        return q
+    return q.filter(
+        or_(
+            Incident.empresa_id == eid,
+            Incident.machine_id.in_(_machine_ids_for_empresa()),
+        )
+    )
+
+
+def _incidents_scope_query():
+    q = _filter_incidents_empresa(Incident.query)
+    if normalize_rol(current_user.rol) == UserRole.USUARIO.value:
+        q = q.filter(Incident.user_id == current_user.id)
+    return q
+
+
+def _get_incident_or_404(incident_id: int):
+    from sqlalchemy.orm import joinedload
+
+    inc = (
+        _incidents_scope_query()
+        .options(
+            joinedload(Incident.machine),
+            joinedload(Incident.usuario),
+            joinedload(Incident.resuelto_por),
+            joinedload(Incident.work_order),
+        )
+        .filter_by(id=incident_id)
+        .first()
+    )
+    if inc is None:
+        abort(404)
+    return inc
+
+
+def _incidentes_kpis(base_q) -> dict:
+    pendientes_q = base_q.filter(Incident.resuelto.is_(False))
+    return {
+        "total": base_q.count(),
+        "pendientes": pendientes_q.count(),
+        "criticas": pendientes_q.filter(
+            Incident.prioridad == IncidentPrioridad.CRITICA.value
+        ).count(),
+        "resueltas": base_q.filter(Incident.resuelto.is_(True)).count(),
+        "mis_pendientes": base_q.filter(
+            Incident.user_id == current_user.id,
+            Incident.resuelto.is_(False),
+        ).count()
+        if current_user.is_authenticated
+        else 0,
+    }
+
+
+def _usuario_solo_mis_incidencias() -> bool:
+    return normalize_rol(current_user.rol) == UserRole.USUARIO.value
+
+
+@bp.route("/incidencias")
+def incidencias_list():
+    from sqlalchemy.orm import joinedload
+
+    q = _incidents_scope_query().options(
+        joinedload(Incident.machine), joinedload(Incident.usuario)
+    )
+    estado_f = (request.args.get("estado") or "").strip().lower()
+    area_f = (request.args.get("area") or "").strip()
+    prio_f = (request.args.get("prioridad") or "").strip().lower()
+    mias_f = request.args.get("mias") == "1"
+    q_str = (request.args.get("q") or "").strip()
+    solo_gestion = not _usuario_solo_mis_incidencias()
+
+    if mias_f and solo_gestion:
+        q = q.filter(Incident.user_id == current_user.id)
+    if estado_f == "pendiente":
+        q = q.filter(Incident.resuelto.is_(False))
+    elif estado_f == "resuelta":
+        q = q.filter(Incident.resuelto.is_(True))
+    if area_f:
+        q = q.filter(Incident.area == area_f)
+    if prio_f:
+        q = q.filter(Incident.prioridad == prio_f)
+    if q_str:
+        like = f"%{q_str}%"
+        q = q.filter(
+            or_(
+                Incident.numero.ilike(like),
+                Incident.titulo.ilike(like),
+                Incident.reportado_por.ilike(like),
+                Incident.descripcion.ilike(like),
+            )
+        )
+
+    kpis = _incidentes_kpis(_incidents_scope_query())
+    items = q.order_by(Incident.resuelto.asc(), Incident.reportado_en.desc()).all()
+    areas = _areas_incidencia_empresa(_current_empresa_id())
+
+    return render_template(
+        "incidencias/list.html",
+        items=items,
+        kpis=kpis,
+        areas=areas,
+        estado_f=estado_f,
+        area_f=area_f,
+        prioridad_f=prio_f,
+        mias_f=mias_f,
+        q=q_str,
+        solo_gestion=solo_gestion,
+        prioridades_incidencia=INCIDENT_PRIORIDADES,
+    )
+
+
+@bp.route("/incidencias/<int:id>")
+def incidencias_detail(id):
+    inc = _get_incident_or_404(id)
+    return render_template(
+        "incidencias/detail.html",
+        inc=inc,
+        puede_gestionar=can_edit(current_user) and not _usuario_solo_mis_incidencias(),
+        puede_crear_ot=can_create(current_user) and not _usuario_solo_mis_incidencias(),
+    )
+
+
+@bp.route("/incidencias/<int:id>/resolver", methods=["POST"])
+def incidencias_resolver(id):
+    if not can_edit(current_user) or _usuario_solo_mis_incidencias():
+        flash("No tienes permiso para resolver incidencias.", "warning")
+        return redirect(url_for("main.incidencias_list"))
+    inc = _get_incident_or_404(id)
+    if inc.resuelto:
+        flash("Esta incidencia ya está resuelta.", "info")
+        return redirect(url_for("main.incidencias_detail", id=inc.id))
+    inc.resuelto = True
+    inc.resuelto_en = datetime.utcnow()
+    inc.resuelto_por_id = current_user.id
+    inc.notas_resolucion = (request.form.get("notas_resolucion") or "").strip()
+    db.session.commit()
+    flash(f"Incidencia {inc.numero or inc.id} marcada como resuelta.", "success")
+    return redirect(url_for("main.incidencias_detail", id=inc.id))
+
+
+@bp.route("/incidencias/<int:id>/crear-ot", methods=["POST"])
+def incidencias_crear_ot(id):
+    if not can_create(current_user) or _usuario_solo_mis_incidencias():
+        flash("No tienes permiso para crear órdenes de trabajo.", "warning")
+        return redirect(url_for("main.incidencias_list"))
+    inc = _get_incident_or_404(id)
+    if inc.work_order_id and inc.work_order:
+        flash(f"Ya existe la OT {inc.work_order.numero}.", "info")
+        return redirect(url_for("main.ordenes_edit", id=inc.work_order_id))
+    if not inc.machine_id:
+        flash("El reporte no tiene equipo relacionado. Edítalo o crea la OT manualmente.", "danger")
+        return redirect(url_for("main.incidencias_detail", id=inc.id))
+    from app.work_order_status import estado_inicial_por_fecha
+
+    hoy = date.today()
+    prio = (inc.prioridad or "media").strip().lower()
+    if prio not in {p[0] for p in WORK_ORDER_PRIORITIES}:
+        prio = "media"
+    wo_tipo = (
+        WorkOrderType.EMERGENCIA.value
+        if prio == IncidentPrioridad.CRITICA.value
+        else WorkOrderType.CORRECTIVO.value
+    )
+    desc = (inc.descripcion or "").strip()
+    if inc.numero:
+        desc = f"{desc}\n\n[Origen: incidencia {inc.numero}]".strip()
+    wo = WorkOrder(
+        titulo=inc.titulo,
+        descripcion=desc,
+        tipo=wo_tipo,
+        status=estado_inicial_por_fecha(hoy),
+        prioridad=prio,
+        empresa_id=inc.empresa_id or _current_empresa_id(),
+        fecha_programada=hoy,
+        machine_id=inc.machine_id,
+        area=inc.area or "",
+        ubicacion=inc.ubicacion or "",
+        maquina_requirio_paro=bool(inc.equipo_detenido),
+    )
+    db.session.add(wo)
+    db.session.flush()
+    numero = asignar_numero_ot(wo)
+    inc.work_order_id = wo.id
+    db.session.commit()
+    flash(f"OT {numero} creada desde la incidencia {inc.numero}.", "success")
+    return redirect(url_for("main.ordenes_edit", id=wo.id))

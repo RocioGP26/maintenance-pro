@@ -1,0 +1,140 @@
+{% extends "platform/base.html" %}
+{% block title %}Empresas — Mantis Platform{% endblock %}
+
+{% block content %}
+<div class="platform-page-header">
+  <h1>Empresas registradas</h1>
+  <p>Gestiona todos los clientes (tenants) de Mantis.</p>
+</div>
+
+<div class="platform-kpi-grid">
+  <div class="platform-kpi">
+    <div class="platform-kpi-label">Empresas totales</div>
+    <div class="platform-kpi-row">
+      <div class="platform-kpi-value">{{ kpis.total }}</div>
+      {% if kpis.nuevas_mes %}
+      <span class="platform-kpi-trend platform-kpi-trend--up">+{{ kpis.nuevas_mes }}</span>
+      {% endif %}
+    </div>
+    <div class="platform-kpi-sub">{% if kpis.nuevas_mes %}+{{ kpis.nuevas_mes }} este mes{% else %}Sin altas este mes{% endif %}</div>
+  </div>
+  <div class="platform-kpi">
+    <div class="platform-kpi-label">Activas</div>
+    <div class="platform-kpi-row">
+      <div class="platform-kpi-value">{{ kpis.activas }}</div>
+    </div>
+    <div class="platform-kpi-sub">{{ kpis.pct_activas }}% del total</div>
+  </div>
+  <div class="platform-kpi">
+    <div class="platform-kpi-label">En trial</div>
+    <div class="platform-kpi-row">
+      <div class="platform-kpi-value">{{ kpis.trial }}</div>
+    </div>
+    <div class="platform-kpi-sub">trial 14–30 días</div>
+  </div>
+  <div class="platform-kpi">
+    <div class="platform-kpi-label">MRR</div>
+    <div class="platform-kpi-row">
+      <div class="platform-kpi-value" style="font-size:1.65rem;">{{ formato_moneda(kpis.mrr) }}</div>
+    </div>
+    <div class="platform-kpi-sub">COP / mes · {{ kpis.mora }} en mora</div>
+  </div>
+</div>
+
+<form class="platform-filters" method="get" action="{{ url_for('platform.empresas') }}">
+  <div class="platform-search-wrap">
+    <i class="bi bi-search"></i>
+    <input type="search" name="q" class="platform-search" placeholder="Buscar empresa o NIT…"
+           value="{{ filtros.q }}">
+  </div>
+  <select name="sector" class="platform-select" onchange="this.form.submit()">
+    {% for val, lbl in sectores %}
+    <option value="{{ val }}" {% if filtros.sector == val %}selected{% endif %}>{{ lbl }}</option>
+    {% endfor %}
+  </select>
+  <select name="plan" class="platform-select" onchange="this.form.submit()">
+    {% for val, lbl in planes %}
+    <option value="{{ val }}" {% if filtros.plan == val %}selected{% endif %}>{{ lbl }}</option>
+    {% endfor %}
+  </select>
+  <select name="estado" class="platform-select" onchange="this.form.submit()">
+    {% for val, lbl in estados %}
+    <option value="{{ val }}" {% if filtros.estado == val %}selected{% endif %}>{{ lbl }}</option>
+    {% endfor %}
+  </select>
+  <button type="submit" class="platform-btn platform-btn-outline">Buscar</button>
+</form>
+
+<div class="platform-card">
+  <div class="table-responsive">
+    <table class="platform-table">
+      <thead>
+        <tr>
+          <th>Empresa</th>
+          <th>Sector</th>
+          <th>Plan</th>
+          <th>Estado</th>
+          <th>Uso activos</th>
+          <th>Almacenamiento</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for f in filas %}
+        {% set e = f.empresa %}
+        {% set sm = estado_meta.get(f.estado, {}) %}
+        <tr>
+          <td>
+            <div class="platform-empresa-cell">
+              <div class="platform-avatar" style="background: {{ f.avatar_color }};">{{ e.iniciales() }}</div>
+              <div>
+                <div class="platform-empresa-nombre">{{ e.razon_social }}</div>
+                <div class="platform-empresa-nit">{% if e.nit %}NIT {{ e.nit }}{% else %}{{ e.slug or '—' }}{% endif %}</div>
+              </div>
+            </div>
+          </td>
+          <td>{{ e.sector_label }}</td>
+          <td><span class="{{ f.plan_badge_class }}">{{ f.plan_short }}</span></td>
+          <td>
+            <span class="{{ sm.badge_class }}">
+              {% if sm.icon %}<i class="bi {{ sm.icon }}"></i>{% endif %}
+              {{ sm.label }}
+            </span>
+          </td>
+          <td>
+            <div class="platform-usage">
+              <div class="platform-usage-label">
+                {% if f.max_activos %}
+                  {{ f.activos }} / {{ f.max_activos }} activos
+                {% else %}
+                  {{ f.activos }} activos · ilimitado
+                {% endif %}
+              </div>
+              {% if f.uso_pct is not none %}
+              <div class="platform-usage-bar">
+                <div class="platform-usage-fill{% if f.uso_pct >= 90 %} platform-usage-fill--danger{% elif f.uso_pct >= 75 %} platform-usage-fill--warn{% endif %}"
+                     style="width: {{ f.uso_pct }}%;"></div>
+              </div>
+              {% endif %}
+            </div>
+          </td>
+          <td>
+            <span class="platform-usage-label">{{ f.storage_label }}</span>
+          </td>
+          <td class="text-end">
+            <a href="{{ url_for('platform.empresa_detail', id=e.id) }}" class="platform-link">Ver</a>
+          </td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="7" class="text-center py-4 text-secondary">No hay empresas con estos filtros.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div class="platform-table-footer">
+    <span>Mostrando {{ filas|length }} de {{ kpis.total }} empresas</span>
+  </div>
+</div>
+{% endblock %}

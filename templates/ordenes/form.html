@@ -81,6 +81,7 @@
         </div>
         {% endif %}
         <form method="post" id="ordenForm" data-solo-lectura="{{ '1' if solo_lectura|default(false) else '0' }}" data-es-nueva="{{ '1' if not order else '0' }}">
+          {% include "_csrf.html" %}
           <input type="hidden" name="jornadas_json" id="jornadasJson" value="">
           <fieldset {% if solo_lectura|default(false) %}disabled{% endif %}>
 
@@ -250,7 +251,7 @@
               <p class="form-text small mb-0" id="estadoOtAyuda">
                 Para marcar la OT como completada, indícalo al registrar una jornada. Use esta acción solo para cerrar la orden.
               </p>
-              <input type="hidden" name="jornada_estado_ot" id="jornadaEstadoOtHidden" value="">
+              <input type="hidden" name="jornada_estado_ot" id="jornadaEstadoOtHidden" value="{{ jornada_estado_inicial or '' }}">
             </div>
 
             <div class="col-12 d-none" id="seccionParoMaquina">
@@ -473,7 +474,7 @@
 (function () {
   var soloLectura = document.getElementById('ordenForm') &&
     document.getElementById('ordenForm').dataset.soloLectura === '1';
-  var technicians = {{ technicians_json|safe }};
+  var technicians = {{ technicians_data|tojson }};
   var techById = {};
   technicians.forEach(function (t) { techById[String(t.id)] = t.nombre; });
 
@@ -510,6 +511,7 @@
 
   {% if order %}
   var jornadas = {{ jornadas_inicial|tojson }};
+  var estadoJornadaInicial = {{ jornada_estado_inicial|tojson }};
 
   var editIndex = -1;
   var tbody = document.getElementById('jornadasTbody');
@@ -622,6 +624,12 @@
     aplicarEstadoDesdeJornadasUI();
   }
 
+  function syncRadioJornadaEstado(val) {
+    if (!val) return;
+    var radio = document.querySelector('input[name="jornadaEstadoOt"][value="' + val + '"]');
+    if (radio) radio.checked = true;
+  }
+
   function aplicarEstadoDesdeJornadasUI() {
     var hiddenEst = document.getElementById('jornadaEstadoOtHidden');
     var manualSel = document.getElementById('selectEstadoManual');
@@ -632,9 +640,13 @@
       if (fp && fp.value) actualizarBadgeEstado(estadoPorFecha(fp.value));
       return;
     }
-    var picked = document.querySelector('input[name="jornadaEstadoOt"]:checked');
-    var accion = picked ? picked.value : 'en_proceso';
+    var accion = hiddenEst && hiddenEst.value;
+    if (!accion) {
+      var picked = document.querySelector('input[name="jornadaEstadoOt"]:checked');
+      accion = picked ? picked.value : 'en_proceso';
+    }
     if (hiddenEst) hiddenEst.value = accion;
+    syncRadioJornadaEstado(accion);
     actualizarBadgeEstado(accion);
   }
 
@@ -746,6 +758,7 @@
   if (manual && !soloLectura) manual.addEventListener('change', toggleManual);
 
   toggleTecnicoNombre();
+  if (estadoJornadaInicial) syncRadioJornadaEstado(estadoJornadaInicial);
   syncHidden();
   renderLista();
   toggleManual();
@@ -849,7 +862,7 @@
   var repHidden = document.getElementById('repuestosJson');
   var repVacio = document.getElementById('repuestosVacio');
   var btnAddRep = document.getElementById('btnAgregarRepuesto');
-  var catalogoRep = {{ repuestos_catalog_json|safe }};
+  var catalogoRep = {{ repuestos_catalog_data|tojson }};
   var repuestos = {{ repuestos_inicial|tojson }};
   var repCostoTotalEl = document.getElementById('repuestosCostoTotal');
 
@@ -1018,8 +1031,12 @@
 
 {% if order %}
 (function () {
+  function escHtml(s) {
+    if (!s) return '';
+    return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
   var historialApiUrl = {{ url_for('main.ordenes_api_historial_proveedor', proveedor_id=0)|tojson }}.replace('/0', '/');
-  var catalogoProv = {{ proveedores_ot_json|safe }};
+  var catalogoProv = {{ proveedores_ot_data|tojson }};
   var radiosEj = document.querySelectorAll('.ot-ejec-radio');
   var panelInt = document.getElementById('panelEjecucionInterno');
   var panelExt = document.getElementById('panelEjecucionExterno');
@@ -1058,8 +1075,8 @@
     var html = '<ul class="list-unstyled mb-0">';
     rows.forEach(function (r) {
       html += '<li class="border-bottom py-2">' +
-        '<div class="fw-medium">' + (r.numero || '') + ' — ' + (r.titulo || '') + '</div>' +
-        '<div class="text-muted">' + (r.fecha || '') + ' · ' + (r.status_label || '') + '</div></li>';
+        '<div class="fw-medium">' + escHtml(r.numero || '') + ' — ' + escHtml(r.titulo || '') + '</div>' +
+        '<div class="text-muted">' + escHtml(r.fecha || '') + ' · ' + escHtml(r.status_label || '') + '</div></li>';
     });
     html += '</ul>';
     lista.innerHTML = html;
@@ -1154,9 +1171,9 @@
     }).slice(0, 8);
     if (!hits.length) { listaProv.classList.add('d-none'); return; }
     listaProv.innerHTML = hits.map(function (p) {
-      return '<button type="button" class="ot-prov-suggest-item" data-id="' + p.id + '">' +
-        '<span class="fw-medium">' + p.nombre + '</span>' +
-        '<span class="small text-muted d-block">' + (p.nit || '') + '</span></button>';
+      return '<button type="button" class="ot-prov-suggest-item" data-id="' + escHtml(String(p.id)) + '">' +
+        '<span class="fw-medium">' + escHtml(p.nombre) + '</span>' +
+        '<span class="small text-muted d-block">' + escHtml(p.nit || '') + '</span></button>';
     }).join('');
     listaProv.classList.remove('d-none');
     listaProv.querySelectorAll('.ot-prov-suggest-item').forEach(function (btn) {

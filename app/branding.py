@@ -17,7 +17,21 @@ APP_LOGO_PATH = "img/mantis-logo.png"
 def empresa_logo_url_or_none(empresa: Optional["Empresa"]) -> Optional[str]:
     if not empresa or not (empresa.logo or "").strip():
         return None
-    logo = empresa.logo.strip()
+    logo = normalizar_logo_empresa(empresa.logo.strip())
+    if not logo:
+        return None
     if logo.startswith(("http://", "https://")):
         return logo
     return url_for("static", filename=logo)
+
+
+def normalizar_logo_empresa(logo: str) -> Optional[str]:
+    """Permite solo URLs https o rutas relativas bajo uploads/."""
+    value = (logo or "").strip()
+    if not value:
+        return None
+    if value.startswith("https://"):
+        return value
+    if value.startswith("uploads/") and ".." not in value and not value.startswith("//"):
+        return value
+    return None

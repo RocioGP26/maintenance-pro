@@ -1,0 +1,163 @@
+{% extends "base.html" %}
+{% block title %}Incidencias — {{ app_name }}{% endblock %}
+{% block page_title %}Incidencias{% endblock %}
+
+{% block content %}
+<div class="incidencias-page">
+  <div class="row g-2 mb-3 inc-kpi-row">
+    <div class="col-6 col-lg-3">
+      <a href="{{ url_for('main.incidencias_list', estado='pendiente', area=area_f, prioridad=prioridad_f, q=q, mias=('1' if mias_f else '')) }}"
+         class="inc-kpi-card inc-kpi-card--link{% if estado_f == 'pendiente' %} inc-kpi-card--active{% endif %}">
+        <div class="inc-kpi-card-top">
+          <span class="inc-kpi-label">Pendientes</span>
+          <i class="bi bi-hourglass-split inc-kpi-icon" aria-hidden="true"></i>
+        </div>
+        <p class="inc-kpi-value">{{ kpis.pendientes }}</p>
+        <p class="inc-kpi-sub">por atender</p>
+      </a>
+    </div>
+    <div class="col-6 col-lg-3">
+      <a href="{{ url_for('main.incidencias_list', estado='pendiente', prioridad='critica', area=area_f, q=q) }}"
+         class="inc-kpi-card inc-kpi-card--link inc-kpi-card--critica{% if prioridad_f == 'critica' and estado_f != 'resuelta' %} inc-kpi-card--active{% endif %}">
+        <div class="inc-kpi-card-top">
+          <span class="inc-kpi-label">Críticas</span>
+          <span class="badge badge-inc-prio badge-inc-critica">!</span>
+        </div>
+        <p class="inc-kpi-value inc-kpi-value--critica">{{ kpis.criticas }}</p>
+        <p class="inc-kpi-sub">urgentes abiertas</p>
+      </a>
+    </div>
+    <div class="col-6 col-lg-3">
+      <a href="{{ url_for('main.incidencias_list', estado='resuelta', area=area_f, prioridad=prioridad_f, q=q) }}"
+         class="inc-kpi-card inc-kpi-card--link inc-kpi-card--resuelta{% if estado_f == 'resuelta' %} inc-kpi-card--active{% endif %}">
+        <div class="inc-kpi-card-top">
+          <span class="inc-kpi-label">Resueltas</span>
+          <i class="bi bi-check-circle inc-kpi-icon" aria-hidden="true"></i>
+        </div>
+        <p class="inc-kpi-value inc-kpi-value--resuelta">{{ kpis.resueltas }}</p>
+        <p class="inc-kpi-sub">cerradas</p>
+      </a>
+    </div>
+    <div class="col-6 col-lg-3">
+      <a href="{{ url_for('main.incidencias_list', mias='1', area=area_f, prioridad=prioridad_f, q=q) }}"
+         class="inc-kpi-card inc-kpi-card--link inc-kpi-card--mis{% if mias_f %} inc-kpi-card--active{% endif %}">
+        <div class="inc-kpi-card-top">
+          <span class="inc-kpi-label">{% if solo_gestion %}Mis reportes{% else %}Mis pendientes{% endif %}</span>
+          <i class="bi bi-person inc-kpi-icon" aria-hidden="true"></i>
+        </div>
+        <p class="inc-kpi-value">{{ kpis.mis_pendientes if solo_gestion else kpis.pendientes }}</p>
+        <p class="inc-kpi-sub">{% if solo_gestion %}que reporté{% else %}por resolver{% endif %}</p>
+      </a>
+    </div>
+  </div>
+
+  <div class="card card-dashboard mb-3">
+    <div class="card-body py-2 px-3">
+      <div class="inc-toolbar-row">
+        <form method="get" action="{{ url_for('main.incidencias_list') }}" class="inc-toolbar-form">
+          <div class="inc-search-wrap">
+            <i class="bi bi-search inc-search-icon" aria-hidden="true"></i>
+            <input type="search" name="q" value="{{ q }}" class="form-control form-control-sm inc-search-input"
+                   placeholder="Buscar Nº, título, reportante…" autocomplete="off">
+          </div>
+          <select name="estado" class="form-select form-select-sm inc-filter-select" aria-label="Estado">
+            <option value="" {% if not estado_f %}selected{% endif %}>Todos los estados</option>
+            <option value="pendiente" {% if estado_f == 'pendiente' %}selected{% endif %}>Pendientes</option>
+            <option value="resuelta" {% if estado_f == 'resuelta' %}selected{% endif %}>Resueltas</option>
+          </select>
+          <select name="area" class="form-select form-select-sm inc-filter-select" aria-label="Área">
+            <option value="">Todas las áreas</option>
+            {% for a in areas %}
+            <option value="{{ a }}" {% if area_f == a %}selected{% endif %}>{{ a }}</option>
+            {% endfor %}
+          </select>
+          <select name="prioridad" class="form-select form-select-sm inc-filter-select" aria-label="Prioridad">
+            <option value="">Todas las prioridades</option>
+            {% for val, lbl in prioridades_incidencia %}
+            <option value="{{ val }}" {% if prioridad_f == val %}selected{% endif %}>{{ lbl }}</option>
+            {% endfor %}
+          </select>
+          {% if solo_gestion %}
+          <label class="inc-filter-check small mb-0">
+            <input type="checkbox" name="mias" value="1" {% if mias_f %}checked{% endif %} onchange="this.form.submit()">
+            Solo mis reportes
+          </label>
+          {% endif %}
+          <button type="submit" class="btn btn-sm btn-primary">Filtrar</button>
+          {% if q or estado_f or area_f or prioridad_f or mias_f %}
+          <a href="{{ url_for('main.incidencias_list') }}" class="btn btn-sm btn-outline-secondary">Limpiar</a>
+          {% endif %}
+        </form>
+        <a href="{{ url_for('main.incidencia') }}" class="btn btn-danger btn-sm flex-shrink-0">
+          <i class="bi bi-plus-lg"></i> Reportar incidencia
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <div class="card card-dashboard">
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0 inc-list-table">
+        <thead class="table-light">
+          <tr>
+            <th>Reporte</th>
+            <th>Reportante / Área</th>
+            <th>Equipo</th>
+            <th>Prioridad</th>
+            <th>Estado</th>
+            <th>Fecha</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for inc in items %}
+          {% set pm = inc.prioridad_meta %}
+          <tr class="inc-row-link" data-href="{{ url_for('main.incidencias_detail', id=inc.id) }}" role="link" tabindex="0">
+            <td>
+              <div class="fw-semibold text-primary">{{ inc.numero or ('#' ~ inc.id) }}</div>
+              <div class="small text-truncate" style="max-width:16rem;">{{ inc.titulo }}</div>
+              <div class="small text-muted">{{ inc.tipo_label }}</div>
+            </td>
+            <td>
+              <div>{{ inc.reportado_por or '—' }}</div>
+              <div class="small text-muted">{{ inc.area or '—' }}</div>
+            </td>
+            <td class="small">
+              {% if inc.machine %}{{ inc.machine.codigo }}{% else %}<span class="text-muted">—</span>{% endif %}
+            </td>
+            <td><span class="badge {{ pm.badge_class }}">{{ pm.label }}</span></td>
+            <td>
+              <span class="badge {% if inc.resuelto %}badge-inc-estado badge-inc-resuelta{% else %}badge-inc-estado badge-inc-pendiente{% endif %}">
+                {{ inc.estado_label }}
+              </span>
+            </td>
+            <td class="small text-muted text-nowrap">
+              {{ inc.reportado_en.strftime('%d/%m/%Y %H:%M') if inc.reportado_en else '—' }}
+            </td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="6" class="text-center text-muted py-4">
+              No hay incidencias con estos filtros.
+              <a href="{{ url_for('main.incidencia') }}">Reportar una nueva</a>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function () {
+  document.querySelectorAll('.inc-row-link').forEach(function (row) {
+    row.addEventListener('click', function () { window.location = row.getAttribute('data-href'); });
+    row.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); window.location = row.getAttribute('data-href'); }
+    });
+  });
+})();
+</script>
+{% endblock %}

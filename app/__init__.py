@@ -1,23 +1,48 @@
 import os
 
+from dotenv import load_dotenv
 from flask import Flask
 from flask_login import LoginManager, current_user
 from flask_sqlalchemy import SQLAlchemy
+from flask_wtf.csrf import CSRFProtect
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 
 db = SQLAlchemy()
 login_manager = LoginManager()
 login_manager.login_view = "main.login"
 login_manager.login_message = "Inicia sesión para acceder a esta página."
 login_manager.login_message_category = "warning"
+csrf = CSRFProtect()
+limiter = Limiter(key_func=get_remote_address, default_limits=[], storage_uri="memory://")
+
+
+def _is_production_env() -> bool:
+    env = (os.environ.get("FLASK_ENV") or os.environ.get("ENV") or "").strip().lower()
+    return env == "production"
 
 
 def create_app():
+    load_dotenv()
     app = Flask(
         __name__,
         template_folder="../templates",
         static_folder="../static",
     )
-    app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "dev-mantenimiento-pro")
+    secret = os.environ.get("SECRET_KEY", "").strip()
+    if not secret:
+        if _is_production_env():
+            raise RuntimeError(
+                "SECRET_KEY debe estar definida en producción (FLASK_ENV=production)."
+            )
+        secret = "dev-mantenimiento-pro"
+    app.config["SECRET_KEY"] = secret
+    app.config["WTF_CSRF_TIME_LIMIT"] = None
+    app.config["MAX_CONTENT_LENGTH"] = 5 * 1024 * 1024
+    app.config["SESSION_COOKIE_HTTPONLY"] = True
+    app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
+    if _is_production_env():
+        app.config["SESSION_COOKIE_SECURE"] = True
     app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get(
         "DATABASE_URL",
         "sqlite:///" + os.path.join(os.path.dirname(__file__), "..", "mantenimiento.db"),
@@ -26,6 +51,27 @@ def create_app():
 
     db.init_app(app)
     login_manager.init_app(app)
+    csrf.init_app(app)
+    limiter.init_app(app)
+
+    @app.after_request
+    def _security_headers(response):
+        response.headers["X-Frame-Options"] = "SAMEORIGIN"
+        response.headers["X-Content-Type-Options"] = "nosniff"
+        response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+        if _is_production_env():
+            response.headers["Strict-Transport-Security"] = (
+                "max-age=31536000; includeSubDomains"
+            )
+        response.headers["Content-Security-Policy"] = (
+            "default-src 'self'; "
+            "script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; "
+            "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://fonts.googleapis.com; "
+            "font-src 'self' https://fonts.gstatic.com https://cdn.jsdelivr.net; "
+            "img-src 'self' data: https:; "
+            "connect-src 'self'"
+        )
+        return response
 
     from app.tenancy.middleware import register_tenancy_middleware
 
@@ -34,7 +80,7 @@ def create_app():
     from app.branding import APP_LOGO_PATH, APP_NAME, APP_TAGLINE, empresa_logo_url_or_none
 
     from app.money import formato_moneda
-    from app.models import machine_status_meta, proveedor_tipo_meta, wo_es_editable, wo_status_meta, wo_tipo_meta
+    from app.models import machine_status_meta, proveedor_tipo_meta, incident_prioridad_meta, wo_es_editable, wo_status_meta, wo_tipo_meta
     from app.alertas_service import resumen_alertas_campana
     from app.permissions import permission_flags
 
@@ -44,10 +90,13 @@ def create_app():
     app.jinja_env.globals["wo_es_editable"] = wo_es_editable
     app.jinja_env.globals["wo_tipo_meta"] = wo_tipo_meta
     app.jinja_env.globals["proveedor_tipo_meta"] = proveedor_tipo_meta
+    app.jinja_env.globals["incident_prioridad_meta"] = incident_prioridad_meta
 
     from app.custom_fields import seccion_campos_cuatro_por_fila
+    from app.password_policy import PASSWORD_REQUIREMENTS_TEXT
 
     app.jinja_env.filters["cuatro_por_fila"] = seccion_campos_cuatro_por_fila
+    app.jinja_env.globals["password_requirements"] = PASSWORD_REQUIREMENTS_TEXT
 
     @app.context_processor
     def inject_globals():
@@ -69,6 +118,7 @@ def create_app():
             "wo_es_editable": wo_es_editable,
             "wo_tipo_meta": wo_tipo_meta,
             "proveedor_tipo_meta": proveedor_tipo_meta,
+            "incident_prioridad_meta": incident_prioridad_meta,
             "formato_moneda": formato_moneda,
             "perm": perm,
         }
@@ -96,15 +146,27 @@ def create_app():
         from app.work_order_status import sincronizar_estados_ordenes
 
         sincronizar_estados_ordenes()
+        from app.subscription_service import backfill_estado_ciclo_suscripciones, verificar_vencimientos
+
+        backfill_estado_ciclo_suscripciones()
+        verificar_vencimientos()
+        from app.platform_config_service import ensure_platform_config
+
+        ensure_platform_config()
 
     from app import routes
     from app.onboarding_routes import onboarding_bp
     from app.tenancy.admin_routes import admin_bp
     from app.tenancy.api_routes import tenancy_api_bp
+    from app.tenancy.platform_routes import platform_bp
 
     app.register_blueprint(routes.bp)
     app.register_blueprint(onboarding_bp)
     app.register_blueprint(tenancy_api_bp)
     app.register_blueprint(admin_bp)
+    app.register_blueprint(platform_bp)
+
+    csrf.exempt(tenancy_api_bp)
+    csrf.exempt(admin_bp)
 
     return app

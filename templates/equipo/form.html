@@ -12,6 +12,7 @@
         <div class="alert alert-info small py-2">Estás editando tu propia cuenta. El rol y el estado activo no se pueden cambiar aquí.</div>
         {% endif %}
         <form method="post">
+          {% include "_csrf.html" %}
           <div class="row g-3">
             <div class="col-12">
               <label class="form-label" for="username">1. Usuario de acceso *</label>
@@ -78,12 +79,13 @@
             <div class="col-md-6">
               <label class="form-label" for="password">8. Contraseña{% if not usuario %} *{% endif %}</label>
               <input type="password" name="password" id="password" class="form-control" autocomplete="new-password"
-                     {% if not usuario %}required minlength="6"{% endif %}>
+                     {% if not usuario %}required{% endif %}>
+              <div class="form-text">{{ password_requirements }}</div>
             </div>
             <div class="col-md-6">
               <label class="form-label" for="password2">9. Confirmar{% if not usuario %} *{% endif %}</label>
               <input type="password" name="password2" id="password2" class="form-control" autocomplete="new-password"
-                     {% if not usuario %}required minlength="6"{% endif %}>
+                     {% if not usuario %}required{% endif %}>
             </div>
             <div class="col-12">
               <div class="form-check">

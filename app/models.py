@@ -1,5 +1,6 @@
 import os
 import re
+import json
 from datetime import date, datetime
 from enum import Enum
 
@@ -22,28 +23,36 @@ class PlanTipo(str, Enum):
 
 PLAN_CATALOG = {
     PlanTipo.TRIAL.value: {
-        "label": "Prueba gratuita 30 días",
+        "label": "Prueba gratuita 14 días",
+        "short_label": "Trial",
         "descripcion": "Ideal para evaluar la plataforma",
         "max_activos": 100,
-        "dias": 30,
+        "dias": 14,
+        "precio_mensual": 0,
     },
     PlanTipo.BASICO.value: {
         "label": "Plan Básico",
+        "short_label": "Starter",
         "descripcion": "Hasta 100 activos",
         "max_activos": 100,
         "dias": None,
+        "precio_mensual": 490_000,
     },
     PlanTipo.PROFESIONAL.value: {
         "label": "Plan Profesional",
+        "short_label": "Pro",
         "descripcion": "Hasta 1.000 activos",
         "max_activos": 1000,
         "dias": None,
+        "precio_mensual": 1_290_000,
     },
     PlanTipo.ENTERPRISE.value: {
         "label": "Plan Enterprise",
+        "short_label": "Enterprise",
         "descripcion": "Activos ilimitados",
         "max_activos": None,
         "dias": None,
+        "precio_mensual": 3_490_000,
     },
 }
 
@@ -159,6 +168,7 @@ class Empresa(db.Model):
     jornada_hora_fin = db.Column(db.String(5), default="17:00")
     jornada_dias = db.Column(db.String(32), default="0,1,2,3,4")
     fecha_registro = db.Column(db.DateTime, default=datetime.utcnow)
+    suspendida = db.Column(db.Boolean, default=False, nullable=False)
 
     sedes = db.relationship("Sede", back_populates="empresa", lazy="dynamic")
     usuarios = db.relationship("User", back_populates="empresa", lazy="dynamic")
@@ -166,7 +176,25 @@ class Empresa(db.Model):
 
     @property
     def sector_label(self) -> str:
-        return SECTOR_LABELS.get(self.sector or "", self.sector or "—")
+        from app.platform_config_service import etiqueta_sector
+
+        return etiqueta_sector(self.sector or "")
+
+    @property
+    def plan_activo(self) -> "PlanSuscripcion | None":
+        return (
+            PlanSuscripcion.query.filter_by(empresa_id=self.id, activo=True)
+            .order_by(PlanSuscripcion.created_at.desc())
+            .first()
+        )
+
+    def iniciales(self) -> str:
+        partes = [p for p in re.split(r"\s+", (self.razon_social or "").strip()) if p]
+        if not partes:
+            return "?"
+        if len(partes) == 1:
+            return partes[0][:2].upper()
+        return (partes[0][0] + partes[1][0]).upper()
 
 
 class Sede(db.Model):
@@ -181,6 +209,13 @@ class Sede(db.Model):
     empresa = db.relationship("Empresa", back_populates="sedes")
 
 
+class SuscripcionEstado(str, Enum):
+    TRIAL = "trial"
+    ACTIVA = "activa"
+    MORA = "mora"
+    SUSPENDIDA = "suspendida"
+
+
 class PlanSuscripcion(db.Model):
     __tablename__ = "planes_suscripcion"
 
@@ -190,9 +225,152 @@ class PlanSuscripcion(db.Model):
     fecha_inicio = db.Column(db.Date, nullable=False)
     fecha_fin = db.Column(db.Date, nullable=True)
     activo = db.Column(db.Boolean, default=True)
+    estado_ciclo = db.Column(db.String(16), default=SuscripcionEstado.TRIAL.value)
+    pasarela_customer_id = db.Column(db.String(120), default="")
+    pasarela_subscription_id = db.Column(db.String(120), default="")
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     empresa = db.relationship("Empresa", back_populates="planes")
+    facturas = db.relationship("FacturaEmpresa", back_populates="suscripcion", lazy="dynamic")
+
+
+class FacturaEstado(str, Enum):
+    PENDIENTE = "pendiente"
+    PAGADA = "pagada"
+    VENCIDA = "vencida"
+    ANULADA = "anulada"
+
+
+FACTURA_ESTADO_LABELS = {
+    FacturaEstado.PENDIENTE.value: "Pendiente",
+    FacturaEstado.PAGADA.value: "Pagada",
+    FacturaEstado.VENCIDA.value: "Vencida",
+    FacturaEstado.ANULADA.value: "Anulada",
+}
+
+
+class FacturaEmpresa(db.Model):
+    """Factura de suscripción SaaS por tenant."""
+
+    __tablename__ = "facturas_empresa"
+
+    id = db.Column(db.Integer, primary_key=True)
+    empresa_id = db.Column(db.Integer, db.ForeignKey("empresas.id"), nullable=False, index=True)
+    suscripcion_id = db.Column(
+        db.Integer, db.ForeignKey("planes_suscripcion.id"), nullable=True, index=True
+    )
+    numero = db.Column(db.String(32), nullable=False)
+    concepto = db.Column(db.String(200), default="Suscripción mensual")
+    monto = db.Column(db.Float, nullable=False)
+    moneda = db.Column(db.String(8), default="COP")
+    periodo = db.Column(db.String(7), nullable=True, index=True)  # YYYY-MM
+    estado = db.Column(db.String(16), default=FacturaEstado.PENDIENTE.value)
+    fecha_emision = db.Column(db.Date, nullable=False)
+    fecha_vencimiento = db.Column(db.Date, nullable=True)
+    fecha_pago = db.Column(db.Date, nullable=True)
+    metodo_pago = db.Column(db.String(64), default="")
+    referencia_pago = db.Column(db.String(120), default="")
+    pasarela_payment_id = db.Column(db.String(120), default="")
+    notas = db.Column(db.Text, default="")
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    empresa = db.relationship("Empresa", backref=db.backref("facturas", lazy="dynamic"))
+    suscripcion = db.relationship("PlanSuscripcion", back_populates="facturas")
+
+
+class TenantActivityLog(db.Model):
+    """Auditoría de actividad por tenant (logins, impersonación, etc.)."""
+
+    __tablename__ = "tenant_activity_log"
+
+    id = db.Column(db.Integer, primary_key=True)
+    empresa_id = db.Column(db.Integer, db.ForeignKey("empresas.id"), nullable=False, index=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=True, index=True)
+    username = db.Column(db.String(80), default="")
+    tipo = db.Column(db.String(32), nullable=False, index=True)
+    detalle = db.Column(db.String(500), default="")
+    ip_address = db.Column(db.String(45), default="")
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, index=True)
+
+    empresa = db.relationship("Empresa", backref=db.backref("actividad_logs", lazy="dynamic"))
+    user = db.relationship("User", backref=db.backref("actividad_logs", lazy="dynamic"))
+
+
+class PlatformAuditLog(db.Model):
+    """Auditoría de acciones del superadmin de plataforma (visible al cliente)."""
+
+    __tablename__ = "platform_audit_log"
+
+    id = db.Column(db.Integer, primary_key=True)
+    empresa_id = db.Column(db.Integer, db.ForeignKey("empresas.id"), nullable=True, index=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=True, index=True)
+    accion = db.Column(db.String(32), nullable=False, index=True)
+    actor_label = db.Column(db.String(120), nullable=False, default="Soporte Mantis")
+    detalle = db.Column(db.String(500), default="")
+    ip_address = db.Column(db.String(45), default="")
+    visible_cliente = db.Column(db.Boolean, default=True, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, index=True)
+
+    empresa = db.relationship("Empresa", backref=db.backref("auditoria_plataforma", lazy="dynamic"))
+    user = db.relationship("User", backref=db.backref("auditoria_plataforma", lazy="dynamic"))
+
+
+class CatalogoPlan(db.Model):
+    """Plan comercial editable desde el panel de plataforma."""
+
+    __tablename__ = "catalogo_planes"
+
+    id = db.Column(db.Integer, primary_key=True)
+    clave = db.Column(db.String(32), unique=True, nullable=False, index=True)
+    label = db.Column(db.String(120), nullable=False, default="")
+    short_label = db.Column(db.String(32), nullable=False, default="")
+    descripcion = db.Column(db.String(255), default="")
+    precio_mensual = db.Column(db.Float, default=0, nullable=False)
+    precio_anual = db.Column(db.Float, nullable=True)
+    max_usuarios = db.Column(db.Integer, nullable=True)
+    max_activos = db.Column(db.Integer, nullable=True)
+    storage_mb = db.Column(db.Integer, nullable=True)
+    soporte = db.Column(db.String(40), default="Email")
+    visible_registro = db.Column(db.Boolean, default=True, nullable=False)
+    destacado = db.Column(db.Boolean, default=False, nullable=False)
+    orden = db.Column(db.Integer, default=0, nullable=False)
+    caracteristicas_json = db.Column(db.Text, default="[]")
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    def caracteristicas(self) -> list[dict]:
+        try:
+            data = json.loads(self.caracteristicas_json or "[]")
+            return data if isinstance(data, list) else []
+        except (json.JSONDecodeError, TypeError):
+            return []
+
+    def set_caracteristicas(self, items: list[dict]) -> None:
+        self.caracteristicas_json = json.dumps(items, ensure_ascii=False)
+
+
+class ReglaPlataforma(db.Model):
+    """Reglas globales (trial, mora, etc.) — una fila por clave."""
+
+    __tablename__ = "reglas_plataforma"
+
+    clave = db.Column(db.String(64), primary_key=True)
+    valor = db.Column(db.String(255), nullable=False, default="")
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
+class SectorCatalogo(db.Model):
+    """Sectores industriales visibles en registro y filtros."""
+
+    __tablename__ = "sectores_catalogo"
+
+    id = db.Column(db.Integer, primary_key=True)
+    clave = db.Column(db.String(32), unique=True, nullable=False, index=True)
+    etiqueta = db.Column(db.String(120), nullable=False)
+    visible_registro = db.Column(db.Boolean, default=True, nullable=False)
+    activo = db.Column(db.Boolean, default=True, nullable=False)
+    orden = db.Column(db.Integer, default=0, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
 
 class User(UserMixin, db.Model):
@@ -209,6 +387,8 @@ class User(UserMixin, db.Model):
     sede_id = db.Column(db.Integer, db.ForeignKey("sedes.id"), nullable=True, index=True)
     rol = db.Column(db.String(32), default=UserRole.ADMIN.value)
     activo = db.Column(db.Boolean, default=True)
+    bloqueado = db.Column(db.Boolean, default=False, nullable=False)
+    bloqueado_en = db.Column(db.DateTime, nullable=True)
     onboarding_completado = db.Column(db.Boolean, default=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
@@ -223,7 +403,7 @@ class User(UserMixin, db.Model):
 
     @property
     def is_active(self):  # noqa: D102
-        return self.activo
+        return bool(self.activo) and not bool(self.bloqueado)
 
     def etiqueta(self) -> str:
         return (self.nombre_visible or self.username).strip() or self.username
@@ -997,15 +1177,132 @@ class Incident(db.Model):
     __tablename__ = "incidents"
 
     id = db.Column(db.Integer, primary_key=True)
+    numero = db.Column(db.String(32), nullable=True, index=True)
     titulo = db.Column(db.String(200), nullable=False)
     descripcion = db.Column(db.Text, default="")
     machine_id = db.Column(db.Integer, db.ForeignKey("machines.id"), nullable=True)
     empresa_id = db.Column(db.Integer, db.ForeignKey("empresas.id"), nullable=True, index=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=True, index=True)
+    reportado_por = db.Column(db.String(200), default="")
+    cargo_reportante = db.Column(db.String(120), default="")
+    telefono_contacto = db.Column(db.String(40), default="")
+    area = db.Column(db.String(120), default="")
+    ubicacion = db.Column(db.String(200), default="")
+    tipo = db.Column(db.String(32), default="")
+    prioridad = db.Column(db.String(32), default="media")
+    equipo_detenido = db.Column(db.Boolean, default=False, nullable=False)
+    fecha_evento = db.Column(db.Date, nullable=True)
+    hora_evento = db.Column(db.String(5), default="")
     reportado_en = db.Column(db.DateTime, default=datetime.utcnow)
     resuelto = db.Column(db.Boolean, default=False)
+    resuelto_en = db.Column(db.DateTime, nullable=True)
+    resuelto_por_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=True, index=True)
+    notas_resolucion = db.Column(db.Text, default="")
+    work_order_id = db.Column(
+        db.Integer, db.ForeignKey("work_orders.id"), nullable=True, index=True
+    )
 
     machine = db.relationship("Machine", backref="incidents")
     empresa = db.relationship("Empresa", backref="incidents")
+    usuario = db.relationship("User", foreign_keys=[user_id], backref="incidentes_reportados")
+    resuelto_por = db.relationship("User", foreign_keys=[resuelto_por_id])
+    work_order = db.relationship("WorkOrder", backref=db.backref("incidencia_origen", uselist=False))
+
+    @property
+    def prioridad_label(self) -> str:
+        return INCIDENT_PRIORIDAD_LABELS.get((self.prioridad or "").strip().lower(), self.prioridad or "—")
+
+    @property
+    def prioridad_meta(self) -> dict:
+        return incident_prioridad_meta(self.prioridad)
+
+    @property
+    def tipo_label(self) -> str:
+        return INCIDENT_TIPO_LABELS.get((self.tipo or "").strip().lower(), self.tipo or "—")
+
+    @property
+    def estado_label(self) -> str:
+        return "Resuelta" if self.resuelto else "Pendiente"
+
+    @property
+    def estado_slug(self) -> str:
+        return "resuelta" if self.resuelto else "pendiente"
+
+
+class IncidentPrioridad(str, Enum):
+    BAJA = "baja"
+    MEDIA = "media"
+    ALTA = "alta"
+    CRITICA = "critica"
+
+
+class IncidentTipo(str, Enum):
+    MECANICA = "mecanica"
+    ELECTRICA = "electrica"
+    HIDRAULICA = "hidraulica"
+    SEGURIDAD = "seguridad"
+    AMBIENTAL = "ambiental"
+    OTRO = "otro"
+
+
+INCIDENT_PRIORIDADES = (
+    (IncidentPrioridad.BAJA.value, "Baja"),
+    (IncidentPrioridad.MEDIA.value, "Media"),
+    (IncidentPrioridad.ALTA.value, "Alta"),
+    (IncidentPrioridad.CRITICA.value, "Crítica"),
+)
+
+INCIDENT_PRIORIDAD_LABELS = dict(INCIDENT_PRIORIDADES)
+
+INCIDENT_TIPOS = (
+    (IncidentTipo.MECANICA.value, "Mecánica / falla de equipo"),
+    (IncidentTipo.ELECTRICA.value, "Eléctrica"),
+    (IncidentTipo.HIDRAULICA.value, "Hidráulica / neumática"),
+    (IncidentTipo.SEGURIDAD.value, "Seguridad"),
+    (IncidentTipo.AMBIENTAL.value, "Ambiental"),
+    (IncidentTipo.OTRO.value, "Otra"),
+)
+
+INCIDENT_TIPO_LABELS = dict(INCIDENT_TIPOS)
+
+INCIDENT_AREAS_BASE = (
+    "Producción",
+    "Mantenimiento",
+    "Calidad",
+    "Logística",
+    "Administración",
+    "Seguridad industrial",
+    "Almacén",
+    "Servicios generales",
+)
+
+INCIDENT_PRIORIDAD_META = {
+    IncidentPrioridad.BAJA.value: {
+        "label": "Baja",
+        "badge_class": "badge-inc-prio badge-inc-baja",
+    },
+    IncidentPrioridad.MEDIA.value: {
+        "label": "Media",
+        "badge_class": "badge-inc-prio badge-inc-media",
+    },
+    IncidentPrioridad.ALTA.value: {
+        "label": "Alta",
+        "badge_class": "badge-inc-prio badge-inc-alta",
+    },
+    IncidentPrioridad.CRITICA.value: {
+        "label": "Crítica",
+        "badge_class": "badge-inc-prio badge-inc-critica",
+    },
+}
+
+
+def incident_prioridad_meta(prioridad: str) -> dict:
+    key = (prioridad or "").strip().lower()
+    default = {
+        "label": prioridad or "—",
+        "badge_class": "badge-inc-prio badge-inc-desconocido",
+    }
+    return {**default, **INCIDENT_PRIORIDAD_META.get(key, {})}
 
 
 def ensure_machine_tipo_equipo_column():
@@ -1305,7 +1602,39 @@ def ensure_saas_schema():
         _add_column_if_missing("empresas", "telefono", "telefono VARCHAR(40)")
         _add_column_if_missing("empresas", "email", "email VARCHAR(120)")
         _add_column_if_missing("empresas", "slug", "slug VARCHAR(48)")
+        _add_column_if_missing("empresas", "suspendida", "suspendida BOOLEAN DEFAULT 0")
+        _add_column_if_missing("planes_suscripcion", "estado_ciclo", "estado_ciclo VARCHAR(16) DEFAULT 'trial'")
+        _add_column_if_missing(
+            "planes_suscripcion", "pasarela_customer_id", "pasarela_customer_id VARCHAR(120)"
+        )
+        _add_column_if_missing(
+            "planes_suscripcion", "pasarela_subscription_id", "pasarela_subscription_id VARCHAR(120)"
+        )
+        _add_column_if_missing("facturas_empresa", "suscripcion_id", "suscripcion_id INTEGER")
+        _add_column_if_missing(
+            "facturas_empresa", "pasarela_payment_id", "pasarela_payment_id VARCHAR(120)"
+        )
+        _add_column_if_missing("users", "bloqueado", "bloqueado BOOLEAN DEFAULT 0")
+        _add_column_if_missing("users", "bloqueado_en", "bloqueado_en DATETIME")
         _add_column_if_missing("incidents", "empresa_id", "empresa_id INTEGER")
+        _add_column_if_missing("incidents", "numero", "numero VARCHAR(32)")
+        _add_column_if_missing("incidents", "user_id", "user_id INTEGER")
+        _add_column_if_missing("incidents", "reportado_por", "reportado_por VARCHAR(200)")
+        _add_column_if_missing("incidents", "cargo_reportante", "cargo_reportante VARCHAR(120)")
+        _add_column_if_missing("incidents", "telefono_contacto", "telefono_contacto VARCHAR(40)")
+        _add_column_if_missing("incidents", "area", "area VARCHAR(120)")
+        _add_column_if_missing("incidents", "ubicacion", "ubicacion VARCHAR(200)")
+        _add_column_if_missing("incidents", "tipo", "tipo VARCHAR(32)")
+        _add_column_if_missing("incidents", "prioridad", "prioridad VARCHAR(32) DEFAULT 'media'")
+        _add_column_if_missing(
+            "incidents", "equipo_detenido", "equipo_detenido BOOLEAN DEFAULT 0"
+        )
+        _add_column_if_missing("incidents", "fecha_evento", "fecha_evento DATE")
+        _add_column_if_missing("incidents", "hora_evento", "hora_evento VARCHAR(5)")
+        _add_column_if_missing("incidents", "resuelto_en", "resuelto_en DATETIME")
+        _add_column_if_missing("incidents", "resuelto_por_id", "resuelto_por_id INTEGER")
+        _add_column_if_missing("incidents", "notas_resolucion", "notas_resolucion TEXT")
+        _add_column_if_missing("incidents", "work_order_id", "work_order_id INTEGER")
         ensure_asset_base_columns()
         _backfill_empresa_slugs()
         ensure_sector_plantilla_schema()
@@ -1420,8 +1749,18 @@ def migrate_legacy_tenant():
     db.session.commit()
 
 
+def _is_production_env() -> bool:
+    env = (os.environ.get("FLASK_ENV") or os.environ.get("ENV") or "").strip().lower()
+    return env == "production"
+
+
 def ensure_default_user():
     if User.query.first() is not None:
+        return
+    if _is_production_env():
+        return
+    password = os.environ.get("DEFAULT_ADMIN_PASSWORD", "").strip()
+    if not password:
         return
     u = User(
         username="admin",
@@ -1430,12 +1769,14 @@ def ensure_default_user():
         onboarding_completado=False,
         rol=UserRole.SUPERADMIN.value,
     )
-    u.set_password(os.environ.get("DEFAULT_ADMIN_PASSWORD", "admin123"))
+    u.set_password(password)
     db.session.add(u)
     db.session.commit()
 
 
 def seed_if_empty():
+    if _is_production_env():
+        return
     ensure_default_user()
     if Machine.query.first() is not None:
         return
