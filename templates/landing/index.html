@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>{{ app_name }} — CMMS que se adapta a tu industria</title>
-  <meta name="description" content="Gestiona activos, órdenes de trabajo, proveedores e inventario desde un solo lugar. Prueba gratis {{ trial_dias }} días.">
+  <title>{{ app_name }} — Mantenimiento e inventario comercial</title>
+  <meta name="description" content="CMMS para plantas y tiendas: activos, órdenes de trabajo, inventario comercial, ventas y stock. Elige los módulos que necesites. Prueba gratis {{ trial_dias }} días.">
   {% from "_cdn_assets.html" import google_fonts_inter_extra_bold, bootstrap_icons_css %}
   {{ google_fonts_inter_extra_bold() }}
   {{ bootstrap_icons_css() }}
@@ -19,18 +19,21 @@
         </span>
       </a>
       <div class="landing-nav-links d-none d-md-flex">
+        <a href="#modulos">Módulos</a>
         <a href="#caracteristicas">Características</a>
         <a href="#sectores">Sectores</a>
         <a href="#precios">Precios</a>
         <a href="#contacto">Contacto</a>
       </div>
       <div class="landing-nav-actions">
-        {% if current_user.is_authenticated %}
-        <a href="{{ url_for('main.dashboard') }}" class="landing-btn landing-btn-primary">
-          <i class="bi bi-grid"></i> Ir al panel
+        {% if session.get('platform_admin') %}
+        <a href="{{ url_for('platform.empresas') }}" class="landing-btn landing-btn-primary">
+          <i class="bi bi-shield-lock"></i> Panel plataforma
         </a>
         {% else %}
-        <a href="{{ url_for('main.login') }}" class="landing-btn landing-btn-ghost">Iniciar sesión</a>
+        <a href="{{ url_for('main.login') }}" class="landing-btn landing-btn-ghost">
+          <i class="bi bi-building"></i> Ir a mi empresa
+        </a>
         <button type="button" class="landing-btn landing-btn-outline"
                 data-send-prompt="Quiero probar Mantis gratis"
                 data-prompt-url="{{ url_for('onboarding.wizard') }}">
@@ -48,10 +51,11 @@
           <span class="landing-pill">
             <i class="bi bi-stars"></i> {{ trial_dias }} días gratis · sin tarjeta
           </span>
-          <h1>El CMMS que se adapta a <span class="landing-accent">tu industria</span>, no al revés</h1>
+          <h1>Mantenimiento industrial e <span class="landing-accent">inventario comercial</span> en una sola plataforma</h1>
           <p class="landing-lead">
-            Gestiona activos, órdenes de trabajo, proveedores e inventario desde un solo lugar.
-            Campos personalizados para cualquier sector: logística, manufactura, alimentos o industrial.
+            Activa solo lo que necesitas: CMMS para activos y órdenes de trabajo, inventario comercial
+            para productos, ventas y clientes — o ambos módulos juntos. Campos personalizados para
+            logística, manufactura, comercio o industrial.
           </p>
           <div class="landing-hero-ctas">
             <button type="button" class="landing-btn landing-btn-primary"
@@ -68,34 +72,39 @@
           <p class="landing-hero-note">Sin tarjeta de crédito · cancela cuando quieras</p>
         </div>
 
-        <div class="landing-mockup" aria-hidden="true">
-          <div class="landing-mockup-window">
-            <div class="landing-mockup-bar">
-              <span></span><span></span><span></span>
-              <span class="landing-mockup-title">{{ mockup.empresa }}</span>
-            </div>
-            <div class="landing-mockup-body">
-              <div class="landing-mockup-kpis">
-                {% for kpi in mockup.kpis %}
-                <div class="landing-mockup-kpi">
-                  <div class="landing-mockup-kpi-label">{{ kpi.label }}</div>
-                  <div class="landing-mockup-kpi-value landing-mockup-kpi-value--{{ kpi.tone }}">{{ kpi.valor }}</div>
-                </div>
-                {% endfor %}
+        <div class="landing-hero-mockups" aria-hidden="true">
+          {% for mockup in mockups %}
+          <div class="landing-mockup">
+            <div class="landing-mockup-window">
+              <div class="landing-mockup-bar">
+                <span></span><span></span><span></span>
+                <span class="landing-mockup-module"><i class="bi {{ mockup.icon }}"></i> {{ mockup.modulo }}</span>
+                <span class="landing-mockup-title">{{ mockup.empresa }}</span>
               </div>
-              <ul class="landing-mockup-list">
-                {% for a in mockup.activos %}
-                <li class="landing-mockup-item landing-mockup-item--{{ a.tone }}">
-                  <div>
-                    <div class="landing-mockup-item-name">{{ a.nombre }}</div>
-                    <div class="landing-mockup-item-sub">{{ a.codigo }} · Sede principal</div>
+              <div class="landing-mockup-body">
+                <div class="landing-mockup-kpis">
+                  {% for kpi in mockup.kpis %}
+                  <div class="landing-mockup-kpi">
+                    <div class="landing-mockup-kpi-label">{{ kpi.label }}</div>
+                    <div class="landing-mockup-kpi-value landing-mockup-kpi-value--{{ kpi.tone }}">{{ kpi.valor }}</div>
                   </div>
-                  <span class="landing-mockup-tag landing-mockup-tag--{{ a.tone }}">{{ a.estado }}</span>
-                </li>
-                {% endfor %}
-              </ul>
+                  {% endfor %}
+                </div>
+                <ul class="landing-mockup-list">
+                  {% for a in mockup.filas %}
+                  <li class="landing-mockup-item landing-mockup-item--{{ a.tone }}">
+                    <div>
+                      <div class="landing-mockup-item-name">{{ a.nombre }}</div>
+                      <div class="landing-mockup-item-sub">{{ a.codigo }}</div>
+                    </div>
+                    <span class="landing-mockup-tag landing-mockup-tag--{{ a.tone }}">{{ a.estado }}</span>
+                  </li>
+                  {% endfor %}
+                </ul>
+              </div>
             </div>
           </div>
+          {% endfor %}
         </div>
       </div>
     </section>
@@ -111,12 +120,40 @@
       </div>
     </section>
 
+    <section id="modulos" class="landing-section landing-section--soft">
+      <div class="container-xl">
+        <p class="landing-eyebrow">Módulos</p>
+        <h2 class="landing-section-title">Elige mantenimiento, inventario o ambos</h2>
+        <p class="landing-section-sub text-center mx-auto">
+          Al registrarte seleccionas los módulos que usarás. El menú y el dashboard se adaptan a tu operación:
+          una tienda puede usar solo inventario; una planta, solo mantenimiento; o combinar ambos.
+        </p>
+        <div class="landing-modules-grid">
+          {% for m in modulos %}
+          <article class="landing-module-card">
+            <div class="landing-module-card-head">
+              <span class="landing-feature-icon"><i class="bi {{ m.icon }}"></i></span>
+              <h3>{{ m.label }}</h3>
+            </div>
+            <p class="landing-module-desc">{{ m.descripcion }}</p>
+            <ul class="landing-module-list">
+              {% for line in m.bullets %}
+              <li><i class="bi bi-check2"></i> {{ line }}</li>
+              {% endfor %}
+            </ul>
+          </article>
+          {% endfor %}
+        </div>
+      </div>
+    </section>
+
     <section id="caracteristicas" class="landing-section">
       <div class="container-xl">
         <p class="landing-eyebrow">Características</p>
         <h2 class="landing-section-title">Todo lo que necesitas, en un solo lugar</h2>
         <p class="landing-section-sub">
-          Diseñado para equipos de mantenimiento que necesitan visibilidad total sin complicarse con configuraciones técnicas.
+          Diseñado para equipos de mantenimiento y negocios comerciales que necesitan visibilidad total
+          sin complicarse con configuraciones técnicas.
         </p>
         <div class="landing-features-grid">
           {% for f in features %}
@@ -179,8 +216,8 @@
 
     <section id="contacto" class="landing-cta-band">
       <div class="container-xl text-center">
-        <h2>Empieza a controlar tu mantenimiento hoy</h2>
-        <p>{{ trial_dias }} días gratis · sin tarjeta de crédito · configura tu empresa en minutos</p>
+        <h2>Empieza a controlar tu operación hoy</h2>
+        <p>{{ trial_dias }} días gratis · sin tarjeta · elige mantenimiento, inventario comercial o ambos</p>
         <button type="button" class="landing-btn landing-btn-light"
                 data-send-prompt="Quiero crear mi cuenta gratis en Mantis"
                 data-prompt-url="{{ url_for('onboarding.wizard') }}">
@@ -192,7 +229,10 @@
 
   <footer class="landing-footer">
     <div class="container-xl landing-footer-inner">
-      <span>© {{ now_year }} {{ app_name }} · CMMS Industrial</span>
+      <span>© {{ now_year }} {{ app_name }} · Mantenimiento e inventario comercial</span>
+      <a href="{{ url_for('platform.login') }}" class="landing-footer-link" title="Superadministración SaaS">
+        <i class="bi bi-shield-lock"></i> Acceso plataforma
+      </a>
       <span>Bogotá, Colombia</span>
     </div>
   </footer>

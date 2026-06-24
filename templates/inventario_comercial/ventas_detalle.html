@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+
+{% block title %}Venta {{ venta.numero }} — {{ app_name }}{% endblock %}
+{% block page_title %}Detalle de venta{% endblock %}
+
+{% block content %}
+<div class="mb-3">
+  <a href="{{ url_for('inv_comercial.ventas_list') }}" class="btn btn-sm btn-outline-secondary">
+    <i class="bi bi-arrow-left"></i> Volver al listado
+  </a>
+</div>
+
+<div class="row g-4">
+  <div class="col-lg-4">
+    <div class="card card-dashboard mb-4">
+      <div class="card-body">
+        <h6 class="text-muted text-uppercase small fw-semibold mb-3">Resumen</h6>
+        <dl class="row small mb-0">
+          <dt class="col-5">Número</dt>
+          <dd class="col-7"><code>{{ venta.numero or ('#' ~ venta.id) }}</code></dd>
+          <dt class="col-5">Fecha</dt>
+          <dd class="col-7">{{ venta.fecha.strftime('%d/%m/%Y') }}</dd>
+          <dt class="col-5">Cliente</dt>
+          <dd class="col-7">{{ venta.cliente.nombre if venta.cliente else '—' }}</dd>
+          {% if venta.cliente and venta.cliente.documento %}
+          <dt class="col-5">Documento</dt>
+          <dd class="col-7">{{ venta.cliente.documento }}</dd>
+          {% endif %}
+          <dt class="col-5">Forma pago</dt>
+          <dd class="col-7">{% if venta.es_credito %}Crédito{% else %}Contado{% endif %}</dd>
+          <dt class="col-5">Estado cobro</dt>
+          <dd class="col-7">{{ venta.estado_cobro_label }}</dd>
+          <dt class="col-5">Moneda</dt>
+          <dd class="col-7">{{ venta.moneda }}</dd>
+          <dt class="col-5">Total</dt>
+          <dd class="col-7 fw-semibold">{{ formato_moneda(venta.total, venta.moneda) }}</dd>
+          <dt class="col-5">Cobrado</dt>
+          <dd class="col-7">{{ formato_moneda(venta.monto_cobrado, venta.moneda) }}</dd>
+          <dt class="col-5">Saldo</dt>
+          <dd class="col-7 {% if venta.saldo_pendiente > 0 %}text-danger fw-semibold{% endif %}">
+            {{ formato_moneda(venta.saldo_pendiente, venta.moneda) }}
+          </dd>
+          {% if venta.fecha_vencimiento %}
+          <dt class="col-5">Vence</dt>
+          <dd class="col-7">{{ venta.fecha_vencimiento.strftime('%d/%m/%Y') }}</dd>
+          {% endif %}
+        </dl>
+        {% if venta.notas %}
+        <hr>
+        <p class="small text-muted mb-0">{{ venta.notas }}</p>
+        {% endif %}
+      </div>
+    </div>
+
+    {% if venta.saldo_pendiente > 0 %}
+    <div class="card card-dashboard">
+      <div class="card-body">
+        <h6 class="fw-semibold mb-3">Registrar abono</h6>
+        <form method="post" action="{{ url_for('inv_comercial.ventas_registrar_abono', id=venta.id) }}">
+          {% include "_csrf.html" %}
+          <div class="mb-3">
+            <label class="form-label" for="monto">Monto</label>
+            <input type="number" class="form-control" id="monto" name="monto" min="0.01"
+                   max="{{ venta.saldo_pendiente }}" step="0.01" required
+                   placeholder="Máx. {{ venta.saldo_pendiente }}">
+          </div>
+          <div class="mb-3">
+            <label class="form-label" for="fecha_abono">Fecha</label>
+            <input type="date" class="form-control" id="fecha_abono" name="fecha"
+                   value="{{ hoy.strftime('%Y-%m-%d') }}" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label" for="notas_abono">Notas</label>
+            <input type="text" class="form-control" id="notas_abono" name="notas"
+                   placeholder="Ej. Transferencia, efectivo…">
+          </div>
+          <button type="submit" class="btn btn-success w-100">Registrar abono</button>
+        </form>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+
+  <div class="col-lg-8">
+    <div class="card card-dashboard mb-4">
+      <div class="card-header bg-white fw-semibold">Productos</div>
+      <div class="card-body p-0">
+        <table class="table table-hover align-middle mb-0">
+          <thead class="table-light">
+            <tr>
+              <th>Producto</th>
+              <th>Marca</th>
+              <th class="text-end">Cantidad</th>
+              <th class="text-end">P. unit.</th>
+              <th class="text-end">Subtotal</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for l in venta.lineas %}
+            <tr>
+              <td><code>{{ l.producto.sku }}</code> — {{ l.producto.nombre }}</td>
+              <td>{{ l.producto.marca or '—' }}</td>
+              <td class="text-end">{{ l.cantidad }}</td>
+              <td class="text-end">{{ formato_moneda(l.precio_unitario, venta.moneda) }}</td>
+              <td class="text-end">{{ formato_moneda(l.subtotal, venta.moneda) }}</td>
+            </tr>
+            {% else %}
+            <tr><td colspan="5" class="text-muted text-center py-4">Sin líneas.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    {% if venta.cobros %}
+    <div class="card card-dashboard">
+      <div class="card-header bg-white fw-semibold">Historial de cobros</div>
+      <div class="card-body p-0">
+        <table class="table table-sm mb-0">
+          <thead class="table-light">
+            <tr>
+              <th>Fecha</th>
+              <th class="text-end">Monto</th>
+              <th>Notas</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for c in venta.cobros %}
+            <tr>
+              <td>{{ c.fecha.strftime('%d/%m/%Y') }}</td>
+              <td class="text-end">{{ formato_moneda(c.monto, venta.moneda) }}</td>
+              <td class="text-muted small">{{ c.notas or '—' }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

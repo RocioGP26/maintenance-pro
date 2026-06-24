@@ -11,6 +11,7 @@ from typing import Any
 
 # (clave, etiqueta)
 SECTOR_CHOICES: tuple[tuple[str, str], ...] = (
+    ("comercio", "Comercio / Retail / Tienda"),
     ("manufactura", "Manufactura"),
     ("logistica", "Logística"),
     ("salud", "Salud"),
@@ -24,6 +25,7 @@ SECTOR_LABELS: dict[str, str] = dict(SECTOR_CHOICES)
 
 # Categorías de activo por sector: (clave, nombre, prefijo)
 SECTOR_CATEGORIES: dict[str, tuple[tuple[str, str, str], ...]] = {
+    "comercio": (),  # Solo inventario comercial — sin plantilla de activos
     "manufactura": (
         ("linea_produccion", "Líneas de producción", "LP"),
         ("motor", "Motores", "MT"),
@@ -80,6 +82,7 @@ SECTOR_CATEGORIES: dict[str, tuple[tuple[str, str, str], ...]] = {
 # Campos personalizados: (clave, nombre, tipo, obligatorio, categoria_clave|None)
 # categoria_clave None = aplica a todas las categorías del sector
 SECTOR_CUSTOM_FIELDS: dict[str, tuple[tuple[str, str, str, bool, str | None], ...]] = {
+    "comercio": (),
     "logistica": (
         ("placa", "Placa", "text", True, None),
         ("numero_motor", "Número de motor", "text", False, None),
@@ -119,6 +122,7 @@ SECTOR_CUSTOM_FIELDS: dict[str, tuple[tuple[str, str, str, bool, str | None], ..
 
 # Agrupación dashboard (etiqueta, claves de categoría)
 SECTOR_DASHBOARD_CATEGORIES: dict[str, tuple[tuple[str, tuple[str, ...]], ...]] = {
+    "comercio": (),
     "manufactura": (
         ("Líneas y producción", ("linea_produccion", "banda_transportadora")),
         ("Motores y bombas", ("motor", "bomba", "compresor")),
@@ -163,6 +167,10 @@ DEFAULT_SECTOR_CATEGORY_UI = (
 )
 
 SECTOR_DASHBOARD_CATEGORY_UI: dict[str, tuple[dict[str, str], ...]] = {
+    "comercio": (
+        {"icon": "bi-cart3", "tone": "blue"},
+        {"icon": "bi-box-seam", "tone": "green"},
+    ),
     "logistica": (
         {"icon": "bi-truck", "tone": "blue"},
         {"icon": "bi-box-seam", "tone": "green"},
@@ -204,6 +212,7 @@ from app.dashboard_kpis import PLANT_KPI_DEFINITIONS
 
 SECTOR_DASHBOARD_KPIS: dict[str, tuple[tuple[str, str], ...]] = {
     sector: PLANT_KPI_DEFINITIONS for sector in (
+        "comercio",
         "manufactura",
         "logistica",
         "salud",
@@ -226,6 +235,13 @@ FIELD_TYPES = ("text", "number", "date", "boolean")
 
 def sector_valido(sector: str) -> bool:
     return sector in SECTOR_LABELS
+
+
+SECTOR_COMERCIO = "comercio"
+
+
+def sector_es_comercio(sector: str | None) -> bool:
+    return normalizar_sector(sector) == SECTOR_COMERCIO
 
 
 def normalizar_sector(sector: str | None) -> str:

@@ -7,7 +7,8 @@
   <p>Planes, precios, límites y reglas globales de Mantis.</p>
 </div>
 
-<ul class="nav nav-tabs platform-tabs mb-4">
+<div class="platform-tabs-wrap mb-4">
+<ul class="nav nav-tabs platform-tabs flex-nowrap mb-0">
   <li class="nav-item">
     <a class="nav-link {% if tab == 'planes' %}active{% endif %}"
        href="{{ url_for('platform.configuracion', tab='planes') }}">Planes y precios</a>
@@ -21,6 +22,7 @@
        href="{{ url_for('platform.configuracion', tab='sectores') }}">Sectores</a>
   </li>
 </ul>
+</div>
 
 {% if tab == 'planes' %}
 <div class="platform-plan-grid">

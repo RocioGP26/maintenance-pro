@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+
+{% block title %}Productos — {{ app_name }}{% endblock %}
+{% block page_title %}Productos comerciales{% endblock %}
+
+{% block content %}
+{% if alerta == 'bajo' %}
+<div class="alert alert-warning py-2 small mb-3">
+  Mostrando productos activos con <strong>bajo stock</strong>.
+  <a href="{{ url_for('inv_comercial.productos_list', estado=estado, q=q or none) }}" class="alert-link">Ver todos</a>
+</div>
+{% endif %}
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+  <form class="d-flex flex-wrap gap-2 flex-grow-1 align-items-center" method="get">
+    <input type="hidden" name="estado" value="{{ estado }}">
+    <input type="search" name="q" class="form-control" style="min-width:200px" placeholder="Buscar por nombre o referencia…" value="{{ q }}">
+    <button type="submit" class="btn btn-outline-secondary">Buscar</button>
+    <div class="btn-group btn-group-sm" role="group" aria-label="Filtrar por estado">
+      <a href="{{ url_for('inv_comercial.productos_list', estado='activo', q=q or none) }}"
+         class="btn {% if estado == 'activo' %}btn-primary{% else %}btn-outline-primary{% endif %}">Activos</a>
+      <a href="{{ url_for('inv_comercial.productos_list', estado='inactivo', q=q or none) }}"
+         class="btn {% if estado == 'inactivo' %}btn-primary{% else %}btn-outline-primary{% endif %}">Inactivos</a>
+      <a href="{{ url_for('inv_comercial.productos_list', estado='todos', q=q or none) }}"
+         class="btn {% if estado == 'todos' %}btn-primary{% else %}btn-outline-primary{% endif %}">Todos</a>
+    </div>
+  </form>
+  <div class="d-flex gap-2">
+    <a href="{{ url_for('inv_comercial.productos_export_bajo_stock') }}" class="btn btn-outline-success">
+      <i class="bi bi-file-earmark-excel"></i> Excel bajo stock
+    </a>
+    <a href="{{ url_for('inv_comercial.compras_nueva') }}" class="btn btn-outline-primary">
+      <i class="bi bi-box-arrow-in-down"></i> Registrar entrada
+    </a>
+    <a href="{{ url_for('inv_comercial.productos_nuevo') }}" class="btn btn-primary">
+      <i class="bi bi-plus-lg"></i> Nuevo producto
+    </a>
+  </div>
+</div>
+
+<div class="table-responsive">
+  <table class="table table-hover align-middle">
+    <thead class="table-light">
+      <tr>
+        <th style="width:56px"></th>
+        <th>Referencia</th>
+        <th>Producto</th>
+        <th>Marca</th>
+        <th>Categoría</th>
+        <th class="text-end">Stock</th>
+        {% if multimoneda %}
+          {% for m in monedas_activas %}
+          <th class="text-end">Venta {{ m }}</th>
+          {% endfor %}
+        {% else %}
+          <th class="text-end">P. compra</th>
+          <th class="text-end">P. venta</th>
+        {% endif %}
+        <th class="text-end" style="min-width:180px"></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for p in items %}
+      <tr class="{% if not p.activo %}table-secondary{% elif p.bajo_stock %}table-warning{% endif %}">
+        <td class="text-center">
+          {% if p.imagen_publica %}
+          <img src="{{ p.imagen_publica }}" alt="" class="rounded border{% if not p.activo %} opacity-50{% endif %}" style="width:40px;height:40px;object-fit:cover;">
+          {% else %}
+          <span class="text-muted"><i class="bi bi-image"></i></span>
+          {% endif %}
+        </td>
+        <td><code>{{ p.sku }}</code></td>
+        <td>
+          {{ p.nombre }}
+          {% if not p.activo %}<span class="badge text-bg-secondary">Inactivo</span>{% endif %}
+          {% if p.activo and p.bajo_stock %}<span class="badge text-bg-warning">Bajo stock</span>{% endif %}
+        </td>
+        <td>{{ p.marca or '—' }}</td>
+        <td>{{ p.categoria or '—' }}</td>
+        <td class="text-end">{{ p.stock }} {{ p.unidad }}</td>
+        {% if multimoneda %}
+          {% set precios = p.precios_venta(empresa_actual.moneda) %}
+          {% for m in monedas_activas %}
+          <td class="text-end">{{ formato_moneda(precios.get(m, 0), m) }}</td>
+          {% endfor %}
+        {% else %}
+          <td class="text-end">{{ formato_moneda(p.precio_compra, empresa_actual.moneda if empresa_actual else 'COP') }}</td>
+          <td class="text-end">{{ formato_moneda(p.precio_venta, empresa_actual.moneda if empresa_actual else 'COP') }}</td>
+        {% endif %}
+        <td class="text-end">
+          <div class="d-flex flex-wrap justify-content-end gap-1">
+            <a href="{{ url_for('inv_comercial.productos_editar', id=p.id) }}" class="btn btn-sm btn-outline-secondary">Editar</a>
+            <form method="post" action="{{ url_for('inv_comercial.productos_cambiar_estado', id=p.id) }}" class="d-inline">
+              {% include "_csrf.html" %}
+              <input type="hidden" name="estado_vista" value="{{ estado }}">
+              <input type="hidden" name="q" value="{{ q }}">
+              {% if p.activo %}
+              <input type="hidden" name="accion" value="inactivar">
+              <button type="submit" class="btn btn-sm btn-outline-warning"
+                      onclick="return confirm('¿Inactivar «{{ p.nombre }}»? Dejará de mostrarse en el catálogo y en nuevas entradas.');">
+                Inactivar
+              </button>
+              {% else %}
+              <input type="hidden" name="accion" value="activar">
+              <button type="submit" class="btn btn-sm btn-outline-success">Activar</button>
+              {% endif %}
+            </form>
+          </div>
+        </td>
+      </tr>
+      {% else %}
+      <tr>
+        <td colspan="{{ 7 + (monedas_activas|length if multimoneda else 2) }}" class="text-muted text-center py-4">
+          {% if estado == 'inactivo' %}
+          No hay productos inactivos.
+          {% elif q %}
+          Sin resultados para «{{ q }}».
+          {% else %}
+          No hay productos en el catálogo.
+          <a href="{{ url_for('inv_comercial.productos_nuevo') }}">Crea el primero</a>
+          o registra una <a href="{{ url_for('inv_comercial.compras_nueva') }}">entrada de mercancía</a>.
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

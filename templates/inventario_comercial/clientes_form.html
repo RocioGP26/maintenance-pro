@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% block title %}{% if item %}Editar{% else %}Nuevo{% endif %} cliente — {{ app_name }}{% endblock %}
+{% block page_title %}{% if item %}Editar cliente{% else %}Nuevo cliente{% endif %}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-8">
+    <div class="card card-dashboard">
+      <div class="card-body">
+        <form method="post">
+          {% include "_csrf.html" %}
+          {% if next_url %}
+          <input type="hidden" name="next" value="{{ next_url }}">
+          {% endif %}
+          <div class="row g-3">
+            <div class="col-md-8">
+              <label class="form-label" for="nombre">Nombre o razón social *</label>
+              <input type="text" class="form-control" id="nombre" name="nombre" required
+                     value="{{ item.nombre if item else '' }}" placeholder="Ej. Juan Pérez o Ferretería La Esquina">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label" for="documento">Documento / NIT</label>
+              <input type="text" class="form-control" id="documento" name="documento"
+                     value="{{ item.documento if item else '' }}" placeholder="CC, RIF, NIT…">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label" for="telefono">Teléfono</label>
+              <input type="text" class="form-control" id="telefono" name="telefono"
+                     value="{{ item.telefono if item else '' }}">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label" for="email">Correo</label>
+              <input type="email" class="form-control" id="email" name="email"
+                     value="{{ item.email if item else '' }}">
+            </div>
+            <div class="col-12">
+              <label class="form-label" for="direccion">Dirección</label>
+              <input type="text" class="form-control" id="direccion" name="direccion"
+                     value="{{ item.direccion if item else '' }}">
+            </div>
+            <div class="col-12">
+              <label class="form-label" for="notas">Notas</label>
+              <textarea class="form-control" id="notas" name="notas" rows="2">{{ item.notas if item else '' }}</textarea>
+            </div>
+          </div>
+          <div class="mt-4 d-flex gap-2">
+            <button type="submit" class="btn btn-primary">Guardar</button>
+            {% if next_url %}
+            <a href="{{ next_url }}" class="btn btn-outline-secondary">Cancelar</a>
+            {% else %}
+            <a href="{{ url_for('inv_comercial.clientes_list') }}" class="btn btn-outline-secondary">Cancelar</a>
+            {% endif %}
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

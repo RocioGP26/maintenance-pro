@@ -5,12 +5,12 @@ from __future__ import annotations
 from datetime import date
 from typing import Any
 
-from flask import url_for
+from flask import request, url_for
 from flask_login import current_user
 from sqlalchemy import or_
 
 from app import db
-from app.models import Machine, WorkOrder, WorkOrderStatus
+from app.models import InvVenta, Machine, WorkOrder, WorkOrderStatus
 
 
 def _current_empresa_id() -> int | None:
@@ -62,21 +62,41 @@ def aplicar_filtro_alerta_orden(q, alerta: str, hoy: date | None = None):
     return q
 
 
-def resumen_alertas_campana() -> dict[str, Any]:
-    vacio: dict[str, Any] = {
-        "vencimientos": 0,
-        "programados_hoy": 0,
-        "en_proceso": 0,
+def _alertas_vacio() -> dict[str, Any]:
+    return {
+        "modulo": "",
+        "titulo": "Alertas",
+        "filas": [],
         "total": 0,
         "tiene_alertas": False,
-        "url_vencimientos": "",
-        "url_programados_hoy": "",
-        "url_en_proceso": "",
     }
-    if not current_user.is_authenticated:
-        return vacio
 
-    hoy = date.today()
+
+def _empacar_alertas(*, modulo: str, titulo: str, items: list[dict[str, Any]]) -> dict[str, Any]:
+    total = sum(int(i.get("count") or 0) for i in items)
+    return {
+        "modulo": modulo,
+        "titulo": titulo,
+        "filas": items,
+        "total": total,
+        "tiene_alertas": total > 0,
+    }
+
+
+def _usar_alertas_inventario() -> bool:
+    from app.modules import MODULO_INVENTARIO, MODULO_MANTENIMIENTO, modulos_activos_de
+
+    empresa = getattr(current_user, "empresa", None) if current_user.is_authenticated else None
+    mods = modulos_activos_de(empresa)
+    if MODULO_INVENTARIO not in mods:
+        return False
+    if MODULO_MANTENIMIENTO not in mods:
+        return True
+    ep = (request.endpoint or "").strip()
+    return ep.startswith("inv_comercial.")
+
+
+def _resumen_alertas_mantenimiento(hoy: date) -> dict[str, Any]:
     from app.work_order_status import sincronizar_estados_ordenes
 
     sincronizar_estados_ordenes(_current_empresa_id(), hoy)
@@ -85,15 +105,88 @@ def resumen_alertas_campana() -> dict[str, Any]:
     vencimientos = aplicar_filtro_alerta_orden(base, "vencimientos", hoy).count()
     programados_hoy = aplicar_filtro_alerta_orden(base, "programados_hoy", hoy).count()
     en_proceso = aplicar_filtro_alerta_orden(base, "en_proceso", hoy).count()
-    total = vencimientos + programados_hoy + en_proceso
 
-    return {
-        "vencimientos": vencimientos,
-        "programados_hoy": programados_hoy,
-        "en_proceso": en_proceso,
-        "total": total,
-        "tiene_alertas": total > 0,
-        "url_vencimientos": url_for("main.ordenes_list", alerta="vencimientos"),
-        "url_programados_hoy": url_for("main.ordenes_list", alerta="programados_hoy"),
-        "url_en_proceso": url_for("main.ordenes_list", alerta="en_proceso"),
-    }
+    return _empacar_alertas(
+        modulo="mantenimiento",
+        titulo="Alertas críticas",
+        items=[
+            {
+                "label": "Vencimientos",
+                "count": vencimientos,
+                "url": url_for("main.ordenes_list", alerta="vencimientos"),
+                "tone": "danger",
+            },
+            {
+                "label": "Programados hoy",
+                "count": programados_hoy,
+                "url": url_for("main.ordenes_list", alerta="programados_hoy"),
+                "tone": "info",
+                "pad": True,
+            },
+            {
+                "label": "En proceso",
+                "count": en_proceso,
+                "url": url_for("main.ordenes_list", alerta="en_proceso"),
+                "tone": "warn",
+            },
+        ],
+    )
+
+
+def _resumen_alertas_inventario(eid: int, hoy: date) -> dict[str, Any]:
+    from app.inventario_comercial.service import query_productos_bajo_stock
+
+    bajo_stock = query_productos_bajo_stock(eid).count()
+    por_cobrar = (
+        InvVenta.query.filter_by(empresa_id=eid)
+        .filter(InvVenta.estado_cobro.in_(["pendiente", "parcial"]))
+        .count()
+    )
+    credito_vencido = (
+        InvVenta.query.filter_by(empresa_id=eid)
+        .filter(
+            InvVenta.estado_cobro.in_(["pendiente", "parcial"]),
+            InvVenta.fecha_vencimiento.isnot(None),
+            InvVenta.fecha_vencimiento < hoy,
+        )
+        .count()
+    )
+
+    return _empacar_alertas(
+        modulo="inventario",
+        titulo="Alertas comerciales",
+        items=[
+            {
+                "label": "Bajo stock",
+                "count": bajo_stock,
+                "url": url_for("inv_comercial.productos_list", alerta="bajo"),
+                "tone": "danger",
+            },
+            {
+                "label": "Por cobrar",
+                "count": por_cobrar,
+                "url": url_for("inv_comercial.ventas_list", cobro="pendiente"),
+                "tone": "warn",
+            },
+            {
+                "label": "Crédito vencido",
+                "count": credito_vencido,
+                "url": url_for("inv_comercial.ventas_list", cobro="pendiente"),
+                "tone": "danger",
+            },
+        ],
+    )
+
+
+def resumen_alertas_campana() -> dict[str, Any]:
+    if not current_user.is_authenticated:
+        return _alertas_vacio()
+
+    hoy = date.today()
+    if _usar_alertas_inventario():
+        eid = _current_empresa_id()
+        if not eid:
+            return _alertas_vacio()
+        return _resumen_alertas_inventario(eid, hoy)
+
+    return _resumen_alertas_mantenimiento(hoy)

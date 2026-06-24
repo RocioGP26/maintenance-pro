@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard inventario — {{ app_name }}{% endblock %}
+
+{% block page_title %}Dashboard — Inventario{% endblock %}
+
+{% block content %}
+{% if show_welcome %}
+<div class="alert alert-success alert-dismissible fade show mb-3" role="alert">
+  Bienvenido. Este panel muestra ventas, stock y productos más vendidos — sin métricas de mantenimiento.
+  <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+</div>
+{% endif %}
+
+<div class="row g-3 mb-4">
+  <div class="col-md-4">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-body">
+        <p class="text-muted small mb-1">Ventas del día ({{ hoy.strftime('%d/%m/%Y') }})</p>
+        {% if kpis.multimoneda and kpis.ventas_hoy_por_moneda %}
+        <ul class="list-unstyled mb-0">
+          {% for v in kpis.ventas_hoy_por_moneda %}
+          <li class="d-flex justify-content-between align-items-baseline mb-1">
+            <span class="small text-muted">{{ v.moneda }}</span>
+            <strong>{{ formato_moneda(v.total, v.moneda) }}</strong>
+          </li>
+          {% else %}
+          <li class="text-muted small">Sin ventas hoy</li>
+          {% endfor %}
+        </ul>
+        <p class="small text-muted mb-0 mt-2">{{ kpis.ventas_hoy_count }} transacciones</p>
+        {% else %}
+        <h2 class="h3 mb-0">{{ formato_moneda(kpis.ventas_hoy_total, empresa_actual.moneda if empresa_actual else 'COP') }}</h2>
+        <p class="small text-muted mb-0">{{ kpis.ventas_hoy_count }} transacciones</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-body">
+        <p class="text-muted small mb-1">Productos con bajo stock</p>
+        <h2 class="h3 mb-0 {% if kpis.bajo_stock_count %}text-warning{% endif %}">{{ kpis.bajo_stock_count }}</h2>
+        <p class="small text-muted mb-0">de {{ kpis.total_productos }} en catálogo</p>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-body">
+        <p class="text-muted small mb-1">Unidades vendidas hoy</p>
+        <h2 class="h3 mb-0">{{ kpis.unidades_vendidas_hoy }}</h2>
+        <p class="small text-muted mb-0">piezas facturadas en el día</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-3">
+  <div class="col-lg-6">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-header bg-white fw-semibold d-flex justify-content-between align-items-center">
+        <span>Productos con bajo stock</span>
+        {% if kpis.bajo_stock_count %}
+        <a href="{{ url_for('inv_comercial.productos_export_bajo_stock') }}" class="btn btn-sm btn-outline-success">
+          <i class="bi bi-file-earmark-excel"></i> Descargar Excel
+        </a>
+        {% endif %}
+      </div>
+      <div class="card-body p-0">
+        {% if kpis.bajo_stock %}
+        <ul class="list-group list-group-flush">
+          {% for p in kpis.bajo_stock %}
+          <li class="list-group-item d-flex justify-content-between align-items-center">
+            <span>{{ p.nombre }} <span class="text-muted small">({{ p.sku }})</span></span>
+            <span class="badge text-bg-warning">{{ p.stock }} / mín. {{ p.stock_minimo }}</span>
+          </li>
+          {% endfor %}
+        </ul>
+        {% else %}
+        <p class="text-muted small p-3 mb-0">Sin alertas de stock por ahora.</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-6">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-header bg-white fw-semibold">Top productos vendidos (mes en curso)</div>
+      <div class="card-body p-0">
+        {% if kpis.top_productos %}
+        <ul class="list-group list-group-flush">
+          {% for p in kpis.top_productos %}
+          <li class="list-group-item d-flex justify-content-between align-items-center">
+            <span>{{ p.nombre }} <span class="text-muted small">({{ p.sku }})</span></span>
+            <span class="text-end">
+              <span class="badge text-bg-primary me-1">{{ p.unidades }} uds.</span>
+              <span class="text-muted small">{{ formato_moneda(p.ingresos, empresa_actual.moneda if empresa_actual else 'COP') }}</span>
+            </span>
+          </li>
+          {% endfor %}
+        </ul>
+        {% else %}
+        <p class="text-muted small p-3 mb-0">Registra ventas para ver el ranking de productos.</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

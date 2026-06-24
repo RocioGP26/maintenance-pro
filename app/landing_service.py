@@ -8,6 +8,7 @@ from sqlalchemy import func
 
 from app import db
 from app.models import Empresa, Machine, User
+from app.modules import MODULO_INVENTARIO, MODULO_MANTENIMIENTO, MODULO_META
 from app.platform_config_service import (
     listar_planes_catalogo,
     plan_a_meta,
@@ -16,6 +17,7 @@ from app.platform_config_service import (
 )
 
 SECTOR_ICONS: dict[str, str] = {
+    "comercio": "bi-shop",
     "logistica": "bi-truck",
     "manufactura": "bi-building-gear",
     "salud": "bi-heart-pulse",
@@ -54,9 +56,35 @@ FEATURES_LANDING: tuple[dict[str, str], ...] = (
     },
     {
         "icon": "bi-box-seam",
-        "title": "Inventario de repuestos",
-        "text": "Controla stock crítico y recibe alertas antes de quedarte sin insumos clave para tu operación.",
+        "title": "Repuestos técnicos",
+        "text": "Inventario de insumos de mantenimiento vinculado a órdenes de trabajo, con alertas de stock crítico.",
     },
+    {
+        "icon": "bi-cart3",
+        "title": "Inventario comercial",
+        "text": "Catálogo, entradas de mercancía, punto de venta, clientes, ventas a crédito y reporte Excel de bajo stock.",
+    },
+)
+
+MODULOS_LANDING_ITEMS: tuple[tuple[str, tuple[str, ...]], ...] = (
+    (
+        MODULO_MANTENIMIENTO,
+        (
+            "Activos, sedes y órdenes de trabajo",
+            "Preventivo, correctivo y calendario",
+            "Repuestos técnicos y proveedores de servicio",
+            "MTBF, MTTR y reportes de planta",
+        ),
+    ),
+    (
+        MODULO_INVENTARIO,
+        (
+            "Catálogo de productos con imágenes",
+            "Entradas de mercancía y proveedores comerciales",
+            "Ventas al contado o a crédito con abonos",
+            "Dashboard de ventas y alertas de bajo stock",
+        ),
+    ),
 )
 
 MIN_EMPRESAS_STATS = 8
@@ -157,9 +185,25 @@ def estadisticas_confianza() -> dict[str, Any]:
             {"valor": "Multi-tenant", "etiqueta": "Datos aislados por empresa"},
             {"valor": "Multi-sector", "etiqueta": "Cualquier industria"},
             {"valor": f"{dias} días", "etiqueta": "Prueba sin tarjeta"},
-            {"valor": "CMMS real", "etiqueta": "Para equipos de mantenimiento"},
+            {"valor": "Modular", "etiqueta": "Mantenimiento e inventario"},
         ],
     }
+
+
+def modulos_landing() -> list[dict[str, Any]]:
+    items: list[dict[str, Any]] = []
+    for clave, bullets in MODULOS_LANDING_ITEMS:
+        meta = MODULO_META[clave]
+        items.append(
+            {
+                "clave": clave,
+                "label": meta["label"],
+                "descripcion": meta["descripcion"],
+                "icon": meta["icon"],
+                "bullets": list(bullets),
+            }
+        )
+    return items
 
 
 def landing_context() -> dict[str, Any]:
@@ -168,19 +212,69 @@ def landing_context() -> dict[str, Any]:
         "trial_dias": dias,
         "estadisticas": estadisticas_confianza(),
         "features": FEATURES_LANDING,
+        "modulos": modulos_landing(),
         "sectores": sectores_landing(),
         "planes": planes_landing(),
-        "mockup": {
-            "empresa": "Logistic SA",
-            "kpis": [
-                {"label": "Disponibilidad", "valor": "99.9%", "tone": "success"},
-                {"label": "OT Abiertas", "valor": "4", "tone": "neutral"},
-                {"label": "MTBF", "valor": "119d", "tone": "neutral"},
-            ],
-            "activos": [
-                {"nombre": "Compresor principal", "codigo": "CPS-001", "estado": "Operativo", "tone": "success"},
-                {"nombre": "Línea de producción A", "codigo": "LP5-001", "estado": "Mantenimiento", "tone": "warning"},
-                {"nombre": "Motor línea 1", "codigo": "MT5-001", "estado": "Operativo", "tone": "success"},
-            ],
-        },
+        "mockups": [
+            {
+                "modulo": "Inventario comercial",
+                "icon": "bi-cart3",
+                "empresa": "El Surtidor SAS",
+                "kpis": [
+                    {"label": "Ventas hoy", "valor": "$480K", "tone": "success"},
+                    {"label": "Bajo stock", "valor": "3", "tone": "warning"},
+                    {"label": "Por cobrar", "valor": "2", "tone": "neutral"},
+                ],
+                "filas": [
+                    {
+                        "nombre": "Aceite motor 1L",
+                        "codigo": "REF-001",
+                        "estado": "24 uds.",
+                        "tone": "success",
+                    },
+                    {
+                        "nombre": "Filtro de aire universal",
+                        "codigo": "REF-002",
+                        "estado": "Bajo stock",
+                        "tone": "warning",
+                    },
+                    {
+                        "nombre": "Refrigerante 500ml",
+                        "codigo": "REF-003",
+                        "estado": "Bajo stock",
+                        "tone": "warning",
+                    },
+                ],
+            },
+            {
+                "modulo": "Mantenimiento",
+                "icon": "bi-wrench-adjustable",
+                "empresa": "Logistic SA",
+                "kpis": [
+                    {"label": "Disponibilidad", "valor": "99.9%", "tone": "success"},
+                    {"label": "OT abiertas", "valor": "4", "tone": "neutral"},
+                    {"label": "MTBF", "valor": "119d", "tone": "neutral"},
+                ],
+                "filas": [
+                    {
+                        "nombre": "Compresor principal",
+                        "codigo": "CPS-001",
+                        "estado": "Operativo",
+                        "tone": "success",
+                    },
+                    {
+                        "nombre": "Línea de producción A",
+                        "codigo": "LP5-001",
+                        "estado": "Mantenimiento",
+                        "tone": "warning",
+                    },
+                    {
+                        "nombre": "Motor línea 1",
+                        "codigo": "MT5-001",
+                        "estado": "Operativo",
+                        "tone": "success",
+                    },
+                ],
+            },
+        ],
     }

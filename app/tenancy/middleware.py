@@ -61,6 +61,37 @@ def _sync_ordenes_vencidas() -> None:
     g._ot_vencidas_synced = True
 
 
+def _verificar_modulo_activo(endpoint: str):
+    from flask import flash, redirect, url_for
+
+    from app.models import Empresa
+    from app.modules import (
+        MODULO_INVENTARIO,
+        MODULO_MANTENIMIENTO,
+        endpoint_exento_modulo,
+        empresa_tiene_modulo,
+        modulo_requerido_por_endpoint,
+    )
+
+    if endpoint_exento_modulo(endpoint):
+        return None
+    modulo = modulo_requerido_por_endpoint(endpoint)
+    if not modulo:
+        return None
+    eid = getattr(g, "empresa_id", None)
+    if not eid:
+        return None
+    empresa = Empresa.query.get(int(eid))
+    if empresa_tiene_modulo(empresa, modulo):
+        return None
+    flash("Tu plan no incluye este módulo.", "warning")
+    if empresa_tiene_modulo(empresa, MODULO_INVENTARIO):
+        return redirect(url_for("inv_comercial.dashboard_inventario"))
+    if empresa_tiene_modulo(empresa, MODULO_MANTENIMIENTO):
+        return redirect(url_for("main.dashboard"))
+    return redirect(url_for("main.login"))
+
+
 def _verificar_bloqueo_tenant(endpoint: str):
     from app.models import Empresa
     from app.tenant_activity import empresa_puede_operar, endpoint_exento_bloqueo
@@ -110,6 +141,9 @@ def register_tenancy_middleware(app: Flask) -> None:
             bloqueo = _verificar_bloqueo_tenant(endpoint)
             if bloqueo is not None:
                 return bloqueo
+            modulo = _verificar_modulo_activo(endpoint)
+            if modulo is not None:
+                return modulo
             return None
 
         _load_from_session_user()
@@ -117,6 +151,9 @@ def register_tenancy_middleware(app: Flask) -> None:
         bloqueo = _verificar_bloqueo_tenant(endpoint)
         if bloqueo is not None:
             return bloqueo
+        modulo = _verificar_modulo_activo(endpoint)
+        if modulo is not None:
+            return modulo
         return None
 
     @app.teardown_appcontext

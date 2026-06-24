@@ -129,6 +129,24 @@ def ensure_platform_config() -> None:
                 )
             )
     db.session.commit()
+    sincronizar_sectores_catalogo()
+
+
+def sincronizar_sectores_catalogo() -> None:
+    """Añade sectores nuevos del código al catálogo de plataforma (p. ej. comercio)."""
+    for i, (clave, etiqueta) in enumerate(SECTOR_CHOICES):
+        if SectorCatalogo.query.filter_by(clave=clave).first():
+            continue
+        db.session.add(
+            SectorCatalogo(
+                clave=clave,
+                etiqueta=etiqueta,
+                visible_registro=True,
+                activo=True,
+                orden=i * 10,
+            )
+        )
+    db.session.commit()
 
 
 def get_regla(clave: str, default: str = "") -> str:

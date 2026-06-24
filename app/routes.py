@@ -1,4 +1,5 @@
 from datetime import date
+import os
 import re
 import unicodedata
 from calendar import monthrange
@@ -13,6 +14,7 @@ from sqlalchemy import and_, false, func, or_
 from app import db, limiter
 from app.url_utils import is_safe_redirect
 from app.password_policy import validar_password
+from app.user_service import username_disponible
 from app.branding import APP_LOGO_PATH, empresa_logo_url_or_none, normalizar_logo_empresa
 from app.permissions import (
     CONFIG_ENDPOINT_PREFIX,
@@ -295,9 +297,17 @@ def login():
         return redirect(url_for("main.dashboard"))
     if request.method == "POST":
         username = request.form.get("username", "").strip()
+        empresa_slug = request.form.get("empresa_slug", "").strip()
         password = request.form.get("password", "")
         remember = bool(request.form.get("remember"))
-        user = User.query.filter_by(username=username).first()
+        from app.user_service import buscar_usuario_login, mensaje_login_ambiguo
+
+        user = buscar_usuario_login(username, empresa_slug=empresa_slug or None)
+        if user is None and username.strip():
+            candidatos = User.query.filter_by(username=username.strip().lower()).count()
+            if candidatos > 1:
+                flash(mensaje_login_ambiguo(username), "danger")
+                return render_template("login.html")
         if user is not None and user.check_password(password):
             if user.bloqueado or not user.activo:
                 flash("Usuario o contraseña incorrectos.", "danger")
@@ -1231,6 +1241,13 @@ def index():
 
 @bp.route("/dashboard")
 def dashboard():
+    from app.modules import empresa_solo_inventario
+
+    if current_user.is_authenticated and empresa_solo_inventario(
+        getattr(current_user, "empresa", None)
+    ):
+        return redirect(url_for("inv_comercial.dashboard_inventario", **request.args))
+
     period = request.args.get("periodo", "mes")
     sector, sector_locked = _sector_for_dashboard()
     dash_filtros = _dashboard_filtros_desde_request()
@@ -3396,8 +3413,8 @@ def equipo_new():
         err_u = _validar_username_equipo(username)
         if err_u:
             flash(err_u, "danger")
-        elif User.query.filter_by(username=username).first():
-            flash("Ese nombre de usuario ya está en uso.", "danger")
+        elif not username_disponible(username, eid):
+            flash("Ese nombre de usuario ya está en uso en tu empresa.", "danger")
         elif not nombre:
             flash("El nombre es obligatorio.", "danger")
         elif rol not in USER_ROLE_LABELS:
@@ -4048,7 +4065,10 @@ def configuracion_empresa():
             db.session.rollback()
             flash(str(e), "danger")
         except Exception:
+            import logging
+
             db.session.rollback()
+            logging.getLogger(__name__).exception("Error al guardar configuración de empresa")
             flash("No se pudo guardar la configuración.", "danger")
 
     from app.platform_config_service import catalogo_plan_meta

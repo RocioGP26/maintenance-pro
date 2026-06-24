@@ -162,6 +162,7 @@ class Empresa(db.Model):
     telefono = db.Column(db.String(40), default="")
     email = db.Column(db.String(120), default="")
     moneda = db.Column(db.String(8), default="COP")
+    monedas_activas_json = db.Column(db.Text, default='["COP"]')
     zona_horaria = db.Column(db.String(64), default="America/Bogota")
     jornada_habilitada = db.Column(db.Boolean, default=False)
     jornada_hora_inicio = db.Column(db.String(5), default="08:00")
@@ -169,6 +170,7 @@ class Empresa(db.Model):
     jornada_dias = db.Column(db.String(32), default="0,1,2,3,4")
     fecha_registro = db.Column(db.DateTime, default=datetime.utcnow)
     suspendida = db.Column(db.Boolean, default=False, nullable=False)
+    modulos_activos_json = db.Column(db.Text, default='["mantenimiento"]')
 
     sedes = db.relationship("Sede", back_populates="empresa", lazy="dynamic")
     usuarios = db.relationship("User", back_populates="empresa", lazy="dynamic")
@@ -179,6 +181,29 @@ class Empresa(db.Model):
         from app.platform_config_service import etiqueta_sector
 
         return etiqueta_sector(self.sector or "")
+
+    @property
+    def modulos_activos(self) -> list[str]:
+        from app.modules import modulos_activos_de
+
+        return modulos_activos_de(self)
+
+    def tiene_modulo(self, modulo: str) -> bool:
+        from app.modules import empresa_tiene_modulo
+
+        return empresa_tiene_modulo(self, modulo)
+
+    @property
+    def monedas_activas(self) -> list[str]:
+        from app.currency import monedas_activas_de
+
+        return monedas_activas_de(self)
+
+    @property
+    def multimoneda(self) -> bool:
+        from app.currency import empresa_multimoneda
+
+        return empresa_multimoneda(self)
 
     @property
     def plan_activo(self) -> "PlanSuscripcion | None":
@@ -375,10 +400,13 @@ class SectorCatalogo(db.Model):
 
 class User(UserMixin, db.Model):
     __tablename__ = "users"
+    __table_args__ = (
+        db.UniqueConstraint("empresa_id", "username", name="uq_user_empresa_username"),
+    )
 
     id = db.Column(db.Integer, primary_key=True)
     empresa_id = db.Column(db.Integer, db.ForeignKey("empresas.id"), nullable=True)
-    username = db.Column(db.String(80), unique=True, nullable=False, index=True)
+    username = db.Column(db.String(80), nullable=False, index=True)
     email = db.Column(db.String(120), default="", index=True)
     password_hash = db.Column(db.String(256), nullable=False)
     nombre_visible = db.Column(db.String(120), default="")
@@ -1173,6 +1201,205 @@ class SparePart(db.Model):
         return round(float(self.costo_unitario or 0) * int(self.cantidad or 0), 2)
 
 
+# --- Módulo inventario comercial (prefijo inv_, sin FK cruzadas a mantenimiento) ---
+
+
+class InvCliente(db.Model):
+    """Cliente del módulo inventario comercial (comprador final)."""
+
+    __tablename__ = "inv_clientes"
+
+    id = db.Column(db.Integer, primary_key=True)
+    empresa_id = db.Column(db.Integer, db.ForeignKey("empresas.id"), nullable=False, index=True)
+    nombre = db.Column(db.String(200), nullable=False)
+    documento = db.Column(db.String(32), default="")
+    telefono = db.Column(db.String(40), default="")
+    email = db.Column(db.String(120), default="")
+    direccion = db.Column(db.String(255), default="")
+    notas = db.Column(db.Text, default="")
+    activo = db.Column(db.Boolean, default=True, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    ventas = db.relationship("InvVenta", back_populates="cliente", lazy="dynamic")
+
+
+class InvProveedor(db.Model):
+    """Proveedor comercial: a quién le compro para revender (≠ proveedor de servicio OT)."""
+
+    __tablename__ = "inv_proveedores"
+
+    id = db.Column(db.Integer, primary_key=True)
+    empresa_id = db.Column(db.Integer, db.ForeignKey("empresas.id"), nullable=False, index=True)
+    nombre = db.Column(db.String(200), nullable=False)
+    nit = db.Column(db.String(32), default="")
+    contacto_nombre = db.Column(db.String(200), default="")
+    contacto_email = db.Column(db.String(120), default="")
+    contacto_telefono = db.Column(db.String(40), default="")
+    direccion = db.Column(db.String(255), default="")
+    observaciones = db.Column(db.Text, default="")
+    activo = db.Column(db.Boolean, default=True, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+
+class InvProducto(db.Model):
+    __tablename__ = "inv_productos"
+
+    id = db.Column(db.Integer, primary_key=True)
+    empresa_id = db.Column(db.Integer, db.ForeignKey("empresas.id"), nullable=False, index=True)
+    sku = db.Column(db.String(64), nullable=False)
+    nombre = db.Column(db.String(200), nullable=False)
+    marca = db.Column(db.String(120), default="")
+    categoria = db.Column(db.String(120), default="")
+    imagen = db.Column(db.String(255), default="")
+    unidad = db.Column(db.String(32), default="pza")
+    stock = db.Column(db.Integer, default=0, nullable=False)
+    stock_minimo = db.Column(db.Integer, default=0, nullable=False)
+    precio_compra = db.Column(db.Float, default=0.0)
+    precio_venta = db.Column(db.Float, default=0.0)
+    precios_json = db.Column(db.Text, default="{}")
+    activo = db.Column(db.Boolean, default=True, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    __table_args__ = (
+        db.UniqueConstraint("empresa_id", "sku", name="uq_inv_producto_empresa_sku"),
+    )
+
+    @property
+    def bajo_stock(self) -> bool:
+        return int(self.stock or 0) <= int(self.stock_minimo or 0)
+
+    @property
+    def imagen_publica(self) -> str | None:
+        from app.inventario_comercial.media import producto_imagen_url_or_none
+
+        return producto_imagen_url_or_none(self)
+
+    def precios_venta(self, moneda_referencia: str = "USD") -> dict[str, float]:
+        from app.currency import precios_producto
+
+        return precios_producto(self, moneda_referencia)
+
+    def precio_venta_en(self, moneda: str, moneda_referencia: str = "USD") -> float:
+        from app.currency import precio_producto_en
+
+        return precio_producto_en(self, moneda, moneda_referencia)
+
+
+class InvCompra(db.Model):
+    __tablename__ = "inv_compras"
+
+    id = db.Column(db.Integer, primary_key=True)
+    empresa_id = db.Column(db.Integer, db.ForeignKey("empresas.id"), nullable=False, index=True)
+    proveedor_id = db.Column(db.Integer, db.ForeignKey("inv_proveedores.id"), nullable=True, index=True)
+    numero = db.Column(db.String(32), default="")
+    total = db.Column(db.Float, default=0.0)
+    notas = db.Column(db.Text, default="")
+    fecha = db.Column(db.Date, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    proveedor = db.relationship("InvProveedor", backref="compras")
+    lineas = db.relationship(
+        "InvCompraLinea",
+        back_populates="compra",
+        lazy="joined",
+        cascade="all, delete-orphan",
+    )
+
+
+class InvCompraLinea(db.Model):
+    """Detalle de compra / entrada de mercancía."""
+
+    __tablename__ = "inv_compra_lineas"
+
+    id = db.Column(db.Integer, primary_key=True)
+    compra_id = db.Column(db.Integer, db.ForeignKey("inv_compras.id"), nullable=False, index=True)
+    producto_id = db.Column(db.Integer, db.ForeignKey("inv_productos.id"), nullable=False, index=True)
+    marca = db.Column(db.String(120), default="")
+    cantidad = db.Column(db.Integer, default=1, nullable=False)
+    precio_unitario = db.Column(db.Float, default=0.0)
+    subtotal = db.Column(db.Float, default=0.0)
+
+    compra = db.relationship("InvCompra", back_populates="lineas")
+    producto = db.relationship("InvProducto", backref="lineas_compra")
+
+
+class InvVenta(db.Model):
+    __tablename__ = "inv_ventas"
+
+    id = db.Column(db.Integer, primary_key=True)
+    empresa_id = db.Column(db.Integer, db.ForeignKey("empresas.id"), nullable=False, index=True)
+    cliente_id = db.Column(db.Integer, db.ForeignKey("inv_clientes.id"), nullable=True, index=True)
+    numero = db.Column(db.String(32), default="")
+    moneda = db.Column(db.String(8), default="USD")
+    total = db.Column(db.Float, default=0.0)
+    notas = db.Column(db.Text, default="")
+    fecha = db.Column(db.Date, nullable=False)
+    forma_pago = db.Column(db.String(16), default="contado")
+    estado_cobro = db.Column(db.String(16), default="pagada")
+    monto_cobrado = db.Column(db.Float, default=0.0)
+    fecha_vencimiento = db.Column(db.Date, nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    cliente = db.relationship("InvCliente", back_populates="ventas")
+    cobros = db.relationship(
+        "InvVentaCobro",
+        back_populates="venta",
+        lazy="joined",
+        cascade="all, delete-orphan",
+        order_by="InvVentaCobro.fecha.desc()",
+    )
+    lineas = db.relationship(
+        "InvVentaLinea",
+        back_populates="venta",
+        lazy="joined",
+        cascade="all, delete-orphan",
+    )
+
+    @property
+    def es_credito(self) -> bool:
+        return (self.forma_pago or "contado").strip().lower() == "credito"
+
+    @property
+    def saldo_pendiente(self) -> float:
+        return max(0.0, round(float(self.total or 0) - float(self.monto_cobrado or 0), 2))
+
+    @property
+    def estado_cobro_label(self) -> str:
+        labels = {"pagada": "Pagada", "pendiente": "Pendiente", "parcial": "Abono parcial"}
+        return labels.get((self.estado_cobro or "").strip().lower(), self.estado_cobro or "—")
+
+
+class InvVentaCobro(db.Model):
+    """Abono o pago recibido sobre una venta."""
+
+    __tablename__ = "inv_venta_cobros"
+
+    id = db.Column(db.Integer, primary_key=True)
+    venta_id = db.Column(db.Integer, db.ForeignKey("inv_ventas.id"), nullable=False, index=True)
+    monto = db.Column(db.Float, default=0.0, nullable=False)
+    fecha = db.Column(db.Date, nullable=False)
+    notas = db.Column(db.Text, default="")
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    venta = db.relationship("InvVenta", back_populates="cobros")
+
+
+class InvVentaLinea(db.Model):
+    """Detalle de venta — solo FK dentro del módulo inventario."""
+
+    __tablename__ = "inv_venta_lineas"
+
+    id = db.Column(db.Integer, primary_key=True)
+    venta_id = db.Column(db.Integer, db.ForeignKey("inv_ventas.id"), nullable=False, index=True)
+    producto_id = db.Column(db.Integer, db.ForeignKey("inv_productos.id"), nullable=False, index=True)
+    cantidad = db.Column(db.Integer, default=1, nullable=False)
+    precio_unitario = db.Column(db.Float, default=0.0)
+    subtotal = db.Column(db.Float, default=0.0)
+
+    venta = db.relationship("InvVenta", back_populates="lineas")
+    producto = db.relationship("InvProducto", backref="lineas_venta")
+
+
 class Incident(db.Model):
     __tablename__ = "incidents"
 
@@ -1465,6 +1692,91 @@ def _backfill_empresa_slugs() -> None:
     db.session.commit()
 
 
+def _backfill_modulos_activos() -> None:
+    """Empresas existentes conservan solo mantenimiento hasta que activen inventario."""
+    from sqlalchemy import or_
+
+    pendientes = Empresa.query.filter(
+        or_(Empresa.modulos_activos_json.is_(None), Empresa.modulos_activos_json == "")
+    ).all()
+    if not pendientes:
+        return
+    for emp in pendientes:
+        emp.modulos_activos_json = '["mantenimiento"]'
+        db.session.add(emp)
+    db.session.commit()
+
+
+def _backfill_monedas_activas() -> None:
+    """Empresas existentes: una sola moneda activa = moneda actual."""
+    from sqlalchemy import or_
+
+    import json
+
+    pendientes = Empresa.query.filter(
+        or_(Empresa.monedas_activas_json.is_(None), Empresa.monedas_activas_json == "")
+    ).all()
+    if not pendientes:
+        return
+    for emp in pendientes:
+        ref = (emp.moneda or "COP").strip().upper() or "COP"
+        emp.monedas_activas_json = json.dumps([ref], ensure_ascii=False)
+        db.session.add(emp)
+    db.session.commit()
+
+
+def _backfill_ventas_cobro_legacy() -> None:
+    """Ventas existentes: contado y cobradas por el total."""
+    from sqlalchemy import or_, text, inspect
+
+    if "inv_ventas" not in inspect(db.engine).get_table_names():
+        return
+    with db.engine.begin() as conn:
+        conn.execute(
+            text(
+                "UPDATE inv_ventas SET forma_pago = 'contado' "
+                "WHERE forma_pago IS NULL OR forma_pago = ''"
+            )
+        )
+        conn.execute(
+            text(
+                "UPDATE inv_ventas SET estado_cobro = 'pagada' "
+                "WHERE estado_cobro IS NULL OR estado_cobro = ''"
+            )
+        )
+        conn.execute(
+            text(
+                "UPDATE inv_ventas SET monto_cobrado = total "
+                "WHERE monto_cobrado IS NULL OR monto_cobrado = 0"
+            )
+        )
+
+
+def ensure_users_username_por_empresa() -> None:
+    """Unicidad (empresa_id, username) en lugar de username global."""
+    from sqlalchemy import inspect, text
+
+    insp = inspect(db.engine)
+    if "users" not in insp.get_table_names():
+        return
+    indexes = {idx["name"] for idx in insp.get_indexes("users")}
+    if "uq_user_empresa_username" in indexes:
+        return
+    with db.engine.begin() as conn:
+        for name in indexes:
+            if name and "username" in name.lower() and name != "uq_user_empresa_username":
+                try:
+                    conn.execute(text(f'DROP INDEX IF EXISTS "{name}"'))
+                except Exception:
+                    pass
+        conn.execute(
+            text(
+                "CREATE UNIQUE INDEX IF NOT EXISTS uq_user_empresa_username "
+                "ON users (empresa_id, username)"
+            )
+        )
+
+
 def ensure_saas_schema():
     """Columnas multi-empresa, prioridad en OT y tablas de onboarding."""
     from sqlalchemy import inspect, text
@@ -1603,6 +1915,30 @@ def ensure_saas_schema():
         _add_column_if_missing("empresas", "email", "email VARCHAR(120)")
         _add_column_if_missing("empresas", "slug", "slug VARCHAR(48)")
         _add_column_if_missing("empresas", "suspendida", "suspendida BOOLEAN DEFAULT 0")
+        _add_column_if_missing(
+            "empresas",
+            "modulos_activos_json",
+            'modulos_activos_json TEXT DEFAULT \'["mantenimiento"]\'',
+        )
+        _add_column_if_missing(
+            "empresas",
+            "monedas_activas_json",
+            'monedas_activas_json TEXT DEFAULT \'["COP"]\'',
+        )
+        _add_column_if_missing("inv_productos", "precios_json", "precios_json TEXT DEFAULT '{}'")
+        _add_column_if_missing("inv_productos", "marca", "marca VARCHAR(120) DEFAULT ''")
+        _add_column_if_missing("inv_productos", "imagen", "imagen VARCHAR(255) DEFAULT ''")
+        _add_column_if_missing("inv_compra_lineas", "marca", "marca VARCHAR(120) DEFAULT ''")
+        _add_column_if_missing("inv_ventas", "moneda", "moneda VARCHAR(8) DEFAULT 'USD'")
+        _add_column_if_missing("inv_ventas", "cliente_id", "cliente_id INTEGER")
+        _add_column_if_missing("inv_ventas", "forma_pago", "forma_pago VARCHAR(16) DEFAULT 'contado'")
+        _add_column_if_missing("inv_ventas", "estado_cobro", "estado_cobro VARCHAR(16) DEFAULT 'pagada'")
+        _add_column_if_missing("inv_ventas", "monto_cobrado", "monto_cobrado REAL DEFAULT 0")
+        _add_column_if_missing("inv_ventas", "fecha_vencimiento", "fecha_vencimiento DATE")
+        _backfill_ventas_cobro_legacy()
+        _backfill_modulos_activos()
+        _backfill_monedas_activas()
+        ensure_users_username_por_empresa()
         _add_column_if_missing("planes_suscripcion", "estado_ciclo", "estado_ciclo VARCHAR(16) DEFAULT 'trial'")
         _add_column_if_missing(
             "planes_suscripcion", "pasarela_customer_id", "pasarela_customer_id VARCHAR(120)"
@@ -1643,6 +1979,9 @@ def ensure_saas_schema():
 
         backfill_work_order_numeros()
     except Exception:
+        import logging
+
+        logging.getLogger(__name__).exception("ensure_saas_schema falló")
         db.session.rollback()
 
 

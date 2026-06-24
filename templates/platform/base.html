@@ -14,7 +14,7 @@
 <body class="platform-body">
   <div class="platform-layout">
   {% block layout %}
-    <aside class="platform-sidebar">
+    <aside class="platform-sidebar" id="platformSidebar">
       <div class="platform-brand">
         <a href="{{ url_for('platform.empresas') }}" class="text-decoration-none">
           <div class="platform-brand-logo-panel">
@@ -54,6 +54,11 @@
       </div>
     </aside>
     <main class="platform-main">
+      <button type="button" class="platform-sidebar-toggle d-lg-none" id="platformSidebarToggle"
+              aria-label="Abrir menú" aria-expanded="false" aria-controls="platformSidebar">
+        <i class="bi bi-list"></i>
+      </button>
+      <div class="platform-main-inner">
       {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
           {% for category, message in messages %}
@@ -65,10 +70,39 @@
         {% endif %}
       {% endwith %}
       {% block content %}{% endblock %}
+      </div>
     </main>
   {% endblock %}
   </div>
   {{ bootstrap_js() }}
+  <script>
+  (function () {
+    var toggle = document.getElementById('platformSidebarToggle');
+    var sidebar = document.getElementById('platformSidebar');
+    if (!toggle || !sidebar) return;
+    function closeSidebar() {
+      sidebar.classList.remove('platform-sidebar--open');
+      document.body.classList.remove('platform-sidebar-open');
+      toggle.setAttribute('aria-expanded', 'false');
+    }
+    toggle.addEventListener('click', function () {
+      var open = sidebar.classList.toggle('platform-sidebar--open');
+      document.body.classList.toggle('platform-sidebar-open', open);
+      toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+    });
+    sidebar.querySelectorAll('a.nav-link:not(.disabled)').forEach(function (link) {
+      link.addEventListener('click', closeSidebar);
+    });
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') closeSidebar();
+    });
+    document.addEventListener('click', function (e) {
+      if (!document.body.classList.contains('platform-sidebar-open')) return;
+      if (sidebar.contains(e.target) || toggle.contains(e.target)) return;
+      closeSidebar();
+    });
+  })();
+  </script>
   {% block scripts %}{% endblock %}
 </body>
 </html>

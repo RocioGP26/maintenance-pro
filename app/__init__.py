@@ -100,12 +100,17 @@ def create_app():
 
     @app.context_processor
     def inject_globals():
+        from app.modules import MODULO_INVENTARIO, MODULO_MANTENIMIENTO, modulos_activos_de
+
         empresa_actual = None
         if current_user.is_authenticated and getattr(current_user, "empresa", None):
             empresa_actual = current_user.empresa
         perm = permission_flags(current_user) if current_user.is_authenticated else permission_flags(
             None
         )
+        mods = modulos_activos_de(empresa_actual)
+        monedas_act = empresa_actual.monedas_activas if empresa_actual else ["COP"]
+        multimoneda = empresa_actual.multimoneda if empresa_actual else False
         return {
             "app_name": APP_NAME,
             "app_tagline": APP_TAGLINE,
@@ -121,6 +126,11 @@ def create_app():
             "incident_prioridad_meta": incident_prioridad_meta,
             "formato_moneda": formato_moneda,
             "perm": perm,
+            "modulos_activos": mods,
+            "mod_mantenimiento": MODULO_MANTENIMIENTO in mods,
+            "mod_inventario": MODULO_INVENTARIO in mods,
+            "monedas_activas": monedas_act,
+            "multimoneda": multimoneda,
         }
 
     from app import models  # noqa: F401
@@ -156,12 +166,14 @@ def create_app():
 
     from app import routes
     from app.onboarding_routes import onboarding_bp
+    from app.inventario_comercial.routes import inv_comercial_bp
     from app.tenancy.admin_routes import admin_bp
     from app.tenancy.api_routes import tenancy_api_bp
     from app.tenancy.platform_routes import platform_bp
 
     app.register_blueprint(routes.bp)
     app.register_blueprint(onboarding_bp)
+    app.register_blueprint(inv_comercial_bp)
     app.register_blueprint(tenancy_api_bp)
     app.register_blueprint(admin_bp)
     app.register_blueprint(platform_bp)

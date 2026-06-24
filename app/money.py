@@ -2,6 +2,7 @@
 
 MONEDAS_SOPORTADAS: tuple[tuple[str, str], ...] = (
     ("COP", "COP — Peso colombiano"),
+    ("VES", "VES — Bolívar venezolano"),
     ("USD", "USD — Dólar estadounidense"),
     ("MXN", "MXN — Peso mexicano"),
 )
@@ -21,6 +22,8 @@ def simbolo_moneda_input(moneda: str) -> str:
     m = normalizar_moneda(moneda)
     if m == "USD":
         return "US$"
+    if m == "VES":
+        return "Bs."
     if m == "MXN":
         return "MX$"
     if m == "EUR":
@@ -41,6 +44,12 @@ def formatear_monto_sin_simbolo(valor, moneda: str = "COP") -> str:
         if frac == "00":
             return entero_fmt
         return f"{entero_fmt}.{frac}"
+    if moneda == "VES":
+        entero, _, frac = f"{n:.2f}".partition(".")
+        entero_fmt = f"{int(entero):,}".replace(",", ".")
+        if frac == "00":
+            return entero_fmt
+        return f"{entero_fmt},{frac}"
     entero, _, frac = f"{n:.2f}".partition(".")
     entero_fmt = f"{int(entero):,}".replace(",", ".")
     if frac == "00":
@@ -76,6 +85,12 @@ def formato_moneda(valor, moneda: str = "COP") -> str:
         return f"€{n:,.2f}"
     if moneda == "USD":
         return f"${n:,.2f}"
+    if moneda == "VES":
+        entero, _, frac = f"{n:.2f}".partition(".")
+        entero_fmt = f"{int(entero):,}".replace(",", ".")
+        if frac == "00":
+            return f"Bs. {entero_fmt}"
+        return f"Bs. {entero_fmt},{frac}"
     # COP y otras: miles con punto, decimales con coma
     entero, _, frac = f"{n:.2f}".partition(".")
     entero_fmt = f"{int(entero):,}".replace(",", ".")

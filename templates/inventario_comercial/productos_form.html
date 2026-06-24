@@ -1,0 +1,156 @@
+{% extends "base.html" %}
+
+{% block title %}{% if item %}Editar{% else %}Nuevo{% endif %} producto — {{ app_name }}{% endblock %}
+{% block page_title %}{% if item %}Editar producto{% else %}Nuevo producto{% endif %}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-9">
+  {% if item and not item.activo %}
+  <div class="alert alert-secondary small d-flex flex-wrap justify-content-between align-items-center gap-2">
+    <span>Este producto está <strong>inactivo</strong> y no aparece en el catálogo ni en nuevas entradas.</span>
+    <form method="post" action="{{ url_for('inv_comercial.productos_cambiar_estado', id=item.id) }}" class="m-0">
+      {% include "_csrf.html" %}
+      <input type="hidden" name="accion" value="activar">
+      <button type="submit" class="btn btn-sm btn-success">Activar producto</button>
+    </form>
+  </div>
+  {% elif not item %}
+  <div class="alert alert-info small">
+    Registra aquí los productos del catálogo. Para sumar stock cuando llega mercancía, usa
+    <a href="{{ url_for('inv_comercial.compras_nueva') }}">Registrar entrada</a>.
+  </div>
+  {% endif %}
+    <div class="card card-dashboard">
+      <div class="card-body">
+        <form method="post" enctype="multipart/form-data">
+          {% include "_csrf.html" %}
+          <div class="row g-3">
+            <div class="col-md-4">
+              <label class="form-label" for="sku">Referencia / código *</label>
+              <input type="text" class="form-control" id="sku" name="sku" required
+                     value="{{ item.sku if item else '' }}">
+            </div>
+            <div class="col-md-8">
+              <label class="form-label" for="nombre">Nombre *</label>
+              <input type="text" class="form-control" id="nombre" name="nombre" required
+                     value="{{ item.nombre if item else '' }}">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label" for="marca">Marca</label>
+              <input type="text" class="form-control" id="marca" name="marca"
+                     value="{{ item.marca if item else '' }}" placeholder="Ej. Castrol, NGK">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label" for="categoria">Categoría</label>
+              <input type="text" class="form-control" id="categoria" name="categoria"
+                     value="{{ item.categoria if item else '' }}" placeholder="Ej. Lubricantes">
+            </div>
+            <div class="col-md-3">
+              <label class="form-label" for="unidad">Unidad</label>
+              <input type="text" class="form-control" id="unidad" name="unidad"
+                     value="{{ item.unidad if item else 'pza' }}">
+            </div>
+            <div class="col-md-3">
+              <label class="form-label" for="stock_minimo">Stock mínimo</label>
+              <input type="number" class="form-control" id="stock_minimo" name="stock_minimo" min="0"
+                     value="{{ item.stock_minimo if item else 0 }}">
+            </div>
+            {% if item %}
+            <div class="col-md-4">
+              <label class="form-label">Stock actual</label>
+              <input type="text" class="form-control bg-light" readonly
+                     value="{{ item.stock }} {{ item.unidad }}">
+              <div class="form-text">Para aumentar stock, usa <a href="{{ url_for('inv_comercial.compras_nueva') }}">Registrar entrada</a>.</div>
+            </div>
+            {% else %}
+            <div class="col-md-4">
+              <label class="form-label" for="stock">Stock inicial</label>
+              <input type="number" class="form-control" id="stock" name="stock" min="0" value="0">
+              <div class="form-text">Opcional. Lo habitual es dejar 0 y registrar la entrada en Compras.</div>
+            </div>
+            {% endif %}
+            <div class="col-md-4">
+              <label class="form-label" for="precio_compra">Precio de compra</label>
+              <input type="number" class="form-control" id="precio_compra" name="precio_compra" min="0" step="0.01"
+                     value="{{ '%.2f'|format(item.precio_compra) if item else '0' }}">
+            </div>
+            {% if multimoneda %}
+              {% for m in monedas_activas %}
+              {% set precios = item.precios_venta(empresa_actual.moneda) if item else {} %}
+              <div class="col-md-4">
+                <label class="form-label" for="precio_venta_{{ m }}">Precio venta {{ m }}</label>
+                <input type="number" class="form-control" id="precio_venta_{{ m }}" name="precio_venta_{{ m }}"
+                       min="0" step="0.01" value="{{ '%.2f'|format(precios.get(m, 0)) }}">
+              </div>
+              {% endfor %}
+            {% else %}
+            <div class="col-md-4">
+              <label class="form-label" for="precio_venta">Precio de venta</label>
+              <input type="number" class="form-control" id="precio_venta" name="precio_venta" min="0" step="0.01"
+                     value="{{ '%.2f'|format(item.precio_venta) if item else '0' }}">
+            </div>
+            {% endif %}
+          </div>
+
+          <div class="row g-3 mt-1">
+            <div class="col-12">
+              <h6 class="fw-semibold mb-0">Imagen del producto</h6>
+            </div>
+            <div class="col-md-4 text-center">
+              <div class="config-logo-preview p-2 border rounded bg-light">
+                {% if item and item.imagen_publica %}
+                <img src="{{ item.imagen_publica }}" alt="{{ item.nombre }}" class="img-fluid rounded" id="imagenPreview" style="max-height:160px;object-fit:contain;">
+                {% else %}
+                <img src="" alt="Vista previa" class="img-fluid rounded d-none" id="imagenPreview" style="max-height:160px;object-fit:contain;">
+                <div id="imagenPreviewPlaceholder" class="text-muted small py-4">
+                  <i class="bi bi-image fs-2 d-block mb-2"></i>
+                  Sin imagen
+                </div>
+                {% endif %}
+              </div>
+            </div>
+            <div class="col-md-8">
+              <div class="mb-3">
+                <label class="form-label" for="imagen_archivo">Subir imagen</label>
+                <input type="file" class="form-control" id="imagen_archivo" name="imagen_archivo"
+                       accept=".png,.jpg,.jpeg,.webp">
+                <div class="form-text">PNG, JPG o WEBP. Máx. 5 MB. Si no subes archivo, se mantiene la actual.</div>
+              </div>
+              <div class="mb-0">
+                <label class="form-label" for="imagen_url">O URL de la imagen</label>
+                <input type="url" class="form-control" id="imagen_url" name="imagen_url"
+                       placeholder="https://..."
+                       value="{{ item.imagen if item and item.imagen and item.imagen.startswith('https') else '' }}">
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-4 d-flex gap-2">
+            <button type="submit" class="btn btn-primary">Guardar</button>
+            <a href="{{ url_for('inv_comercial.productos_list') }}" class="btn btn-outline-secondary">Cancelar</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function () {
+  var input = document.getElementById('imagen_archivo');
+  var preview = document.getElementById('imagenPreview');
+  var placeholder = document.getElementById('imagenPreviewPlaceholder');
+  if (!input || !preview) return;
+  input.addEventListener('change', function () {
+    var f = input.files && input.files[0];
+    if (!f) return;
+    preview.src = URL.createObjectURL(f);
+    preview.classList.remove('d-none');
+    if (placeholder) placeholder.classList.add('d-none');
+  });
+})();
+</script>
+{% endblock %}

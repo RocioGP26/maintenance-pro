@@ -21,11 +21,20 @@ def login():
     data = request.get_json(silent=True) or {}
     username = (data.get("username") or "").strip()
     password = data.get("password") or ""
+    empresa_slug = (data.get("empresa_slug") or data.get("empresa") or "").strip()
     if not username or not password:
         return jsonify({"error": "Usuario y contraseña requeridos"}), 400
 
-    user = User.query.filter_by(username=username).first()
-    if user is None or not user.check_password(password) or not user.is_active:
+    from app.user_service import buscar_usuario_login, mensaje_login_ambiguo
+
+    user = buscar_usuario_login(username, empresa_slug=empresa_slug or None)
+    if user is None:
+        from app.models import User as UserModel
+
+        if UserModel.query.filter_by(username=username.strip().lower()).count() > 1:
+            return jsonify({"error": mensaje_login_ambiguo(username)}), 400
+        return jsonify({"error": "Credenciales inválidas"}), 401
+    if not user.check_password(password) or not user.is_active:
         return jsonify({"error": "Credenciales inválidas"}), 401
     if not user.empresa_id or not user.empresa:
         return jsonify({"error": "Usuario sin empresa asignada"}), 403

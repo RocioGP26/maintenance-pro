@@ -28,13 +28,18 @@
         </a>
       </div>
       {% set ep = request.endpoint or '' %}
+      {% set mod_mant = mod_mantenimiento|default(true) %}
+      {% set mod_inv = mod_inventario|default(false) %}
+      {% set dash_url = url_for('inv_comercial.dashboard_inventario') if mod_inv and not mod_mant else url_for('main.dashboard') %}
       {% set es_submenu_equipos = ep in ['main.activos_list', 'main.activos_new', 'main.activos_edit'] %}
       {% set es_submenu_tipos = ep.startswith('main.activos_tipo') %}
       {% set menu_activos_abierto = es_submenu_equipos or es_submenu_tipos %}
       <nav class="nav flex-column flex-grow-1 py-2">
-        <a id="tour-nav-dashboard" class="nav-link {% if request.endpoint == 'main.dashboard' %}active{% endif %}" href="{{ url_for('main.dashboard') }}">
+        <a id="tour-nav-dashboard" class="nav-link {% if request.endpoint in ['main.dashboard', 'inv_comercial.dashboard_inventario'] %}active{% endif %}" href="{{ dash_url }}">
           <i class="bi bi-house-door me-2"></i> Dashboard
         </a>
+        {% if mod_mant %}
+        <p class="sidebar-module-label px-3 small text-uppercase text-white-50 mb-1 mt-2">Mantenimiento</p>
         <div class="sidebar-nav-group">
           <button type="button" id="tour-nav-activos" class="nav-link sidebar-nav-toggle w-100 text-start {% if menu_activos_abierto %}active-parent{% endif %}"
              data-bs-toggle="collapse" data-bs-target="#submenuActivos"
@@ -85,7 +90,7 @@
           <i class="bi bi-box-seam me-2"></i> Inventario de Repuestos
         </a>
         <a id="tour-nav-proveedores" class="nav-link {% if request.endpoint and request.endpoint.startswith('main.proveedores') %}active{% endif %}" href="{{ url_for('main.proveedores_list') }}">
-          <i class="bi bi-shop me-2"></i> Proveedores
+          <i class="bi bi-shop me-2"></i> Proveedores de servicio
         </a>
         <a class="nav-link {% if request.endpoint and (request.endpoint.startswith('main.incidencias') or request.endpoint == 'main.incidencia') %}active{% endif %}" href="{{ url_for('main.incidencias_list') }}">
           <i class="bi bi-exclamation-triangle me-2"></i> Incidencias
@@ -96,6 +101,30 @@
         <a class="nav-link {% if request.endpoint == 'main.reportes' %}active{% endif %}" href="{{ url_for('main.reportes') }}">
           <i class="bi bi-bar-chart-line me-2"></i> Reportes / Analítica
         </a>
+        {% endif %}
+        {% if mod_inv %}
+        <p class="sidebar-module-label px-3 small text-uppercase text-white-50 mb-1 mt-2">Inventario comercial</p>
+        {% if mod_mant %}
+        <a class="nav-link {% if ep == 'inv_comercial.dashboard_inventario' %}active{% endif %}" href="{{ url_for('inv_comercial.dashboard_inventario') }}">
+          <i class="bi bi-graph-up-arrow me-2"></i> Resumen ventas
+        </a>
+        {% endif %}
+        <a class="nav-link {% if ep == 'inv_comercial.productos_list' %}active{% endif %}" href="{{ url_for('inv_comercial.productos_list') }}">
+          <i class="bi bi-box2-heart me-2"></i> Productos
+        </a>
+        <a class="nav-link {% if ep == 'inv_comercial.compras_list' or ep == 'inv_comercial.compras_nueva' or ep == 'inv_comercial.compras_detalle' %}active{% endif %}" href="{{ url_for('inv_comercial.compras_list') }}">
+          <i class="bi bi-bag-plus me-2"></i> Entradas / Compras
+        </a>
+        <a class="nav-link {% if ep in ['inv_comercial.ventas_list', 'inv_comercial.ventas_nueva', 'inv_comercial.ventas_detalle'] %}active{% endif %}" href="{{ url_for('inv_comercial.ventas_list') }}">
+          <i class="bi bi-cash-register me-2"></i> Ventas / POS
+        </a>
+        <a class="nav-link {% if ep and ep.startswith('inv_comercial.clientes') %}active{% endif %}" href="{{ url_for('inv_comercial.clientes_list') }}">
+          <i class="bi bi-people me-2"></i> Clientes
+        </a>
+        <a class="nav-link {% if ep == 'inv_comercial.proveedores_list' or ep and ep.startswith('inv_comercial.proveedores') %}active{% endif %}" href="{{ url_for('inv_comercial.proveedores_list') }}">
+          <i class="bi bi-truck me-2"></i> Proveedores comerciales
+        </a>
+        {% endif %}
         {% if empresa_actual and perm.config %}
         <a class="nav-link {% if request.endpoint == 'main.configuracion_empresa' %}active{% endif %}"
            href="{{ url_for('main.configuracion_empresa') }}">
@@ -108,9 +137,11 @@
         {% endif %}
       </nav>
       <div class="mt-auto sidebar-footer-actions">
+        {% if mod_mant %}
         <a href="{{ url_for('main.incidencia') }}" class="btn btn-report-incident w-100 rounded-0 d-flex align-items-center justify-content-center gap-2">
           <i class="bi bi-exclamation-triangle-fill"></i> Reportar Incidencia
         </a>
+        {% endif %}
         {% if current_user.is_authenticated %}
         <form method="post" action="{{ url_for('main.logout') }}" class="sidebar-logout-form">
           {% include "_csrf.html" %}
