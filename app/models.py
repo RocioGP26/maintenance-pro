@@ -1786,7 +1786,6 @@ def ensure_saas_schema():
     from sqlalchemy import inspect, text
 
     try:
-        db.create_all()
         _add_column_if_missing("users", "empresa_id", "empresa_id INTEGER")
         _add_column_if_missing("users", "email", "email VARCHAR(120)")
         _add_column_if_missing("users", "telefono", "telefono VARCHAR(40)")
@@ -2045,7 +2044,8 @@ def _migrate_anio_fabricacion_a_fecha() -> None:
             )
 
 def ensure_sector_plantilla_schema():
-    db.create_all()
+    """DEPRECADO: tablas de plantilla gestionadas por Flask-Migrate."""
+    pass
 
 
 def migrate_legacy_tenant():
