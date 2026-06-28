@@ -23,13 +23,10 @@ def _is_production_env() -> bool:
 
 
 def _normalize_database_url(url: str) -> str:
-    """Render/Supabase entregan postgres://; SQLAlchemy 2 + psycopg v3 usa postgresql+psycopg://."""
     raw = (url or "").strip()
-    if not raw:
-        return raw
     if raw.startswith("postgres://"):
         return raw.replace("postgres://", "postgresql+psycopg://", 1)
-    if raw.startswith("postgresql://") and "+" not in raw.split("://", 1)[0]:
+    if raw.startswith("postgresql://"):
         return raw.replace("postgresql://", "postgresql+psycopg://", 1)
     return raw
 
