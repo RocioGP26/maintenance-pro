@@ -1,37 +1,30 @@
-name: Database Backup
+name: Backup Neon
 
 on:
   schedule:
-    # Diario a las 03:00 UTC
     - cron: "0 3 * * *"
   workflow_dispatch:
 
 jobs:
   backup:
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.13"
-
-      - name: Instalar dependencias
-        run: pip install -r requirements.txt
-
-      - name: Instalar cliente PostgreSQL
+      - name: Install PostgreSQL
         run: sudo apt-get update && sudo apt-get install -y postgresql-client
 
-      - name: Ejecutar backup
+      - name: Backup
+        run: |
+          URL="${DATABASE_URL//+psycopg/}"
+          pg_dump "$URL" > backup.sql
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          BACKUP_DIR: backups
-          BACKUP_RETENTION_DAYS: 14
-        run: python scripts/backup_neon.py
 
-      - name: Subir artefacto de backup
+      - name: Upload Backup
         uses: actions/upload-artifact@v4
         with:
-          name: db-backup-${{ github.run_id }}
-          path: backups/
+          name: mantis-backup
+          path: backup.sql
           retention-days: 14

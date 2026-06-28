@@ -45,9 +45,15 @@ python scripts/backup_neon.py
 
 Programación sugerida: `0 3 * * *` (diario 03:00 UTC).
 
-### GitHub Actions
+### GitHub Actions (backup diario)
 
-El workflow `.github/workflows/backup.yml` ejecuta backups diarios si configuras el secret `DATABASE_URL` en el repositorio.
+El workflow `.github/workflows/backup.yml` ejecuta un `pg_dump` cada día a las 03:00 UTC y guarda `backup.sql` como artefacto (`mantis-backup`, 14 días de retención).
+
+Configuración en GitHub:
+
+1. Repositorio → **Settings** → **Secrets and variables** → **Actions**
+2. Añadir secret `DATABASE_URL` con la URI de Neon (`postgresql://...?sslmode=require`)
+3. Opcional: ejecutar manualmente desde **Actions** → **Backup Neon** → **Run workflow**
 
 ## 3. Restaurar desde un dump
 
