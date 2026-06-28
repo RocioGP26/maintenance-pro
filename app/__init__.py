@@ -59,6 +59,15 @@ def create_app():
         "DATABASE_URL",
         "sqlite:///" + os.path.join(os.path.dirname(__file__), "..", "mantenimiento.db"),
     )
+
+    print("=" * 80)
+    print("DATABASE_URL:")
+    print(database_url)
+    print("-" * 80)
+    print("NORMALIZADA:")
+    print(_normalize_database_url(database_url))
+    print("=" * 80)
+
     app.config["SQLALCHEMY_DATABASE_URI"] = _normalize_database_url(database_url)
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
