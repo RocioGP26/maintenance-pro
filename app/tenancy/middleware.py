@@ -13,6 +13,7 @@ _PUBLIC_PREFIXES = (
     "static",
     "onboarding.",
     "platform.",
+    "health.",
 )
 _PUBLIC_EXACT = {
     "main.index",

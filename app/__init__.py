@@ -107,6 +107,11 @@ def create_app(config_name: str | None = None):
 
     @app.context_processor
     def inject_globals():
+        from flask import request
+
+        if request.endpoint and request.endpoint.startswith("health."):
+            return {}
+
         from app.modules import MODULO_INVENTARIO, MODULO_MANTENIMIENTO, modulos_activos_de
 
         empresa_actual = None
@@ -157,12 +162,14 @@ def create_app(config_name: str | None = None):
     run_startup(app)
 
     from app import routes
+    from app.health_routes import health_bp
     from app.onboarding_routes import onboarding_bp
     from app.inventario_comercial.routes import inv_comercial_bp
     from app.tenancy.admin_routes import admin_bp
     from app.tenancy.api_routes import tenancy_api_bp
     from app.tenancy.platform_routes import platform_bp
 
+    app.register_blueprint(health_bp)
     app.register_blueprint(routes.bp)
     app.register_blueprint(onboarding_bp)
     app.register_blueprint(inv_comercial_bp)
@@ -172,6 +179,7 @@ def create_app(config_name: str | None = None):
 
     csrf.exempt(tenancy_api_bp)
     csrf.exempt(admin_bp)
+    csrf.exempt(health_bp)
 
     from app.cli import register_cli
 

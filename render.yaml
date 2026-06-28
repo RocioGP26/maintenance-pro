@@ -1,0 +1,21 @@
+# Blueprint Render — https://render.com/docs/blueprint-spec
+# Conecta el repo y Render crea el servicio web + variables base.
+
+services:
+  - type: web
+    name: mantis
+    runtime: python
+    plan: starter
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn run:app
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.13.0"
+      - key: FLASK_ENV
+        value: production
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DATABASE_URL
+        sync: false

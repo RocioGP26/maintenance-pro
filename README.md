@@ -67,6 +67,24 @@ Bases existentes creadas con `ensure_*`: ejecutar una vez `flask --app run:app d
 
 Documentación de backups Neon: `docs/backup-neon.md`.
 
+## Salud y despliegue
+
+| Endpoint | Uso |
+|----------|-----|
+| `GET /health/live` | Liveness (app responde) |
+| `GET /health` | Readiness (BD + revisión Alembic) |
+
+**Render:** importa `render.yaml` o conecta el repo; configura `DATABASE_URL` (Neon) y `PLATFORM_ADMIN_KEY`.
+
+**GitHub Actions** (secrets en Settings → Actions):
+
+| Secret | Uso |
+|--------|-----|
+| `DATABASE_URL` | Backup diario + mantenimiento |
+| `SECRET_KEY` | Workflow de mantenimiento |
+
+Workflows: `backup.yml` (03:00 UTC), `maintenance.yml` (04:00 UTC).
+
 ## Estructura principal
 
 ```
