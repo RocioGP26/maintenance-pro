@@ -168,13 +168,29 @@
             </div>
             <div class="header-user-divider" aria-hidden="true"></div>
             <div class="header-user-info d-none d-sm-flex flex-column">
+              {% if perm.equipo %}
+              <a href="{{ url_for('main.mi_perfil') }}" class="header-user-name text-decoration-none text-white">{{ current_user.etiqueta()|upper }}</a>
+              {% else %}
               <span class="header-user-name">{{ current_user.etiqueta()|upper }}</span>
+              {% endif %}
               {% if empresa_actual %}
               <span class="header-user-empresa">{{ empresa_actual.razon_social|upper }}</span>
               {% endif %}
             </div>
             {% set nombre_usuario = current_user.etiqueta() %}
             {% set partes_nombre = nombre_usuario.split() %}
+            {% if perm.equipo %}
+            <a href="{{ url_for('main.mi_perfil') }}" class="header-user-avatar{% if empresa_logo_url %} header-user-avatar--logo{% endif %}"
+                  title="Mi perfil">
+              {% if empresa_logo_url %}
+              <img src="{{ empresa_logo_url }}" alt="{{ empresa_actual.razon_social if empresa_actual else 'Empresa' }}" class="header-user-avatar-img">
+              {% elif partes_nombre|length >= 2 %}
+              {{ (partes_nombre[0][:1] ~ partes_nombre[1][:1])|upper }}
+              {% else %}
+              {{ nombre_usuario[:2]|upper }}
+              {% endif %}
+            </a>
+            {% else %}
             <span class="header-user-avatar{% if empresa_logo_url %} header-user-avatar--logo{% endif %}"
                   title="{% if empresa_actual %}{{ empresa_actual.razon_social }}{% else %}{{ current_user.username }}{% endif %}">
               {% if empresa_logo_url %}
@@ -185,6 +201,7 @@
               {{ nombre_usuario[:2]|upper }}
               {% endif %}
             </span>
+            {% endif %}
           </div>
           {% endif %}
         </div>

@@ -136,6 +136,7 @@ EQUIPO_ENDPOINTS = frozenset(
         "main.equipo_list",
         "main.equipo_new",
         "main.equipo_edit",
+        "main.mi_perfil",
     }
 )
 

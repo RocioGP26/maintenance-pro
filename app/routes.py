@@ -3473,34 +3473,54 @@ def equipo_new():
     )
 
 
+@bp.route("/mi-perfil", methods=["GET", "POST"])
+def mi_perfil():
+    """El administrador puede editar su propia cuenta."""
+    if not _require_admin_equipo():
+        return redirect(url_for("main.dashboard"))
+    return equipo_edit(current_user.id)
+
+
 @bp.route("/equipo/<int:id>/editar", methods=["GET", "POST"])
 def equipo_edit(id):
     if not _require_admin_equipo():
-        return redirect(url_for("main.equipo_list"))
+        return redirect(url_for("main.dashboard"))
     eid = _current_empresa_id()
     usuario = User.query.filter_by(id=id, empresa_id=eid).first_or_404()
+    es_self = usuario.id == current_user.id
     emp = Empresa.query.get(eid)
     sector = normalizar_sector(emp.sector if emp else None)
     roles = roles_for_select(current_user)
-    es_self = usuario.id == current_user.id
     ctx = _equipo_form_context(usuario, eid)
 
     if request.method == "POST":
+        username = (request.form.get("username") or "").strip().lower()
         nombre = request.form.get("nombre_visible", "").strip()
         area = request.form.get("area", "").strip()
         email = request.form.get("email", "").strip()
         telefono = request.form.get("telefono", "").strip()
-        rol = (request.form.get("rol") or usuario.rol).strip().lower()
-        activo = bool(request.form.get("activo"))
+        if es_self:
+            rol = normalize_rol(usuario.rol)
+            activo = bool(usuario.activo)
+        else:
+            rol = (request.form.get("rol") or usuario.rol).strip().lower()
+            activo = bool(request.form.get("activo"))
         password = request.form.get("password", "")
         password2 = request.form.get("password2", "")
         sede_id, err_sede = _parse_sede_equipo(request.form, eid)
 
-        if not nombre:
+        err_u = _validar_username_equipo(username)
+        if err_u:
+            flash(err_u, "danger")
+        elif username != usuario.username and not username_disponible(
+            username, eid, excluir_user_id=usuario.id
+        ):
+            flash("Ese nombre de usuario ya está en uso en tu empresa.", "danger")
+        elif not nombre:
             flash("El nombre es obligatorio.", "danger")
         elif rol not in USER_ROLE_LABELS:
             flash("Selecciona un rol válido.", "danger")
-        elif not can_assign_role(current_user, rol):
+        elif not es_self and not can_assign_role(current_user, rol):
             flash("No puedes asignar ese rol.", "danger")
         elif err_sede:
             flash(err_sede, "danger")
@@ -3536,6 +3556,7 @@ def equipo_edit(id):
         ):
             flash("Debe quedar al menos un superadministrador o administrador activo.", "warning")
         else:
+            usuario.username = username
             usuario.nombre_visible = nombre
             usuario.area = area
             usuario.sede_id = sede_id
@@ -3553,7 +3574,7 @@ def equipo_edit(id):
                 _sync_technician_for_user(usuario)
                 try:
                     db.session.commit()
-                    flash("Miembro actualizado.", "success")
+                    flash("Perfil actualizado." if es_self else "Miembro actualizado.", "success")
                     return redirect(url_for("main.equipo_list"))
                 except Exception:
                     db.session.rollback()

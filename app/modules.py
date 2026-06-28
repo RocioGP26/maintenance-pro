@@ -115,6 +115,7 @@ def endpoint_exento_modulo(endpoint: str | None) -> bool:
         "main.equipo_list",
         "main.equipo_new",
         "main.equipo_edit",
+        "main.mi_perfil",
     }
     if endpoint in exentos:
         return True

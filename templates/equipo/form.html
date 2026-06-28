@@ -1,6 +1,6 @@
 {% extends "base.html" %}
-{% block title %}{% if usuario %}Editar usuario{% else %}Invitar usuario{% endif %} — {{ app_name }}{% endblock %}
-{% block page_title %}{% if usuario %}Editar usuario{% else %}Invitar usuario{% endif %}{% endblock %}
+{% block title %}{% if es_self|default(false) %}Mi perfil{% elif usuario %}Editar usuario{% else %}Invitar usuario{% endif %} — {{ app_name }}{% endblock %}
+{% block page_title %}{% if es_self|default(false) %}Mi perfil{% elif usuario %}Editar usuario{% else %}Invitar usuario{% endif %}{% endblock %}
 
 {% block content %}
 <div class="row justify-content-center">
@@ -22,13 +22,10 @@
           <div class="row g-3">
             <div class="col-12">
               <label class="form-label" for="username">1. Usuario de acceso *</label>
-              {% if usuario %}
-              <input type="text" class="form-control font-monospace" id="username" value="{{ usuario.username }}" readonly>
-              {% else %}
               <input type="text" name="username" id="username" class="form-control font-monospace" required
-                     autocomplete="username" placeholder="ej. jperez" pattern="[a-z0-9._-]{3,}">
+                     autocomplete="username" placeholder="ej. jperez" pattern="[a-z0-9._-]{3,}"
+                     value="{{ usuario.username if usuario else '' }}">
               <div class="form-text">Mín. 3 caracteres; minúsculas, números, . _ -</div>
-              {% endif %}
             </div>
             <div class="col-12">
               <label class="form-label" for="nombre_visible">2. Nombre completo *</label>
@@ -105,6 +102,8 @@
                 <label class="form-check-label" for="activo">Usuario activo (puede iniciar sesión)</label>
               </div>
             </div>
+            {% else %}
+            <input type="hidden" name="activo" value="1">
             {% endif %}
             {% if campos_personalizados %}
             <div class="col-12"><hr class="my-1"><p class="small text-muted mb-0">Campos adicionales</p></div>
