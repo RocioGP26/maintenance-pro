@@ -22,6 +22,18 @@ def _is_production_env() -> bool:
     return env == "production"
 
 
+def _normalize_database_url(url: str) -> str:
+    """Render/Supabase entregan postgres://; SQLAlchemy 2 + psycopg v3 usa postgresql+psycopg://."""
+    raw = (url or "").strip()
+    if not raw:
+        return raw
+    if raw.startswith("postgres://"):
+        return raw.replace("postgres://", "postgresql+psycopg://", 1)
+    if raw.startswith("postgresql://") and "+" not in raw.split("://", 1)[0]:
+        return raw.replace("postgresql://", "postgresql+psycopg://", 1)
+    return raw
+
+
 def create_app():
     load_dotenv()
     app = Flask(
@@ -43,10 +55,11 @@ def create_app():
     app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
     if _is_production_env():
         app.config["SESSION_COOKIE_SECURE"] = True
-    app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get(
+    database_url = os.environ.get(
         "DATABASE_URL",
         "sqlite:///" + os.path.join(os.path.dirname(__file__), "..", "mantenimiento.db"),
     )
+    app.config["SQLALCHEMY_DATABASE_URI"] = _normalize_database_url(database_url)
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
     db.init_app(app)
