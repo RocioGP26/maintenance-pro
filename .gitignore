@@ -17,6 +17,7 @@ build/
 instance/
 *.db
 *.sqlite3
+backups/
 static/uploads/
 # Legacy: BDs por tenant (arquitectura antigua; ya no se usa)
 data/tenants/

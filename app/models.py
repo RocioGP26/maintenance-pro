@@ -1778,7 +1778,11 @@ def ensure_users_username_por_empresa() -> None:
 
 
 def ensure_saas_schema():
-    """Columnas multi-empresa, prioridad en OT y tablas de onboarding."""
+    """Columnas multi-empresa, prioridad en OT y tablas de onboarding.
+
+    DEPRECADO: usar Flask-Migrate (`flask db migrate` / `flask db upgrade`).
+    Solo se ejecuta con RUN_LEGACY_SCHEMA_MIGRATIONS=true durante la transición.
+    """
     from sqlalchemy import inspect, text
 
     try:

@@ -42,20 +42,30 @@ Tras iniciar sesión, el asistente de **onboarding** guía la configuración de 
 
 ## Variables de entorno (opcional)
 
-Crea un archivo `.env` en la raíz (no se sube a Git) o exporta variables en la sesión:
+Crea un archivo `.env` en la raíz (no se sube a Git). Ver `.env.example` para la lista completa.
 
 | Variable | Descripción |
 |----------|-------------|
-| `SECRET_KEY` | Clave secreta de Flask |
-| `DATABASE_URL` | URI SQLAlchemy (por defecto: SQLite local) |
-| `DEFAULT_ADMIN_PASSWORD` | Contraseña del usuario `admin` inicial |
+| `FLASK_ENV` | `development` (default) o `production` |
+| `SECRET_KEY` | Clave secreta de Flask (obligatoria en producción) |
+| `DATABASE_URL` | URI SQLAlchemy (SQLite local o Neon PostgreSQL) |
+| `DEFAULT_ADMIN_PASSWORD` | Contraseña del usuario `admin` inicial (solo dev) |
+| `LOG_LEVEL` | Nivel de log: DEBUG, INFO, WARNING, ERROR |
+| `RUN_LEGACY_SCHEMA_MIGRATIONS` | `true` para ejecutar `ensure_*` legacy (transición) |
 
-Ejemplo `.env`:
+## Migraciones de base de datos
 
-```env
-SECRET_KEY=cambia-esto-en-produccion
-DATABASE_URL=sqlite:///mantenimiento.db
+```powershell
+pip install -r requirements.txt
+flask --app run:app db upgrade              # aplicar migraciones
+flask --app run:app db migrate -m "cambio"  # generar nueva migración
+flask --app run:app maintenance run         # tareas periódicas (OT, suscripciones)
+flask --app run:app backup-db               # copia de seguridad
 ```
+
+Bases existentes creadas con `ensure_*`: ejecutar una vez `flask --app run:app db stamp head`.
+
+Documentación de backups Neon: `docs/backup-neon.md`.
 
 ## Estructura principal
 

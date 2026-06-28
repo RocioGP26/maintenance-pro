@@ -1,14 +1,16 @@
-import os
-
 from dotenv import load_dotenv
 from flask import Flask
 from flask_login import LoginManager, current_user
+from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
 from flask_wtf.csrf import CSRFProtect
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 
+from config import config_by_name, resolve_config_name
+
 db = SQLAlchemy()
+migrate = Migrate()
 login_manager = LoginManager()
 login_manager.login_view = "main.login"
 login_manager.login_message = "Inicia sesión para acceder a esta página."
@@ -18,57 +20,30 @@ limiter = Limiter(key_func=get_remote_address, default_limits=[], storage_uri="m
 
 
 def _is_production_env() -> bool:
-    env = (os.environ.get("FLASK_ENV") or os.environ.get("ENV") or "").strip().lower()
-    return env == "production"
+    return resolve_config_name() == "production"
 
 
-def _normalize_database_url(url: str) -> str:
-    raw = (url or "").strip()
-    if raw.startswith("postgres://"):
-        return raw.replace("postgres://", "postgresql+psycopg://", 1)
-    if raw.startswith("postgresql://"):
-        return raw.replace("postgresql://", "postgresql+psycopg://", 1)
-    return raw
-
-
-def create_app():
+def create_app(config_name: str | None = None):
     load_dotenv()
     app = Flask(
         __name__,
         template_folder="../templates",
         static_folder="../static",
     )
-    secret = os.environ.get("SECRET_KEY", "").strip()
-    if not secret:
-        if _is_production_env():
-            raise RuntimeError(
-                "SECRET_KEY debe estar definida en producción (FLASK_ENV=production)."
-            )
-        secret = "dev-mantenimiento-pro"
-    app.config["SECRET_KEY"] = secret
-    app.config["WTF_CSRF_TIME_LIMIT"] = None
-    app.config["MAX_CONTENT_LENGTH"] = 5 * 1024 * 1024
-    app.config["SESSION_COOKIE_HTTPONLY"] = True
-    app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
-    if _is_production_env():
-        app.config["SESSION_COOKIE_SECURE"] = True
-    database_url = os.environ.get(
-        "DATABASE_URL",
-        "sqlite:///" + os.path.join(os.path.dirname(__file__), "..", "mantenimiento.db"),
-    )
 
-    print("=" * 80)
-    print("DATABASE_URL:")
-    print(database_url)
-    print("-" * 80)
-    print("NORMALIZADA:")
-    print(_normalize_database_url(database_url))
-    print("=" * 80)
+    if config_name is None:
+        config_name = resolve_config_name()
+    config_class = config_by_name.get(config_name, config_by_name["default"])
+    app.config.from_object(config_class)
+    if hasattr(config_class, "init_app"):
+        config_class.init_app(app)
 
-    app.config["SQLALCHEMY_DATABASE_URI"] = _normalize_database_url(database_url)
-    app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+    from app.logging_config import setup_logging
+
+    setup_logging(app)
 
     db.init_app(app)
+    migrate.init_app(app, db)
 
     @app.teardown_appcontext
     def _finalize_db_session(exc):
@@ -81,14 +56,6 @@ def create_app():
         except Exception:
             db.session.rollback()
             raise
-
-    if _is_production_env() and not os.environ.get("DATABASE_URL", "").strip():
-        import logging
-
-        logging.getLogger(__name__).warning(
-            "DATABASE_URL no está configurada: se usa SQLite local. "
-            "En Render los datos se pierden al reiniciar; conecta Supabase/PostgreSQL."
-        )
 
     login_manager.init_app(app)
     csrf.init_app(app)
@@ -185,24 +152,9 @@ def create_app():
         except (TypeError, ValueError):
             return None
 
-    with app.app_context():
-        db.create_all()
-        models.ensure_saas_schema()
-        models.ensure_machine_tipo_equipo_column()
-        models.ensure_machine_types_sector_column()
-        models.seed_machine_types_if_empty()
-        models.ensure_machines_machine_type_fk()
-        models.seed_if_empty()
-        from app.work_order_status import sincronizar_estados_ordenes
+    from app.startup import run_startup
 
-        sincronizar_estados_ordenes()
-        from app.subscription_service import backfill_estado_ciclo_suscripciones, verificar_vencimientos
-
-        backfill_estado_ciclo_suscripciones()
-        verificar_vencimientos()
-        from app.platform_config_service import ensure_platform_config
-
-        ensure_platform_config()
+    run_startup(app)
 
     from app import routes
     from app.onboarding_routes import onboarding_bp
@@ -220,5 +172,9 @@ def create_app():
 
     csrf.exempt(tenancy_api_bp)
     csrf.exempt(admin_bp)
+
+    from app.cli import register_cli
+
+    register_cli(app)
 
     return app
