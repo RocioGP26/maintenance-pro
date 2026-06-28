@@ -48,6 +48,11 @@ class Config:
     NEON_PROJECT_ID = os.environ.get("NEON_PROJECT_ID", "").strip()
     NEON_API_KEY = os.environ.get("NEON_API_KEY", "").strip()
     BACKUP_DIR = os.environ.get("BACKUP_DIR", str(BASE_DIR / "backups"))
+    # Evita errores cuando Neon suspende la BD por inactividad (scale-to-zero)
+    SQLALCHEMY_ENGINE_OPTIONS = {
+        "pool_pre_ping": True,
+        "pool_recycle": 300,
+    }
 
 
 class DevelopmentConfig(Config):
@@ -89,6 +94,7 @@ class TestingConfig(Config):
     WTF_CSRF_ENABLED = False
     SECRET_KEY = "test-secret-key"
     SQLALCHEMY_DATABASE_URI = "sqlite:///:memory:"
+    SQLALCHEMY_ENGINE_OPTIONS = {}
     RUN_STARTUP_TASKS = False
     RUN_LEGACY_SCHEMA_MIGRATIONS = False
 
