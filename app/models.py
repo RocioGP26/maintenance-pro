@@ -2008,20 +2008,37 @@ def _migrate_anio_fabricacion_a_fecha() -> None:
     from sqlalchemy import inspect, text
 
     insp = inspect(db.engine)
+
     if "machines" not in insp.get_table_names():
         return
+
     cols = {c["name"] for c in insp.get_columns("machines")}
+
     if "anio_fabricacion" not in cols or "fecha_fabricacion" not in cols:
         return
-    with db.engine.begin() as conn:
-        conn.execute(
-            text(
-                "UPDATE machines SET fecha_fabricacion = "
-                "printf('%04d-01-01', anio_fabricacion) "
-                "WHERE anio_fabricacion IS NOT NULL AND fecha_fabricacion IS NULL"
-            )
-        )
 
+    dialect = db.engine.dialect.name
+
+    with db.engine.begin() as conn:
+
+        if dialect == "postgresql":
+            conn.execute(
+                text("""
+                    UPDATE machines
+                    SET fecha_fabricacion = make_date(anio_fabricacion, 1, 1)
+                    WHERE anio_fabricacion IS NOT NULL
+                    AND fecha_fabricacion IS NULL
+                """)
+            )
+        else:
+            conn.execute(
+                text("""
+                    UPDATE machines
+                    SET fecha_fabricacion = printf('%04d-01-01', anio_fabricacion)
+                    WHERE anio_fabricacion IS NOT NULL
+                    AND fecha_fabricacion IS NULL
+                """)
+            )
 
 def ensure_sector_plantilla_schema():
     db.create_all()
