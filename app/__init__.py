@@ -63,6 +63,27 @@ def create_app():
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
     db.init_app(app)
+
+    @app.teardown_appcontext
+    def _finalize_db_session(exc):
+        """Confirma cambios pendientes al cerrar la petición (red de seguridad)."""
+        try:
+            if exc is not None:
+                db.session.rollback()
+            elif db.session.new or db.session.dirty or db.session.deleted:
+                db.session.commit()
+        except Exception:
+            db.session.rollback()
+            raise
+
+    if _is_production_env() and not os.environ.get("DATABASE_URL", "").strip():
+        import logging
+
+        logging.getLogger(__name__).warning(
+            "DATABASE_URL no está configurada: se usa SQLite local. "
+            "En Render los datos se pierden al reiniciar; conecta Supabase/PostgreSQL."
+        )
+
     login_manager.init_app(app)
     csrf.init_app(app)
     limiter.init_app(app)
