@@ -21,6 +21,7 @@ from app.permissions import (
     CREATE_GET_ENDPOINTS,
     DELETE_ENDPOINTS,
     EQUIPO_MUTATION_ENDPOINTS,
+    EQUIPO_ENDPOINTS,
     USER_ROLE_LABELS,
     USUARIO_POST_ENDPOINTS,
     UserRole,
@@ -255,6 +256,9 @@ def _enforce_role_permissions():
     if method == "GET":
         if ep in CREATE_GET_ENDPOINTS and not can_create(current_user):
             flash("No tienes permiso para crear registros.", "warning")
+            return redirect(url_for("main.dashboard"))
+        if ep in EQUIPO_ENDPOINTS and not can_manage_equipo(current_user):
+            flash("Solo los administradores pueden gestionar el equipo de trabajo.", "warning")
             return redirect(url_for("main.dashboard"))
         if ep in EQUIPO_MUTATION_ENDPOINTS and not can_manage_equipo(current_user):
             flash("No tienes permiso para gestionar el equipo.", "warning")
@@ -3281,7 +3285,7 @@ def inventario_edit(id):
     return render_template("inventario/form.html", item=p)
 
 
-# --- Equipo técnico (usuarios de la empresa) ---
+# --- Equipo de trabajo (usuarios de la empresa) ---
 def _equipo_usuarios_query():
     eid = _current_empresa_id()
     q = User.query
@@ -3378,10 +3382,13 @@ def _equipo_form_context(usuario: Optional[User], empresa_id: int) -> dict:
 
 @bp.route("/equipo")
 def equipo_list():
+    if not can_manage_equipo(current_user):
+        flash("Solo los administradores pueden gestionar el equipo de trabajo.", "warning")
+        return redirect(url_for("main.dashboard"))
     return render_template(
         "equipo/list.html",
         usuarios=_equipo_usuarios_query().all(),
-        puede_gestionar=can_manage_equipo(current_user),
+        puede_gestionar=True,
     )
 
 
@@ -3451,7 +3458,7 @@ def equipo_new():
                 _sync_technician_for_user(user)
                 try:
                     db.session.commit()
-                    flash(f"Miembro «{username}» registrado.", "success")
+                    flash(f"Usuario «{username}» invitado al equipo.", "success")
                     return redirect(url_for("main.equipo_list"))
                 except Exception:
                     db.session.rollback()

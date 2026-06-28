@@ -44,7 +44,6 @@ _ENDPOINT_PREFIX_MODULO: tuple[tuple[str, str], ...] = (
     ("main.proveedores", MODULO_MANTENIMIENTO),
     ("main.incidencia", MODULO_MANTENIMIENTO),
     ("main.incidencias", MODULO_MANTENIMIENTO),
-    ("main.equipo", MODULO_MANTENIMIENTO),
     ("main.reportes", MODULO_MANTENIMIENTO),
     ("main.configuracion_campos", MODULO_MANTENIMIENTO),
     ("inv_comercial.", MODULO_INVENTARIO),
@@ -113,6 +112,9 @@ def endpoint_exento_modulo(endpoint: str | None) -> bool:
         "main.cuenta_suspendida",
         "main.salir_impersonacion",
         "main.configuracion_empresa",
+        "main.equipo_list",
+        "main.equipo_new",
+        "main.equipo_edit",
     }
     if endpoint in exentos:
         return True

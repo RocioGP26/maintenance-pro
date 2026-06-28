@@ -131,6 +131,14 @@ EQUIPO_MUTATION_ENDPOINTS = frozenset(
     }
 )
 
+EQUIPO_ENDPOINTS = frozenset(
+    {
+        "main.equipo_list",
+        "main.equipo_new",
+        "main.equipo_edit",
+    }
+)
+
 DELETE_ENDPOINTS = frozenset(
     {
         "main.activos_delete",

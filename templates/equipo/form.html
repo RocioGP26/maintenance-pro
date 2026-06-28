@@ -1,11 +1,17 @@
 {% extends "base.html" %}
-{% block title %}Equipo técnico — {% if usuario %}Editar{% else %}Nuevo{% endif %} — {{ app_name }}{% endblock %}
-{% block page_title %}{% if usuario %}Editar{% else %}Nuevo{% endif %}{% endblock %}
+{% block title %}{% if usuario %}Editar usuario{% else %}Invitar usuario{% endif %} — {{ app_name }}{% endblock %}
+{% block page_title %}{% if usuario %}Editar usuario{% else %}Invitar usuario{% endif %}{% endblock %}
 
 {% block content %}
 <div class="row justify-content-center">
   <div class="col-lg-8">
-    <p class="text-muted small mb-2">Equipo técnico</p>
+    <p class="text-muted small mb-2">
+      {% if usuario %}
+      Actualiza los datos de acceso de este miembro del equipo.
+      {% else %}
+      Crea una cuenta para un nuevo miembro de tu empresa. Comparte el usuario y la contraseña con la persona invitada.
+      {% endif %}
+    </p>
     <div class="card card-dashboard">
       <div class="card-body">
         {% if es_self|default(false) %}
@@ -78,37 +84,37 @@
             </div>
             <div class="col-md-6">
               <label class="form-label" for="password">8. Contraseña{% if not usuario %} *{% endif %}</label>
-              <input type="password" name="password" id="password" class="form-control" autocomplete="new-password"
-                     {% if not usuario %}required{% endif %}>
+              <input type="password" name="password" id="password" class="form-control"
+                     autocomplete="new-password" {% if not usuario %}required{% endif %}>
+              {% if usuario %}
+              <div class="form-text">Déjala en blanco para no cambiar.</div>
+              {% else %}
               <div class="form-text">{{ password_requirements }}</div>
-            </div>
-            <div class="col-md-6">
-              <label class="form-label" for="password2">9. Confirmar{% if not usuario %} *{% endif %}</label>
-              <input type="password" name="password2" id="password2" class="form-control" autocomplete="new-password"
-                     {% if not usuario %}required{% endif %}>
-            </div>
-            <div class="col-12">
-              <div class="form-check">
-                <input class="form-check-input" type="checkbox" name="activo" value="1" id="activo"
-                       {% if not usuario or usuario.activo %}checked{% endif %}
-                       {% if usuario and es_self|default(false) %}disabled{% endif %}>
-                <label class="form-check-label" for="activo">10. Activo (puede iniciar sesión)</label>
-              </div>
-              {% if usuario and es_self|default(false) %}
-              <input type="hidden" name="activo" value="1">
               {% endif %}
             </div>
-
-            {% if campos_personalizados %}
-            <div class="col-12">
-              <hr class="my-1">
-              <h6 class="fw-semibold text-muted text-uppercase small mb-2">Campos adicionales</h6>
+            <div class="col-md-6">
+              <label class="form-label" for="password2">9. Confirmar contraseña{% if not usuario %} *{% endif %}</label>
+              <input type="password" name="password2" id="password2" class="form-control"
+                     autocomplete="new-password" {% if not usuario %}required{% endif %}>
             </div>
+            {% if not es_self|default(false) %}
+            <div class="col-12">
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" name="activo" id="activo" value="1"
+                       {% if not usuario or usuario.activo %}checked{% endif %}>
+                <label class="form-check-label" for="activo">Usuario activo (puede iniciar sesión)</label>
+              </div>
+            </div>
+            {% endif %}
+            {% if campos_personalizados %}
+            <div class="col-12"><hr class="my-1"><p class="small text-muted mb-0">Campos adicionales</p></div>
             {% include "includes/campos_personalizados_fields.html" %}
             {% endif %}
           </div>
-          <div class="mt-4 d-flex gap-2">
-            <button type="submit" class="btn btn-primary">Guardar</button>
+          <div class="d-flex flex-wrap gap-2 mt-4">
+            <button type="submit" class="btn btn-primary">
+              {% if usuario %}Guardar cambios{% else %}Invitar usuario{% endif %}
+            </button>
             <a href="{{ url_for('main.equipo_list') }}" class="btn btn-outline-secondary">Cancelar</a>
           </div>
         </form>
