@@ -1,2 +1,2 @@
 web: gunicorn run:app
-release: flask --app run:app db upgrade
+release: python scripts/migrate_deploy.py

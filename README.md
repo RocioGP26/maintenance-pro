@@ -74,10 +74,17 @@ Documentación de backups Neon: `docs/backup-neon.md`.
 | `GET /health/live` | Liveness (app responde) |
 | `GET /health` | Readiness (BD + revisión Alembic) |
 
-**Render:** importa `render.yaml` o conecta el repo; configura `DATABASE_URL` (Neon) y `PLATFORM_ADMIN_KEY`. El `preDeployCommand` ejecuta `scripts/migrate_deploy.py` (baseline Alembic en BDs legacy + migraciones pendientes).
+**Render:** importa `render.yaml` o conecta el repo; configura `DATABASE_URL` (Neon) y `PLATFORM_ADMIN_KEY`.
 
-Si el servicio se creó manualmente en el dashboard, añade el mismo comando en **Settings → Pre-Deploy Command**:
-`python scripts/migrate_deploy.py`
+**Migraciones en Render (plan Free):** el campo *Pre-Deploy Command* no está disponible. Usa este **Build Command**:
+
+```text
+pip install -r requirements.txt && python scripts/migrate_deploy.py
+```
+
+*Start Command:* `gunicorn run:app`
+
+En plan Starter o superior puedes mover las migraciones a *Pre-Deploy Command* (`python scripts/migrate_deploy.py`) y dejar el build solo en `pip install -r requirements.txt`.
 
 **GitHub Actions** (secrets en Settings → Actions):
 
