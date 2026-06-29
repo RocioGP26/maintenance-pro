@@ -10,6 +10,11 @@ from sqlalchemy.exc import IntegrityError
 
 from app import db
 from app.inventario_comercial.exports import excel_productos_bajo_stock
+from app.inventario_comercial.productos_excel import (
+    excel_productos_catalogo,
+    excel_productos_plantilla,
+    importar_productos_desde_excel,
+)
 from app.inventario_comercial.media import aplicar_imagen_producto
 from app.inventario_comercial.service import (
     guardar_cliente_comercial,
@@ -93,6 +98,32 @@ def _parse_fecha(val: str | None) -> date:
         return date.today()
 
 
+def _query_productos_lista(
+    *,
+    q: str = "",
+    estado: str = "activo",
+    alerta: str = "",
+):
+    estado = (estado or "activo").strip().lower()
+    alerta = (alerta or "").strip().lower()
+    q = (q or "").strip()
+    query = query_tenant(InvProducto)
+    if estado == "inactivo":
+        query = query.filter_by(activo=False)
+    elif estado != "todos":
+        query = query.filter_by(activo=True)
+        estado = "activo"
+    if alerta == "bajo":
+        query = query.filter_by(activo=True).filter(InvProducto.stock <= InvProducto.stock_minimo)
+        estado = "activo"
+    if q:
+        like = f"%{q}%"
+        query = query.filter(
+            db.or_(InvProducto.nombre.ilike(like), InvProducto.sku.ilike(like))
+        )
+    return query.order_by(InvProducto.nombre), estado
+
+
 @inv_comercial_bp.route("/dashboard")
 @login_required
 @require_module(MODULO_INVENTARIO)
@@ -120,21 +151,8 @@ def productos_list():
     q = (request.args.get("q") or "").strip()
     alerta = (request.args.get("alerta") or "").strip().lower()
     estado = (request.args.get("estado") or "activo").strip().lower()
-    query = query_tenant(InvProducto)
-    if estado == "inactivo":
-        query = query.filter_by(activo=False)
-    elif estado != "todos":
-        query = query.filter_by(activo=True)
-        estado = "activo"
-    if alerta == "bajo":
-        query = query.filter_by(activo=True).filter(InvProducto.stock <= InvProducto.stock_minimo)
-        estado = "activo"
-    if q:
-        like = f"%{q}%"
-        query = query.filter(
-            db.or_(InvProducto.nombre.ilike(like), InvProducto.sku.ilike(like))
-        )
-    items = query.order_by(InvProducto.nombre).limit(200).all()
+    query, estado = _query_productos_lista(q=q, estado=estado, alerta=alerta)
+    items = query.limit(200).all()
     return render_template(
         "inventario_comercial/productos_list.html",
         items=items,
@@ -158,6 +176,89 @@ def productos_export_bajo_stock():
         as_attachment=True,
         download_name=nombre,
     )
+
+
+@inv_comercial_bp.route("/productos/export")
+@login_required
+@require_module(MODULO_INVENTARIO)
+def productos_export_catalogo():
+    from io import BytesIO
+
+    eid = _require_empresa_id()
+    q = (request.args.get("q") or "").strip()
+    alerta = (request.args.get("alerta") or "").strip().lower()
+    estado = (request.args.get("estado") or "activo").strip().lower()
+    query, _ = _query_productos_lista(q=q, estado=estado, alerta=alerta)
+    productos = query.all()
+    contenido, nombre = excel_productos_catalogo(eid, productos)
+    return send_file(
+        BytesIO(contenido),
+        mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        as_attachment=True,
+        download_name=nombre,
+    )
+
+
+@inv_comercial_bp.route("/productos/export/plantilla")
+@login_required
+@require_module(MODULO_INVENTARIO)
+def productos_export_plantilla():
+    from io import BytesIO
+
+    eid = _require_empresa_id()
+    contenido, nombre = excel_productos_plantilla(eid)
+    return send_file(
+        BytesIO(contenido),
+        mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        as_attachment=True,
+        download_name=nombre,
+    )
+
+
+@inv_comercial_bp.route("/productos/import", methods=["POST"])
+@login_required
+@require_module(MODULO_INVENTARIO)
+def productos_import_excel():
+    eid = _require_empresa_id()
+    archivo = request.files.get("archivo")
+    if not archivo or not (archivo.filename or "").strip():
+        flash("Selecciona un archivo Excel (.xlsx).", "warning")
+        return redirect(url_for("inv_comercial.productos_list"))
+
+    contenido = archivo.read()
+    resultado = importar_productos_desde_excel(
+        eid,
+        contenido,
+        nombre_archivo=archivo.filename or "",
+    )
+
+    if resultado.creados or resultado.actualizados:
+        try:
+            db.session.commit()
+        except Exception:
+            db.session.rollback()
+            flash("No se pudo guardar la importación.", "danger")
+            return redirect(url_for("inv_comercial.productos_list"))
+
+    partes = []
+    if resultado.creados:
+        partes.append(f"{resultado.creados} creado(s)")
+    if resultado.actualizados:
+        partes.append(f"{resultado.actualizados} actualizado(s)")
+    if resultado.omitidos:
+        partes.append(f"{resultado.omitidos} omitido(s)")
+
+    if partes:
+        flash(f"Importación completada: {', '.join(partes)}.", "success")
+    elif not resultado.errores:
+        flash("No se importó ningún producto.", "warning")
+
+    for err in resultado.errores[:8]:
+        flash(err, "danger" if not partes else "warning")
+    if len(resultado.errores) > 8:
+        flash(f"…y {len(resultado.errores) - 8} aviso(s) más.", "warning")
+
+    return redirect(url_for("inv_comercial.productos_list"))
 
 
 @inv_comercial_bp.route("/productos/nuevo", methods=["GET", "POST"])

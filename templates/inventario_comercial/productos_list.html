@@ -24,10 +24,45 @@
          class="btn {% if estado == 'todos' %}btn-primary{% else %}btn-outline-primary{% endif %}">Todos</a>
     </div>
   </form>
-  <div class="d-flex gap-2">
-    <a href="{{ url_for('inv_comercial.productos_export_bajo_stock') }}" class="btn btn-outline-success">
-      <i class="bi bi-file-earmark-excel"></i> Excel bajo stock
-    </a>
+  <div class="d-flex flex-wrap gap-2 align-items-center">
+    <div class="btn-group">
+      <a href="{{ url_for('inv_comercial.productos_export_catalogo', estado=estado, q=q or none, alerta=alerta or none) }}"
+         class="btn btn-outline-success">
+        <i class="bi bi-download"></i> Descargar Excel
+      </a>
+      <button type="button" class="btn btn-outline-success dropdown-toggle dropdown-toggle-split"
+              data-bs-toggle="dropdown" aria-expanded="false">
+        <span class="visually-hidden">Más opciones Excel</span>
+      </button>
+      <ul class="dropdown-menu dropdown-menu-end">
+        <li>
+          <a class="dropdown-item"
+             href="{{ url_for('inv_comercial.productos_export_catalogo', estado=estado, q=q or none, alerta=alerta or none) }}">
+            <i class="bi bi-file-earmark-spreadsheet me-1"></i> Catálogo (vista actual)
+          </a>
+        </li>
+        <li>
+          <a class="dropdown-item" href="{{ url_for('inv_comercial.productos_export_plantilla') }}">
+            <i class="bi bi-file-earmark-plus me-1"></i> Plantilla vacía
+          </a>
+        </li>
+        <li><hr class="dropdown-divider"></li>
+        <li>
+          <a class="dropdown-item" href="{{ url_for('inv_comercial.productos_export_bajo_stock') }}">
+            <i class="bi bi-exclamation-triangle me-1"></i> Solo bajo stock
+          </a>
+        </li>
+      </ul>
+    </div>
+    <form method="post" action="{{ url_for('inv_comercial.productos_import_excel') }}"
+          enctype="multipart/form-data" class="d-inline">
+      {% include "_csrf.html" %}
+      <label class="btn btn-success mb-0">
+        <i class="bi bi-upload"></i> Importar Excel
+        <input type="file" name="archivo" accept=".xlsx,.xlsm" class="d-none"
+               onchange="if(this.files.length){this.form.submit();}">
+      </label>
+    </form>
     <a href="{{ url_for('inv_comercial.compras_nueva') }}" class="btn btn-outline-primary">
       <i class="bi bi-box-arrow-in-down"></i> Registrar entrada
     </a>
