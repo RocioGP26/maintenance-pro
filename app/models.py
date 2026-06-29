@@ -438,9 +438,9 @@ class User(UserMixin, db.Model):
 
     @property
     def rol_label(self) -> str:
-        from app.permissions import normalize_rol
+        from app.permissions import role_display_label
 
-        return USER_ROLE_LABELS.get(normalize_rol(self.rol), self.rol or "—")
+        return role_display_label(self.rol, empresa=self.empresa)
 
     valores_campos = db.relationship(
         "UsuarioCampoValor", back_populates="user", lazy="dynamic", cascade="all, delete-orphan"

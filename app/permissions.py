@@ -28,11 +28,22 @@ USER_ROLE_LABELS = {
     UserRole.USUARIO.value: "Usuario",
 }
 
+# Etiqueta del rol operativo (tecnico) en empresas con inventario comercial
+USER_ROLE_LABELS_INVENTARIO = {
+    **USER_ROLE_LABELS,
+    UserRole.TECNICO.value: "Vendedor",
+}
+
 USER_ROLE_HELP = {
     UserRole.SUPERADMIN.value: "Crear, editar y eliminar en todo el sistema.",
     UserRole.ADMIN.value: "Editar y eliminar registros operativos.",
     UserRole.TECNICO.value: "Editar registros (sin crear ni eliminar).",
     UserRole.USUARIO.value: "Solo consulta (lectura).",
+}
+
+USER_ROLE_HELP_INVENTARIO = {
+    **USER_ROLE_HELP,
+    UserRole.TECNICO.value: "Registrar ventas, compras y stock (sin crear catálogos ni eliminar).",
 }
 
 
@@ -77,6 +88,48 @@ def is_read_only(user) -> bool:
     return _rol(user) == UserRole.USUARIO.value
 
 
+def _modulos_empresa(empresa) -> list[str]:
+    if empresa is None:
+        return []
+    from app.modules import modulos_activos_de
+
+    return modulos_activos_de(empresa)
+
+
+def usa_terminologia_inventario(modulos_activos: list[str] | None) -> bool:
+    """True si la empresa usa inventario comercial (rol operativo = Vendedor)."""
+    from app.modules import MODULO_INVENTARIO
+
+    mods = modulos_activos or []
+    return MODULO_INVENTARIO in mods
+
+
+def role_display_label(
+    rol: Optional[str],
+    modulos_activos: list[str] | None = None,
+    *,
+    empresa=None,
+) -> str:
+    """Etiqueta visible del rol según módulos de la empresa."""
+    from app.modules import MODULO_INVENTARIO, MODULO_MANTENIMIENTO
+
+    key = normalize_rol(rol)
+    mods = modulos_activos if modulos_activos is not None else _modulos_empresa(empresa)
+    labels = USER_ROLE_LABELS
+    if key == UserRole.TECNICO.value and MODULO_INVENTARIO in mods:
+        if MODULO_MANTENIMIENTO in mods:
+            return "Vendedor / Técnico"
+        labels = USER_ROLE_LABELS_INVENTARIO
+    return labels.get(key, USER_ROLE_LABELS.get(key, rol or "—"))
+
+
+def role_help_map(modulos_activos: list[str] | None = None, *, empresa=None) -> dict[str, str]:
+    mods = modulos_activos if modulos_activos is not None else _modulos_empresa(empresa)
+    if usa_terminologia_inventario(mods):
+        return USER_ROLE_HELP_INVENTARIO
+    return USER_ROLE_HELP
+
+
 def can_assign_role(user, target_role: str) -> bool:
     target = normalize_rol(target_role)
     if target == UserRole.SUPERADMIN.value:
@@ -84,12 +137,18 @@ def can_assign_role(user, target_role: str) -> bool:
     return can_manage_equipo(user)
 
 
-def roles_for_select(user) -> list[tuple[str, str]]:
+def roles_for_select(
+    user,
+    modulos_activos: list[str] | None = None,
+    *,
+    empresa=None,
+) -> list[tuple[str, str]]:
     """Opciones de rol que el usuario actual puede asignar."""
-    items = list(USER_ROLE_LABELS.items())
+    mods = modulos_activos if modulos_activos is not None else _modulos_empresa(empresa)
+    keys = list(USER_ROLE_LABELS.keys())
     if _rol(user) != UserRole.SUPERADMIN.value:
-        items = [(k, v) for k, v in items if k != UserRole.SUPERADMIN.value]
-    return items
+        keys = [k for k in keys if k != UserRole.SUPERADMIN.value]
+    return [(k, role_display_label(k, modulos_activos=mods)) for k in keys]
 
 
 def permission_flags(user) -> dict:

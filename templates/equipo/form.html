@@ -44,10 +44,16 @@
                 {% endfor %}
               </select>
               <div class="form-text small">
-                Superadministrador: crear, editar y eliminar.
-                Administrador: editar y eliminar.
-                Técnico: editar.
-                Usuario: solo lectura.
+                Superadministrador: {{ roles_ayuda.get('superadmin', '') }}
+                Administrador: {{ roles_ayuda.get('admin', '') }}
+                {% if mod_inventario and not mod_mantenimiento %}
+                Vendedor: {{ roles_ayuda.get('tecnico', '') }}
+                {% elif mod_inventario and mod_mantenimiento %}
+                Vendedor / Técnico: {{ roles_ayuda.get('tecnico', '') }}
+                {% else %}
+                Técnico: {{ roles_ayuda.get('tecnico', '') }}
+                {% endif %}
+                Usuario: {{ roles_ayuda.get('usuario', '') }}
               </div>
               {% endif %}
             </div>

@@ -33,6 +33,7 @@ from app.permissions import (
     can_manage_equipo,
     normalize_rol,
     roles_for_select,
+    role_help_map,
 )
 from app.custom_fields import (
     CAMPO_ENTIDAD_ACTIVO,
@@ -3304,8 +3305,12 @@ def _validar_username_equipo(username: str) -> Optional[str]:
 
 
 def _sync_technician_for_user(user: User) -> None:
-    """Mantiene un técnico vinculado para asignar OT (roles operativos)."""
+    """Mantiene un técnico vinculado para asignar OT (roles operativos de mantenimiento)."""
     if not user.empresa_id:
+        return
+    from app.modules import empresa_solo_inventario
+
+    if empresa_solo_inventario(user.empresa):
         return
     tech = Technician.query.filter_by(user_id=user.id).first()
     if normalize_rol(user.rol) != UserRole.TECNICO.value:
@@ -3402,7 +3407,8 @@ def equipo_new():
         return redirect(url_for("main.equipo_list"))
     emp = Empresa.query.get(eid)
     sector = normalizar_sector(emp.sector if emp else None)
-    roles = roles_for_select(current_user)
+    roles = roles_for_select(current_user, empresa=emp)
+    roles_ayuda = role_help_map(empresa=emp)
     ctx = _equipo_form_context(None, eid)
 
     if request.method == "POST":
@@ -3468,6 +3474,7 @@ def equipo_new():
         "equipo/form.html",
         usuario=None,
         roles=roles,
+        roles_ayuda=roles_ayuda,
         es_self=False,
         **ctx,
     )
@@ -3490,7 +3497,8 @@ def equipo_edit(id):
     es_self = usuario.id == current_user.id
     emp = Empresa.query.get(eid)
     sector = normalizar_sector(emp.sector if emp else None)
-    roles = roles_for_select(current_user)
+    roles = roles_for_select(current_user, empresa=emp)
+    roles_ayuda = role_help_map(empresa=emp)
     ctx = _equipo_form_context(usuario, eid)
 
     if request.method == "POST":
@@ -3584,6 +3592,7 @@ def equipo_edit(id):
         "equipo/form.html",
         usuario=usuario,
         roles=roles,
+        roles_ayuda=roles_ayuda,
         es_self=es_self,
         **ctx,
     )
