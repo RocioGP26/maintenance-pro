@@ -36,15 +36,20 @@
               <input type="text" class="form-control" id="nombre" name="nombre" required
                      value="{{ item.nombre if item else '' }}">
             </div>
-            <div class="col-md-6">
+            <div class="col-md-4">
               <label class="form-label" for="marca">Marca</label>
               <input type="text" class="form-control" id="marca" name="marca"
                      value="{{ item.marca if item else '' }}" placeholder="Ej. Castrol, NGK">
             </div>
-            <div class="col-md-6">
+            <div class="col-md-4">
               <label class="form-label" for="categoria">Categoría</label>
               <input type="text" class="form-control" id="categoria" name="categoria"
                      value="{{ item.categoria if item else '' }}" placeholder="Ej. Lubricantes">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label" for="subcategoria">Subcategoría</label>
+              <input type="text" class="form-control" id="subcategoria" name="subcategoria"
+                     value="{{ item.subcategoria if item else '' }}" placeholder="Ej. Aceites sintéticos">
             </div>
             <div class="col-md-3">
               <label class="form-label" for="unidad">Unidad</label>

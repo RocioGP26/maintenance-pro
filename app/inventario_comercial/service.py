@@ -324,6 +324,7 @@ def guardar_producto_comercial(
     producto.nombre = nombre
     producto.marca = (datos.get("marca") or "").strip()
     producto.categoria = (datos.get("categoria") or "").strip()
+    producto.subcategoria = (datos.get("subcategoria") or "").strip()
     producto.unidad = (datos.get("unidad") or "pza").strip() or "pza"
     producto.stock_minimo = max(0, _parse_int(datos.get("stock_minimo")))
     producto.precio_compra = max(0.0, _parse_float(datos.get("precio_compra")))

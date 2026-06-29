@@ -46,6 +46,7 @@
         <th>Producto</th>
         <th>Marca</th>
         <th>Categoría</th>
+        <th>Subcategoría</th>
         <th class="text-end">Stock</th>
         {% if multimoneda %}
           {% for m in monedas_activas %}
@@ -76,6 +77,7 @@
         </td>
         <td>{{ p.marca or '—' }}</td>
         <td>{{ p.categoria or '—' }}</td>
+        <td>{{ p.subcategoria or '—' }}</td>
         <td class="text-end">{{ p.stock }} {{ p.unidad }}</td>
         {% if multimoneda %}
           {% set precios = p.precios_venta(empresa_actual.moneda) %}
@@ -109,7 +111,7 @@
       </tr>
       {% else %}
       <tr>
-        <td colspan="{{ 7 + (monedas_activas|length if multimoneda else 2) }}" class="text-muted text-center py-4">
+        <td colspan="{{ 8 + (monedas_activas|length if multimoneda else 2) }}" class="text-muted text-center py-4">
           {% if estado == 'inactivo' %}
           No hay productos inactivos.
           {% elif q %}
