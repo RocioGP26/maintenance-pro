@@ -7,6 +7,7 @@ services:
     runtime: python
     plan: starter
     buildCommand: pip install -r requirements.txt
+    preDeployCommand: python scripts/migrate_deploy.py
     startCommand: gunicorn run:app
     healthCheckPath: /health
     autoDeploy: true

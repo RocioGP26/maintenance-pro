@@ -74,7 +74,10 @@ Documentación de backups Neon: `docs/backup-neon.md`.
 | `GET /health/live` | Liveness (app responde) |
 | `GET /health` | Readiness (BD + revisión Alembic) |
 
-**Render:** importa `render.yaml` o conecta el repo; configura `DATABASE_URL` (Neon) y `PLATFORM_ADMIN_KEY`.
+**Render:** importa `render.yaml` o conecta el repo; configura `DATABASE_URL` (Neon) y `PLATFORM_ADMIN_KEY`. El `preDeployCommand` ejecuta `scripts/migrate_deploy.py` (baseline Alembic en BDs legacy + migraciones pendientes).
+
+Si el servicio se creó manualmente en el dashboard, añade el mismo comando en **Settings → Pre-Deploy Command**:
+`python scripts/migrate_deploy.py`
 
 **GitHub Actions** (secrets en Settings → Actions):
 
