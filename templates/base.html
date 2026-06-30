@@ -169,7 +169,7 @@
             <div class="header-user-divider" aria-hidden="true"></div>
             <div class="header-user-info d-none d-sm-flex flex-column">
               {% if perm.equipo %}
-              <a href="{{ url_for('main.mi_perfil') }}" class="header-user-name text-decoration-none text-white">{{ current_user.etiqueta()|upper }}</a>
+              <a href="{{ url_for('main.mi_perfil') }}" class="header-user-name text-decoration-none">{{ current_user.etiqueta()|upper }}</a>
               {% else %}
               <span class="header-user-name">{{ current_user.etiqueta()|upper }}</span>
               {% endif %}
