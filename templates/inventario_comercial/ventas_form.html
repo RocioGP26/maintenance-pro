@@ -2,6 +2,7 @@
 
 {% block title %}Nueva venta — {{ app_name }}{% endblock %}
 {% block page_title %}Nueva venta / POS{% endblock %}
+{% block body_class %}page-venta-pos{% endblock %}
 
 {% block content %}
 {% if not productos %}
@@ -11,160 +12,248 @@
 </div>
 {% endif %}
 
-<div class="row g-4">
-  <div class="col-lg-8">
-    <form method="post" id="formVenta">
-      {% include "_csrf.html" %}
-      <div class="card card-dashboard mb-4">
-        <div class="card-body">
-          <h5 class="fw-semibold mb-3">Datos de la venta</h5>
-          <div class="row g-3">
-            <div class="col-md-4">
-              <label class="form-label" for="fecha">Fecha</label>
-              <input type="date" class="form-control" id="fecha" name="fecha"
-                     value="{{ hoy.strftime('%Y-%m-%d') }}">
+<div class="venta-pos-layout">
+  <form method="post" id="formVenta" class="venta-pos-form">
+    {% include "_csrf.html" %}
+    <div class="card card-dashboard mb-4">
+      <div class="card-body">
+        <h5 class="fw-semibold mb-3">Datos de la venta</h5>
+        <div class="row g-3">
+          <div class="col-md-4">
+            <label class="form-label" for="fecha">Fecha</label>
+            <input type="date" class="form-control" id="fecha" name="fecha"
+                   value="{{ hoy.strftime('%Y-%m-%d') }}">
+          </div>
+          <div class="col-md-4">
+            <label class="form-label" for="numero">Número / ticket</label>
+            <input type="text" class="form-control" id="numero" name="numero"
+                   value="{{ numero_sugerido }}">
+          </div>
+          <div class="col-md-4">
+            <label class="form-label" for="moneda">Moneda de cobro</label>
+            {% if multimoneda %}
+            <select class="form-select" id="moneda" name="moneda">
+              {% for m in monedas_activas %}
+              <option value="{{ m }}" {% if m == moneda_ref %}selected{% endif %}>{{ m }}</option>
+              {% endfor %}
+            </select>
+            {% else %}
+            <input type="text" class="form-control bg-light" readonly value="{{ moneda_ref }}">
+            <input type="hidden" name="moneda" value="{{ moneda_ref }}">
+            {% endif %}
+          </div>
+          <div class="col-md-4">
+            <label class="form-label" for="cliente_id">Cliente</label>
+            <select class="form-select" id="cliente_id" name="cliente_id">
+              <option value="">— Venta sin cliente —</option>
+              {% for c in clientes %}
+              <option value="{{ c.id }}">{{ c.nombre }}{% if c.documento %} · {{ c.documento }}{% endif %}</option>
+              {% endfor %}
+            </select>
+            <div class="form-text">
+              <a href="{{ url_for('inv_comercial.clientes_nuevo', next=url_for('inv_comercial.ventas_nueva')) }}">Registrar cliente nuevo</a>
+              <span class="text-warning d-none" id="clienteCreditoAviso"> · Obligatorio en venta a crédito</span>
             </div>
-            <div class="col-md-4">
-              <label class="form-label" for="numero">Número / ticket</label>
-              <input type="text" class="form-control" id="numero" name="numero"
-                     value="{{ numero_sugerido }}">
+          </div>
+          <div class="col-12">
+            <label class="form-label d-block">Forma de pago</label>
+            <div class="btn-group btn-group-sm" role="group">
+              <input type="radio" class="btn-check" name="forma_pago" id="fpContado" value="contado" checked>
+              <label class="btn btn-outline-primary" for="fpContado">Contado</label>
+              <input type="radio" class="btn-check" name="forma_pago" id="fpCredito" value="credito">
+              <label class="btn btn-outline-primary" for="fpCredito">Crédito</label>
             </div>
-            <div class="col-md-4">
-              <label class="form-label" for="moneda">Moneda de cobro</label>
-              {% if multimoneda %}
-              <select class="form-select" id="moneda" name="moneda">
-                {% for m in monedas_activas %}
-                <option value="{{ m }}" {% if m == moneda_ref %}selected{% endif %}>{{ m }}</option>
-                {% endfor %}
-              </select>
-              {% else %}
-              <input type="text" class="form-control bg-light" readonly value="{{ moneda_ref }}">
-              <input type="hidden" name="moneda" value="{{ moneda_ref }}">
-              {% endif %}
-            </div>
-            <div class="col-md-4">
-              <label class="form-label" for="cliente_id">Cliente</label>
-              <select class="form-select" id="cliente_id" name="cliente_id">
-                <option value="">— Venta sin cliente —</option>
-                {% for c in clientes %}
-                <option value="{{ c.id }}">{{ c.nombre }}{% if c.documento %} · {{ c.documento }}{% endif %}</option>
-                {% endfor %}
-              </select>
-              <div class="form-text">
-                <a href="{{ url_for('inv_comercial.clientes_nuevo', next=url_for('inv_comercial.ventas_nueva')) }}">Registrar cliente nuevo</a>
-                <span class="text-warning d-none" id="clienteCreditoAviso"> · Obligatorio en venta a crédito</span>
-              </div>
-            </div>
-            <div class="col-12">
-              <label class="form-label d-block">Forma de pago</label>
-              <div class="btn-group btn-group-sm" role="group">
-                <input type="radio" class="btn-check" name="forma_pago" id="fpContado" value="contado" checked>
-                <label class="btn btn-outline-primary" for="fpContado">Contado</label>
-                <input type="radio" class="btn-check" name="forma_pago" id="fpCredito" value="credito">
-                <label class="btn btn-outline-primary" for="fpCredito">Crédito</label>
-              </div>
-            </div>
-            <div class="col-md-4 d-none" id="wrapCredito">
-              <label class="form-label" for="fecha_vencimiento">Vencimiento</label>
-              <input type="date" class="form-control" id="fecha_vencimiento" name="fecha_vencimiento">
-              <div class="form-text">Fecha límite de pago (opcional).</div>
-            </div>
-            <div class="col-md-4 d-none" id="wrapAbonoInicial">
-              <label class="form-label" for="monto_abono_inicial">Abono inicial</label>
-              <input type="number" class="form-control" id="monto_abono_inicial" name="monto_abono_inicial"
-                     min="0" step="0.01" value="0">
-              <div class="form-text">Opcional. El resto queda como saldo pendiente.</div>
-            </div>
-            <div class="col-12">
-              <label class="form-label" for="notas">Notas</label>
-              <textarea class="form-control" id="notas" name="notas" rows="2"
-                        placeholder="Cliente, forma de pago, observaciones…"></textarea>
-            </div>
+          </div>
+          <div class="col-md-4 d-none" id="wrapCredito">
+            <label class="form-label" for="fecha_vencimiento">Vencimiento</label>
+            <input type="date" class="form-control" id="fecha_vencimiento" name="fecha_vencimiento">
+          </div>
+          <div class="col-md-4 d-none" id="wrapAbonoInicial">
+            <label class="form-label" for="monto_abono_inicial">Abono inicial</label>
+            <input type="number" class="form-control" id="monto_abono_inicial" name="monto_abono_inicial"
+                   min="0" step="0.01" value="0">
+          </div>
+          <div class="col-12">
+            <label class="form-label" for="notas">Notas</label>
+            <textarea class="form-control" id="notas" name="notas" rows="2"
+                      placeholder="Cliente, forma de pago, observaciones…"></textarea>
           </div>
         </div>
-      </div>
-
-      <div class="card card-dashboard mb-4">
-        <div class="card-body">
-          <div class="d-flex justify-content-between align-items-center mb-3">
-            <h5 class="fw-semibold mb-0">Productos vendidos</h5>
-            <button type="button" class="btn btn-sm btn-outline-primary" id="btnAgregarLinea">
-              <i class="bi bi-plus-lg"></i> Agregar línea
-            </button>
-          </div>
-          <div class="table-responsive">
-            <table class="table align-middle mb-0" id="tablaLineas">
-              <thead class="table-light">
-                <tr>
-                  <th style="min-width:200px">Producto</th>
-                  <th style="width:120px">Marca</th>
-                  <th class="text-end" style="width:90px">Stock</th>
-                  <th class="text-end" style="width:100px">Cant.</th>
-                  <th class="text-end" style="width:120px">P. unit.</th>
-                  <th class="text-end" style="width:110px">Subtotal</th>
-                  <th style="width:48px"></th>
-                </tr>
-              </thead>
-              <tbody id="lineasBody">
-                <tr class="linea-venta">
-                  <td>
-                    <select class="form-select form-select-sm linea-producto" name="linea_producto_id" required>
-                      <option value="">— Seleccionar —</option>
-                      {% for p in productos %}
-                      <option value="{{ p.id }}">{{ p.sku }} — {{ p.nombre }}</option>
-                      {% endfor %}
-                    </select>
-                  </td>
-                  <td class="linea-marca text-muted small">—</td>
-                  <td class="text-end linea-stock text-muted small">—</td>
-                  <td>
-                    <input type="number" class="form-control form-control-sm text-end linea-cantidad"
-                           name="linea_cantidad" min="1" value="1" required>
-                  </td>
-                  <td>
-                    <input type="number" class="form-control form-control-sm text-end linea-precio"
-                           name="linea_precio" min="0" step="0.01" value="0">
-                  </td>
-                  <td class="text-end linea-subtotal text-muted small">0</td>
-                  <td>
-                    <button type="button" class="btn btn-sm btn-outline-danger btn-quitar-linea" title="Quitar">&times;</button>
-                  </td>
-                </tr>
-              </tbody>
-              <tfoot>
-                <tr>
-                  <td colspan="5" class="text-end fw-semibold">Total venta</td>
-                  <td class="text-end fw-semibold" id="totalVenta">0</td>
-                  <td></td>
-                </tr>
-              </tfoot>
-            </table>
-          </div>
-        </div>
-      </div>
-
-      <div class="d-flex gap-2">
-        <button type="submit" class="btn btn-primary" {% if not productos %}disabled{% endif %}>
-          Registrar venta
-        </button>
-        <a href="{{ url_for('inv_comercial.ventas_list') }}" class="btn btn-outline-secondary">Cancelar</a>
-      </div>
-    </form>
-  </div>
-  <div class="col-lg-4">
-    <div class="card card-dashboard">
-      <div class="card-body small text-muted">
-        <h6 class="text-dark fw-semibold">Punto de venta</h6>
-        <ol class="ps-3 mb-0">
-          <li class="mb-2">Elige la moneda en que cobras{% if multimoneda %} (multi-moneda activa){% endif %}.</li>
-          <li class="mb-2">Agrega productos y cantidades.</li>
-          <li class="mb-2">El precio se completa según el catálogo; puedes ajustarlo.</li>
-          <li>Al guardar, el stock baja automáticamente.</li>
-        </ol>
       </div>
     </div>
-  </div>
+
+    <div class="card card-dashboard mb-3 venta-tabla-card">
+      <div class="card-body venta-tabla-card-body">
+        <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+          <h5 class="fw-semibold mb-0">Productos vendidos</h5>
+          <button type="button" class="btn btn-sm btn-outline-primary" id="btnAgregarLinea">
+            <i class="bi bi-plus-lg"></i> Agregar línea
+          </button>
+        </div>
+        <div class="venta-lineas-scroll" id="wrapTablaLineas">
+          <table class="table table-sm align-middle mb-0 venta-tabla-lineas" id="tablaLineas">
+            <thead class="venta-tabla-thead">
+              <tr>
+                <th class="venta-th-producto">Producto</th>
+                <th class="venta-th-marca">Marca</th>
+                <th class="text-end venta-th-stock">Stock</th>
+                <th class="text-end venta-th-cantidad">Cant.</th>
+                <th class="text-end venta-th-precio">P. unit.</th>
+                <th class="text-end venta-th-subtotal">Subtotal</th>
+                <th class="venta-th-accion"></th>
+              </tr>
+            </thead>
+            <tbody id="lineasBody">
+              <tr class="linea-venta">
+                <td>
+                  <div class="producto-combobox position-relative">
+                    <input type="hidden" class="linea-producto-id" name="linea_producto_id" value="" required>
+                    <input type="text" class="form-control form-control-sm linea-producto-buscar"
+                           placeholder="Referencia o nombre…" autocomplete="off" spellcheck="false">
+                    <div class="producto-combobox-menu list-group position-absolute w-100 shadow-sm d-none"></div>
+                  </div>
+                </td>
+                <td class="linea-marca text-muted small">—</td>
+                <td class="text-end linea-stock text-muted small">—</td>
+                <td>
+                  <input type="number" class="form-control form-control-sm text-end linea-cantidad"
+                         name="linea_cantidad" min="1" value="1" required>
+                </td>
+                <td>
+                  <input type="number" class="form-control form-control-sm text-end linea-precio"
+                         name="linea_precio" min="0" step="0.01" value="0">
+                </td>
+                <td class="text-end linea-subtotal text-muted small">0</td>
+                <td>
+                  <button type="button" class="btn btn-sm btn-outline-danger btn-quitar-linea" title="Quitar">&times;</button>
+                </td>
+              </tr>
+            </tbody>
+            <tfoot class="table-light">
+              <tr>
+                <td colspan="5" class="text-end fw-semibold">Total venta</td>
+                <td class="text-end fw-semibold" id="totalVenta">0</td>
+                <td></td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <details class="venta-ayuda small text-muted mb-3">
+      <summary class="fw-semibold text-dark">Ayuda rápida</summary>
+      <ol class="ps-3 mb-0 mt-2">
+        <li class="mb-1">Elige la moneda en que cobras{% if multimoneda %} (multi-moneda activa){% endif %}.</li>
+        <li class="mb-1">Escribe referencia o nombre del producto; el precio se completa del catálogo.</li>
+        <li class="mb-1">Usa <strong>Enter</strong> en cantidad o precio para agregar otra línea.</li>
+        <li>Al guardar, el stock baja automáticamente.</li>
+      </ol>
+    </details>
+
+    <div class="d-flex flex-wrap gap-2 venta-form-actions">
+      <button type="submit" class="btn btn-primary" {% if not productos %}disabled{% endif %}>
+        Registrar venta
+      </button>
+      <a href="{{ url_for('inv_comercial.ventas_list') }}" class="btn btn-outline-secondary">Cancelar</a>
+    </div>
+  </form>
 </div>
+{% endblock %}
+
+{% block head_extra %}
+<style>
+  .page-venta-pos .content-area {
+    padding-left: 0.65rem;
+    padding-right: 0.65rem;
+  }
+
+  .venta-pos-layout {
+    max-width: none;
+    width: 100%;
+  }
+
+  .venta-pos-form .card-dashboard:not(.venta-tabla-card) {
+    max-width: 1100px;
+  }
+
+  .venta-tabla-card-body {
+    padding: 0.75rem 0.5rem 1rem;
+  }
+
+  .venta-lineas-scroll {
+    max-height: min(72vh, calc(100vh - 12rem));
+    overflow: auto;
+    width: 100%;
+    border: 1px solid var(--dash-card-border, #e5e7eb);
+    border-radius: 0.5rem;
+  }
+
+  .venta-tabla-lineas {
+    width: 100%;
+    table-layout: auto;
+    margin-bottom: 0;
+  }
+
+  .venta-tabla-thead th {
+    position: sticky;
+    top: 0;
+    z-index: 5;
+    background: #f8f9fa;
+    box-shadow: 0 1px 0 #dee2e6;
+    font-size: 0.8125rem;
+    white-space: nowrap;
+    vertical-align: middle;
+  }
+
+  .venta-th-producto { min-width: 22rem; width: 42%; }
+  .venta-th-marca { min-width: 7rem; width: 12%; }
+  .venta-th-stock { min-width: 4.5rem; width: 7%; }
+  .venta-th-cantidad { min-width: 5.5rem; width: 8%; }
+  .venta-th-precio { min-width: 7.5rem; width: 12%; }
+  .venta-th-subtotal { min-width: 6.5rem; width: 10%; }
+  .venta-th-accion { width: 2.75rem; }
+
+  .venta-tabla-lineas .linea-producto-buscar {
+    white-space: nowrap;
+    min-width: 20rem;
+  }
+
+  .venta-tabla-lineas .linea-venta td {
+    vertical-align: middle;
+  }
+
+  .venta-ayuda,
+  .venta-form-actions {
+    padding-left: 0.35rem;
+    padding-right: 0.35rem;
+  }
+
+  .producto-combobox-menu {
+    z-index: 1050;
+    max-height: 220px;
+    overflow-y: auto;
+    top: 100%;
+    margin-top: 2px;
+  }
+  .producto-combobox-menu .list-group-item {
+    cursor: pointer;
+    padding: 0.35rem 0.5rem;
+    font-size: 0.8125rem;
+    border-left: 0;
+    border-right: 0;
+  }
+  .producto-combobox-menu .list-group-item:first-child { border-top: 0; }
+  .producto-combobox-menu .list-group-item-action.active {
+    background-color: var(--bs-primary);
+    border-color: var(--bs-primary);
+    color: #fff;
+  }
+  .producto-combobox-menu .producto-combobox-sku {
+    font-family: var(--bs-font-monospace);
+    font-size: 0.75rem;
+  }
+</style>
 {% endblock %}
 
 {% block scripts %}
@@ -172,11 +261,16 @@
 (function () {
   var catalogo = {{ productos_json|tojson }};
   var porId = {};
-  catalogo.forEach(function (p) { porId[String(p.id)] = p; });
+  var porSku = {};
+  catalogo.forEach(function (p) {
+    porId[String(p.id)] = p;
+    porSku[p.sku.toLowerCase()] = p;
+  });
 
   var body = document.getElementById('lineasBody');
   var btnAdd = document.getElementById('btnAgregarLinea');
   var selMoneda = document.getElementById('moneda');
+  var formVenta = document.getElementById('formVenta');
   if (!body) return;
 
   function monedaActual() {
@@ -212,12 +306,12 @@
   }
 
   function actualizarFila(tr, forzarPrecio) {
-    var sel = tr.querySelector('.linea-producto');
+    var hid = tr.querySelector('.linea-producto-id');
     var prec = tr.querySelector('.linea-precio');
     var marca = tr.querySelector('.linea-marca');
     var stock = tr.querySelector('.linea-stock');
     var sub = tr.querySelector('.linea-subtotal');
-    var prod = sel && porId[sel.value];
+    var prod = hid && porId[hid.value];
     if (prod) {
       if (marca) marca.textContent = prod.marca || '—';
       if (stock) stock.textContent = String(prod.stock);
@@ -238,14 +332,211 @@
     });
   }
 
+  function etiquetaProducto(p) {
+    return p.sku + ' — ' + p.nombre + ' (stock: ' + p.stock + ')';
+  }
+
+  function filtrarProductos(q) {
+    q = (q || '').trim().toLowerCase();
+    if (!q) return catalogo.slice(0, 25);
+    return catalogo.filter(function (p) {
+      return p.sku.toLowerCase().includes(q) || p.nombre.toLowerCase().includes(q);
+    }).slice(0, 25);
+  }
+
+  function cerrarMenu(tr) {
+    var menu = tr.querySelector('.producto-combobox-menu');
+    if (menu) menu.classList.add('d-none');
+  }
+
+  function renderMenu(tr, items) {
+    var menu = tr.querySelector('.producto-combobox-menu');
+    if (!menu) return;
+    menu.innerHTML = '';
+    if (!items.length) {
+      menu.innerHTML = '<div class="list-group-item text-muted small">Sin coincidencias</div>';
+      menu.classList.remove('d-none');
+      return;
+    }
+    items.forEach(function (p, idx) {
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'list-group-item list-group-item-action' + (idx === 0 ? ' active' : '');
+      btn.setAttribute('data-id', String(p.id));
+      btn.innerHTML = '<span class="producto-combobox-sku">' + p.sku + '</span> — ' + p.nombre +
+        ' <span class="text-muted">(stock: ' + p.stock + ')</span>';
+      btn.addEventListener('mousedown', function (e) {
+        e.preventDefault();
+        seleccionarProducto(tr, p);
+      });
+      menu.appendChild(btn);
+    });
+    menu.classList.remove('d-none');
+  }
+
+  function seleccionarProducto(tr, prod) {
+    var hid = tr.querySelector('.linea-producto-id');
+    var inp = tr.querySelector('.linea-producto-buscar');
+    var prec = tr.querySelector('.linea-precio');
+    if (hid) hid.value = prod ? String(prod.id) : '';
+    if (inp) inp.value = prod ? etiquetaProducto(prod) : '';
+    if (prod && prec) prec.value = precioProducto(prod);
+    cerrarMenu(tr);
+    actualizarFila(tr, false);
+  }
+
+  function intentarMatchExacto(tr) {
+    var inp = tr.querySelector('.linea-producto-buscar');
+    var hid = tr.querySelector('.linea-producto-id');
+    if (!inp) return;
+    var raw = inp.value.trim();
+    if (!raw) {
+      if (hid) hid.value = '';
+      return;
+    }
+    if (hid && hid.value && porId[hid.value]) {
+      var actual = porId[hid.value];
+      if (raw === etiquetaProducto(actual) || raw.toLowerCase() === actual.sku.toLowerCase()) return;
+    }
+    var sku = raw.split('—')[0].trim().toLowerCase();
+    if (porSku[sku]) {
+      seleccionarProducto(tr, porSku[sku]);
+      return;
+    }
+    var coincidencias = filtrarProductos(raw);
+    if (coincidencias.length === 1) {
+      seleccionarProducto(tr, coincidencias[0]);
+    } else if (hid) {
+      hid.value = '';
+    }
+  }
+
+  function initCombobox(tr) {
+    var inp = tr.querySelector('.linea-producto-buscar');
+    var menu = tr.querySelector('.producto-combobox-menu');
+    if (!inp) return;
+    var activoIdx = 0;
+
+    inp.addEventListener('input', function () {
+      var hid = tr.querySelector('.linea-producto-id');
+      if (hid) hid.value = '';
+      activoIdx = 0;
+      renderMenu(tr, filtrarProductos(inp.value));
+    });
+
+    inp.addEventListener('focus', function () {
+      renderMenu(tr, filtrarProductos(inp.value));
+    });
+
+    inp.addEventListener('keydown', function (e) {
+      if (!menu || menu.classList.contains('d-none')) return;
+      var items = menu.querySelectorAll('.list-group-item-action');
+      if (!items.length) return;
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        activoIdx = Math.min(activoIdx + 1, items.length - 1);
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        activoIdx = Math.max(activoIdx - 1, 0);
+      } else if (e.key === 'Enter') {
+        e.preventDefault();
+        var id = items[activoIdx].getAttribute('data-id');
+        if (id && porId[id]) seleccionarProducto(tr, porId[id]);
+        return;
+      } else if (e.key === 'Escape') {
+        cerrarMenu(tr);
+        return;
+      } else {
+        return;
+      }
+      items.forEach(function (el, i) {
+        el.classList.toggle('active', i === activoIdx);
+      });
+      items[activoIdx].scrollIntoView({ block: 'nearest' });
+    });
+
+    inp.addEventListener('blur', function () {
+      setTimeout(function () {
+        intentarMatchExacto(tr);
+        cerrarMenu(tr);
+      }, 150);
+    });
+  }
+
+  document.addEventListener('click', function (e) {
+    if (!body) return;
+    if (e.target.closest('.producto-combobox')) return;
+    body.querySelectorAll('.linea-venta').forEach(cerrarMenu);
+  });
+
+  var rowPlantilla = body.querySelector('.linea-venta');
+  if (rowPlantilla) rowPlantilla = rowPlantilla.cloneNode(true);
+
+  function resetFilaInputs(tr) {
+    tr.querySelectorAll('input').forEach(function (inp) {
+      if (inp.classList.contains('linea-cantidad')) inp.value = '1';
+      else if (inp.classList.contains('linea-precio')) inp.value = '0';
+      else if (inp.classList.contains('linea-producto-id')) inp.value = '';
+      else if (inp.classList.contains('linea-producto-buscar')) inp.value = '';
+    });
+    var menu = tr.querySelector('.producto-combobox-menu');
+    if (menu) {
+      menu.innerHTML = '';
+      menu.classList.add('d-none');
+    }
+    var marca = tr.querySelector('.linea-marca');
+    if (marca) marca.textContent = '—';
+    var stock = tr.querySelector('.linea-stock');
+    if (stock) stock.textContent = '—';
+    var sub = tr.querySelector('.linea-subtotal');
+    if (sub) sub.textContent = '0';
+  }
+
+  function nuevaFila(enfocarProducto) {
+    if (!rowPlantilla) return null;
+    var tr = rowPlantilla.cloneNode(true);
+    resetFilaInputs(tr);
+    body.appendChild(tr);
+    enlazarFila(tr);
+    if (enfocarProducto) {
+      var buscar = tr.querySelector('.linea-producto-buscar');
+      if (buscar) buscar.focus();
+    }
+    return tr;
+  }
+
+  function esUltimaFila(tr) {
+    var filas = body.querySelectorAll('.linea-venta');
+    return filas.length > 0 && filas[filas.length - 1] === tr;
+  }
+
+  function onEnterUltimaFila(e, tr) {
+    if (e.key !== 'Enter') return;
+    if (!esUltimaFila(tr)) return;
+    e.preventDefault();
+    intentarMatchExacto(tr);
+    var hid = tr.querySelector('.linea-producto-id');
+    if (!hid || !hid.value) {
+      var buscar = tr.querySelector('.linea-producto-buscar');
+      if (buscar) buscar.focus();
+      return;
+    }
+    nuevaFila(true);
+  }
+
   function enlazarFila(tr) {
-    var sel = tr.querySelector('.linea-producto');
     var cant = tr.querySelector('.linea-cantidad');
     var prec = tr.querySelector('.linea-precio');
     var btn = tr.querySelector('.btn-quitar-linea');
-    if (sel) sel.addEventListener('change', function () { actualizarFila(tr, true); });
-    if (cant) cant.addEventListener('input', function () { actualizarFila(tr, false); });
-    if (prec) prec.addEventListener('input', function () { actualizarFila(tr, false); });
+    initCombobox(tr);
+    if (cant) {
+      cant.addEventListener('input', function () { actualizarFila(tr, false); });
+      cant.addEventListener('keydown', function (e) { onEnterUltimaFila(e, tr); });
+    }
+    if (prec) {
+      prec.addEventListener('input', function () { actualizarFila(tr, false); });
+      prec.addEventListener('keydown', function (e) { onEnterUltimaFila(e, tr); });
+    }
     if (btn) {
       btn.addEventListener('click', function () {
         if (body.querySelectorAll('.linea-venta').length <= 1) return;
@@ -260,27 +551,26 @@
 
   if (btnAdd) {
     btnAdd.addEventListener('click', function () {
-      var primera = body.querySelector('.linea-venta');
-      if (!primera) return;
-      var clon = primera.cloneNode(true);
-      clon.querySelectorAll('input').forEach(function (inp) {
-        if (inp.classList.contains('linea-cantidad')) inp.value = '1';
-        else if (inp.classList.contains('linea-precio')) inp.value = '0';
-      });
-      var sel = clon.querySelector('.linea-producto');
-      if (sel) sel.selectedIndex = 0;
-      var marca = clon.querySelector('.linea-marca');
-      if (marca) marca.textContent = '—';
-      var stock = clon.querySelector('.linea-stock');
-      if (stock) stock.textContent = '—';
-      var sub = clon.querySelector('.linea-subtotal');
-      if (sub) sub.textContent = '0';
-      body.appendChild(clon);
-      enlazarFila(clon);
+      nuevaFila(false);
     });
   }
 
   if (selMoneda) selMoneda.addEventListener('change', refrescarPrecios);
+
+  if (formVenta) {
+    formVenta.addEventListener('submit', function (e) {
+      var ok = true;
+      body.querySelectorAll('.linea-venta').forEach(function (tr) {
+        intentarMatchExacto(tr);
+        var hid = tr.querySelector('.linea-producto-id');
+        if (!hid || !hid.value) ok = false;
+      });
+      if (!ok) {
+        e.preventDefault();
+        alert('Selecciona un producto válido en cada línea (escribe la referencia y elige de la lista).');
+      }
+    });
+  }
 
   var fpCredito = document.getElementById('fpCredito');
   var fpContado = document.getElementById('fpContado');

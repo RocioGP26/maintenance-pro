@@ -1251,6 +1251,7 @@ class InvProducto(db.Model):
     marca = db.Column(db.String(120), default="")
     categoria = db.Column(db.String(120), default="")
     subcategoria = db.Column(db.String(120), default="")
+    ubicacion = db.Column(db.String(120), default="")
     imagen = db.Column(db.String(255), default="")
     unidad = db.Column(db.String(32), default="pza")
     stock = db.Column(db.Integer, default=0, nullable=False)
@@ -1293,18 +1294,82 @@ class InvCompra(db.Model):
     empresa_id = db.Column(db.Integer, db.ForeignKey("empresas.id"), nullable=False, index=True)
     proveedor_id = db.Column(db.Integer, db.ForeignKey("inv_proveedores.id"), nullable=True, index=True)
     numero = db.Column(db.String(32), default="")
+    moneda_factura = db.Column(db.String(8), default="COP")
+    tasa_cambio = db.Column(db.Float, default=1.0)
+    tipo_iva = db.Column(db.String(16), default="exento")
+    subtotal = db.Column(db.Float, default=0.0)
+    monto_iva = db.Column(db.Float, default=0.0)
     total = db.Column(db.Float, default=0.0)
     notas = db.Column(db.Text, default="")
     fecha = db.Column(db.Date, nullable=False)
+    fecha_factura = db.Column(db.Date, nullable=True)
+    fecha_vencimiento = db.Column(db.Date, nullable=True)
+    estado_pago = db.Column(db.String(16), default="pendiente")
+    monto_pagado = db.Column(db.Float, default=0.0)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     proveedor = db.relationship("InvProveedor", backref="compras")
+    pagos = db.relationship(
+        "InvCompraPago",
+        back_populates="compra",
+        lazy="joined",
+        cascade="all, delete-orphan",
+        order_by="InvCompraPago.fecha.desc()",
+    )
     lineas = db.relationship(
         "InvCompraLinea",
         back_populates="compra",
         lazy="joined",
         cascade="all, delete-orphan",
     )
+
+    @property
+    def dias_hasta_vencimiento(self) -> int | None:
+        if not self.fecha_vencimiento:
+            return None
+        from datetime import date as _date
+
+        return (self.fecha_vencimiento - _date.today()).days
+
+    @property
+    def cxp_vencida(self) -> bool:
+        d = self.dias_hasta_vencimiento
+        return d is not None and d < 0
+
+    @property
+    def cxp_por_vencer(self) -> bool:
+        d = self.dias_hasta_vencimiento
+        return d is not None and 0 <= d <= 7
+
+    @property
+    def saldo_pendiente(self) -> float:
+        return max(0.0, round(float(self.total or 0) - float(self.monto_pagado or 0), 2))
+
+    @property
+    def estado_pago_label(self) -> str:
+        labels = {"pagada": "Pagada", "pendiente": "Pendiente", "parcial": "Abono parcial"}
+        return labels.get((self.estado_pago or "").strip().lower(), self.estado_pago or "—")
+
+    @property
+    def cxp_activa(self) -> bool:
+        return self.saldo_pendiente > 0 and float(self.total or 0) > 0
+
+
+class InvCompraPago(db.Model):
+    """Pago o abono registrado sobre una compra / cuenta por pagar."""
+
+    __tablename__ = "inv_compra_pagos"
+
+    id = db.Column(db.Integer, primary_key=True)
+    compra_id = db.Column(db.Integer, db.ForeignKey("inv_compras.id"), nullable=False, index=True)
+    monto = db.Column(db.Float, default=0.0, nullable=False)
+    fecha = db.Column(db.Date, nullable=False)
+    cuenta_origen = db.Column(db.String(120), default="")
+    numero_comprobante = db.Column(db.String(64), default="")
+    notas = db.Column(db.Text, default="")
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    compra = db.relationship("InvCompra", back_populates="pagos")
 
 
 class InvCompraLinea(db.Model):
@@ -1933,7 +1998,17 @@ def ensure_saas_schema():
         _add_column_if_missing("inv_productos", "marca", "marca VARCHAR(120) DEFAULT ''")
         _add_column_if_missing("inv_productos", "subcategoria", "subcategoria VARCHAR(120) DEFAULT ''")
         _add_column_if_missing("inv_productos", "imagen", "imagen VARCHAR(255) DEFAULT ''")
+        _add_column_if_missing("inv_productos", "ubicacion", "ubicacion VARCHAR(120) DEFAULT ''")
         _add_column_if_missing("inv_compra_lineas", "marca", "marca VARCHAR(120) DEFAULT ''")
+        _add_column_if_missing("inv_compras", "moneda_factura", "moneda_factura VARCHAR(8) DEFAULT 'COP'")
+        _add_column_if_missing("inv_compras", "tasa_cambio", "tasa_cambio REAL DEFAULT 1")
+        _add_column_if_missing("inv_compras", "tipo_iva", "tipo_iva VARCHAR(16) DEFAULT 'exento'")
+        _add_column_if_missing("inv_compras", "subtotal", "subtotal REAL DEFAULT 0")
+        _add_column_if_missing("inv_compras", "monto_iva", "monto_iva REAL DEFAULT 0")
+        _add_column_if_missing("inv_compras", "fecha_factura", "fecha_factura DATE")
+        _add_column_if_missing("inv_compras", "fecha_vencimiento", "fecha_vencimiento DATE")
+        _add_column_if_missing("inv_compras", "estado_pago", "estado_pago VARCHAR(16) DEFAULT 'pendiente'")
+        _add_column_if_missing("inv_compras", "monto_pagado", "monto_pagado REAL DEFAULT 0")
         _add_column_if_missing("inv_ventas", "moneda", "moneda VARCHAR(8) DEFAULT 'USD'")
         _add_column_if_missing("inv_ventas", "cliente_id", "cliente_id INTEGER")
         _add_column_if_missing("inv_ventas", "forma_pago", "forma_pago VARCHAR(16) DEFAULT 'contado'")

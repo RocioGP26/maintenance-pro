@@ -4,13 +4,35 @@
 {% block page_title %}Entradas / compras a proveedor{% endblock %}
 
 {% block content %}
+{% if alerta == 'por_vencer' %}
+<div class="alert alert-warning py-2 small mb-3 d-flex flex-wrap align-items-center justify-content-between gap-2">
+  <span>Facturas de proveedor que vencen en los próximos {{ cxp_dias_alerta }} días.</span>
+  <a href="{{ url_for('inv_comercial.compras_list') }}" class="btn btn-sm btn-outline-secondary">Ver todas</a>
+</div>
+{% elif alerta == 'vencidas' %}
+<div class="alert alert-danger py-2 small mb-3 d-flex flex-wrap align-items-center justify-content-between gap-2">
+  <span>Facturas de proveedor con fecha de pago vencida.</span>
+  <a href="{{ url_for('inv_comercial.compras_list') }}" class="btn btn-sm btn-outline-secondary">Ver todas</a>
+</div>
+{% else %}
 <div class="alert alert-light border small mb-3">
   Cuando llega una caja o factura del proveedor, registra aquí los productos recibidos.
   El stock del catálogo se actualiza automáticamente.
 </div>
+{% endif %}
 
 <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
-  <p class="text-muted small mb-0">Historial de entradas registradas.</p>
+  <div class="d-flex flex-wrap align-items-center gap-3">
+    <p class="text-muted small mb-0">Historial de entradas registradas.</p>
+    {% if items %}
+    <span class="badge text-bg-light border text-dark">
+      {{ total_registros }} registro{% if total_registros != 1 %}s{% endif %}
+    </span>
+    <span class="badge text-bg-primary">
+      {{ total_unidades }} unidad{% if total_unidades != 1 %}es{% endif %}
+    </span>
+    {% endif %}
+  </div>
   <div class="d-flex gap-2">
     <a href="{{ url_for('inv_comercial.productos_nuevo') }}" class="btn btn-outline-secondary btn-sm">Nuevo producto</a>
     <a href="{{ url_for('inv_comercial.compras_nueva') }}" class="btn btn-primary">
@@ -24,10 +46,13 @@
     <thead class="table-light">
       <tr>
         <th>Número</th>
-        <th>Fecha</th>
+        <th>Recepción</th>
+        <th>Factura</th>
+        <th>Vencimiento</th>
         <th>Proveedor</th>
         <th class="text-end">Total</th>
-        <th class="text-end">Líneas</th>
+        <th class="text-end">Registros</th>
+        <th class="text-end">Unidades</th>
         <th></th>
       </tr>
     </thead>
@@ -36,18 +61,49 @@
       <tr>
         <td><code>{{ c.numero or ('#' ~ c.id) }}</code></td>
         <td>{{ c.fecha.strftime('%d/%m/%Y') }}</td>
+        <td>
+          {% if c.fecha_factura %}
+          {{ c.fecha_factura.strftime('%d/%m/%Y') }}
+          {% else %}
+          <span class="text-muted">—</span>
+          {% endif %}
+        </td>
+        <td>
+          {% if c.fecha_vencimiento %}
+          <span class="{% if c.cxp_vencida %}text-danger fw-semibold{% elif c.cxp_por_vencer %}text-warning{% endif %}">
+            {{ c.fecha_vencimiento.strftime('%d/%m/%Y') }}
+          </span>
+          {% if c.cxp_vencida %}
+          <span class="badge text-bg-danger ms-1">Vencida</span>
+          {% elif c.cxp_por_vencer %}
+          <span class="badge text-bg-warning text-dark ms-1">{{ c.dias_hasta_vencimiento }} d.</span>
+          {% endif %}
+          {% else %}
+          <span class="text-muted">—</span>
+          {% endif %}
+        </td>
         <td>{{ c.proveedor.nombre if c.proveedor else '—' }}</td>
         <td class="text-end">{{ formato_moneda(c.total, empresa_actual.moneda if empresa_actual else 'COP') }}</td>
         <td class="text-end">{{ c.lineas|length }}</td>
+        <td class="text-end">{{ c.lineas|sum(attribute='cantidad') }}</td>
         <td class="text-end">
-          <a href="{{ url_for('inv_comercial.compras_detalle', id=c.id) }}" class="btn btn-sm btn-outline-secondary">Ver</a>
+          <div class="d-flex flex-wrap justify-content-end gap-1">
+            <a href="{{ url_for('inv_comercial.compras_detalle', id=c.id) }}" class="btn btn-sm btn-outline-secondary">Ver</a>
+            <a href="{{ url_for('inv_comercial.compras_editar', id=c.id) }}" class="btn btn-sm btn-outline-primary">Editar</a>
+          </div>
         </td>
       </tr>
       {% else %}
       <tr>
-        <td colspan="6" class="text-muted text-center py-4">
+        <td colspan="9" class="text-muted text-center py-4">
+          {% if alerta == 'por_vencer' %}
+          No hay facturas por vencer en los próximos {{ cxp_dias_alerta }} días.
+          {% elif alerta == 'vencidas' %}
+          No hay facturas vencidas pendientes de pago.
+          {% else %}
           Sin entradas registradas.
           <a href="{{ url_for('inv_comercial.compras_nueva') }}">Registra la primera</a>.
+          {% endif %}
         </td>
       </tr>
       {% endfor %}

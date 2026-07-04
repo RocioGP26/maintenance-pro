@@ -1,0 +1,52 @@
+<div class="modal fade" id="modalPagoCompra" tabindex="-1" aria-labelledby="modalPagoCompraLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form id="formPagoCompra" method="post" novalidate>
+        {% include "_csrf.html" %}
+        <input type="hidden" name="next" id="pagoCompraNext" value="">
+        <div class="modal-header">
+          <h5 class="modal-title" id="modalPagoCompraLabel">Registrar pago</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+        </div>
+        <div class="modal-body">
+          <p class="small text-muted mb-3" id="pagoCompraResumen"></p>
+          <div class="alert alert-danger d-none py-2 small" id="pagoCompraError" role="alert"></div>
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label" for="pagoCuentaOrigen">Cuenta origen</label>
+              <input type="text" class="form-control" id="pagoCuentaOrigen" name="cuenta_origen"
+                     placeholder="Ej. Banco Davivienda" maxlength="120">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label" for="pagoNumeroComprobante">No. comprobante</label>
+              <input type="text" class="form-control" id="pagoNumeroComprobante" name="numero_comprobante"
+                     placeholder="Ej. TRF-004521" maxlength="64">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label" for="pagoFecha">Fecha de pago</label>
+              <input type="date" class="form-control" id="pagoFecha" name="fecha"
+                     value="{{ hoy.strftime('%Y-%m-%d') }}" required>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label" for="pagoMonto">Monto</label>
+              <input type="number" class="form-control" id="pagoMonto" name="monto"
+                     min="0.01" step="0.01" required>
+              <div class="form-text">Saldo pendiente: <span id="pagoSaldoLabel">0</span></div>
+            </div>
+            <div class="col-12">
+              <label class="form-label" for="pagoNotas">Notas</label>
+              <input type="text" class="form-control" id="pagoNotas" name="notas"
+                     placeholder="Opcional">
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-success" id="btnConfirmarPago">
+            <i class="bi bi-cash-coin"></i> Registrar pago
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

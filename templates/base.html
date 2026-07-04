@@ -109,8 +109,11 @@
         <a class="nav-link {% if ep == 'inv_comercial.productos_list' %}active{% endif %}" href="{{ url_for('inv_comercial.productos_list') }}">
           <i class="bi bi-box2-heart me-2"></i> Productos
         </a>
-        <a class="nav-link {% if ep == 'inv_comercial.compras_list' or ep == 'inv_comercial.compras_nueva' or ep == 'inv_comercial.compras_detalle' %}active{% endif %}" href="{{ url_for('inv_comercial.compras_list') }}">
+        <a class="nav-link {% if ep == 'inv_comercial.compras_list' or ep == 'inv_comercial.compras_nueva' or ep == 'inv_comercial.compras_detalle' or ep == 'inv_comercial.compras_editar' %}active{% endif %}" href="{{ url_for('inv_comercial.compras_list') }}">
           <i class="bi bi-bag-plus me-2"></i> Entradas / Compras
+        </a>
+        <a class="nav-link {% if ep == 'inv_comercial.cxp_list' %}active{% endif %}" href="{{ url_for('inv_comercial.cxp_list') }}">
+          <i class="bi bi-wallet2 me-2"></i> Cuentas por pagar
         </a>
         <a class="nav-link {% if ep in ['inv_comercial.ventas_list', 'inv_comercial.ventas_nueva', 'inv_comercial.ventas_detalle'] %}active{% endif %}" href="{{ url_for('inv_comercial.ventas_list') }}">
           <i class="bi bi-cash-register me-2"></i> Ventas / POS

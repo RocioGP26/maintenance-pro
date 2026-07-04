@@ -1,7 +1,8 @@
 {% extends "base.html" %}
 
-{% block title %}Registrar entrada — {{ app_name }}{% endblock %}
-{% block page_title %}Registrar entrada de mercancía{% endblock %}
+{% block title %}{% if compra %}Editar entrada{% else %}Registrar entrada{% endif %} — {{ app_name }}{% endblock %}
+{% block page_title %}{% if compra %}Editar entrada de mercancía{% else %}Registrar entrada de mercancía{% endif %}{% endblock %}
+{% block body_class %}page-entrada-mercancia{% endblock %}
 
 {% block content %}
 {% if not productos %}
@@ -11,76 +12,119 @@
 </div>
 {% endif %}
 
-<div class="row g-4">
-  <div class="col-lg-8">
-    <form method="post" id="formEntrada">
+<div class="entrada-mercancia-layout">
+  <form method="post" id="formEntrada" class="entrada-mercancia-form">
       {% include "_csrf.html" %}
       <div class="card card-dashboard mb-4">
         <div class="card-body">
           <h5 class="fw-semibold mb-3">Datos de la entrada</h5>
           <div class="row g-3">
-            <div class="col-md-4">
+            <div class="col-md-3">
               <label class="form-label" for="fecha">Fecha de recepción</label>
               <input type="date" class="form-control" id="fecha" name="fecha"
-                     value="{{ hoy.strftime('%Y-%m-%d') }}">
+                     value="{% if compra %}{{ compra.fecha.strftime('%Y-%m-%d') }}{% elif request.form.get('fecha') %}{{ request.form.get('fecha') }}{% else %}{{ hoy.strftime('%Y-%m-%d') }}{% endif %}">
+            </div>
+            <div class="col-md-3">
+              <label class="form-label" for="fechaFactura">Fecha de factura</label>
+              <input type="date" class="form-control" id="fechaFactura" name="fecha_factura"
+                     value="{{ fecha_factura_sel }}">
+            </div>
+            <div class="col-md-2">
+              <label class="form-label" for="diasPlazo">Días de plazo</label>
+              <input type="number" class="form-control" id="diasPlazo" name="dias_plazo"
+                     min="0" step="1" placeholder="30, 60…"
+                     value="{{ dias_plazo_sel }}">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label" for="fechaVencimiento">Fecha de vencimiento</label>
+              <input type="date" class="form-control bg-light" id="fechaVencimiento" name="fecha_vencimiento"
+                     value="{{ fecha_vencimiento_sel }}" readonly tabindex="-1">
             </div>
             <div class="col-md-4">
               <label class="form-label" for="numero">Número / factura</label>
               <input type="text" class="form-control" id="numero" name="numero"
-                     value="{{ numero_sugerido }}" placeholder="Factura o remisión">
+                     value="{% if compra %}{{ compra.numero }}{% elif request.form.get('numero') %}{{ request.form.get('numero') }}{% else %}{{ numero_sugerido }}{% endif %}"
+                     placeholder="Factura o remisión">
             </div>
             <div class="col-md-4">
               <label class="form-label" for="proveedor_id">Proveedor</label>
               <select class="form-select" id="proveedor_id" name="proveedor_id">
                 <option value="">— Sin proveedor —</option>
                 {% for p in proveedores %}
-                <option value="{{ p.id }}">{{ p.nombre }}</option>
+                <option value="{{ p.id }}" {% if proveedor_sel and proveedor_sel == p.id %}selected{% endif %}>
+                  {{ p.nombre }}{% if not p.activo %} (inactivo){% endif %}
+                </option>
                 {% endfor %}
               </select>
               <div class="form-text">
                 <a href="{{ url_for('inv_comercial.proveedores_nuevo') }}">Agregar proveedor</a>
               </div>
             </div>
+            <div class="col-md-4">
+              <label class="form-label" for="monedaFactura">Moneda de la factura</label>
+              <select class="form-select" id="monedaFactura" name="moneda_factura">
+                {% for m in monedas_factura %}
+                <option value="{{ m }}" {% if moneda_factura_sel == m %}selected{% endif %}>{{ m }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="col-md-4 {% if moneda_factura_sel == moneda_base %}d-none{% endif %}" id="wrapTasaCambio">
+              <label class="form-label" for="tasaCambio">
+                Tasa de cambio
+                <span class="text-muted fw-normal">(1 <span id="lblMonedaExtranjera">{{ moneda_factura_sel if moneda_factura_sel != moneda_base else 'USD' }}</span> = ? {{ moneda_base }})</span>
+              </label>
+              <input type="number" class="form-control" id="tasaCambio" name="tasa_cambio"
+                     min="0" step="0.01"
+                     value="{% if request.form.get('tasa_cambio') %}{{ request.form.get('tasa_cambio') }}{% else %}{{ '%.2f'|format(tasa_cambio_sel) if tasa_cambio_sel > 1 else '' }}{% endif %}"
+                     placeholder="Ej. 4000">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Moneda base (inventario)</label>
+              <input type="text" class="form-control bg-light" readonly value="{{ moneda_base }}">
+              <div class="form-text">Los costos se guardan convertidos a {{ moneda_base }}.</div>
+            </div>
             <div class="col-12">
               <label class="form-label" for="notas">Notas</label>
               <textarea class="form-control" id="notas" name="notas" rows="2"
-                        placeholder="Ej. Caja recibida en bodega, pedido #4521"></textarea>
+                        placeholder="Ej. Caja recibida en bodega, pedido #4521">{% if compra %}{{ compra.notas }}{% else %}{{ request.form.get('notas', '') }}{% endif %}</textarea>
             </div>
           </div>
         </div>
       </div>
 
-      <div class="card card-dashboard mb-4">
-        <div class="card-body">
-          <div class="d-flex justify-content-between align-items-center mb-3">
+      <div class="card card-dashboard mb-3 entrada-tabla-card">
+        <div class="card-body entrada-tabla-card-body">
+          <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
             <h5 class="fw-semibold mb-0">Productos recibidos</h5>
-            <button type="button" class="btn btn-sm btn-outline-primary" id="btnAgregarLinea">
-              <i class="bi bi-plus-lg"></i> Agregar línea
-            </button>
+            <div class="d-flex flex-wrap align-items-center gap-2">
+              <span class="badge text-bg-light border text-dark" id="contadorRegistros">0 registros</span>
+              <span class="badge text-bg-primary" id="contadorUnidades">0 unidades</span>
+              <button type="button" class="btn btn-sm btn-outline-primary" id="btnAgregarLinea">
+                <i class="bi bi-plus-lg"></i> Agregar línea
+              </button>
+            </div>
           </div>
-          <div class="table-responsive">
-            <table class="table align-middle mb-0" id="tablaLineas">
-              <thead class="table-light">
+          <div class="entrada-lineas-scroll" id="wrapTablaLineas">
+            <table class="table table-sm align-middle mb-0 entrada-tabla-lineas" id="tablaLineas">
+              <thead class="entrada-tabla-thead">
                 <tr>
-                  <th style="min-width:200px">Producto</th>
-                  <th style="width:140px">Marca</th>
-                  <th class="text-end" style="width:100px">Cantidad</th>
-                  <th class="text-end" style="width:120px">Costo unit.</th>
-                  <th class="text-end" style="width:110px">Subtotal</th>
-                  <th style="width:48px"></th>
+                  <th class="entrada-th-producto">Producto</th>
+                  <th class="entrada-th-marca">Marca</th>
+                  <th class="text-end entrada-th-cantidad">Cantidad</th>
+                  <th class="text-end entrada-th-costo" id="thCostoUnit">Costo unit.</th>
+                  <th class="text-end entrada-th-subtotal" id="thSubtotal">Subtotal</th>
+                  <th class="entrada-th-accion"></th>
                 </tr>
               </thead>
               <tbody id="lineasBody">
                 <tr class="linea-entrada">
                   <td>
-                    <select class="form-select form-select-sm linea-producto" name="linea_producto_id" required>
-                      <option value="">— Seleccionar —</option>
-                      {% for p in productos %}
-                      <option value="{{ p.id }}" data-precio="{{ p.precio_compra or 0 }}" data-marca="{{ p.marca or '' }}" data-sku="{{ p.sku }}">
-                        {{ p.sku }} — {{ p.nombre }} (stock: {{ p.stock }})
-                      </option>
-                      {% endfor %}
-                    </select>
+                    <div class="producto-combobox position-relative">
+                      <input type="hidden" class="linea-producto-id" name="linea_producto_id" value="" required>
+                      <input type="text" class="form-control form-control-sm linea-producto-buscar"
+                             placeholder="Referencia o nombre…" autocomplete="off" spellcheck="false">
+                      <div class="producto-combobox-menu list-group position-absolute w-100 shadow-sm d-none"></div>
+                    </div>
                   </td>
                   <td>
                     <input type="text" class="form-control form-control-sm linea-marca" name="linea_marca"
@@ -91,8 +135,11 @@
                            name="linea_cantidad" min="1" value="1" required>
                   </td>
                   <td>
-                    <input type="number" class="form-control form-control-sm text-end linea-precio"
-                           name="linea_precio" min="0" step="0.01" value="0">
+                    <div class="linea-costo-wrap">
+                      <input type="number" class="form-control form-control-sm text-end linea-precio"
+                             name="linea_precio" min="0" step="0.01" value="0">
+                      <div class="linea-costo-alerta small mt-1" aria-live="polite"></div>
+                    </div>
                   </td>
                   <td class="text-end linea-subtotal text-muted small">0</td>
                   <td>
@@ -100,48 +147,263 @@
                   </td>
                 </tr>
               </tbody>
-              <tfoot>
+              <tfoot class="table-light">
                 <tr>
-                  <td colspan="4" class="text-end fw-semibold">Total entrada</td>
+                  <td colspan="2" class="small text-muted">
+                    <span id="contadorRegistrosPie">0</span> reg. ·
+                    <span id="contadorUnidadesPie">0</span> uds.
+                  </td>
+                  <td colspan="2" class="text-end fw-semibold">
+                    Subtotal <span class="text-muted fw-normal" id="lblTotalMoneda">({{ moneda_base }})</span>
+                  </td>
                   <td class="text-end fw-semibold" id="totalEntrada">0</td>
                   <td></td>
                 </tr>
               </tfoot>
             </table>
           </div>
+          <div class="row g-3 mt-3 align-items-start entrada-tabla-pie">
+            <div class="col-md-6">
+              <label class="form-label" for="tipoIva">Tipo de factura</label>
+              <select class="form-select" id="tipoIva" name="tipo_iva">
+                <option value="exento" {% if tipo_iva_sel != 'con_iva' %}selected{% endif %}>
+                  Factura Manual / Exento (0%)
+                </option>
+                <option value="con_iva" {% if tipo_iva_sel == 'con_iva' %}selected{% endif %}>
+                  Factura con IVA (19%)
+                </option>
+              </select>
+              <div class="form-text">
+                El inventario usa el subtotal sin IVA. El total factura incluye impuesto si aplica.
+              </div>
+            </div>
+            <div class="col-md-6">
+              <table class="table table-sm table-borderless mb-0 ms-md-auto" style="max-width:340px">
+                <tbody>
+                  <tr>
+                    <td class="text-muted">Subtotal</td>
+                    <td class="text-end fw-semibold">
+                      <span id="resumenSubtotal">0</span>
+                      <span class="text-muted small">{{ moneda_base }}</span>
+                    </td>
+                  </tr>
+                  <tr id="filaResumenIva">
+                    <td class="text-muted">IVA (19%)</td>
+                    <td class="text-end">
+                      <span id="resumenIva">0</span>
+                      <span class="text-muted small">{{ moneda_base }}</span>
+                    </td>
+                  </tr>
+                  <tr class="border-top">
+                    <td class="fw-semibold pt-2">Total factura</td>
+                    <td class="text-end fw-semibold pt-2">
+                      <span id="resumenTotalFactura">0</span>
+                      <span class="small">{{ moneda_base }}</span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
       </div>
 
-      <div class="d-flex gap-2">
-        <button type="submit" class="btn btn-primary" {% if not productos %}disabled{% endif %}>
-          Guardar entrada
+      <details class="entrada-ayuda small text-muted mb-3">
+        <summary class="fw-semibold text-dark">Ayuda rápida</summary>
+        <ol class="ps-3 mb-0 mt-2">
+          <li class="mb-1">Si el producto no existe, créalo en <strong>Productos → Nuevo</strong>.</li>
+          <li class="mb-1">La <strong>fecha de factura</strong> es la del papel; el vencimiento se calcula con los días de plazo.</li>
+          <li class="mb-1">Usa <strong>Enter</strong> en cantidad o costo para agregar otra línea.</li>
+          <li><strong>Guardar y continuar</strong> deja la entrada abierta para seguir cargando productos.</li>
+        </ol>
+      </details>
+
+      <div class="d-flex flex-wrap gap-2 entrada-form-actions">
+        <button type="submit" name="accion" value="continuar" class="btn btn-outline-primary"
+                {% if not productos %}disabled{% endif %}>
+          <i class="bi bi-arrow-repeat"></i> Guardar y continuar
         </button>
-        <a href="{{ url_for('inv_comercial.compras_list') }}" class="btn btn-outline-secondary">Cancelar</a>
+        <button type="submit" name="accion" value="finalizar" class="btn btn-primary"
+                {% if not productos %}disabled{% endif %}>
+          {% if compra %}Guardar y salir{% else %}Guardar entrada{% endif %}
+        </button>
+        <a href="{% if compra %}{{ url_for('inv_comercial.compras_detalle', id=compra.id) }}{% else %}{{ url_for('inv_comercial.compras_list') }}{% endif %}"
+           class="btn btn-outline-secondary">Cancelar</a>
       </div>
     </form>
-  </div>
-  <div class="col-lg-4">
-    <div class="card card-dashboard">
-      <div class="card-body small text-muted">
-        <h6 class="text-dark fw-semibold">¿Llegó una caja nueva?</h6>
-        <ol class="ps-3 mb-0">
-          <li class="mb-2">Si el producto no existe, créalo en <strong>Productos → Nuevo</strong>.</li>
-          <li class="mb-2">Indica proveedor, fecha y número de factura (opcional).</li>
-          <li class="mb-2">Agrega cada producto con la cantidad recibida.</li>
-          <li>Al guardar, el stock aumenta en el catálogo.</li>
-        </ol>
-      </div>
-    </div>
-  </div>
 </div>
+{% endblock %}
+
+{% block head_extra %}
+<style>
+  .page-entrada-mercancia .content-area {
+    padding-left: 0.65rem;
+    padding-right: 0.65rem;
+  }
+
+  .entrada-mercancia-layout {
+    max-width: none;
+    width: 100%;
+  }
+
+  .entrada-mercancia-form .card-dashboard:not(.entrada-tabla-card) {
+    max-width: 1100px;
+  }
+
+  .entrada-tabla-card {
+    border-radius: 0.5rem;
+  }
+
+  .entrada-tabla-card-body {
+    padding: 0.75rem 0.5rem 1rem;
+  }
+
+  .entrada-lineas-scroll {
+    max-height: min(72vh, calc(100vh - 12rem));
+    overflow: auto;
+    width: 100%;
+    border: 1px solid var(--dash-card-border, #e5e7eb);
+    border-radius: 0.5rem;
+  }
+
+  .entrada-tabla-lineas {
+    width: 100%;
+    table-layout: auto;
+    margin-bottom: 0;
+  }
+
+  .entrada-tabla-thead th {
+    position: sticky;
+    top: 0;
+    z-index: 5;
+    background: #f8f9fa;
+    box-shadow: 0 1px 0 #dee2e6;
+    font-size: 0.8125rem;
+    white-space: nowrap;
+    vertical-align: middle;
+  }
+
+  .entrada-th-producto { min-width: 22rem; width: 45%; }
+  .entrada-th-marca { min-width: 7rem; width: 12%; }
+  .entrada-th-cantidad { min-width: 5.5rem; width: 8%; }
+  .entrada-th-costo { min-width: 7.5rem; width: 14%; }
+  .entrada-th-subtotal { min-width: 6.5rem; width: 10%; }
+  .entrada-th-accion { width: 2.75rem; }
+
+  .entrada-tabla-lineas .linea-producto-buscar {
+    white-space: nowrap;
+    min-width: 20rem;
+  }
+
+  .entrada-tabla-lineas .linea-entrada td {
+    vertical-align: middle;
+  }
+
+  .entrada-tabla-pie,
+  .entrada-form-actions,
+  .entrada-ayuda {
+    padding-left: 0.35rem;
+    padding-right: 0.35rem;
+  }
+
+  .linea-costo-alerta {
+    min-height: 1.25rem;
+    line-height: 1.2;
+    white-space: nowrap;
+  }
+  .linea-costo-alerta--bajo { color: var(--bs-success); font-weight: 600; }
+  .linea-costo-alerta--sube { color: var(--bs-danger); font-weight: 600; }
+  .linea-costo-alerta--igual { color: var(--bs-secondary); }
+  .linea-costo-alerta--sin-dato { color: var(--bs-secondary); font-size: 0.75rem; }
+  .producto-combobox-menu {
+    z-index: 1050;
+    max-height: 220px;
+    overflow-y: auto;
+    top: 100%;
+    margin-top: 2px;
+  }
+  .producto-combobox-menu .list-group-item {
+    cursor: pointer;
+    padding: 0.35rem 0.5rem;
+    font-size: 0.8125rem;
+    border-left: 0;
+    border-right: 0;
+  }
+  .producto-combobox-menu .list-group-item:first-child { border-top: 0; }
+  .producto-combobox-menu .list-group-item-action.active {
+    background-color: var(--bs-primary);
+    border-color: var(--bs-primary);
+    color: #fff;
+  }
+  .producto-combobox-menu .producto-combobox-sku {
+    font-family: var(--bs-font-monospace);
+    font-size: 0.75rem;
+  }
+</style>
 {% endblock %}
 
 {% block scripts %}
 <script>
 (function () {
+  var catalogo = {{ productos_json|tojson }};
+  var lineasIniciales = {{ lineas_iniciales|default([])|tojson }};
+  var porId = {};
+  var porSku = {};
+  catalogo.forEach(function (p) {
+    porId[String(p.id)] = p;
+    porSku[p.sku.toLowerCase()] = p;
+  });
+
   var body = document.getElementById('lineasBody');
   var btnAdd = document.getElementById('btnAgregarLinea');
+  var urlUltimoCostoTpl = {{ url_for('inv_comercial.producto_ultimo_costo', id=0)|tojson }};
+  var cacheUltimoCosto = {};
+  var monedaBase = {{ moneda_base|tojson }};
+  var selMonedaFactura = document.getElementById('monedaFactura');
+  var inpTasaCambio = document.getElementById('tasaCambio');
+  var wrapTasaCambio = document.getElementById('wrapTasaCambio');
+  var lblMonedaExtranjera = document.getElementById('lblMonedaExtranjera');
+  var selTipoIva = document.getElementById('tipoIva');
+  var IVA_TASA = 0.19;
   if (!body) return;
+
+  function aplicaIva() {
+    return selTipoIva && selTipoIva.value === 'con_iva';
+  }
+
+  function monedaFacturaActual() {
+    return selMonedaFactura ? selMonedaFactura.value : monedaBase;
+  }
+
+  function tasaActual() {
+    if (monedaFacturaActual() === monedaBase) return 1;
+    return parseFloat(inpTasaCambio && inpTasaCambio.value) || 0;
+  }
+
+  function precioABase(precioFactura) {
+    if (monedaFacturaActual() === monedaBase) return precioFactura;
+    return precioFactura * tasaActual();
+  }
+
+  function precioAFactura(precioBase) {
+    if (monedaFacturaActual() === monedaBase) return precioBase;
+    var t = tasaActual();
+    return t > 0 ? precioBase / t : 0;
+  }
+
+  function actualizarEtiquetasMoneda() {
+    var mf = monedaFacturaActual();
+    var thCosto = document.getElementById('thCostoUnit');
+    var thSub = document.getElementById('thSubtotal');
+    var lblTotal = document.getElementById('lblTotalMoneda');
+    if (thCosto) thCosto.textContent = 'Costo unit. (' + mf + ')';
+    if (thSub) thSub.textContent = mf === monedaBase ? 'Subtotal' : 'Subtotal (' + monedaBase + ')';
+    if (lblTotal) lblTotal.textContent = '(' + monedaBase + ')';
+    if (wrapTasaCambio) {
+      wrapTasaCambio.classList.toggle('d-none', mf === monedaBase);
+    }
+    if (lblMonedaExtranjera) lblMonedaExtranjera.textContent = mf;
+  }
 
   function fmt(n) {
     var entero = Math.floor(n);
@@ -151,45 +413,326 @@
     return s;
   }
 
+  function fmtEntero(n) {
+    return Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+  }
+
   function actualizarTotal() {
-    var total = 0;
+    var subtotal = 0;
+    var registros = 0;
+    var unidades = 0;
     body.querySelectorAll('.linea-entrada').forEach(function (row) {
+      var hid = row.querySelector('.linea-producto-id');
       var c = parseFloat(row.querySelector('.linea-cantidad').value) || 0;
-      var p = parseFloat(row.querySelector('.linea-precio').value) || 0;
-      total += c * p;
+      var pFactura = parseFloat(row.querySelector('.linea-precio').value) || 0;
+      var pBase = precioABase(pFactura);
+      subtotal += c * pBase;
+      if (hid && hid.value && c > 0) {
+        registros += 1;
+        unidades += c;
+      }
     });
+    var iva = aplicaIva() ? Math.round(subtotal * IVA_TASA * 100) / 100 : 0;
+    var totalFactura = Math.round((subtotal + iva) * 100) / 100;
     var elTotal = document.getElementById('totalEntrada');
-    if (elTotal) elTotal.textContent = fmt(total);
+    if (elTotal) elTotal.textContent = fmt(subtotal);
+    var elSub = document.getElementById('resumenSubtotal');
+    var elIva = document.getElementById('resumenIva');
+    var elTot = document.getElementById('resumenTotalFactura');
+    var filaIva = document.getElementById('filaResumenIva');
+    if (elSub) elSub.textContent = fmt(subtotal);
+    if (elIva) elIva.textContent = fmt(iva);
+    if (elTot) elTot.textContent = fmt(totalFactura);
+    if (filaIva) filaIva.style.opacity = aplicaIva() ? '1' : '0.45';
+    var txtReg = registros === 1 ? '1 registro' : fmtEntero(registros) + ' registros';
+    var txtUds = unidades === 1 ? '1 unidad' : fmtEntero(unidades) + ' unidades';
+    ['contadorRegistros', 'contadorRegistrosPie'].forEach(function (id) {
+      var el = document.getElementById(id);
+      if (el) el.textContent = id.endsWith('Pie') ? fmtEntero(registros) : txtReg;
+    });
+    ['contadorUnidades', 'contadorUnidadesPie'].forEach(function (id) {
+      var el = document.getElementById(id);
+      if (el) el.textContent = id.endsWith('Pie') ? fmtEntero(unidades) : txtUds;
+    });
   }
 
   function actualizarFila(tr) {
     var cant = parseFloat(tr.querySelector('.linea-cantidad') && tr.querySelector('.linea-cantidad').value) || 0;
-    var prec = parseFloat(tr.querySelector('.linea-precio') && tr.querySelector('.linea-precio').value) || 0;
+    var precFactura = parseFloat(tr.querySelector('.linea-precio') && tr.querySelector('.linea-precio').value) || 0;
+    var precBase = precioABase(precFactura);
     var sub = tr.querySelector('.linea-subtotal');
-    if (sub) sub.textContent = fmt(cant * prec);
+    if (sub) {
+      if (monedaFacturaActual() !== monedaBase) {
+        sub.innerHTML = fmt(cant * precBase) + ' <span class="text-muted small">' + monedaBase + '</span>';
+      } else {
+        sub.textContent = fmt(cant * precBase);
+      }
+    }
+    var precInp = tr.querySelector('.linea-precio');
+    if (precInp) precInp.dataset.precioBase = String(precBase);
     actualizarTotal();
+    actualizarAlertaCosto(tr, precBase);
   }
 
+  function urlUltimoCosto(productoId) {
+    return urlUltimoCostoTpl.replace('/0/', '/' + productoId + '/');
+  }
+
+  function limpiarAlertaCosto(tr) {
+    var el = tr.querySelector('.linea-costo-alerta');
+    if (el) {
+      el.textContent = '';
+      el.className = 'linea-costo-alerta small mt-1';
+    }
+    tr.removeAttribute('data-ultimo-costo');
+  }
+
+  function renderAlertaCosto(tr, ultimoCosto, costoActual) {
+    var el = tr.querySelector('.linea-costo-alerta');
+    if (!el) return;
+    el.className = 'linea-costo-alerta small mt-1';
+    if (ultimoCosto == null || ultimoCosto <= 0) {
+      el.classList.add('linea-costo-alerta--sin-dato');
+      el.textContent = 'Sin entrada previa';
+      return;
+    }
+    if (costoActual <= 0) {
+      el.classList.add('linea-costo-alerta--sin-dato');
+      el.textContent = 'Último: ' + fmt(ultimoCosto);
+      return;
+    }
+    var diff = costoActual - ultimoCosto;
+    if (Math.abs(diff) < 0.005) {
+      el.classList.add('linea-costo-alerta--igual');
+      el.textContent = '➖ Igual al último (' + fmt(ultimoCosto) + ')';
+      return;
+    }
+    var pct = (diff / ultimoCosto) * 100;
+    var pctTxt = (pct > 0 ? '+' : '') + pct.toFixed(1).replace('.', ',') + '%';
+    if (diff < 0) {
+      el.classList.add('linea-costo-alerta--bajo');
+      el.textContent = '🔻 ' + pctTxt + ' · último ' + fmt(ultimoCosto);
+    } else {
+      el.classList.add('linea-costo-alerta--sube');
+      el.textContent = '🔺 ' + pctTxt + ' · último ' + fmt(ultimoCosto);
+    }
+  }
+
+  function actualizarAlertaCosto(tr, costoBaseOverride) {
+    var ultimo = parseFloat(tr.getAttribute('data-ultimo-costo'));
+    var costoActual = costoBaseOverride != null
+      ? costoBaseOverride
+      : (parseFloat(tr.querySelector('.linea-precio') && tr.querySelector('.linea-precio').value) || 0);
+    if (monedaFacturaActual() !== monedaBase && costoBaseOverride == null) {
+      costoActual = precioABase(costoActual);
+    }
+    if (isNaN(ultimo)) {
+      limpiarAlertaCosto(tr);
+      return;
+    }
+    renderAlertaCosto(tr, ultimo, costoActual);
+  }
+
+  function cargarUltimoCosto(tr, productoId) {
+    if (!productoId) {
+      limpiarAlertaCosto(tr);
+      return;
+    }
+    if (Object.prototype.hasOwnProperty.call(cacheUltimoCosto, productoId)) {
+      var cached = cacheUltimoCosto[productoId];
+      if (cached == null) {
+        tr.removeAttribute('data-ultimo-costo');
+        renderAlertaCosto(tr, null, parseFloat(tr.querySelector('.linea-precio').value) || 0);
+      } else {
+        tr.setAttribute('data-ultimo-costo', String(cached));
+        actualizarAlertaCosto(tr);
+      }
+      return;
+    }
+    var el = tr.querySelector('.linea-costo-alerta');
+    if (el) {
+      el.className = 'linea-costo-alerta small mt-1 linea-costo-alerta--sin-dato';
+      el.textContent = 'Consultando…';
+    }
+    fetch(urlUltimoCosto(productoId), { headers: { 'Accept': 'application/json' } })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (data) {
+        var costo = data && data.ultimo_costo ? data.ultimo_costo.costo : null;
+        cacheUltimoCosto[productoId] = costo;
+        if (costo == null) {
+          tr.removeAttribute('data-ultimo-costo');
+        } else {
+          tr.setAttribute('data-ultimo-costo', String(costo));
+        }
+        actualizarAlertaCosto(tr);
+      })
+      .catch(function () {
+        if (el) {
+          el.className = 'linea-costo-alerta small mt-1 linea-costo-alerta--sin-dato';
+          el.textContent = '';
+        }
+      });
+  }
+
+  function etiquetaProducto(p) {
+    return p.sku + ' — ' + p.nombre + ' (stock: ' + p.stock + ')';
+  }
+
+  function filtrarProductos(q) {
+    q = (q || '').trim().toLowerCase();
+    if (!q) return catalogo.slice(0, 25);
+    return catalogo.filter(function (p) {
+      return p.sku.toLowerCase().includes(q) || p.nombre.toLowerCase().includes(q);
+    }).slice(0, 25);
+  }
+
+  function cerrarMenu(tr) {
+    var menu = tr.querySelector('.producto-combobox-menu');
+    if (menu) menu.classList.add('d-none');
+  }
+
+  function renderMenu(tr, items) {
+    var menu = tr.querySelector('.producto-combobox-menu');
+    if (!menu) return;
+    menu.innerHTML = '';
+    if (!items.length) {
+      menu.innerHTML = '<div class="list-group-item text-muted small">Sin coincidencias</div>';
+      menu.classList.remove('d-none');
+      return;
+    }
+    items.forEach(function (p, idx) {
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'list-group-item list-group-item-action' + (idx === 0 ? ' active' : '');
+      btn.setAttribute('data-id', String(p.id));
+      btn.innerHTML = '<span class="producto-combobox-sku">' + p.sku + '</span> — ' + p.nombre +
+        ' <span class="text-muted">(stock: ' + p.stock + ')</span>';
+      btn.addEventListener('mousedown', function (e) {
+        e.preventDefault();
+        seleccionarProducto(tr, p);
+      });
+      menu.appendChild(btn);
+    });
+    menu.classList.remove('d-none');
+  }
+
+  function seleccionarProducto(tr, prod) {
+    var hid = tr.querySelector('.linea-producto-id');
+    var inp = tr.querySelector('.linea-producto-buscar');
+    var marcaInp = tr.querySelector('.linea-marca');
+    var prec = tr.querySelector('.linea-precio');
+    if (hid) hid.value = prod ? String(prod.id) : '';
+    if (inp) inp.value = prod ? etiquetaProducto(prod) : '';
+    if (prod && prec) {
+      var pBase = prod.precio_compra || 0;
+      prec.value = monedaFacturaActual() === monedaBase
+        ? pBase
+        : (tasaActual() > 0 ? precioAFactura(pBase).toFixed(4) : '0');
+    }
+    if (prod && marcaInp) marcaInp.value = prod.marca || '';
+    cerrarMenu(tr);
+    cargarUltimoCosto(tr, prod ? String(prod.id) : '');
+    actualizarFila(tr);
+  }
+
+  function intentarMatchExacto(tr) {
+    var inp = tr.querySelector('.linea-producto-buscar');
+    var hid = tr.querySelector('.linea-producto-id');
+    if (!inp) return;
+    var raw = inp.value.trim();
+    if (!raw) {
+      if (hid) hid.value = '';
+      return;
+    }
+    if (hid && hid.value && porId[hid.value]) {
+      var actual = porId[hid.value];
+      if (raw === etiquetaProducto(actual) || raw.toLowerCase() === actual.sku.toLowerCase()) return;
+    }
+    var sku = raw.split('—')[0].trim().toLowerCase();
+    if (porSku[sku]) {
+      seleccionarProducto(tr, porSku[sku]);
+      return;
+    }
+    var coincidencias = filtrarProductos(raw);
+    if (coincidencias.length === 1) {
+      seleccionarProducto(tr, coincidencias[0]);
+    } else if (hid) {
+      hid.value = '';
+    }
+  }
+
+  function initCombobox(tr) {
+    var inp = tr.querySelector('.linea-producto-buscar');
+    var menu = tr.querySelector('.producto-combobox-menu');
+    if (!inp) return;
+    var activoIdx = 0;
+
+    inp.addEventListener('input', function () {
+      var hid = tr.querySelector('.linea-producto-id');
+      if (hid) hid.value = '';
+      activoIdx = 0;
+      renderMenu(tr, filtrarProductos(inp.value));
+    });
+
+    inp.addEventListener('focus', function () {
+      renderMenu(tr, filtrarProductos(inp.value));
+    });
+
+    inp.addEventListener('keydown', function (e) {
+      if (!menu || menu.classList.contains('d-none')) return;
+      var items = menu.querySelectorAll('.list-group-item-action');
+      if (!items.length) return;
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        activoIdx = Math.min(activoIdx + 1, items.length - 1);
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        activoIdx = Math.max(activoIdx - 1, 0);
+      } else if (e.key === 'Enter') {
+        e.preventDefault();
+        var id = items[activoIdx].getAttribute('data-id');
+        if (id && porId[id]) seleccionarProducto(tr, porId[id]);
+        return;
+      } else if (e.key === 'Escape') {
+        cerrarMenu(tr);
+        return;
+      } else {
+        return;
+      }
+      items.forEach(function (el, i) {
+        el.classList.toggle('active', i === activoIdx);
+      });
+      items[activoIdx].scrollIntoView({ block: 'nearest' });
+    });
+
+    inp.addEventListener('blur', function () {
+      setTimeout(function () {
+        intentarMatchExacto(tr);
+        cerrarMenu(tr);
+      }, 150);
+    });
+  }
+
+  document.addEventListener('click', function (e) {
+    if (!body) return;
+    body.querySelectorAll('.linea-entrada').forEach(function (tr) {
+      if (!tr.contains(e.target)) cerrarMenu(tr);
+    });
+  });
+
   function enlazarFila(tr) {
-    var sel = tr.querySelector('.linea-producto');
     var cant = tr.querySelector('.linea-cantidad');
     var prec = tr.querySelector('.linea-precio');
     var btn = tr.querySelector('.btn-quitar-linea');
-    if (sel) {
-      sel.addEventListener('change', function () {
-        var opt = sel.options[sel.selectedIndex];
-        var marcaInp = tr.querySelector('.linea-marca');
-        if (opt && prec) {
-          if (opt.dataset.precio) prec.value = opt.dataset.precio;
-        }
-        if (opt && marcaInp && opt.dataset.marca) {
-          marcaInp.value = opt.dataset.marca;
-        }
-        actualizarFila(tr);
-      });
+    initCombobox(tr);
+    if (cant) {
+      cant.addEventListener('input', function () { actualizarFila(tr); });
+      cant.addEventListener('keydown', function (e) { onEnterUltimaFila(e, tr); });
     }
-    if (cant) cant.addEventListener('input', function () { actualizarFila(tr); });
-    if (prec) prec.addEventListener('input', function () { actualizarFila(tr); });
+    if (prec) {
+      prec.addEventListener('input', function () { actualizarFila(tr); });
+      prec.addEventListener('keydown', function (e) { onEnterUltimaFila(e, tr); });
+    }
     if (btn) {
       btn.addEventListener('click', function () {
         var filas = body.querySelectorAll('.linea-entrada');
@@ -201,24 +744,181 @@
     actualizarFila(tr);
   }
 
-  body.querySelectorAll('.linea-entrada').forEach(enlazarFila);
+  var rowPlantilla = body.querySelector('.linea-entrada');
+  if (rowPlantilla) rowPlantilla = rowPlantilla.cloneNode(true);
+
+  function resetFilaInputs(tr) {
+    tr.querySelectorAll('input').forEach(function (inp) {
+      if (inp.classList.contains('linea-cantidad')) inp.value = '1';
+      else if (inp.classList.contains('linea-precio')) inp.value = '0';
+      else if (inp.classList.contains('linea-marca')) inp.value = '';
+      else if (inp.classList.contains('linea-producto-id')) inp.value = '';
+      else if (inp.classList.contains('linea-producto-buscar')) inp.value = '';
+    });
+    var menu = tr.querySelector('.producto-combobox-menu');
+    if (menu) {
+      menu.innerHTML = '';
+      menu.classList.add('d-none');
+    }
+    var sub = tr.querySelector('.linea-subtotal');
+    if (sub) sub.textContent = '0';
+    limpiarAlertaCosto(tr);
+  }
+
+  function nuevaFila(enfocarProducto) {
+    if (!rowPlantilla) return null;
+    var tr = rowPlantilla.cloneNode(true);
+    resetFilaInputs(tr);
+    body.appendChild(tr);
+    enlazarFila(tr);
+    if (enfocarProducto) {
+      var buscar = tr.querySelector('.linea-producto-buscar');
+      if (buscar) buscar.focus();
+    }
+    return tr;
+  }
+
+  function esUltimaFila(tr) {
+    var filas = body.querySelectorAll('.linea-entrada');
+    return filas.length > 0 && filas[filas.length - 1] === tr;
+  }
+
+  function onEnterUltimaFila(e, tr) {
+    if (e.key !== 'Enter') return;
+    if (!esUltimaFila(tr)) return;
+    e.preventDefault();
+    intentarMatchExacto(tr);
+    var hid = tr.querySelector('.linea-producto-id');
+    if (!hid || !hid.value) {
+      var buscarActual = tr.querySelector('.linea-producto-buscar');
+      if (buscarActual) buscarActual.focus();
+      return;
+    }
+    nuevaFila(true);
+  }
+
+  function cargarLineasIniciales() {
+    if (!lineasIniciales.length || !rowPlantilla) return;
+    body.innerHTML = '';
+    lineasIniciales.forEach(function (l) {
+      var tr = nuevaFila();
+      if (!tr) return;
+      var prod = porId[String(l.producto_id)];
+      if (!prod) return;
+      seleccionarProducto(tr, prod);
+      var cant = tr.querySelector('.linea-cantidad');
+      var prec = tr.querySelector('.linea-precio');
+      var marca = tr.querySelector('.linea-marca');
+      if (cant) cant.value = l.cantidad;
+      if (prec) prec.value = l.precio_unitario;
+      if (marca) marca.value = l.marca || '';
+      actualizarFila(tr);
+    });
+  }
+
+  if (lineasIniciales.length) {
+    cargarLineasIniciales();
+  } else {
+    body.querySelectorAll('.linea-entrada').forEach(enlazarFila);
+  }
+
+  actualizarEtiquetasMoneda();
+  if (selMonedaFactura) {
+    selMonedaFactura.addEventListener('change', function () {
+      actualizarEtiquetasMoneda();
+      body.querySelectorAll('.linea-entrada').forEach(function (tr) {
+        var prec = tr.querySelector('.linea-precio');
+        if (!prec) return;
+        var base = parseFloat(prec.dataset.precioBase);
+        if (isNaN(base)) base = precioABase(parseFloat(prec.value) || 0);
+        prec.dataset.precioBase = String(base);
+        if (monedaFacturaActual() === monedaBase) {
+          prec.value = base ? String(base) : '0';
+        } else if (tasaActual() > 0) {
+          prec.value = precioAFactura(base).toFixed(4);
+        }
+        actualizarFila(tr);
+      });
+    });
+  }
+  if (inpTasaCambio) {
+    inpTasaCambio.addEventListener('input', function () {
+      body.querySelectorAll('.linea-entrada').forEach(actualizarFila);
+    });
+  }
+  if (selTipoIva) {
+    selTipoIva.addEventListener('change', actualizarTotal);
+  }
+
+  var formEntrada = document.getElementById('formEntrada');
+  var inpFechaFactura = document.getElementById('fechaFactura');
+  var inpDiasPlazo = document.getElementById('diasPlazo');
+  var inpFechaVencimiento = document.getElementById('fechaVencimiento');
+
+  function parseFechaYmd(s) {
+    if (!s) return null;
+    var p = s.split('-');
+    if (p.length !== 3) return null;
+    var d = new Date(parseInt(p[0], 10), parseInt(p[1], 10) - 1, parseInt(p[2], 10));
+    return isNaN(d.getTime()) ? null : d;
+  }
+
+  function fmtFechaYmd(d) {
+    var y = d.getFullYear();
+    var m = String(d.getMonth() + 1).padStart(2, '0');
+    var day = String(d.getDate()).padStart(2, '0');
+    return y + '-' + m + '-' + day;
+  }
+
+  function sumarDias(fechaStr, dias) {
+    var d = parseFechaYmd(fechaStr);
+    if (!d || isNaN(dias) || dias < 0) return '';
+    d.setDate(d.getDate() + dias);
+    return fmtFechaYmd(d);
+  }
+
+  function recalcularVencimiento() {
+    if (!inpFechaFactura || !inpDiasPlazo || !inpFechaVencimiento) return;
+    var dias = parseInt(inpDiasPlazo.value, 10);
+    if (!inpFechaFactura.value || isNaN(dias) || dias < 0) {
+      inpFechaVencimiento.value = '';
+      return;
+    }
+    inpFechaVencimiento.value = sumarDias(inpFechaFactura.value, dias);
+  }
+
+  if (inpDiasPlazo) {
+    inpDiasPlazo.addEventListener('input', recalcularVencimiento);
+    inpDiasPlazo.addEventListener('change', recalcularVencimiento);
+  }
+  if (inpFechaFactura) {
+    inpFechaFactura.addEventListener('change', recalcularVencimiento);
+  }
+  recalcularVencimiento();
+
+  if (formEntrada) {
+    formEntrada.addEventListener('submit', function (e) {
+      var ok = true;
+      body.querySelectorAll('.linea-entrada').forEach(function (tr) {
+        intentarMatchExacto(tr);
+        var hid = tr.querySelector('.linea-producto-id');
+        if (!hid || !hid.value) ok = false;
+      });
+      if (!ok) {
+        e.preventDefault();
+        alert('Selecciona un producto válido en cada línea (escribe la referencia y elige de la lista).');
+        return;
+      }
+      if (monedaFacturaActual() !== monedaBase && tasaActual() <= 0) {
+        e.preventDefault();
+        alert('Indica la tasa de cambio para convertir la factura a ' + monedaBase + '.');
+      }
+    });
+  }
 
   if (btnAdd) {
     btnAdd.addEventListener('click', function () {
-      var primera = body.querySelector('.linea-entrada');
-      if (!primera) return;
-      var clon = primera.cloneNode(true);
-      clon.querySelectorAll('input').forEach(function (inp) {
-        if (inp.classList.contains('linea-cantidad')) inp.value = '1';
-        else if (inp.classList.contains('linea-precio')) inp.value = '0';
-        else if (inp.classList.contains('linea-marca')) inp.value = '';
-      });
-      var sel = clon.querySelector('.linea-producto');
-      if (sel) sel.selectedIndex = 0;
-      var sub = clon.querySelector('.linea-subtotal');
-      if (sub) sub.textContent = '0';
-      body.appendChild(clon);
-      enlazarFila(clon);
+      nuevaFila();
     });
   }
 })();

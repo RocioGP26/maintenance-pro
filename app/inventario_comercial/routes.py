@@ -4,9 +4,11 @@ from __future__ import annotations
 
 from datetime import date, datetime
 
-from flask import Blueprint, flash, redirect, render_template, request, send_file, url_for
+from flask import Blueprint, flash, jsonify, redirect, render_template, request, send_file, url_for
 from flask_login import login_required
+from sqlalchemy import case
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy.orm import joinedload
 
 from app import db
 from app.inventario_comercial.exports import excel_productos_bajo_stock
@@ -17,6 +19,10 @@ from app.inventario_comercial.productos_excel import (
 )
 from app.inventario_comercial.media import aplicar_imagen_producto
 from app.inventario_comercial.service import (
+    filtro_compras_cxp_alerta,
+    CXP_DIAS_ALERTA,
+    filtro_cxp_vista,
+    kpis_cxp,
     guardar_cliente_comercial,
     guardar_producto_comercial,
     guardar_proveedor_comercial,
@@ -24,13 +30,25 @@ from app.inventario_comercial.service import (
     kpis_dashboard_inventario,
     parse_lineas_entrada_form,
     parse_lineas_venta_form,
+    parse_moneda_factura_entrada,
+    parse_tipo_iva_entrada,
+    moneda_base_empresa,
+    monedas_opciones_factura,
+    _lineas_iniciales_entrada_json,
+    _parse_fecha_opcional,
     productos_para_select,
+    productos_entrada_json,
     productos_pos_json,
+    proveedores_para_entrada,
     registrar_entrada_mercancia,
+    actualizar_entrada_mercancia,
     registrar_abono_venta,
+    registrar_pago_compra,
+    resumen_cxp_por_proveedor,
     registrar_venta,
     siguiente_numero_entrada,
     siguiente_numero_venta,
+    ultimo_costo_entrada_producto,
 )
 from app.models import InvCliente, InvCompra, InvProducto, InvProveedor, InvVenta
 from app.module_guard import require_module
@@ -68,7 +86,16 @@ def _cliente_or_404(cliente_id: int) -> InvCliente:
 
 
 def _compra_or_404(compra_id: int) -> InvCompra:
-    return query_tenant(InvCompra).filter_by(id=compra_id).first_or_404()
+    return (
+        query_tenant(InvCompra)
+        .options(
+            joinedload(InvCompra.proveedor),
+            joinedload(InvCompra.lineas),
+            joinedload(InvCompra.pagos),
+        )
+        .filter_by(id=compra_id)
+        .first_or_404()
+    )
 
 
 def _venta_or_404(venta_id: int) -> InvVenta:
@@ -501,17 +528,183 @@ def clientes_cambiar_estado(id):
     return redirect(url_for("inv_comercial.clientes_list", estado=estado_vista, q=q or None))
 
 
+def _wants_json() -> bool:
+    return request.headers.get("X-Requested-With") == "XMLHttpRequest"
+
+
+def _parse_proveedor_id(form) -> int | None:
+    raw = (form.get("proveedor_id") or "").strip()
+    return int(raw) if raw.isdigit() else None
+
+
+def _lineas_iniciales_json(compra: InvCompra | None, moneda_base: str) -> list[dict]:
+    return _lineas_iniciales_entrada_json(compra, moneda_base)
+
+
+def _dias_plazo_entrada(compra: InvCompra | None) -> int | None:
+    if not compra or not compra.fecha_vencimiento:
+        return None
+    base = compra.fecha_factura or compra.fecha
+    return (compra.fecha_vencimiento - base).days
+
+
+def _fecha_factura_form(compra: InvCompra | None) -> str:
+    if request.method == "POST":
+        return (request.form.get("fecha_factura") or "").strip()
+    if compra and compra.fecha_factura:
+        return compra.fecha_factura.strftime("%Y-%m-%d")
+    return ""
+
+
+def _fecha_vencimiento_form(compra: InvCompra | None) -> str:
+    if request.method == "POST":
+        return (request.form.get("fecha_vencimiento") or "").strip()
+    if compra and compra.fecha_vencimiento:
+        return compra.fecha_vencimiento.strftime("%Y-%m-%d")
+    return ""
+
+
+def _dias_plazo_form(compra: InvCompra | None) -> str:
+    if request.method == "POST":
+        return (request.form.get("dias_plazo") or "").strip()
+    dias = _dias_plazo_entrada(compra)
+    return str(dias) if dias is not None else ""
+
+
+def _moneda_entrada_form(compra: InvCompra | None, moneda_base: str) -> tuple[str, float]:
+    if compra:
+        from app.money import normalizar_moneda
+
+        moneda_f = normalizar_moneda(compra.moneda_factura or moneda_base)
+        return moneda_f, float(compra.tasa_cambio or 1.0)
+    if request.method == "POST":
+        return parse_moneda_factura_entrada(request.form, moneda_base)
+    return moneda_base, 1.0
+
+
+def _render_compras_form(
+    eid: int,
+    *,
+    compra: InvCompra | None = None,
+):
+    proveedor_sel = compra.proveedor_id if compra else None
+    if request.method == "POST":
+        proveedor_sel = _parse_proveedor_id(request.form)
+
+    moneda_base = moneda_base_empresa(eid)
+    moneda_factura_sel, tasa_cambio_sel = _moneda_entrada_form(compra, moneda_base)
+    tipo_iva_sel = (
+        compra.tipo_iva
+        if compra and compra.tipo_iva
+        else (parse_tipo_iva_entrada(request.form) if request.method == "POST" else "exento")
+    )
+    producto_ids = [l.producto_id for l in compra.lineas] if compra else []
+    return render_template(
+        "inventario_comercial/compras_form.html",
+        compra=compra,
+        productos=productos_para_select(eid),
+        productos_json=productos_entrada_json(eid, incluir_ids=producto_ids),
+        proveedores=proveedores_para_entrada(eid, seleccionado_id=proveedor_sel),
+        proveedor_sel=proveedor_sel,
+        lineas_iniciales=_lineas_iniciales_json(compra, moneda_base),
+        moneda_base=moneda_base,
+        monedas_factura=monedas_opciones_factura(
+            eid,
+            incluir=compra.moneda_factura if compra else None,
+        ),
+        moneda_factura_sel=moneda_factura_sel,
+        tasa_cambio_sel=tasa_cambio_sel,
+        tipo_iva_sel=tipo_iva_sel,
+        numero_sugerido=compra.numero if compra else siguiente_numero_entrada(eid),
+        hoy=compra.fecha if compra else date.today(),
+        fecha_factura_sel=_fecha_factura_form(compra),
+        fecha_vencimiento_sel=_fecha_vencimiento_form(compra),
+        dias_plazo_sel=_dias_plazo_form(compra),
+    )
+
+
+def _datos_entrada_desde_form(eid: int):
+    moneda_base = moneda_base_empresa(eid)
+    moneda_factura, tasa = parse_moneda_factura_entrada(request.form, moneda_base)
+    return {
+        "proveedor_id": _parse_proveedor_id(request.form),
+        "fecha": _parse_fecha(request.form.get("fecha")),
+        "fecha_factura": _parse_fecha_opcional(request.form.get("fecha_factura")),
+        "fecha_vencimiento": _parse_fecha_opcional(request.form.get("fecha_vencimiento")),
+        "numero": (request.form.get("numero") or "").strip(),
+        "notas": (request.form.get("notas") or "").strip(),
+        "moneda_factura": moneda_factura,
+        "moneda_base": moneda_base,
+        "tasa_cambio": tasa,
+        "tipo_iva": parse_tipo_iva_entrada(request.form),
+        "lineas": parse_lineas_entrada_form(
+            request.form,
+            moneda_factura=moneda_factura,
+            moneda_base=moneda_base,
+            tasa=tasa,
+        ),
+    }
+
+
+def _accion_continuar() -> bool:
+    return (request.form.get("accion") or "").strip().lower() == "continuar"
+
+
+def _guardar_entrada_form(eid: int, compra: InvCompra | None = None) -> InvCompra:
+    datos = _datos_entrada_desde_form(eid)
+    moneda_base = datos.pop("moneda_base")
+    if compra:
+        return actualizar_entrada_mercancia(eid, compra.id, moneda_base=moneda_base, **datos)
+    return registrar_entrada_mercancia(eid, moneda_base=moneda_base, **datos)
+
+
+def _redirect_tras_guardar_entrada(compra: InvCompra, *, es_nueva: bool):
+    if _accion_continuar():
+        flash("Entrada guardada. Sigue agregando productos cuando quieras.", "success")
+        return redirect(url_for("inv_comercial.compras_editar", id=compra.id))
+    if es_nueva:
+        flash("Entrada de mercancía registrada. El stock se actualizó.", "success")
+        return redirect(url_for("inv_comercial.compras_list"))
+    flash("Entrada actualizada. El stock se recalculó.", "success")
+    return redirect(url_for("inv_comercial.compras_detalle", id=compra.id))
+
+
 @inv_comercial_bp.route("/compras")
 @login_required
 @require_module(MODULO_INVENTARIO)
 def compras_list():
-    items = (
-        query_tenant(InvCompra)
-        .order_by(InvCompra.fecha.desc(), InvCompra.id.desc())
-        .limit(100)
-        .all()
+    alerta = (request.args.get("alerta") or "").strip().lower()
+    hoy = date.today()
+    query = query_tenant(InvCompra).options(
+        joinedload(InvCompra.proveedor), joinedload(InvCompra.lineas)
     )
-    return render_template("inventario_comercial/compras_list.html", items=items)
+    query = filtro_compras_cxp_alerta(query, alerta, hoy)
+    if alerta in ("por_vencer", "vencidas"):
+        query = query.order_by(InvCompra.fecha_vencimiento.asc(), InvCompra.id.desc())
+    else:
+        query = query.order_by(InvCompra.fecha.desc(), InvCompra.id.desc())
+    items = query.limit(100).all()
+    total_unidades = sum(int(l.cantidad or 0) for c in items for l in c.lineas)
+    return render_template(
+        "inventario_comercial/compras_list.html",
+        items=items,
+        total_registros=len(items),
+        total_unidades=total_unidades,
+        alerta=alerta,
+        cxp_dias_alerta=CXP_DIAS_ALERTA,
+    )
+
+
+@inv_comercial_bp.route("/api/productos/<int:id>/ultimo-costo")
+@login_required
+@require_module(MODULO_INVENTARIO)
+def producto_ultimo_costo(id):
+    eid = _require_empresa_id()
+    query_tenant(InvProducto).filter_by(id=id).first_or_404()
+    datos = ultimo_costo_entrada_producto(eid, id)
+    if datos is None:
+        return jsonify({"producto_id": id, "ultimo_costo": None})
+    return jsonify({"producto_id": id, "ultimo_costo": datos})
 
 
 @inv_comercial_bp.route("/compras/nueva", methods=["GET", "POST"])
@@ -519,26 +712,12 @@ def compras_list():
 @require_module(MODULO_INVENTARIO)
 def compras_nueva():
     eid = _require_empresa_id()
-    productos = productos_para_select(eid)
-    proveedores = (
-        query_tenant(InvProveedor).filter_by(activo=True).order_by(InvProveedor.nombre).all()
-    )
 
     if request.method == "POST":
-        proveedor_raw = (request.form.get("proveedor_id") or "").strip()
-        proveedor_id = int(proveedor_raw) if proveedor_raw.isdigit() else None
         try:
-            registrar_entrada_mercancia(
-                eid,
-                proveedor_id=proveedor_id,
-                fecha=_parse_fecha(request.form.get("fecha")),
-                numero=(request.form.get("numero") or "").strip(),
-                notas=(request.form.get("notas") or "").strip(),
-                lineas=parse_lineas_entrada_form(request.form),
-            )
+            compra = _guardar_entrada_form(eid)
             db.session.commit()
-            flash("Entrada de mercancía registrada. El stock se actualizó.", "success")
-            return redirect(url_for("inv_comercial.compras_list"))
+            return _redirect_tras_guardar_entrada(compra, es_nueva=True)
         except ValueError as exc:
             db.session.rollback()
             flash(str(exc), "danger")
@@ -546,13 +725,29 @@ def compras_nueva():
             db.session.rollback()
             flash("No se pudo registrar la entrada.", "danger")
 
-    return render_template(
-        "inventario_comercial/compras_form.html",
-        productos=productos,
-        proveedores=proveedores,
-        numero_sugerido=siguiente_numero_entrada(eid),
-        hoy=date.today(),
-    )
+    return _render_compras_form(eid)
+
+
+@inv_comercial_bp.route("/compras/<int:id>/editar", methods=["GET", "POST"])
+@login_required
+@require_module(MODULO_INVENTARIO)
+def compras_editar(id):
+    eid = _require_empresa_id()
+    compra = _compra_or_404(id)
+
+    if request.method == "POST":
+        try:
+            compra = _guardar_entrada_form(eid, compra=compra)
+            db.session.commit()
+            return _redirect_tras_guardar_entrada(compra, es_nueva=False)
+        except ValueError as exc:
+            db.session.rollback()
+            flash(str(exc), "danger")
+        except Exception:
+            db.session.rollback()
+            flash("No se pudo actualizar la entrada.", "danger")
+
+    return _render_compras_form(eid, compra=compra)
 
 
 @inv_comercial_bp.route("/compras/<int:id>")
@@ -560,7 +755,100 @@ def compras_nueva():
 @require_module(MODULO_INVENTARIO)
 def compras_detalle(id):
     compra = _compra_or_404(id)
-    return render_template("inventario_comercial/compras_detalle.html", compra=compra)
+    return render_template(
+        "inventario_comercial/compras_detalle.html",
+        compra=compra,
+        hoy=date.today(),
+    )
+
+
+@inv_comercial_bp.route("/cuentas-por-pagar")
+@login_required
+@require_module(MODULO_INVENTARIO)
+def cxp_list():
+    eid = _require_empresa_id()
+    hoy = date.today()
+    alerta = (request.args.get("alerta") or "").strip().lower()
+    proveedor_raw = (request.args.get("proveedor_id") or "").strip()
+    proveedor_id = int(proveedor_raw) if proveedor_raw.isdigit() else None
+    moneda_base = moneda_base_empresa(eid)
+
+    query = query_tenant(InvCompra).options(
+        joinedload(InvCompra.proveedor), joinedload(InvCompra.pagos)
+    )
+    query = filtro_cxp_vista(query, alerta=alerta, proveedor_id=proveedor_id, hoy=hoy)
+    items = (
+        query.order_by(
+            case((InvCompra.fecha_vencimiento.is_(None), 1), else_=0),
+            InvCompra.fecha_vencimiento.asc(),
+            InvCompra.id.desc(),
+        )
+        .limit(200)
+        .all()
+    )
+
+    proveedor_sel = None
+    if proveedor_id:
+        proveedor_sel = InvProveedor.query.filter_by(id=proveedor_id, empresa_id=eid).first()
+
+    return render_template(
+        "inventario_comercial/cxp_list.html",
+        items=items,
+        kpis=kpis_cxp(eid, hoy),
+        resumen_proveedores=resumen_cxp_por_proveedor(eid),
+        alerta=alerta,
+        proveedor_sel=proveedor_sel,
+        cxp_dias_alerta=CXP_DIAS_ALERTA,
+        moneda_base=moneda_base,
+        hoy=hoy,
+    )
+
+
+@inv_comercial_bp.route("/cuentas-por-pagar/<int:id>/pago", methods=["POST"])
+@login_required
+@require_module(MODULO_INVENTARIO)
+def cxp_registrar_pago(id):
+    from app.inventario_comercial.service import _parse_float
+
+    compra = _compra_or_404(id)
+    try:
+        pago = registrar_pago_compra(
+            compra,
+            monto=_parse_float(request.form.get("monto")),
+            fecha=_parse_fecha(request.form.get("fecha")),
+            cuenta_origen=(request.form.get("cuenta_origen") or "").strip(),
+            numero_comprobante=(request.form.get("numero_comprobante") or "").strip(),
+            notas=(request.form.get("notas") or "").strip(),
+        )
+        db.session.commit()
+        msg = f"Pago de {pago.monto} registrado correctamente."
+        if _wants_json():
+            return jsonify(
+                {
+                    "ok": True,
+                    "message": msg,
+                    "estado_pago": compra.estado_pago,
+                    "estado_pago_label": compra.estado_pago_label,
+                    "monto_pagado": compra.monto_pagado,
+                    "saldo_pendiente": compra.saldo_pendiente,
+                }
+            )
+        flash(msg, "success")
+    except ValueError as exc:
+        db.session.rollback()
+        if _wants_json():
+            return jsonify({"ok": False, "error": str(exc)}), 400
+        flash(str(exc), "danger")
+    except Exception:
+        db.session.rollback()
+        if _wants_json():
+            return jsonify({"ok": False, "error": "No se pudo registrar el pago."}), 500
+        flash("No se pudo registrar el pago.", "danger")
+
+    next_url = (request.form.get("next") or "").strip()
+    if next_url:
+        return redirect(next_url)
+    return redirect(request.referrer or url_for("inv_comercial.cxp_list"))
 
 
 @inv_comercial_bp.route("/ventas")

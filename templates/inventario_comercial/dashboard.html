@@ -4,6 +4,64 @@
 
 {% block page_title %}Dashboard — Inventario{% endblock %}
 
+{% block head_extra %}
+<style>
+  .inv-dash-kpis { --inv-kpi-gap: 0.65rem; }
+  .inv-dash-kpis > [class*="col-"] { display: flex; }
+  .inv-dash-kpi {
+    border: 0;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08);
+    width: 100%;
+  }
+  .inv-dash-kpi .card-body {
+    padding: 0.65rem 0.75rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-height: 5.5rem;
+  }
+  .inv-dash-kpi__label {
+    color: var(--bs-secondary-color);
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    line-height: 1.2;
+    margin-bottom: 0.25rem;
+    text-transform: uppercase;
+  }
+  .inv-dash-kpi__value {
+    font-size: 1.15rem;
+    font-weight: 700;
+    line-height: 1.15;
+    margin: 0;
+    word-break: break-word;
+  }
+  .inv-dash-kpi__hint {
+    color: var(--bs-secondary-color);
+    font-size: 0.68rem;
+    line-height: 1.25;
+    margin: 0.2rem 0 0;
+  }
+  .inv-dash-kpi__list {
+    font-size: 0.75rem;
+    line-height: 1.3;
+    margin: 0;
+  }
+  .inv-dash-kpi__list li {
+    display: flex;
+    justify-content: space-between;
+    gap: 0.35rem;
+    margin-bottom: 0.1rem;
+  }
+  .inv-dash-kpi--inventario {
+    border-left: 3px solid var(--bs-primary);
+  }
+  @media (min-width: 1200px) {
+    .inv-dash-kpi__value { font-size: 1.25rem; }
+  }
+</style>
+{% endblock %}
+
 {% block content %}
 {% if show_welcome %}
 <div class="alert alert-success alert-dismissible fade show mb-3" role="alert">
@@ -12,49 +70,103 @@
 </div>
 {% endif %}
 
-<div class="row g-3 mb-4">
-  <div class="col-md-4">
-    <div class="card border-0 shadow-sm h-100">
+<div class="row g-2 mb-3 inv-dash-kpis">
+  <div class="col-6 col-xl-3">
+    <div class="card inv-dash-kpi h-100">
       <div class="card-body">
-        <p class="text-muted small mb-1">Ventas del día ({{ hoy.strftime('%d/%m/%Y') }})</p>
+        <p class="inv-dash-kpi__label">Ventas hoy · {{ hoy.strftime('%d/%m') }}</p>
         {% if kpis.multimoneda and kpis.ventas_hoy_por_moneda %}
-        <ul class="list-unstyled mb-0">
+        <ul class="list-unstyled inv-dash-kpi__list">
           {% for v in kpis.ventas_hoy_por_moneda %}
-          <li class="d-flex justify-content-between align-items-baseline mb-1">
-            <span class="small text-muted">{{ v.moneda }}</span>
+          <li>
+            <span class="text-muted">{{ v.moneda }}</span>
             <strong>{{ formato_moneda(v.total, v.moneda) }}</strong>
           </li>
           {% else %}
-          <li class="text-muted small">Sin ventas hoy</li>
+          <li class="text-muted">Sin ventas</li>
           {% endfor %}
         </ul>
-        <p class="small text-muted mb-0 mt-2">{{ kpis.ventas_hoy_count }} transacciones</p>
+        <p class="inv-dash-kpi__hint">{{ kpis.ventas_hoy_count }} trans.</p>
         {% else %}
-        <h2 class="h3 mb-0">{{ formato_moneda(kpis.ventas_hoy_total, empresa_actual.moneda if empresa_actual else 'COP') }}</h2>
-        <p class="small text-muted mb-0">{{ kpis.ventas_hoy_count }} transacciones</p>
+        <p class="inv-dash-kpi__value mb-0">{{ formato_moneda(kpis.ventas_hoy_total, empresa_actual.moneda if empresa_actual else 'COP') }}</p>
+        <p class="inv-dash-kpi__hint">{{ kpis.ventas_hoy_count }} transacciones</p>
         {% endif %}
       </div>
     </div>
   </div>
-  <div class="col-md-4">
-    <div class="card border-0 shadow-sm h-100">
+  <div class="col-6 col-xl-3">
+    <div class="card inv-dash-kpi h-100">
       <div class="card-body">
-        <p class="text-muted small mb-1">Productos con bajo stock</p>
-        <h2 class="h3 mb-0 {% if kpis.bajo_stock_count %}text-warning{% endif %}">{{ kpis.bajo_stock_count }}</h2>
-        <p class="small text-muted mb-0">de {{ kpis.total_productos }} en catálogo</p>
+        <p class="inv-dash-kpi__label">Bajo stock</p>
+        <p class="inv-dash-kpi__value mb-0 {% if kpis.bajo_stock_count %}text-warning{% endif %}">{{ kpis.bajo_stock_count }}</p>
+        <p class="inv-dash-kpi__hint">de {{ kpis.total_productos }} activos</p>
       </div>
     </div>
   </div>
-  <div class="col-md-4">
-    <div class="card border-0 shadow-sm h-100">
+  <div class="col-6 col-xl-3">
+    <div class="card inv-dash-kpi h-100">
       <div class="card-body">
-        <p class="text-muted small mb-1">Unidades vendidas hoy</p>
-        <h2 class="h3 mb-0">{{ kpis.unidades_vendidas_hoy }}</h2>
-        <p class="small text-muted mb-0">piezas facturadas en el día</p>
+        <p class="inv-dash-kpi__label">Vendidas hoy</p>
+        <p class="inv-dash-kpi__value mb-0">{{ kpis.unidades_vendidas_hoy }}</p>
+        <p class="inv-dash-kpi__hint">unidades facturadas</p>
+      </div>
+    </div>
+  </div>
+  <div class="col-6 col-xl-3">
+    <div class="card inv-dash-kpi inv-dash-kpi--inventario h-100">
+      <div class="card-body">
+        <p class="inv-dash-kpi__label">Valor inventario</p>
+        <p class="inv-dash-kpi__value mb-0">{{ formato_moneda(kpis.valor_inventario, empresa_actual.moneda if empresa_actual else 'COP') }}</p>
+        <p class="inv-dash-kpi__hint">{{ kpis.unidades_en_stock }} uds. a costo</p>
       </div>
     </div>
   </div>
 </div>
+
+{% set cxp = kpis.cxp %}
+{% if cxp and (cxp.vencidas_count or cxp.por_vencer_count) %}
+<div class="mb-3">
+  {% if cxp.vencidas_count %}
+  <div class="alert alert-danger py-2 mb-2" role="alert">
+    <div class="fw-semibold mb-1"><i class="bi bi-exclamation-octagon"></i> Cuentas por pagar vencidas</div>
+    <ul class="small mb-0 ps-3">
+      {% for c in cxp.vencidas %}
+      <li>
+        Factura <strong>{{ c.numero or ('#' ~ c.id) }}</strong>
+        {% if c.proveedor %}· {{ c.proveedor.nombre }}{% endif %}
+        · venció {{ c.fecha_vencimiento.strftime('%d/%m/%Y') }}
+        · {{ formato_moneda(c.total, empresa_actual.moneda if empresa_actual else 'COP') }}
+        <a href="{{ url_for('inv_comercial.cxp_list', alerta='vencidas') }}" class="ms-1">Ver todas</a>
+        <a href="{{ url_for('inv_comercial.compras_detalle', id=c.id) }}" class="ms-1">Detalle</a>
+      </li>
+      {% endfor %}
+    </ul>
+    {% for nombre, cant in cxp.vencidas_por_proveedor %}
+    {% if cant > 1 and loop.index <= 3 %}
+    <p class="small mb-0 mt-2">🚨 Tienes {{ cant }} facturas vencidas con <strong>{{ nombre }}</strong>.</p>
+    {% endif %}
+    {% endfor %}
+  </div>
+  {% endif %}
+  {% if cxp.por_vencer_count %}
+  <div class="alert alert-warning py-2 mb-0" role="alert">
+    <div class="fw-semibold mb-1"><i class="bi bi-exclamation-triangle"></i> Vencen en los próximos {{ cxp.dias_alerta }} días</div>
+    <ul class="small mb-0 ps-3">
+      {% for c in cxp.por_vencer %}
+      <li>
+        ⚠️ Factura <strong>{{ c.numero or ('#' ~ c.id) }}</strong>
+        {% if c.proveedor %}· {{ c.proveedor.nombre }}{% endif %}
+        · vence en {{ c.dias_hasta_vencimiento }} día{% if c.dias_hasta_vencimiento != 1 %}s{% endif %}
+        ({{ c.fecha_vencimiento.strftime('%d/%m/%Y') }})
+        <a href="{{ url_for('inv_comercial.cxp_list', alerta='por_vencer') }}" class="ms-1">Ver todas</a>
+        <a href="{{ url_for('inv_comercial.compras_detalle', id=c.id) }}" class="ms-1">Detalle</a>
+      </li>
+      {% endfor %}
+    </ul>
+  </div>
+  {% endif %}
+</div>
+{% endif %}
 
 <div class="row g-3">
   <div class="col-lg-6">

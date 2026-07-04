@@ -134,7 +134,7 @@ def _resumen_alertas_mantenimiento(hoy: date) -> dict[str, Any]:
 
 
 def _resumen_alertas_inventario(eid: int, hoy: date) -> dict[str, Any]:
-    from app.inventario_comercial.service import query_productos_bajo_stock
+    from app.inventario_comercial.service import alertas_cxp_compras, query_productos_bajo_stock
 
     bajo_stock = query_productos_bajo_stock(eid).count()
     por_cobrar = (
@@ -151,6 +151,7 @@ def _resumen_alertas_inventario(eid: int, hoy: date) -> dict[str, Any]:
         )
         .count()
     )
+    cxp = alertas_cxp_compras(eid, hoy)
 
     return _empacar_alertas(
         modulo="inventario",
@@ -160,6 +161,18 @@ def _resumen_alertas_inventario(eid: int, hoy: date) -> dict[str, Any]:
                 "label": "Bajo stock",
                 "count": bajo_stock,
                 "url": url_for("inv_comercial.productos_list", alerta="bajo"),
+                "tone": "danger",
+            },
+            {
+                "label": "Facturas por vencer",
+                "count": cxp["por_vencer_count"],
+                "url": url_for("inv_comercial.cxp_list", alerta="por_vencer"),
+                "tone": "warn",
+            },
+            {
+                "label": "CxP vencidas",
+                "count": cxp["vencidas_count"],
+                "url": url_for("inv_comercial.cxp_list", alerta="vencidas"),
                 "tone": "danger",
             },
             {

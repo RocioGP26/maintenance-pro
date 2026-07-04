@@ -1,0 +1,240 @@
+{% extends "base.html" %}
+
+{% block title %}Cuentas por pagar — {{ app_name }}{% endblock %}
+{% block page_title %}Cuentas por pagar{% endblock %}
+
+{% block content %}
+<div class="row g-3 mb-4">
+  <div class="col-md-4">
+    <div class="card card-dashboard h-100">
+      <div class="card-body py-3">
+        <p class="text-muted small mb-1 text-uppercase fw-semibold">Saldo total pendiente</p>
+        <p class="h4 mb-0">{{ formato_moneda(kpis.saldo_total, moneda_base) }}</p>
+        <p class="small text-muted mb-0">{{ kpis.facturas_pendientes }} factura{% if kpis.facturas_pendientes != 1 %}s{% endif %}</p>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card card-dashboard h-100 border-warning">
+      <div class="card-body py-3">
+        <p class="text-muted small mb-1 text-uppercase fw-semibold">Por vencer ({{ cxp_dias_alerta }} días)</p>
+        <p class="h4 mb-0 text-warning">{{ kpis.por_vencer_count }}</p>
+        <a href="{{ url_for('inv_comercial.cxp_list', alerta='por_vencer', proveedor_id=proveedor_sel.id if proveedor_sel else none) }}"
+           class="small">Ver listado</a>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card card-dashboard h-100 border-danger">
+      <div class="card-body py-3">
+        <p class="text-muted small mb-1 text-uppercase fw-semibold">Vencidas</p>
+        <p class="h4 mb-0 text-danger">{{ kpis.vencidas_count }}</p>
+        <a href="{{ url_for('inv_comercial.cxp_list', alerta='vencidas', proveedor_id=proveedor_sel.id if proveedor_sel else none) }}"
+           class="small">Ver listado</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% if resumen_proveedores %}
+<div class="card card-dashboard mb-4">
+  <div class="card-body py-3">
+    <h6 class="fw-semibold mb-2">Saldos por proveedor</h6>
+    <div class="d-flex flex-wrap gap-2">
+      {% for p in resumen_proveedores %}
+      <a href="{{ url_for('inv_comercial.cxp_list', proveedor_id=p.proveedor_id) }}"
+         class="btn btn-sm {% if proveedor_sel and proveedor_sel.id == p.proveedor_id %}btn-primary{% else %}btn-outline-secondary{% endif %}">
+        {{ p.nombre }}
+        <span class="badge {% if proveedor_sel and proveedor_sel.id == p.proveedor_id %}text-bg-light{% else %}text-bg-secondary{% endif %} ms-1">
+          {{ p.facturas }} · {{ formato_moneda(p.saldo, moneda_base) }}
+        </span>
+      </a>
+      {% endfor %}
+      {% if proveedor_sel %}
+      <a href="{{ url_for('inv_comercial.cxp_list', alerta=alerta or none) }}" class="btn btn-sm btn-link">Quitar filtro</a>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endif %}
+
+{% if alerta == 'por_vencer' %}
+<div class="alert alert-warning py-2 small mb-3">Facturas que vencen en los próximos {{ cxp_dias_alerta }} días.</div>
+{% elif alerta == 'vencidas' %}
+<div class="alert alert-danger py-2 small mb-3">Facturas con fecha de pago vencida.</div>
+{% elif proveedor_sel %}
+<div class="alert alert-info py-2 small mb-3">
+  Estado de cuenta: <strong>{{ proveedor_sel.nombre }}</strong>
+  <a href="{{ url_for('inv_comercial.cxp_list') }}" class="ms-2">Ver todos los proveedores</a>
+</div>
+{% endif %}
+
+<div class="card card-dashboard">
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead class="table-light">
+          <tr>
+            <th>Factura</th>
+            <th>Proveedor</th>
+            <th>Vencimiento</th>
+            <th class="text-end">Total</th>
+            <th class="text-end">Pagado</th>
+            <th class="text-end">Saldo</th>
+            <th>Estado</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for c in items %}
+          <tr id="cxp-row-{{ c.id }}" data-compra-id="{{ c.id }}">
+            <td>
+              <a href="{{ url_for('inv_comercial.compras_detalle', id=c.id) }}" class="text-decoration-none">
+                <code>{{ c.numero or ('#' ~ c.id) }}</code>
+              </a>
+              {% if c.fecha_factura %}
+              <span class="text-muted small d-block">Fact. {{ c.fecha_factura.strftime('%d/%m/%Y') }}</span>
+              {% endif %}
+            </td>
+            <td>
+              {% if c.proveedor %}
+              <a href="{{ url_for('inv_comercial.cxp_list', proveedor_id=c.proveedor_id) }}">{{ c.proveedor.nombre }}</a>
+              {% else %}
+              —
+              {% endif %}
+            </td>
+            <td>
+              {% if c.fecha_vencimiento %}
+              <span class="{% if c.cxp_vencida %}text-danger fw-semibold{% elif c.cxp_por_vencer %}text-warning{% endif %}">
+                {{ c.fecha_vencimiento.strftime('%d/%m/%Y') }}
+              </span>
+              {% if c.cxp_vencida %}
+              <span class="badge text-bg-danger ms-1">Vencida</span>
+              {% elif c.cxp_por_vencer %}
+              <span class="badge text-bg-warning text-dark ms-1">{{ c.dias_hasta_vencimiento }} d.</span>
+              {% endif %}
+              {% else %}
+              <span class="text-muted">—</span>
+              {% endif %}
+            </td>
+            <td class="text-end">{{ formato_moneda(c.total, moneda_base) }}</td>
+            <td class="text-end cxp-pagado">{{ formato_moneda(c.monto_pagado, moneda_base) }}</td>
+            <td class="text-end fw-semibold cxp-saldo {% if c.saldo_pendiente > 0 %}text-danger{% endif %}">
+              {{ formato_moneda(c.saldo_pendiente, moneda_base) }}
+            </td>
+            <td class="cxp-estado">
+              {% if c.estado_pago == 'pagada' %}
+              <span class="badge text-bg-success">Pagada</span>
+              {% elif c.estado_pago == 'parcial' %}
+              <span class="badge text-bg-info text-dark">Abono parcial</span>
+              {% else %}
+              <span class="badge text-bg-secondary">Pendiente</span>
+              {% endif %}
+            </td>
+            <td class="text-end">
+              {% if c.saldo_pendiente > 0 %}
+              <button type="button" class="btn btn-sm btn-success btn-registrar-pago"
+                      data-compra-id="{{ c.id }}"
+                      data-numero="{{ c.numero or ('#' ~ c.id) }}"
+                      data-proveedor="{{ c.proveedor.nombre if c.proveedor else 'Sin proveedor' }}"
+                      data-saldo="{{ c.saldo_pendiente }}">
+                <i class="bi bi-cash-coin"></i> Pagar
+              </button>
+              {% else %}
+              <span class="text-muted small">—</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="8" class="text-muted text-center py-4">
+              {% if alerta or proveedor_sel %}
+              No hay facturas pendientes con este filtro.
+              {% else %}
+              No tienes cuentas por pagar pendientes.
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+{% include "inventario_comercial/_modal_pago_compra.html" %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function () {
+  var modalEl = document.getElementById('modalPagoCompra');
+  if (!modalEl || typeof bootstrap === 'undefined') return;
+  var modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+  var form = document.getElementById('formPagoCompra');
+  var errBox = document.getElementById('pagoCompraError');
+  var resumen = document.getElementById('pagoCompraResumen');
+  var inpMonto = document.getElementById('pagoMonto');
+  var saldoLabel = document.getElementById('pagoSaldoLabel');
+  var btnSubmit = document.getElementById('btnConfirmarPago');
+  var compraIdActual = null;
+  var pagoUrlTpl = {{ url_for('inv_comercial.cxp_registrar_pago', id=0)|tojson }};
+
+  function fmtMoneda(n) {
+    return Number(n).toLocaleString('es-CO', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+
+  document.querySelectorAll('.btn-registrar-pago').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      compraIdActual = btn.getAttribute('data-compra-id');
+      var numero = btn.getAttribute('data-numero') || '';
+      var proveedor = btn.getAttribute('data-proveedor') || '';
+      var saldo = parseFloat(btn.getAttribute('data-saldo') || '0');
+      if (resumen) {
+        resumen.textContent = 'Factura ' + numero + ' · ' + proveedor;
+      }
+      if (inpMonto) {
+        inpMonto.max = String(saldo);
+        inpMonto.value = saldo > 0 ? String(saldo) : '';
+      }
+      if (saldoLabel) saldoLabel.textContent = fmtMoneda(saldo);
+      if (errBox) errBox.classList.add('d-none');
+      form.action = pagoUrlTpl.replace('/0/', '/' + compraIdActual + '/');
+      modal.show();
+    });
+  });
+
+  if (form) {
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      if (!compraIdActual) return;
+      if (errBox) errBox.classList.add('d-none');
+      if (btnSubmit) btnSubmit.disabled = true;
+      var fd = new FormData(form);
+      fetch(form.action, {
+        method: 'POST',
+        body: fd,
+        headers: { 'X-Requested-With': 'XMLHttpRequest' },
+      })
+        .then(function (r) { return r.json().then(function (d) { return { ok: r.ok, data: d }; }); })
+        .then(function (res) {
+          if (!res.ok || !res.data.ok) {
+            throw new Error((res.data && res.data.error) || 'No se pudo registrar el pago.');
+          }
+          modal.hide();
+          window.location.reload();
+        })
+        .catch(function (err) {
+          if (errBox) {
+            errBox.textContent = err.message || 'Error al registrar el pago.';
+            errBox.classList.remove('d-none');
+          }
+        })
+        .finally(function () {
+          if (btnSubmit) btnSubmit.disabled = false;
+        });
+    });
+  }
+})();
+</script>
+{% endblock %}

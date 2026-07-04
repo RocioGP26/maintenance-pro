@@ -7,6 +7,17 @@ import logging
 logger = logging.getLogger(__name__)
 
 
+def _run_pending_migrations_dev() -> None:
+    """En desarrollo, aplica migraciones Alembic pendientes tras un git pull."""
+    try:
+        from flask_migrate import upgrade
+
+        upgrade()
+        logger.debug("Migraciones Alembic aplicadas (desarrollo)")
+    except Exception as exc:
+        logger.warning("No se pudieron aplicar migraciones automáticas: %s", exc)
+
+
 def run_lightweight_startup() -> None:
     """Tareas idempotentes y rápidas necesarias en cada despliegue."""
     from sqlalchemy import inspect
@@ -69,6 +80,9 @@ def run_startup(app) -> None:
 
         if app.config.get("RUN_LEGACY_SCHEMA_MIGRATIONS"):
             run_legacy_schema_migrations()
+
+        if app.config.get("DEBUG"):
+            _run_pending_migrations_dev()
 
         if app.config.get("RUN_STARTUP_TASKS"):
             run_dev_seeds()

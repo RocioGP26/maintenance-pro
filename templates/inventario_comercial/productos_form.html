@@ -51,6 +51,11 @@
               <input type="text" class="form-control" id="subcategoria" name="subcategoria"
                      value="{{ item.subcategoria if item else '' }}" placeholder="Ej. Aceites sintéticos">
             </div>
+            <div class="col-md-4">
+              <label class="form-label" for="ubicacion">Ubicación</label>
+              <input type="text" class="form-control" id="ubicacion" name="ubicacion"
+                     value="{{ item.ubicacion if item else '' }}" placeholder="Ej. Estante A3, bodega trasera">
+            </div>
             <div class="col-md-3">
               <label class="form-label" for="unidad">Unidad</label>
               <input type="text" class="form-control" id="unidad" name="unidad"

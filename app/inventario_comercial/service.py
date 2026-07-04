@@ -6,13 +6,16 @@ import json
 from datetime import date, datetime, timedelta
 
 from sqlalchemy import func
+from sqlalchemy.orm import joinedload
 
 from app import db
 from app.currency import MONEDAS_VENEZUELA, empresa_multimoneda, monedas_activas_de, set_precios_producto
+from app.money import normalizar_moneda
 from app.models import (
     Empresa,
     InvCompra,
     InvCompraLinea,
+    InvCompraPago,
     InvCliente,
     InvProducto,
     InvProveedor,
@@ -26,6 +29,9 @@ FORMA_PAGO_CREDITO = "credito"
 ESTADO_COBRO_PAGADA = "pagada"
 ESTADO_COBRO_PENDIENTE = "pendiente"
 ESTADO_COBRO_PARCIAL = "parcial"
+ESTADO_PAGO_PAGADA = "pagada"
+ESTADO_PAGO_PENDIENTE = "pendiente"
+ESTADO_PAGO_PARCIAL = "parcial"
 
 
 def crear_datos_ejemplo_inventario(empresa_id: int) -> None:
@@ -198,6 +204,19 @@ def kpis_dashboard_inventario(empresa_id: int, hoy: date | None = None) -> dict:
 
     total_productos = InvProducto.query.filter_by(empresa_id=empresa_id, activo=True).count()
 
+    valor_inventario = (
+        db.session.query(
+            func.coalesce(func.sum(InvProducto.stock * InvProducto.precio_compra), 0)
+        )
+        .filter(InvProducto.empresa_id == empresa_id, InvProducto.activo.is_(True))
+        .scalar()
+    )
+    unidades_en_stock = (
+        db.session.query(func.coalesce(func.sum(InvProducto.stock), 0))
+        .filter(InvProducto.empresa_id == empresa_id, InvProducto.activo.is_(True))
+        .scalar()
+    )
+
     top_rows = (
         db.session.query(
             InvProducto.nombre,
@@ -238,7 +257,141 @@ def kpis_dashboard_inventario(empresa_id: int, hoy: date | None = None) -> dict:
         "bajo_stock": bajo_stock,
         "bajo_stock_count": bajo_stock_count,
         "total_productos": total_productos,
+        "valor_inventario": float(valor_inventario or 0),
+        "unidades_en_stock": int(unidades_en_stock or 0),
         "top_productos": top_productos,
+        "cxp": alertas_cxp_compras(empresa_id, hoy),
+    }
+
+
+CXP_DIAS_ALERTA = 7
+
+
+def filtro_compras_cxp_alerta(q, alerta: str, hoy: date | None = None):
+    """Filtra entradas con vencimiento de cuentas por pagar (misma lógica que la campana)."""
+    hoy = hoy or date.today()
+    key = (alerta or "").strip().lower()
+    if key not in ("por_vencer", "vencidas"):
+        return q
+    q = q.filter(
+        InvCompra.fecha_vencimiento.isnot(None),
+        InvCompra.total > 0,
+        InvCompra.estado_pago.in_([ESTADO_PAGO_PENDIENTE, ESTADO_PAGO_PARCIAL]),
+    )
+    if key == "vencidas":
+        return q.filter(InvCompra.fecha_vencimiento < hoy)
+    limite = hoy + timedelta(days=CXP_DIAS_ALERTA)
+    return q.filter(InvCompra.fecha_vencimiento >= hoy, InvCompra.fecha_vencimiento <= limite)
+
+
+def query_compras_cxp_pendientes(empresa_id: int):
+    return InvCompra.query.filter(
+        InvCompra.empresa_id == empresa_id,
+        InvCompra.total > 0,
+        InvCompra.estado_pago.in_([ESTADO_PAGO_PENDIENTE, ESTADO_PAGO_PARCIAL]),
+    )
+
+
+def filtro_cxp_vista(q, *, alerta: str = "", proveedor_id: int | None = None, hoy: date | None = None):
+    hoy = hoy or date.today()
+    q = q.filter(
+        InvCompra.total > 0,
+        InvCompra.estado_pago.in_([ESTADO_PAGO_PENDIENTE, ESTADO_PAGO_PARCIAL]),
+    )
+    if proveedor_id:
+        q = q.filter(InvCompra.proveedor_id == proveedor_id)
+    key = (alerta or "").strip().lower()
+    if key == "vencidas":
+        q = q.filter(InvCompra.fecha_vencimiento.isnot(None), InvCompra.fecha_vencimiento < hoy)
+    elif key == "por_vencer":
+        limite = hoy + timedelta(days=CXP_DIAS_ALERTA)
+        q = q.filter(
+            InvCompra.fecha_vencimiento.isnot(None),
+            InvCompra.fecha_vencimiento >= hoy,
+            InvCompra.fecha_vencimiento <= limite,
+        )
+    return q
+
+
+def kpis_cxp(empresa_id: int, hoy: date | None = None) -> dict:
+    hoy = hoy or date.today()
+    base = query_compras_cxp_pendientes(empresa_id)
+    pendientes = base.all()
+    saldo_total = sum(c.saldo_pendiente for c in pendientes)
+    vencidas = [c for c in pendientes if c.fecha_vencimiento and c.fecha_vencimiento < hoy]
+    limite = hoy + timedelta(days=CXP_DIAS_ALERTA)
+    por_vencer = [
+        c
+        for c in pendientes
+        if c.fecha_vencimiento and hoy <= c.fecha_vencimiento <= limite
+    ]
+    return {
+        "saldo_total": round(saldo_total, 2),
+        "facturas_pendientes": len(pendientes),
+        "vencidas_count": len(vencidas),
+        "por_vencer_count": len(por_vencer),
+        "dias_alerta": CXP_DIAS_ALERTA,
+    }
+
+
+def resumen_cxp_por_proveedor(empresa_id: int) -> list[dict]:
+    rows = (
+        db.session.query(
+            InvProveedor.id,
+            InvProveedor.nombre,
+            func.count(InvCompra.id),
+            func.coalesce(func.sum(InvCompra.total - InvCompra.monto_pagado), 0),
+        )
+        .join(InvCompra, InvCompra.proveedor_id == InvProveedor.id)
+        .filter(
+            InvProveedor.empresa_id == empresa_id,
+            InvCompra.empresa_id == empresa_id,
+            InvCompra.estado_pago.in_([ESTADO_PAGO_PENDIENTE, ESTADO_PAGO_PARCIAL]),
+            InvCompra.total > 0,
+        )
+        .group_by(InvProveedor.id, InvProveedor.nombre)
+        .order_by(func.sum(InvCompra.total - InvCompra.monto_pagado).desc())
+        .all()
+    )
+    return [
+        {
+            "proveedor_id": r[0],
+            "nombre": r[1],
+            "facturas": int(r[2] or 0),
+            "saldo": round(float(r[3] or 0), 2),
+        }
+        for r in rows
+    ]
+
+
+def alertas_cxp_compras(empresa_id: int, hoy: date | None = None) -> dict:
+    """Facturas de proveedor con fecha de vencimiento para cuentas por pagar."""
+    hoy = hoy or date.today()
+    limite = hoy + timedelta(days=CXP_DIAS_ALERTA)
+    todas = (
+        query_compras_cxp_pendientes(empresa_id)
+        .options(joinedload(InvCompra.proveedor))
+        .filter(InvCompra.fecha_vencimiento.isnot(None))
+        .order_by(InvCompra.fecha_vencimiento.asc())
+        .all()
+    )
+    vencidas = [c for c in todas if c.fecha_vencimiento < hoy]
+    por_vencer = [c for c in todas if hoy <= c.fecha_vencimiento <= limite]
+
+    vencidas_por_proveedor: dict[str, int] = {}
+    for c in vencidas:
+        nombre = c.proveedor.nombre if c.proveedor else "Sin proveedor"
+        vencidas_por_proveedor[nombre] = vencidas_por_proveedor.get(nombre, 0) + 1
+
+    return {
+        "vencidas": vencidas[:8],
+        "por_vencer": por_vencer[:8],
+        "vencidas_count": len(vencidas),
+        "por_vencer_count": len(por_vencer),
+        "vencidas_por_proveedor": sorted(
+            vencidas_por_proveedor.items(), key=lambda x: (-x[1], x[0])
+        ),
+        "dias_alerta": CXP_DIAS_ALERTA,
     }
 
 
@@ -297,6 +450,33 @@ def siguiente_numero_entrada(empresa_id: int) -> str:
     return f"{prefijo}{seq:03d}"
 
 
+def ultimo_costo_entrada_producto(empresa_id: int, producto_id: int) -> dict | None:
+    """Último costo unitario registrado en una entrada de mercancía para el producto."""
+    linea = (
+        db.session.query(InvCompraLinea)
+        .join(InvCompra, InvCompraLinea.compra_id == InvCompra.id)
+        .filter(
+            InvCompra.empresa_id == empresa_id,
+            InvCompraLinea.producto_id == producto_id,
+            InvCompraLinea.precio_unitario > 0,
+        )
+        .order_by(
+            InvCompra.fecha.desc(),
+            InvCompra.id.desc(),
+            InvCompraLinea.id.desc(),
+        )
+        .first()
+    )
+    if not linea:
+        return None
+    compra = linea.compra
+    return {
+        "costo": round(float(linea.precio_unitario), 2),
+        "fecha": compra.fecha.isoformat() if compra and compra.fecha else None,
+        "numero": (compra.numero or "").strip() if compra else "",
+    }
+
+
 def guardar_producto_comercial(
     empresa_id: int,
     datos: dict,
@@ -325,6 +505,7 @@ def guardar_producto_comercial(
     producto.marca = (datos.get("marca") or "").strip()
     producto.categoria = (datos.get("categoria") or "").strip()
     producto.subcategoria = (datos.get("subcategoria") or "").strip()
+    producto.ubicacion = (datos.get("ubicacion") or "").strip()
     producto.unidad = (datos.get("unidad") or "pza").strip() or "pza"
     producto.stock_minimo = max(0, _parse_int(datos.get("stock_minimo")))
     producto.precio_compra = max(0.0, _parse_float(datos.get("precio_compra")))
@@ -368,6 +549,23 @@ def guardar_proveedor_comercial(
     return proveedor
 
 
+def proveedores_para_entrada(
+    empresa_id: int,
+    seleccionado_id: int | None = None,
+) -> list[InvProveedor]:
+    """Proveedores activos; incluye el seleccionado aunque esté inactivo (edición)."""
+    items = (
+        InvProveedor.query.filter_by(empresa_id=empresa_id, activo=True)
+        .order_by(InvProveedor.nombre)
+        .all()
+    )
+    if seleccionado_id and not any(p.id == seleccionado_id for p in items):
+        extra = InvProveedor.query.filter_by(id=seleccionado_id, empresa_id=empresa_id).first()
+        if extra:
+            items = sorted(items + [extra], key=lambda p: (p.nombre or "").lower())
+    return items
+
+
 def guardar_cliente_comercial(
     empresa_id: int,
     datos: dict,
@@ -401,7 +599,75 @@ def clientes_para_select(empresa_id: int) -> list[InvCliente]:
     )
 
 
-def parse_lineas_entrada_form(form) -> list[dict]:
+def moneda_base_empresa(empresa_id: int) -> str:
+    empresa = Empresa.query.get(empresa_id)
+    return normalizar_moneda((empresa.moneda if empresa else None) or "COP")
+
+
+def monedas_opciones_factura(empresa_id: int, *, incluir: str | None = None) -> list[str]:
+    """Monedas para factura de proveedor: activas de la empresa + USD/VES/COP habituales."""
+    empresa = Empresa.query.get(empresa_id)
+    base = moneda_base_empresa(empresa_id)
+    opciones: list[str] = []
+    for m in list(dict.fromkeys(monedas_activas_de(empresa))) + list(MONEDAS_VENEZUELA):
+        cod = normalizar_moneda(m, base)
+        if cod not in opciones:
+            opciones.append(cod)
+    if incluir:
+        extra = normalizar_moneda(incluir, base)
+        if extra not in opciones:
+            opciones.append(extra)
+    if base in opciones:
+        opciones.remove(base)
+    orden_pref = {"USD": 1, "VES": 2, "COP": 3}
+    opciones.sort(key=lambda x: orden_pref.get(x, 50))
+    opciones.insert(0, base)
+    return opciones
+
+
+def parse_moneda_factura_entrada(form, moneda_base: str) -> tuple[str, float]:
+    moneda = normalizar_moneda((form.get("moneda_factura") if hasattr(form, "get") else "") or moneda_base)
+    tasa = max(0.0, _parse_float(form.get("tasa_cambio") if hasattr(form, "get") else 1, 1.0))
+    if moneda == moneda_base:
+        return moneda, 1.0
+    if tasa <= 0:
+        raise ValueError(
+            f"Indica la tasa de cambio (1 {moneda} = cuántos {moneda_base}) cuando la factura no está en {moneda_base}."
+        )
+    return moneda, tasa
+
+
+def precio_factura_a_base(
+    precio_factura: float,
+    *,
+    moneda_factura: str,
+    moneda_base: str,
+    tasa: float,
+) -> float:
+    if moneda_factura == moneda_base:
+        return round(float(precio_factura), 2)
+    return round(float(precio_factura) * float(tasa), 2)
+
+
+def precio_base_a_factura(
+    precio_base: float,
+    *,
+    moneda_factura: str,
+    moneda_base: str,
+    tasa: float,
+) -> float:
+    if moneda_factura == moneda_base or tasa <= 0:
+        return round(float(precio_base), 4)
+    return round(float(precio_base) / float(tasa), 4)
+
+
+def parse_lineas_entrada_form(
+    form,
+    *,
+    moneda_factura: str,
+    moneda_base: str,
+    tasa: float,
+) -> list[dict]:
     producto_ids = form.getlist("linea_producto_id")
     cantidades = form.getlist("linea_cantidad")
     precios = form.getlist("linea_precio")
@@ -414,15 +680,72 @@ def parse_lineas_entrada_form(form) -> list[dict]:
         cantidad = _parse_int(cantidades[i] if i < len(cantidades) else 0)
         if cantidad <= 0:
             continue
+        precio_factura = max(0.0, _parse_float(precios[i] if i < len(precios) else 0))
+        precio_base = precio_factura_a_base(
+            precio_factura,
+            moneda_factura=moneda_factura,
+            moneda_base=moneda_base,
+            tasa=tasa,
+        )
         lineas.append(
             {
                 "producto_id": int(pid_str),
                 "cantidad": cantidad,
-                "precio_unitario": max(0.0, _parse_float(precios[i] if i < len(precios) else 0)),
+                "precio_unitario": precio_base,
                 "marca": (marcas[i] if i < len(marcas) else "").strip(),
             }
         )
     return lineas
+
+
+def _lineas_iniciales_entrada_json(compra: InvCompra | None, moneda_base: str) -> list[dict]:
+    if not compra:
+        return []
+    moneda_f = normalizar_moneda(compra.moneda_factura or moneda_base)
+    tasa = float(compra.tasa_cambio or 1.0)
+    filas: list[dict] = []
+    for l in compra.lineas:
+        precio_base = float(l.precio_unitario or 0)
+        filas.append(
+            {
+                "producto_id": l.producto_id,
+                "cantidad": int(l.cantidad or 0),
+                "precio_unitario": precio_base_a_factura(
+                    precio_base,
+                    moneda_factura=moneda_f,
+                    moneda_base=moneda_base,
+                    tasa=tasa,
+                ),
+                "marca": l.marca or "",
+            }
+        )
+    return filas
+
+
+IVA_ENTRADA_TASA = 0.19
+
+
+def parse_tipo_iva_entrada(form) -> str:
+    raw = (form.get("tipo_iva") if hasattr(form, "get") else "exento") or "exento"
+    return "con_iva" if str(raw).strip().lower() == "con_iva" else "exento"
+
+
+def calcular_totales_entrada(subtotal_lineas: float, tipo_iva: str) -> tuple[float, float, float]:
+    sub = round(float(subtotal_lineas), 2)
+    if tipo_iva == "con_iva":
+        iva = round(sub * IVA_ENTRADA_TASA, 2)
+    else:
+        iva = 0.0
+    return sub, iva, round(sub + iva, 2)
+
+
+def _asignar_totales_compra(compra: InvCompra, subtotal_lineas: float, tipo_iva: str) -> None:
+    sub, iva, total = calcular_totales_entrada(subtotal_lineas, tipo_iva)
+    compra.tipo_iva = tipo_iva
+    compra.subtotal = sub
+    compra.monto_iva = iva
+    compra.total = total
+    compra.estado_pago = _calcular_estado_pago(total, float(compra.monto_pagado or 0))
 
 
 def registrar_entrada_mercancia(
@@ -433,6 +756,12 @@ def registrar_entrada_mercancia(
     numero: str,
     notas: str,
     lineas: list[dict],
+    moneda_factura: str,
+    moneda_base: str,
+    tasa_cambio: float,
+    tipo_iva: str = "exento",
+    fecha_factura: date | None = None,
+    fecha_vencimiento: date | None = None,
 ) -> InvCompra:
     if not lineas:
         raise ValueError("Agrega al menos un producto con cantidad mayor a cero.")
@@ -447,8 +776,14 @@ def registrar_entrada_mercancia(
         proveedor_id=proveedor_id,
         numero=(numero or "").strip() or siguiente_numero_entrada(empresa_id),
         fecha=fecha,
+        fecha_factura=fecha_factura,
+        fecha_vencimiento=fecha_vencimiento,
         notas=(notas or "").strip(),
+        moneda_factura=normalizar_moneda(moneda_factura),
+        tasa_cambio=float(tasa_cambio) if moneda_factura != moneda_base else 1.0,
         total=0.0,
+        estado_pago=ESTADO_PAGO_PENDIENTE,
+        monto_pagado=0.0,
     )
     db.session.add(compra)
     db.session.flush()
@@ -481,7 +816,85 @@ def registrar_entrada_mercancia(
         if marca:
             producto.marca = marca
 
-    compra.total = round(total, 2)
+    _asignar_totales_compra(compra, total, tipo_iva)
+    return compra
+
+
+def actualizar_entrada_mercancia(
+    empresa_id: int,
+    compra_id: int,
+    *,
+    proveedor_id: int | None,
+    fecha: date,
+    numero: str,
+    notas: str,
+    lineas: list[dict],
+    moneda_factura: str,
+    moneda_base: str,
+    tasa_cambio: float,
+    tipo_iva: str = "exento",
+    fecha_factura: date | None = None,
+    fecha_vencimiento: date | None = None,
+) -> InvCompra:
+    compra = InvCompra.query.filter_by(id=compra_id, empresa_id=empresa_id).first()
+    if not compra:
+        raise ValueError("Entrada no encontrada.")
+    if not lineas:
+        raise ValueError("Agrega al menos un producto con cantidad mayor a cero.")
+
+    if proveedor_id:
+        prov = InvProveedor.query.filter_by(id=proveedor_id, empresa_id=empresa_id).first()
+        if not prov:
+            raise ValueError("Proveedor no válido.")
+
+    for linea_old in list(compra.lineas):
+        producto = InvProducto.query.filter_by(
+            id=linea_old.producto_id, empresa_id=empresa_id
+        ).first()
+        if producto:
+            producto.stock = max(0, int(producto.stock or 0) - int(linea_old.cantidad or 0))
+        db.session.delete(linea_old)
+    db.session.flush()
+
+    compra.proveedor_id = proveedor_id
+    compra.fecha = fecha
+    compra.fecha_factura = fecha_factura
+    compra.fecha_vencimiento = fecha_vencimiento
+    compra.moneda_factura = normalizar_moneda(moneda_factura)
+    compra.tasa_cambio = float(tasa_cambio) if moneda_factura != moneda_base else 1.0
+    if (numero or "").strip():
+        compra.numero = (numero or "").strip()
+    compra.notas = (notas or "").strip()
+
+    total = 0.0
+    for linea in lineas:
+        producto = InvProducto.query.filter_by(id=linea["producto_id"], empresa_id=empresa_id).first()
+        if not producto:
+            raise ValueError("Uno de los productos seleccionados no existe.")
+        if not producto.activo:
+            raise ValueError(f"El producto «{producto.nombre}» está inactivo.")
+        cantidad = int(linea["cantidad"])
+        precio = float(linea["precio_unitario"])
+        marca = (linea.get("marca") or "").strip()
+        subtotal = round(cantidad * precio, 2)
+        total += subtotal
+        db.session.add(
+            InvCompraLinea(
+                compra_id=compra.id,
+                producto_id=producto.id,
+                marca=marca,
+                cantidad=cantidad,
+                precio_unitario=precio,
+                subtotal=subtotal,
+            )
+        )
+        producto.stock = int(producto.stock or 0) + cantidad
+        if precio > 0:
+            producto.precio_compra = precio
+        if marca:
+            producto.marca = marca
+
+    _asignar_totales_compra(compra, total, tipo_iva)
     return compra
 
 
@@ -534,6 +947,40 @@ def productos_pos_json(empresa_id: int) -> list[dict]:
     return items
 
 
+def productos_entrada_json(
+    empresa_id: int,
+    incluir_ids: list[int] | None = None,
+) -> list[dict]:
+    """Catálogo para búsqueda en registrar entrada (referencia / nombre)."""
+    vistos: set[int] = set()
+    items: list[dict] = []
+
+    def _append(p: InvProducto) -> None:
+        if p.id in vistos:
+            return
+        vistos.add(p.id)
+        items.append(
+            {
+                "id": p.id,
+                "sku": p.sku,
+                "nombre": p.nombre,
+                "marca": p.marca or "",
+                "stock": int(p.stock or 0),
+                "precio_compra": float(p.precio_compra or 0),
+            }
+        )
+
+    for p in productos_para_select(empresa_id):
+        _append(p)
+    for pid in incluir_ids or []:
+        if pid in vistos:
+            continue
+        p = InvProducto.query.filter_by(id=pid, empresa_id=empresa_id).first()
+        if p:
+            _append(p)
+    return items
+
+
 def parse_lineas_venta_form(form) -> list[dict]:
     producto_ids = form.getlist("linea_producto_id")
     cantidades = form.getlist("linea_cantidad")
@@ -576,6 +1023,41 @@ def _parse_fecha_opcional(val) -> date | None:
         return datetime.strptime(str(raw), "%Y-%m-%d").date()
     except ValueError:
         return None
+
+
+def _calcular_estado_pago(total: float, monto_pagado: float) -> str:
+    return _calcular_estado_cobro(total, monto_pagado)
+
+
+def registrar_pago_compra(
+    compra: InvCompra,
+    *,
+    monto: float,
+    fecha: date,
+    cuenta_origen: str = "",
+    numero_comprobante: str = "",
+    notas: str = "",
+) -> InvCompraPago:
+    if compra.estado_pago == ESTADO_PAGO_PAGADA:
+        raise ValueError("Esta factura ya está pagada.")
+    monto = round(float(monto), 2)
+    if monto <= 0:
+        raise ValueError("Indica un monto de pago mayor a cero.")
+    saldo = compra.saldo_pendiente
+    if monto > saldo + 0.01:
+        raise ValueError(f"El pago ({monto}) supera el saldo pendiente ({saldo}).")
+    pago = InvCompraPago(
+        compra_id=compra.id,
+        monto=monto,
+        fecha=fecha,
+        cuenta_origen=(cuenta_origen or "").strip(),
+        numero_comprobante=(numero_comprobante or "").strip(),
+        notas=(notas or "").strip(),
+    )
+    db.session.add(pago)
+    compra.monto_pagado = round(float(compra.monto_pagado or 0) + monto, 2)
+    compra.estado_pago = _calcular_estado_pago(compra.total, compra.monto_pagado)
+    return pago
 
 
 def registrar_abono_venta(
