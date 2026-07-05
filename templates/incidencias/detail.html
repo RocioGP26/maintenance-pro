@@ -71,7 +71,7 @@
       <div class="card-body">
         <h6 class="fw-semibold text-success mb-2"><i class="bi bi-check-circle me-1"></i> Resolución</h6>
         <div class="small mb-2">
-          Cerrada el {{ inc.resuelto_en.strftime('%d/%m/%Y %H:%M') if inc.resuelto_en else '—' }}
+          Cerrada el {{ inc.resuelto_en|formato_fecha_hora }}
           {% if inc.resuelto_por %} por {{ inc.resuelto_por.etiqueta() }}{% endif %}
         </div>
         {% if inc.notas_resolucion %}
@@ -109,7 +109,7 @@
         </div>
         <div class="mb-3">
           <div class="text-muted text-uppercase fw-semibold mb-1" style="font-size:0.65rem;letter-spacing:.06em;">Reportado</div>
-          <div>{{ inc.reportado_en.strftime('%d/%m/%Y %H:%M') if inc.reportado_en else '—' }}</div>
+          <div>{{ inc.reportado_en|formato_fecha_hora }}</div>
           {% if inc.usuario %}
           <div class="text-muted">Usuario: {{ inc.usuario.etiqueta() }}</div>
           {% endif %}

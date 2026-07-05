@@ -187,7 +187,7 @@
 
     <div class="card card-dashboard">
       <div class="card-body small text-muted">
-        <p class="mb-1"><strong>Registrada:</strong> {{ empresa.fecha_registro.strftime('%d/%m/%Y %H:%M') if empresa.fecha_registro else '—' }}</p>
+        <p class="mb-1"><strong>Registrada:</strong> {{ empresa.fecha_registro|formato_fecha_hora if empresa.fecha_registro else '—' }}</p>
         <p class="mb-0">Los cambios de sector actualizan el dashboard al recargar la página de inicio.</p>
       </div>
     </div>
@@ -206,7 +206,7 @@
             <div class="d-flex justify-content-between gap-2">
               <span class="small fw-semibold">{{ audit_labels.get(log.accion, log.accion) }}</span>
               <span class="small text-muted text-nowrap">
-                {{ log.created_at.strftime('%d/%m/%Y %H:%M') if log.created_at else '—' }}
+                {{ log.created_at|formato_fecha_hora }}
               </span>
             </div>
             <div class="small text-muted">{{ log.detalle or '—' }}</div>

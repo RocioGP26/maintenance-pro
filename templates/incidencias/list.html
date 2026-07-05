@@ -131,7 +131,7 @@
               </span>
             </td>
             <td class="small text-muted text-nowrap">
-              {{ inc.reportado_en.strftime('%d/%m/%Y %H:%M') if inc.reportado_en else '—' }}
+              {{ inc.reportado_en|formato_fecha_hora }}
             </td>
           </tr>
           {% else %}

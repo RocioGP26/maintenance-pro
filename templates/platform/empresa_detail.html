@@ -106,7 +106,15 @@
 
     <h3>Registro</h3>
 
-    <p>{% if e.fecha_registro %}{{ e.fecha_registro.strftime('%d/%m/%Y') }}{% else %}—{% endif %}</p>
+    <p class="mb-0">{% if e.fecha_registro %}{{ e.fecha_registro|formato_fecha_hora('%d/%m/%Y') }}{% else %}—{% endif %}</p>
+
+  </div>
+
+  <div class="platform-detail-card">
+
+    <h3>Zona horaria</h3>
+
+    <p class="mb-0">{{ zona_horaria_label(e.zona_horaria) }}</p>
 
   </div>
 
@@ -311,7 +319,7 @@
 
           <tr>
 
-            <td class="small text-nowrap">{{ a.created_at.strftime('%d/%m/%Y %H:%M') if a.created_at else '—' }}</td>
+            <td class="small text-nowrap">{{ a.created_at|formato_fecha_hora }}</td>
 
             <td class="small">{{ a.username or '—' }}</td>
 

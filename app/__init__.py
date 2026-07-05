@@ -45,6 +45,17 @@ def create_app(config_name: str | None = None):
     db.init_app(app)
     migrate.init_app(app, db)
 
+    if (app.config.get("SQLALCHEMY_DATABASE_URI") or "").startswith("sqlite:"):
+        from sqlalchemy import event
+        from sqlalchemy.engine import Engine
+
+        @event.listens_for(Engine, "connect")
+        def _sqlite_pragmas(dbapi_connection, _connection_record):
+            cursor = dbapi_connection.cursor()
+            cursor.execute("PRAGMA journal_mode=WAL")
+            cursor.execute("PRAGMA busy_timeout=30000")
+            cursor.close()
+
     @app.teardown_appcontext
     def _finalize_db_session(exc):
         """Confirma cambios pendientes al cerrar la petición (red de seguridad)."""
@@ -101,9 +112,29 @@ def create_app(config_name: str | None = None):
 
     from app.custom_fields import seccion_campos_cuatro_por_fila
     from app.password_policy import PASSWORD_REQUIREMENTS_TEXT
+    from app.locale_options import zona_horaria_label
+    from app.timezone_utils import (
+        empresa_desde_contexto,
+        formato_fecha_hora as _formato_fecha_hora,
+        hoy_local,
+    )
 
     app.jinja_env.filters["cuatro_por_fila"] = seccion_campos_cuatro_por_fila
     app.jinja_env.globals["password_requirements"] = PASSWORD_REQUIREMENTS_TEXT
+    app.jinja_env.globals["hoy_local"] = hoy_local
+    app.jinja_env.globals["zona_horaria_label"] = zona_horaria_label
+
+    from jinja2 import pass_context
+
+    @app.template_filter("formato_fecha_hora")
+    @pass_context
+    def jinja_formato_fecha_hora(context, dt, fmt="%d/%m/%Y %H:%M"):
+        empresa = empresa_desde_contexto(context)
+        return _formato_fecha_hora(dt, fmt, empresa=empresa, desde_utc=True)
+
+    @app.template_filter("formato_fecha_local")
+    def jinja_formato_fecha_local(dt, fmt="%d/%m/%Y %H:%M"):
+        return _formato_fecha_hora(dt, fmt, desde_utc=False)
 
     @app.context_processor
     def inject_globals():

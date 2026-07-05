@@ -74,6 +74,21 @@ def defaults_pais_preset(clave: str | None) -> dict[str, str]:
     return {"pais": "", "moneda": "USD", "zona_horaria": "America/Bogota", "preset": "otro"}
 
 
+def zona_horaria_por_pais(pais: str | None) -> str | None:
+    preset = pais_preset_por_nombre(pais)
+    if preset == "otro" and not (pais or "").strip():
+        return None
+    return defaults_pais_preset(preset).get("zona_horaria")
+
+
+def zona_horaria_label(zona: str | None) -> str:
+    clave = (zona or "America/Bogota").strip()
+    for val, label in ZONAS_HORARIA_ONBOARDING:
+        if val == clave:
+            return label
+    return clave.replace("_", " ")
+
+
 def monedas_para_pais(clave: str | None) -> list[tuple[str, str]]:
     """Opciones de moneda ordenadas según el país (Venezuela: USD, VES, COP)."""
     key = (clave or "").strip().lower()

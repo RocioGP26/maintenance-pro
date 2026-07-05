@@ -21,6 +21,27 @@ def _default_sqlite_uri() -> str:
     return "sqlite:///" + str(BASE_DIR / "mantenimiento.db")
 
 
+def _is_sqlite_uri(uri: str) -> bool:
+    return (uri or "").strip().lower().startswith("sqlite:")
+
+
+def sqlite_engine_options() -> dict:
+    """SQLite local: más tolerante a lecturas concurrentes (Flask debug, DB Browser)."""
+    return {
+        "connect_args": {"timeout": 30},
+        "pool_pre_ping": True,
+    }
+
+
+def engine_options_for(uri: str) -> dict:
+    if _is_sqlite_uri(uri):
+        return sqlite_engine_options()
+    return {
+        "pool_pre_ping": True,
+        "pool_recycle": 300,
+    }
+
+
 def _env_flag(name: str, default: bool = False) -> bool:
     return os.environ.get(name, str(default)).strip().lower() in ("1", "true", "yes")
 
@@ -59,6 +80,9 @@ class DevelopmentConfig(Config):
     DEBUG = True
     SECRET_KEY = os.environ.get("SECRET_KEY", "").strip() or "dev-mantenimiento-pro"
     SQLALCHEMY_DATABASE_URI = normalize_database_url(
+        os.environ.get("DATABASE_URL", _default_sqlite_uri())
+    )
+    SQLALCHEMY_ENGINE_OPTIONS = engine_options_for(
         os.environ.get("DATABASE_URL", _default_sqlite_uri())
     )
     LOG_LEVEL = os.environ.get("LOG_LEVEL", "DEBUG").upper()

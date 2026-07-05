@@ -50,10 +50,11 @@ from app.inventario_comercial.service import (
     siguiente_numero_venta,
     ultimo_costo_entrada_producto,
 )
-from app.models import InvCliente, InvCompra, InvProducto, InvProveedor, InvVenta
+from app.models import Empresa, InvCliente, InvCompra, InvProducto, InvProveedor, InvVenta
 from app.module_guard import require_module
 from app.modules import MODULO_INVENTARIO
 from app.tenancy.queries import query_tenant
+from app.timezone_utils import hoy_local
 
 inv_comercial_bp = Blueprint("inv_comercial", __name__, url_prefix="/comercial")
 
@@ -151,6 +152,11 @@ def _query_productos_lista(
     return query.order_by(InvProducto.nombre), estado
 
 
+def _hoy_empresa(eid: int | None = None) -> date:
+    empresa = Empresa.query.get(eid) if eid else None
+    return hoy_local(empresa)
+
+
 @inv_comercial_bp.route("/dashboard")
 @login_required
 @require_module(MODULO_INVENTARIO)
@@ -162,11 +168,11 @@ def dashboard_inventario():
         return redirect(url_for("main.login"))
     show_welcome = request.args.get("welcome") == "1" or session.pop("show_welcome", False)
     session.pop("show_tour", False)
-    kpis = kpis_dashboard_inventario(eid, date.today())
+    kpis = kpis_dashboard_inventario(eid, _hoy_empresa(eid))
     return render_template(
         "inventario_comercial/dashboard.html",
         kpis=kpis,
-        hoy=date.today(),
+        hoy=_hoy_empresa(eid),
         show_welcome=show_welcome,
     )
 

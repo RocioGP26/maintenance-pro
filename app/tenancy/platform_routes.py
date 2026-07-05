@@ -266,6 +266,7 @@ def empresa_detail(id: int):
     return render_template(
         "platform/empresa_detail.html",
         fila=fila,
+        empresa=empresa,
         estado_meta=ESTADO_META,
         facturas=facturas_empresa(id),
         actividad=ultima_actividad_empresa(id),
