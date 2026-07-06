@@ -32,10 +32,11 @@ def upgrade():
             """
             UPDATE inv_compra_lineas
             SET tasa_iva = CASE
-                WHEN subtotal > 0 AND monto_iva > 0 THEN ROUND(monto_iva / subtotal * 100.0, 2)
+                WHEN subtotal > 0 AND monto_iva > 0
+                  THEN ROUND(CAST(monto_iva / subtotal * 100.0 AS numeric), 2)
                 ELSE 19.0
             END
-            WHERE tasa_iva IS NULL OR tasa_iva = 0
+            WHERE (tasa_iva IS NULL OR tasa_iva = 0)
               AND compra_id IN (
                 SELECT id FROM inv_compras WHERE LOWER(COALESCE(tipo_iva, '')) = 'con_iva'
               )

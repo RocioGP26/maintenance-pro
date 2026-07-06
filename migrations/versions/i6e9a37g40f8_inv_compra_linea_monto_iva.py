@@ -33,8 +33,8 @@ def upgrade():
         sa.text(
             """
             UPDATE inv_compra_lineas
-            SET monto_iva = ROUND(subtotal * :tasa, 2)
-            WHERE monto_iva IS NULL OR monto_iva = 0
+            SET monto_iva = ROUND(CAST(subtotal * :tasa AS numeric), 2)
+            WHERE (monto_iva IS NULL OR monto_iva = 0)
               AND compra_id IN (
                 SELECT id FROM inv_compras WHERE LOWER(COALESCE(tipo_iva, '')) = 'con_iva'
               )
