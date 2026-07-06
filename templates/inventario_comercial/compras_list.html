@@ -50,6 +50,8 @@
         <th>Factura</th>
         <th>Vencimiento</th>
         <th>Proveedor</th>
+        <th class="text-end">Subtotal</th>
+        <th class="text-end">IVA</th>
         <th class="text-end">Total</th>
         <th class="text-end">Registros</th>
         <th class="text-end">Unidades</th>
@@ -83,7 +85,15 @@
           {% endif %}
         </td>
         <td>{{ c.proveedor.nombre if c.proveedor else '—' }}</td>
-        <td class="text-end">{{ formato_moneda(c.total, empresa_actual.moneda if empresa_actual else 'COP') }}</td>
+        <td class="text-end">{{ formato_moneda(c.subtotal or c.total, empresa_actual.moneda if empresa_actual else 'COP') }}</td>
+        <td class="text-end">
+          {% if c.tipo_iva == 'con_iva' %}
+          {{ formato_moneda(c.monto_iva or 0, empresa_actual.moneda if empresa_actual else 'COP') }}
+          {% else %}
+          <span class="text-muted">Exento</span>
+          {% endif %}
+        </td>
+        <td class="text-end fw-semibold">{{ formato_moneda(c.total, empresa_actual.moneda if empresa_actual else 'COP') }}</td>
         <td class="text-end">{{ c.lineas|length }}</td>
         <td class="text-end">{{ c.lineas|sum(attribute='cantidad') }}</td>
         <td class="text-end">
@@ -95,7 +105,7 @@
       </tr>
       {% else %}
       <tr>
-        <td colspan="9" class="text-muted text-center py-4">
+        <td colspan="11" class="text-muted text-center py-4">
           {% if alerta == 'por_vencer' %}
           No hay facturas por vencer en los próximos {{ cxp_dias_alerta }} días.
           {% elif alerta == 'vencidas' %}

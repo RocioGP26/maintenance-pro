@@ -1384,6 +1384,30 @@ class InvCompraLinea(db.Model):
     cantidad = db.Column(db.Integer, default=1, nullable=False)
     precio_unitario = db.Column(db.Float, default=0.0)
     subtotal = db.Column(db.Float, default=0.0)
+    tasa_iva = db.Column(db.Float, default=0.0)
+    monto_iva = db.Column(db.Float, default=0.0)
+
+    @property
+    def tasa_iva_pct(self) -> float:
+        tasa = float(self.tasa_iva or 0)
+        if tasa > 0:
+            return round(tasa, 2)
+        sub = float(self.subtotal or 0)
+        iva = float(self.monto_iva or 0)
+        if sub > 0 and iva > 0:
+            return round(iva / sub * 100, 2)
+        return 0.0
+
+    @property
+    def iva_linea(self) -> float:
+        compra = self.compra
+        if compra and (compra.tipo_iva or "").strip().lower() == "con_iva":
+            return round(float(self.monto_iva or 0), 2)
+        return 0.0
+
+    @property
+    def total_linea(self) -> float:
+        return round(float(self.subtotal or 0) + self.iva_linea, 2)
 
     compra = db.relationship("InvCompra", back_populates="lineas")
     producto = db.relationship("InvProducto", backref="lineas_compra")

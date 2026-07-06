@@ -667,11 +667,14 @@ def parse_lineas_entrada_form(
     moneda_factura: str,
     moneda_base: str,
     tasa: float,
+    tipo_iva: str = "exento",
 ) -> list[dict]:
     producto_ids = form.getlist("linea_producto_id")
     cantidades = form.getlist("linea_cantidad")
     precios = form.getlist("linea_precio")
     marcas = form.getlist("linea_marca")
+    ivas = form.getlist("linea_iva")
+    con_iva = (tipo_iva or "").strip().lower() == "con_iva"
     lineas: list[dict] = []
     for i, pid in enumerate(producto_ids):
         pid_str = (pid or "").strip()
@@ -687,12 +690,21 @@ def parse_lineas_entrada_form(
             moneda_base=moneda_base,
             tasa=tasa,
         )
+        subtotal_linea = round(cantidad * precio_base, 2)
+        tasa_iva = (
+            max(0.0, min(100.0, _parse_float(ivas[i] if i < len(ivas) else 0)))
+            if con_iva
+            else 0.0
+        )
+        monto_iva = calcular_monto_iva_linea(subtotal_linea, tasa_iva) if con_iva else 0.0
         lineas.append(
             {
                 "producto_id": int(pid_str),
                 "cantidad": cantidad,
                 "precio_unitario": precio_base,
                 "marca": (marcas[i] if i < len(marcas) else "").strip(),
+                "tasa_iva": round(tasa_iva, 2),
+                "monto_iva": monto_iva,
             }
         )
     return lineas
@@ -717,6 +729,7 @@ def _lineas_iniciales_entrada_json(compra: InvCompra | None, moneda_base: str) -
                     tasa=tasa,
                 ),
                 "marca": l.marca or "",
+                "tasa_iva": tasa_iva_linea_guardada(l),
             }
         )
     return filas
@@ -724,23 +737,61 @@ def _lineas_iniciales_entrada_json(compra: InvCompra | None, moneda_base: str) -
 
 IVA_ENTRADA_TASA = 0.19
 
+IVA_PCT_POR_PAIS: dict[str, float] = {
+    "colombia": 19.0,
+    "venezuela": 16.0,
+    "mexico": 16.0,
+    "peru": 18.0,
+}
+
+
+def iva_default_pct_empresa(empresa) -> float:
+    from app.locale_options import pais_preset_por_nombre
+
+    preset = pais_preset_por_nombre(getattr(empresa, "pais", None) if empresa else None)
+    return IVA_PCT_POR_PAIS.get(preset, 19.0)
+
+
+def calcular_monto_iva_linea(subtotal: float, tasa_iva_pct: float) -> float:
+    return round(float(subtotal) * max(0.0, float(tasa_iva_pct)) / 100, 2)
+
+
+def tasa_iva_linea_guardada(linea: InvCompraLinea) -> float:
+    tasa = float(linea.tasa_iva or 0)
+    if tasa > 0:
+        return round(tasa, 2)
+    sub = float(linea.subtotal or 0)
+    iva = float(linea.monto_iva or 0)
+    if sub > 0 and iva > 0:
+        return round(iva / sub * 100, 2)
+    return 0.0
+
 
 def parse_tipo_iva_entrada(form) -> str:
     raw = (form.get("tipo_iva") if hasattr(form, "get") else "exento") or "exento"
     return "con_iva" if str(raw).strip().lower() == "con_iva" else "exento"
 
 
-def calcular_totales_entrada(subtotal_lineas: float, tipo_iva: str) -> tuple[float, float, float]:
+def calcular_totales_entrada(
+    subtotal_lineas: float,
+    monto_iva_lineas: float,
+    tipo_iva: str,
+) -> tuple[float, float, float]:
     sub = round(float(subtotal_lineas), 2)
     if tipo_iva == "con_iva":
-        iva = round(sub * IVA_ENTRADA_TASA, 2)
+        iva = round(float(monto_iva_lineas), 2)
     else:
         iva = 0.0
     return sub, iva, round(sub + iva, 2)
 
 
-def _asignar_totales_compra(compra: InvCompra, subtotal_lineas: float, tipo_iva: str) -> None:
-    sub, iva, total = calcular_totales_entrada(subtotal_lineas, tipo_iva)
+def _asignar_totales_compra(
+    compra: InvCompra,
+    subtotal_lineas: float,
+    monto_iva_lineas: float,
+    tipo_iva: str,
+) -> None:
+    sub, iva, total = calcular_totales_entrada(subtotal_lineas, monto_iva_lineas, tipo_iva)
     compra.tipo_iva = tipo_iva
     compra.subtotal = sub
     compra.monto_iva = iva
@@ -788,7 +839,8 @@ def registrar_entrada_mercancia(
     db.session.add(compra)
     db.session.flush()
 
-    total = 0.0
+    total_sub = 0.0
+    total_iva = 0.0
     for linea in lineas:
         producto = InvProducto.query.filter_by(
             id=linea["producto_id"], empresa_id=empresa_id, activo=True
@@ -799,7 +851,10 @@ def registrar_entrada_mercancia(
         precio = float(linea["precio_unitario"])
         marca = (linea.get("marca") or "").strip()
         subtotal = round(cantidad * precio, 2)
-        total += subtotal
+        tasa_iva = round(float(linea.get("tasa_iva") or 0), 2) if tipo_iva == "con_iva" else 0.0
+        monto_iva = calcular_monto_iva_linea(subtotal, tasa_iva) if tipo_iva == "con_iva" else 0.0
+        total_sub += subtotal
+        total_iva += monto_iva
         db.session.add(
             InvCompraLinea(
                 compra_id=compra.id,
@@ -808,6 +863,8 @@ def registrar_entrada_mercancia(
                 cantidad=cantidad,
                 precio_unitario=precio,
                 subtotal=subtotal,
+                tasa_iva=tasa_iva,
+                monto_iva=monto_iva,
             )
         )
         producto.stock = int(producto.stock or 0) + cantidad
@@ -816,7 +873,7 @@ def registrar_entrada_mercancia(
         if marca:
             producto.marca = marca
 
-    _asignar_totales_compra(compra, total, tipo_iva)
+    _asignar_totales_compra(compra, total_sub, total_iva, tipo_iva)
     return compra
 
 
@@ -866,7 +923,8 @@ def actualizar_entrada_mercancia(
         compra.numero = (numero or "").strip()
     compra.notas = (notas or "").strip()
 
-    total = 0.0
+    total_sub = 0.0
+    total_iva = 0.0
     for linea in lineas:
         producto = InvProducto.query.filter_by(id=linea["producto_id"], empresa_id=empresa_id).first()
         if not producto:
@@ -877,7 +935,10 @@ def actualizar_entrada_mercancia(
         precio = float(linea["precio_unitario"])
         marca = (linea.get("marca") or "").strip()
         subtotal = round(cantidad * precio, 2)
-        total += subtotal
+        tasa_iva = round(float(linea.get("tasa_iva") or 0), 2) if tipo_iva == "con_iva" else 0.0
+        monto_iva = calcular_monto_iva_linea(subtotal, tasa_iva) if tipo_iva == "con_iva" else 0.0
+        total_sub += subtotal
+        total_iva += monto_iva
         db.session.add(
             InvCompraLinea(
                 compra_id=compra.id,
@@ -886,6 +947,8 @@ def actualizar_entrada_mercancia(
                 cantidad=cantidad,
                 precio_unitario=precio,
                 subtotal=subtotal,
+                tasa_iva=tasa_iva,
+                monto_iva=monto_iva,
             )
         )
         producto.stock = int(producto.stock or 0) + cantidad
@@ -894,7 +957,7 @@ def actualizar_entrada_mercancia(
         if marca:
             producto.marca = marca
 
-    _asignar_totales_compra(compra, total, tipo_iva)
+    _asignar_totales_compra(compra, total_sub, total_iva, tipo_iva)
     return compra
 
 

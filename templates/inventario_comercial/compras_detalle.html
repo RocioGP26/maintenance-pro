@@ -1,241 +1,251 @@
-{% extends "base.html" %}
-
-{% block title %}Entrada {{ compra.numero }} — {{ app_name }}{% endblock %}
-{% block page_title %}Detalle de entrada{% endblock %}
-
-{% block content %}
-{% set moneda_base = empresa_actual.moneda if empresa_actual else 'COP' %}
-<div class="mb-3 d-flex flex-wrap gap-2">
-  <a href="{{ url_for('inv_comercial.compras_list') }}" class="btn btn-sm btn-outline-secondary">
-    <i class="bi bi-arrow-left"></i> Volver al listado
-  </a>
-  <a href="{{ url_for('inv_comercial.compras_editar', id=compra.id) }}" class="btn btn-sm btn-outline-primary">
-    <i class="bi bi-pencil"></i> Editar entrada
-  </a>
-  {% if compra.saldo_pendiente > 0 %}
-  <button type="button" class="btn btn-sm btn-success btn-registrar-pago"
-          data-compra-id="{{ compra.id }}"
-          data-numero="{{ compra.numero or ('#' ~ compra.id) }}"
-          data-proveedor="{{ compra.proveedor.nombre if compra.proveedor else 'Sin proveedor' }}"
-          data-saldo="{{ compra.saldo_pendiente }}">
-    <i class="bi bi-cash-coin"></i> Registrar pago
-  </button>
-  {% endif %}
-</div>
-
-<div class="row g-4">
-  <div class="col-lg-4">
-    <div class="card card-dashboard mb-4">
-      <div class="card-body">
-        <h6 class="text-muted text-uppercase small fw-semibold mb-3">Resumen</h6>
-        <dl class="row small mb-0">
-          <dt class="col-5">Número</dt>
-          <dd class="col-7"><code>{{ compra.numero or ('#' ~ compra.id) }}</code></dd>
-          <dt class="col-5">Recepción</dt>
-          <dd class="col-7">{{ compra.fecha.strftime('%d/%m/%Y') }}</dd>
-          <dt class="col-5">Factura</dt>
-          <dd class="col-7">
-            {% if compra.fecha_factura %}
-            {{ compra.fecha_factura.strftime('%d/%m/%Y') }}
-            {% else %}
-            —
-            {% endif %}
-          </dd>
-          <dt class="col-5">Vencimiento</dt>
-          <dd class="col-7">
-            {% if compra.fecha_vencimiento %}
-            {{ compra.fecha_vencimiento.strftime('%d/%m/%Y') }}
-            {% if compra.cxp_vencida %}
-            <span class="badge text-bg-danger ms-1">Vencida</span>
-            {% elif compra.cxp_por_vencer %}
-            <span class="badge text-bg-warning text-dark ms-1">Vence en {{ compra.dias_hasta_vencimiento }} d.</span>
-            {% endif %}
-            {% else %}
-            —
-            {% endif %}
-          </dd>
-          <dt class="col-5">Proveedor</dt>
-          <dd class="col-7">
-            {% if compra.proveedor %}
-            <a href="{{ url_for('inv_comercial.cxp_list', proveedor_id=compra.proveedor_id) }}">{{ compra.proveedor.nombre }}</a>
-            {% else %}
-            —
-            {% endif %}
-          </dd>
-          <dt class="col-5">Moneda factura</dt>
-          <dd class="col-7">
-            {{ compra.moneda_factura or moneda_base }}
-            {% if compra.moneda_factura and compra.moneda_factura != moneda_base and compra.tasa_cambio %}
-            <span class="text-muted">· tasa {{ '%.2f'|format(compra.tasa_cambio) }} → {{ moneda_base }}</span>
-            {% endif %}
-          </dd>
-          <dt class="col-5">Subtotal</dt>
-          <dd class="col-7">{{ formato_moneda(compra.subtotal or compra.total, moneda_base) }}</dd>
-          {% if compra.tipo_iva == 'con_iva' and compra.monto_iva %}
-          <dt class="col-5">IVA (19%)</dt>
-          <dd class="col-7">{{ formato_moneda(compra.monto_iva, moneda_base) }}</dd>
-          {% endif %}
-          <dt class="col-5">Total factura</dt>
-          <dd class="col-7 fw-semibold">{{ formato_moneda(compra.total, moneda_base) }}</dd>
-          <dt class="col-5">Estado pago</dt>
-          <dd class="col-7">{{ compra.estado_pago_label }}</dd>
-          <dt class="col-5">Pagado</dt>
-          <dd class="col-7">{{ formato_moneda(compra.monto_pagado, moneda_base) }}</dd>
-          <dt class="col-5">Saldo</dt>
-          <dd class="col-7 {% if compra.saldo_pendiente > 0 %}text-danger fw-semibold{% endif %}">
-            {{ formato_moneda(compra.saldo_pendiente, moneda_base) }}
-          </dd>
-          <dt class="col-5">Tipo</dt>
-          <dd class="col-7">
-            {% if compra.tipo_iva == 'con_iva' %}Factura con IVA (19%){% else %}Manual / Exento (0%){% endif %}
-          </dd>
-          <dt class="col-5">Registros</dt>
-          <dd class="col-7">{{ compra.lineas|length }}</dd>
-          <dt class="col-5">Unidades</dt>
-          <dd class="col-7 fw-semibold">{{ compra.lineas|sum(attribute='cantidad') }}</dd>
-        </dl>
-        {% if compra.notas %}
-        <hr>
-        <p class="small text-muted mb-0">{{ compra.notas }}</p>
-        {% endif %}
-      </div>
-    </div>
-
-    {% if compra.pagos %}
-    <div class="card card-dashboard">
-      <div class="card-header bg-white fw-semibold">Pagos registrados</div>
-      <div class="card-body p-0">
-        <table class="table table-sm mb-0">
-          <thead class="table-light">
-            <tr>
-              <th>Fecha</th>
-              <th class="text-end">Monto</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for p in compra.pagos %}
-            <tr>
-              <td>{{ p.fecha.strftime('%d/%m/%Y') }}</td>
-              <td class="text-end">{{ formato_moneda(p.monto, moneda_base) }}</td>
-            </tr>
-            {% if p.cuenta_origen or p.numero_comprobante %}
-            <tr>
-              <td colspan="2" class="text-muted small border-0 pt-0">
-                {% if p.cuenta_origen %}{{ p.cuenta_origen }}{% endif %}
-                {% if p.numero_comprobante %} · {{ p.numero_comprobante }}{% endif %}
-              </td>
-            </tr>
-            {% endif %}
-            {% endfor %}
-          </tbody>
-        </table>
-      </div>
-    </div>
-    {% endif %}
-  </div>
-  <div class="col-lg-8">
-    <div class="card card-dashboard">
-      <div class="card-body p-0">
-        <table class="table table-hover align-middle mb-0">
-          <thead class="table-light">
-            <tr>
-              <th>Producto</th>
-              <th>Marca</th>
-              <th class="text-end">Cantidad</th>
-              <th class="text-end">Costo unit.</th>
-              <th class="text-end">Subtotal</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for l in compra.lineas %}
-            <tr>
-              <td>
-                <code>{{ l.producto.sku }}</code> — {{ l.producto.nombre }}
-              </td>
-              <td>{{ l.marca or l.producto.marca or '—' }}</td>
-              <td class="text-end">{{ l.cantidad }}</td>
-              <td class="text-end">{{ formato_moneda(l.precio_unitario, moneda_base) }}</td>
-              <td class="text-end">{{ formato_moneda(l.subtotal, moneda_base) }}</td>
-            </tr>
-            {% else %}
-            <tr><td colspan="5" class="text-muted text-center py-4">Sin líneas.</td></tr>
-            {% endfor %}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </div>
-</div>
-
-{% if compra.saldo_pendiente > 0 %}
-{% include "inventario_comercial/_modal_pago_compra.html" %}
-{% endif %}
-{% endblock %}
-
-{% block scripts %}
-{% if compra.saldo_pendiente > 0 %}
-<script>
-(function () {
-  var modalEl = document.getElementById('modalPagoCompra');
-  if (!modalEl || typeof bootstrap === 'undefined') return;
-  var modal = bootstrap.Modal.getOrCreateInstance(modalEl);
-  var form = document.getElementById('formPagoCompra');
-  var errBox = document.getElementById('pagoCompraError');
-  var resumen = document.getElementById('pagoCompraResumen');
-  var inpMonto = document.getElementById('pagoMonto');
-  var saldoLabel = document.getElementById('pagoSaldoLabel');
-  var btnSubmit = document.getElementById('btnConfirmarPago');
-  var nextInp = document.getElementById('pagoCompraNext');
-  var compraId = {{ compra.id }};
-  var pagoUrl = {{ url_for('inv_comercial.cxp_registrar_pago', id=compra.id)|tojson }};
-
-  if (nextInp) nextInp.value = window.location.pathname;
-  if (form) form.action = pagoUrl;
-
-  document.querySelectorAll('.btn-registrar-pago').forEach(function (btn) {
-    btn.addEventListener('click', function () {
-      var numero = btn.getAttribute('data-numero') || '';
-      var proveedor = btn.getAttribute('data-proveedor') || '';
-      var saldo = parseFloat(btn.getAttribute('data-saldo') || '0');
-      if (resumen) resumen.textContent = 'Factura ' + numero + ' · ' + proveedor;
-      if (inpMonto) {
-        inpMonto.max = String(saldo);
-        inpMonto.value = saldo > 0 ? String(saldo) : '';
-      }
-      if (saldoLabel) {
-        saldoLabel.textContent = Number(saldo).toLocaleString('es-CO', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-      }
-      if (errBox) errBox.classList.add('d-none');
-      modal.show();
-    });
-  });
-
-  if (form) {
-    form.addEventListener('submit', function (e) {
-      e.preventDefault();
-      if (errBox) errBox.classList.add('d-none');
-      if (btnSubmit) btnSubmit.disabled = true;
-      fetch(pagoUrl, {
-        method: 'POST',
-        body: new FormData(form),
-        headers: { 'X-Requested-With': 'XMLHttpRequest' },
-      })
-        .then(function (r) { return r.json().then(function (d) { return { ok: r.ok, data: d }; }); })
-        .then(function (res) {
-          if (!res.ok || !res.data.ok) throw new Error((res.data && res.data.error) || 'Error');
-          window.location.reload();
-        })
-        .catch(function (err) {
-          if (errBox) {
-            errBox.textContent = err.message;
-            errBox.classList.remove('d-none');
-          }
-        })
-        .finally(function () { if (btnSubmit) btnSubmit.disabled = false; });
-    });
-  }
-})();
-</script>
-{% endif %}
-{% endblock %}
-
+{% extends "base.html" %}
+
+{% block title %}Entrada {{ compra.numero }} — {{ app_name }}{% endblock %}
+{% block page_title %}Detalle de entrada{% endblock %}
+
+{% block content %}
+{% set moneda_base = empresa_actual.moneda if empresa_actual else 'COP' %}
+<div class="mb-3 d-flex flex-wrap gap-2">
+  <a href="{{ url_for('inv_comercial.compras_list') }}" class="btn btn-sm btn-outline-secondary">
+    <i class="bi bi-arrow-left"></i> Volver al listado
+  </a>
+  <a href="{{ url_for('inv_comercial.compras_editar', id=compra.id) }}" class="btn btn-sm btn-outline-primary">
+    <i class="bi bi-pencil"></i> Editar entrada
+  </a>
+  {% if compra.saldo_pendiente > 0 %}
+  <button type="button" class="btn btn-sm btn-success btn-registrar-pago"
+          data-compra-id="{{ compra.id }}"
+          data-numero="{{ compra.numero or ('#' ~ compra.id) }}"
+          data-proveedor="{{ compra.proveedor.nombre if compra.proveedor else 'Sin proveedor' }}"
+          data-saldo="{{ compra.saldo_pendiente }}">
+    <i class="bi bi-cash-coin"></i> Registrar pago
+  </button>
+  {% endif %}
+</div>
+
+<div class="row g-4">
+  <div class="col-lg-4">
+    <div class="card card-dashboard mb-4">
+      <div class="card-body">
+        <h6 class="text-muted text-uppercase small fw-semibold mb-3">Resumen</h6>
+        <dl class="row small mb-0">
+          <dt class="col-5">Número</dt>
+          <dd class="col-7"><code>{{ compra.numero or ('#' ~ compra.id) }}</code></dd>
+          <dt class="col-5">Recepción</dt>
+          <dd class="col-7">{{ compra.fecha.strftime('%d/%m/%Y') }}</dd>
+          <dt class="col-5">Factura</dt>
+          <dd class="col-7">
+            {% if compra.fecha_factura %}
+            {{ compra.fecha_factura.strftime('%d/%m/%Y') }}
+            {% else %}
+            —
+            {% endif %}
+          </dd>
+          <dt class="col-5">Vencimiento</dt>
+          <dd class="col-7">
+            {% if compra.fecha_vencimiento %}
+            {{ compra.fecha_vencimiento.strftime('%d/%m/%Y') }}
+            {% if compra.cxp_vencida %}
+            <span class="badge text-bg-danger ms-1">Vencida</span>
+            {% elif compra.cxp_por_vencer %}
+            <span class="badge text-bg-warning text-dark ms-1">Vence en {{ compra.dias_hasta_vencimiento }} d.</span>
+            {% endif %}
+            {% else %}
+            —
+            {% endif %}
+          </dd>
+          <dt class="col-5">Proveedor</dt>
+          <dd class="col-7">
+            {% if compra.proveedor %}
+            <a href="{{ url_for('inv_comercial.cxp_list', proveedor_id=compra.proveedor_id) }}">{{ compra.proveedor.nombre }}</a>
+            {% else %}
+            —
+            {% endif %}
+          </dd>
+          <dt class="col-5">Moneda factura</dt>
+          <dd class="col-7">
+            {{ compra.moneda_factura or moneda_base }}
+            {% if compra.moneda_factura and compra.moneda_factura != moneda_base and compra.tasa_cambio %}
+            <span class="text-muted">· tasa {{ '%.2f'|format(compra.tasa_cambio) }} → {{ moneda_base }}</span>
+            {% endif %}
+          </dd>
+          <dt class="col-5">Subtotal</dt>
+          <dd class="col-7">{{ formato_moneda(compra.subtotal or compra.total, moneda_base) }}</dd>
+          {% if compra.tipo_iva == 'con_iva' and compra.monto_iva %}
+          <dt class="col-5">IVA</dt>
+          <dd class="col-7">{{ formato_moneda(compra.monto_iva, moneda_base) }}</dd>
+          {% endif %}
+          <dt class="col-5">Total factura</dt>
+          <dd class="col-7 fw-semibold">{{ formato_moneda(compra.total, moneda_base) }}</dd>
+          <dt class="col-5">Estado pago</dt>
+          <dd class="col-7">{{ compra.estado_pago_label }}</dd>
+          <dt class="col-5">Pagado</dt>
+          <dd class="col-7">{{ formato_moneda(compra.monto_pagado, moneda_base) }}</dd>
+          <dt class="col-5">Saldo</dt>
+          <dd class="col-7 {% if compra.saldo_pendiente > 0 %}text-danger fw-semibold{% endif %}">
+            {{ formato_moneda(compra.saldo_pendiente, moneda_base) }}
+          </dd>
+          <dt class="col-5">Tipo</dt>
+          <dd class="col-7">
+            {% if compra.tipo_iva == 'con_iva' %}Factura con IVA{% else %}Manual / Exento (0%){% endif %}
+          </dd>
+          <dt class="col-5">Registros</dt>
+          <dd class="col-7">{{ compra.lineas|length }}</dd>
+          <dt class="col-5">Unidades</dt>
+          <dd class="col-7 fw-semibold">{{ compra.lineas|sum(attribute='cantidad') }}</dd>
+        </dl>
+        {% if compra.notas %}
+        <hr>
+        <p class="small text-muted mb-0">{{ compra.notas }}</p>
+        {% endif %}
+      </div>
+    </div>
+
+    {% if compra.pagos %}
+    <div class="card card-dashboard">
+      <div class="card-header bg-white fw-semibold">Pagos registrados</div>
+      <div class="card-body p-0">
+        <table class="table table-sm mb-0">
+          <thead class="table-light">
+            <tr>
+              <th>Fecha</th>
+              <th class="text-end">Monto</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for p in compra.pagos %}
+            <tr>
+              <td>{{ p.fecha.strftime('%d/%m/%Y') }}</td>
+              <td class="text-end">{{ formato_moneda(p.monto, moneda_base) }}</td>
+            </tr>
+            {% if p.cuenta_origen or p.numero_comprobante %}
+            <tr>
+              <td colspan="2" class="text-muted small border-0 pt-0">
+                {% if p.cuenta_origen %}{{ p.cuenta_origen }}{% endif %}
+                {% if p.numero_comprobante %} · {{ p.numero_comprobante }}{% endif %}
+              </td>
+            </tr>
+            {% endif %}
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+  <div class="col-lg-8">
+    <div class="card card-dashboard">
+      <div class="card-body p-0">
+        <table class="table table-hover align-middle mb-0">
+          <thead class="table-light">
+            <tr>
+              <th>Producto</th>
+              <th>Marca</th>
+              <th class="text-end">Cantidad</th>
+              <th class="text-end">Vlr. unit.</th>
+              {% if compra.tipo_iva == 'con_iva' %}
+              <th class="text-end">IVA %</th>
+              {% endif %}
+              {% if compra.tipo_iva == 'con_iva' %}
+              <th class="text-end">Subtotal c/IVA</th>
+              {% else %}
+              <th class="text-end">Subtotal</th>
+              {% endif %}
+            </tr>
+          </thead>
+          <tbody>
+            {% for l in compra.lineas %}
+            <tr>
+              <td>
+                <code>{{ l.producto.sku }}</code> — {{ l.producto.nombre }}
+              </td>
+              <td>{{ l.marca or l.producto.marca or '—' }}</td>
+              <td class="text-end">{{ l.cantidad }}</td>
+              <td class="text-end">{{ formato_moneda(l.precio_unitario, moneda_base) }}</td>
+              {% if compra.tipo_iva == 'con_iva' %}
+              <td class="text-end">{{ l.tasa_iva_pct }}%</td>
+              {% endif %}
+              <td class="text-end">{{ formato_moneda(l.total_linea if compra.tipo_iva == 'con_iva' else l.subtotal, moneda_base) }}</td>
+            </tr>
+            {% else %}
+            <tr><td colspan="{{ 6 if compra.tipo_iva == 'con_iva' else 5 }}" class="text-muted text-center py-4">Sin líneas.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% if compra.saldo_pendiente > 0 %}
+{% include "inventario_comercial/_modal_pago_compra.html" %}
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+{% if compra.saldo_pendiente > 0 %}
+<script>
+(function () {
+  var modalEl = document.getElementById('modalPagoCompra');
+  if (!modalEl || typeof bootstrap === 'undefined') return;
+  var modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+  var form = document.getElementById('formPagoCompra');
+  var errBox = document.getElementById('pagoCompraError');
+  var resumen = document.getElementById('pagoCompraResumen');
+  var inpMonto = document.getElementById('pagoMonto');
+  var saldoLabel = document.getElementById('pagoSaldoLabel');
+  var btnSubmit = document.getElementById('btnConfirmarPago');
+  var nextInp = document.getElementById('pagoCompraNext');
+  var compraId = {{ compra.id }};
+  var pagoUrl = {{ url_for('inv_comercial.cxp_registrar_pago', id=compra.id)|tojson }};
+
+  if (nextInp) nextInp.value = window.location.pathname;
+  if (form) form.action = pagoUrl;
+
+  document.querySelectorAll('.btn-registrar-pago').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var numero = btn.getAttribute('data-numero') || '';
+      var proveedor = btn.getAttribute('data-proveedor') || '';
+      var saldo = parseFloat(btn.getAttribute('data-saldo') || '0');
+      if (resumen) resumen.textContent = 'Factura ' + numero + ' · ' + proveedor;
+      if (inpMonto) {
+        inpMonto.max = String(saldo);
+        inpMonto.value = saldo > 0 ? String(saldo) : '';
+      }
+      if (saldoLabel) {
+        saldoLabel.textContent = Number(saldo).toLocaleString('es-CO', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      }
+      if (errBox) errBox.classList.add('d-none');
+      modal.show();
+    });
+  });
+
+  if (form) {
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      if (errBox) errBox.classList.add('d-none');
+      if (btnSubmit) btnSubmit.disabled = true;
+      fetch(pagoUrl, {
+        method: 'POST',
+        body: new FormData(form),
+        headers: { 'X-Requested-With': 'XMLHttpRequest' },
+      })
+        .then(function (r) { return r.json().then(function (d) { return { ok: r.ok, data: d }; }); })
+        .then(function (res) {
+          if (!res.ok || !res.data.ok) throw new Error((res.data && res.data.error) || 'Error');
+          window.location.reload();
+        })
+        .catch(function (err) {
+          if (errBox) {
+            errBox.textContent = err.message;
+            errBox.classList.remove('d-none');
+          }
+        })
+        .finally(function () { if (btnSubmit) btnSubmit.disabled = false; });
+    });
+  }
+})();
+</script>
+{% endif %}
+{% endblock %}
+

@@ -106,24 +106,32 @@
           </div>
           <div class="entrada-lineas-scroll" id="wrapTablaLineas">
             <table class="table table-sm align-middle mb-0 entrada-tabla-lineas" id="tablaLineas">
+              <colgroup>
+                <col class="entrada-col-producto">
+                <col class="entrada-col-marca">
+                <col class="entrada-col-cantidad">
+                <col class="entrada-col-costo">
+                <col class="entrada-col-iva">
+                <col class="entrada-col-subtotal">
+              </colgroup>
               <thead class="entrada-tabla-thead">
                 <tr>
                   <th class="entrada-th-producto">Producto</th>
                   <th class="entrada-th-marca">Marca</th>
                   <th class="text-end entrada-th-cantidad">Cantidad</th>
-                  <th class="text-end entrada-th-costo" id="thCostoUnit">Costo unit.</th>
+                  <th class="text-end entrada-th-costo" id="thCostoUnit">Vlr. unit.</th>
+                  <th class="text-end entrada-th-iva" id="thIvaLinea">IVA %</th>
                   <th class="text-end entrada-th-subtotal" id="thSubtotal">Subtotal</th>
-                  <th class="entrada-th-accion"></th>
                 </tr>
               </thead>
               <tbody id="lineasBody">
                 <tr class="linea-entrada">
-                  <td>
+                  <td class="entrada-td-producto">
                     <div class="producto-combobox position-relative">
                       <input type="hidden" class="linea-producto-id" name="linea_producto_id" value="" required>
                       <input type="text" class="form-control form-control-sm linea-producto-buscar"
                              placeholder="Referencia o nombre…" autocomplete="off" spellcheck="false">
-                      <div class="producto-combobox-menu list-group position-absolute w-100 shadow-sm d-none"></div>
+                      <div class="producto-combobox-menu list-group shadow-sm d-none"></div>
                     </div>
                   </td>
                   <td>
@@ -141,23 +149,27 @@
                       <div class="linea-costo-alerta small mt-1" aria-live="polite"></div>
                     </div>
                   </td>
-                  <td class="text-end linea-subtotal text-muted small">0</td>
                   <td>
-                    <button type="button" class="btn btn-sm btn-outline-danger btn-quitar-linea" title="Quitar">&times;</button>
+                    <input type="number" class="form-control form-control-sm text-end linea-iva-input"
+                           name="linea_iva" min="0" max="100" step="0.01" value="0" readonly
+                           aria-label="Porcentaje de IVA">
+                  </td>
+                  <td class="text-end">
+                    <div class="linea-subtotal-wrap d-flex align-items-center justify-content-end gap-1">
+                      <span class="linea-subtotal fw-medium">0</span>
+                      <button type="button" class="btn btn-sm btn-outline-danger btn-quitar-linea flex-shrink-0" title="Quitar">&times;</button>
+                    </div>
                   </td>
                 </tr>
               </tbody>
               <tfoot class="table-light">
                 <tr>
-                  <td colspan="2" class="small text-muted">
+                  <td colspan="4" class="small text-muted">
                     <span id="contadorRegistrosPie">0</span> reg. ·
                     <span id="contadorUnidadesPie">0</span> uds.
                   </td>
-                  <td colspan="2" class="text-end fw-semibold">
-                    Subtotal <span class="text-muted fw-normal" id="lblTotalMoneda">({{ moneda_base }})</span>
-                  </td>
-                  <td class="text-end fw-semibold" id="totalEntrada">0</td>
-                  <td></td>
+                  <td class="text-end fw-semibold" id="totalIvaLineas">0</td>
+                  <td class="text-end fw-semibold" id="totalSubtotalLineas">0</td>
                 </tr>
               </tfoot>
             </table>
@@ -170,11 +182,11 @@
                   Factura Manual / Exento (0%)
                 </option>
                 <option value="con_iva" {% if tipo_iva_sel == 'con_iva' %}selected{% endif %}>
-                  Factura con IVA (19%)
+                  Factura con IVA
                 </option>
               </select>
               <div class="form-text">
-                El inventario usa el subtotal sin IVA. El total factura incluye impuesto si aplica.
+                Ingresa el costo <strong>sin IVA</strong> por unidad. En la columna IVA % indica la tasa del producto (ej. 19 o 16).
               </div>
             </div>
             <div class="col-md-6">
@@ -188,7 +200,7 @@
                     </td>
                   </tr>
                   <tr id="filaResumenIva">
-                    <td class="text-muted">IVA (19%)</td>
+                    <td class="text-muted">IVA</td>
                     <td class="text-end">
                       <span id="resumenIva">0</span>
                       <span class="text-muted small">{{ moneda_base }}</span>
@@ -260,17 +272,26 @@
 
   .entrada-lineas-scroll {
     max-height: min(72vh, calc(100vh - 12rem));
-    overflow: auto;
+    overflow-x: hidden;
+    overflow-y: auto;
     width: 100%;
     border: 1px solid var(--dash-card-border, #e5e7eb);
     border-radius: 0.5rem;
   }
 
   .entrada-tabla-lineas {
-    width: 100%;
-    table-layout: auto;
+    width: 100% !important;
+    max-width: 100%;
+    table-layout: fixed;
     margin-bottom: 0;
   }
+
+  .entrada-col-producto { width: 32%; }
+  .entrada-col-marca { width: 16%; }
+  .entrada-col-cantidad { width: 9%; }
+  .entrada-col-costo { width: 13%; }
+  .entrada-col-iva { width: 12%; }
+  .entrada-col-subtotal { width: 18%; }
 
   .entrada-tabla-thead th {
     position: sticky;
@@ -281,22 +302,50 @@
     font-size: 0.8125rem;
     white-space: nowrap;
     vertical-align: middle;
+    padding-left: 0.4rem;
+    padding-right: 0.4rem;
   }
 
-  .entrada-th-producto { min-width: 22rem; width: 45%; }
-  .entrada-th-marca { min-width: 7rem; width: 12%; }
-  .entrada-th-cantidad { min-width: 5.5rem; width: 8%; }
-  .entrada-th-costo { min-width: 7.5rem; width: 14%; }
-  .entrada-th-subtotal { min-width: 6.5rem; width: 10%; }
-  .entrada-th-accion { width: 2.75rem; }
+  .entrada-tabla-lineas td {
+    padding-left: 0.4rem;
+    padding-right: 0.4rem;
+  }
+
+  .entrada-tabla-lineas td.entrada-td-producto {
+    overflow: visible;
+  }
+
+  .entrada-tabla-lineas td:not(.entrada-td-producto) {
+    overflow: hidden;
+  }
+
+  .entrada-tabla-lineas .linea-subtotal-wrap {
+    min-width: 0;
+  }
+
+  .entrada-tabla-lineas .linea-subtotal {
+    min-width: 0;
+    white-space: nowrap;
+  }
+
+  .entrada-tabla-lineas .producto-combobox {
+    width: 100%;
+    min-width: 0;
+  }
 
   .entrada-tabla-lineas .linea-producto-buscar {
-    white-space: nowrap;
-    min-width: 20rem;
+    width: 100%;
+    min-width: 0;
   }
 
   .entrada-tabla-lineas .linea-entrada td {
     vertical-align: middle;
+  }
+
+  .entrada-tabla-lineas .linea-entrada input.form-control {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
   }
 
   .entrada-tabla-pie,
@@ -306,21 +355,40 @@
     padding-right: 0.35rem;
   }
 
+  .entrada-tabla-lineas .linea-costo-wrap {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .entrada-tabla-lineas .linea-precio {
+    width: 100%;
+    min-width: 0;
+    padding-left: 0.35rem;
+    padding-right: 0.35rem;
+  }
+
   .linea-costo-alerta {
     min-height: 1.25rem;
     line-height: 1.2;
-    white-space: nowrap;
+    white-space: normal;
+    word-break: break-word;
   }
   .linea-costo-alerta--bajo { color: var(--bs-success); font-weight: 600; }
   .linea-costo-alerta--sube { color: var(--bs-danger); font-weight: 600; }
   .linea-costo-alerta--igual { color: var(--bs-secondary); }
   .linea-costo-alerta--sin-dato { color: var(--bs-secondary); font-size: 0.75rem; }
   .producto-combobox-menu {
-    z-index: 1050;
-    max-height: 220px;
+    position: fixed;
+    z-index: 1060;
+    max-height: min(220px, 40vh);
     overflow-y: auto;
-    top: 100%;
-    margin-top: 2px;
+    display: none;
+    background: #fff;
+    border: 1px solid var(--bs-border-color, #dee2e6);
+    border-radius: 0.375rem;
+  }
+  .producto-combobox-menu.is-open {
+    display: block;
   }
   .producto-combobox-menu .list-group-item {
     cursor: pointer;
@@ -364,7 +432,7 @@
   var wrapTasaCambio = document.getElementById('wrapTasaCambio');
   var lblMonedaExtranjera = document.getElementById('lblMonedaExtranjera');
   var selTipoIva = document.getElementById('tipoIva');
-  var IVA_TASA = 0.19;
+  var IVA_DEFAULT_PCT = {{ iva_default_pct|default(19)|tojson }};
   if (!body) return;
 
   function aplicaIva() {
@@ -395,9 +463,19 @@
     var mf = monedaFacturaActual();
     var thCosto = document.getElementById('thCostoUnit');
     var thSub = document.getElementById('thSubtotal');
+    var thIva = document.getElementById('thIvaLinea');
+    var thSub = document.getElementById('thSubtotal');
     var lblTotal = document.getElementById('lblTotalMoneda');
-    if (thCosto) thCosto.textContent = 'Costo unit. (' + mf + ')';
-    if (thSub) thSub.textContent = mf === monedaBase ? 'Subtotal' : 'Subtotal (' + monedaBase + ')';
+    var suf = mf === monedaBase ? '' : ' (' + monedaBase + ')';
+    var costoLbl = 'Vlr. unit.';
+    if (thCosto) {
+      thCosto.textContent = mf === monedaBase ? costoLbl : costoLbl + ' · fact. ' + mf;
+    }
+    if (thIva) {
+      thIva.textContent = 'IVA %';
+      thIva.classList.toggle('text-muted', !aplicaIva());
+    }
+    if (thSub) thSub.textContent = aplicaIva() ? 'Subtotal c/IVA' + suf : 'Subtotal' + suf;
     if (lblTotal) lblTotal.textContent = '(' + monedaBase + ')';
     if (wrapTasaCambio) {
       wrapTasaCambio.classList.toggle('d-none', mf === monedaBase);
@@ -417,8 +495,39 @@
     return Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
   }
 
+  function ivaPctLinea(tr) {
+    var inp = tr.querySelector('.linea-iva-input');
+    if (!inp || !aplicaIva()) return 0;
+    return Math.max(0, Math.min(100, parseFloat(inp.value) || 0));
+  }
+
+  function montoIvaLinea(tr, subLineaBase) {
+    return Math.round(subLineaBase * ivaPctLinea(tr) / 100 * 100) / 100;
+  }
+
+  function subtotalLinea(tr, subLineaBase) {
+    if (!aplicaIva()) return subLineaBase;
+    return Math.round((subLineaBase + montoIvaLinea(tr, subLineaBase)) * 100) / 100;
+  }
+
+  function configurarInputIva(tr) {
+    var ivaInp = tr.querySelector('.linea-iva-input');
+    if (!ivaInp) return;
+    if (aplicaIva()) {
+      ivaInp.readOnly = false;
+      ivaInp.classList.remove('text-muted', 'bg-light');
+    } else {
+      ivaInp.readOnly = true;
+      ivaInp.value = '0';
+      ivaInp.classList.add('text-muted', 'bg-light');
+      tr.removeAttribute('data-iva-auto');
+    }
+  }
+
   function actualizarTotal() {
     var subtotal = 0;
+    var subtotalLineas = 0;
+    var ivaTotal = 0;
     var registros = 0;
     var unidades = 0;
     body.querySelectorAll('.linea-entrada').forEach(function (row) {
@@ -426,22 +535,29 @@
       var c = parseFloat(row.querySelector('.linea-cantidad').value) || 0;
       var pFactura = parseFloat(row.querySelector('.linea-precio').value) || 0;
       var pBase = precioABase(pFactura);
-      subtotal += c * pBase;
+      var subLinea = c * pBase;
+      subtotal += subLinea;
+      subtotalLineas += subtotalLinea(row, subLinea);
+      ivaTotal += montoIvaLinea(row, subLinea);
       if (hid && hid.value && c > 0) {
         registros += 1;
         unidades += c;
       }
     });
-    var iva = aplicaIva() ? Math.round(subtotal * IVA_TASA * 100) / 100 : 0;
-    var totalFactura = Math.round((subtotal + iva) * 100) / 100;
-    var elTotal = document.getElementById('totalEntrada');
-    if (elTotal) elTotal.textContent = fmt(subtotal);
+    subtotal = Math.round(subtotal * 100) / 100;
+    subtotalLineas = Math.round(subtotalLineas * 100) / 100;
+    ivaTotal = Math.round(ivaTotal * 100) / 100;
+    var totalFactura = Math.round((subtotal + ivaTotal) * 100) / 100;
+    var elSubLineas = document.getElementById('totalSubtotalLineas');
+    var elIvaLineas = document.getElementById('totalIvaLineas');
+    if (elSubLineas) elSubLineas.textContent = fmt(subtotalLineas);
+    if (elIvaLineas) elIvaLineas.textContent = aplicaIva() ? fmt(ivaTotal) : '—';
     var elSub = document.getElementById('resumenSubtotal');
     var elIva = document.getElementById('resumenIva');
     var elTot = document.getElementById('resumenTotalFactura');
     var filaIva = document.getElementById('filaResumenIva');
     if (elSub) elSub.textContent = fmt(subtotal);
-    if (elIva) elIva.textContent = fmt(iva);
+    if (elIva) elIva.textContent = fmt(ivaTotal);
     if (elTot) elTot.textContent = fmt(totalFactura);
     if (filaIva) filaIva.style.opacity = aplicaIva() ? '1' : '0.45';
     var txtReg = registros === 1 ? '1 registro' : fmtEntero(registros) + ' registros';
@@ -456,18 +572,28 @@
     });
   }
 
-  function actualizarFila(tr) {
+  function actualizarFila(tr, opts) {
+    opts = opts || {};
     var cant = parseFloat(tr.querySelector('.linea-cantidad') && tr.querySelector('.linea-cantidad').value) || 0;
     var precFactura = parseFloat(tr.querySelector('.linea-precio') && tr.querySelector('.linea-precio').value) || 0;
     var precBase = precioABase(precFactura);
+    var subLinea = Math.round(cant * precBase * 100) / 100;
     var sub = tr.querySelector('.linea-subtotal');
-    if (sub) {
+    var ivaInp = tr.querySelector('.linea-iva-input');
+    configurarInputIva(tr);
+    if (aplicaIva() && ivaInp && !opts.omitirIva && tr.getAttribute('data-iva-auto') !== '0') {
+      ivaInp.value = String(IVA_DEFAULT_PCT);
+      tr.setAttribute('data-iva-auto', '1');
+    }
+    function celdaMonto(el, valor) {
+      if (!el) return;
       if (monedaFacturaActual() !== monedaBase) {
-        sub.innerHTML = fmt(cant * precBase) + ' <span class="text-muted small">' + monedaBase + '</span>';
+        el.innerHTML = fmt(valor) + ' <span class="text-muted small">' + monedaBase + '</span>';
       } else {
-        sub.textContent = fmt(cant * precBase);
+        el.textContent = fmt(valor);
       }
     }
+    celdaMonto(sub, subtotalLinea(tr, subLinea));
     var precInp = tr.querySelector('.linea-precio');
     if (precInp) precInp.dataset.precioBase = String(precBase);
     actualizarTotal();
@@ -588,7 +714,34 @@
 
   function cerrarMenu(tr) {
     var menu = tr.querySelector('.producto-combobox-menu');
-    if (menu) menu.classList.add('d-none');
+    if (menu) {
+      menu.classList.remove('is-open');
+      menu.classList.add('d-none');
+      menu.style.left = '';
+      menu.style.top = '';
+      menu.style.width = '';
+    }
+  }
+
+  function posicionarMenu(tr) {
+    var menu = tr.querySelector('.producto-combobox-menu');
+    var inp = tr.querySelector('.linea-producto-buscar');
+    if (!menu || !inp) return;
+    var rect = inp.getBoundingClientRect();
+    menu.style.left = rect.left + 'px';
+    menu.style.top = (rect.bottom + 2) + 'px';
+    menu.style.width = rect.width + 'px';
+  }
+
+  function abrirMenu(tr) {
+    var menu = tr.querySelector('.producto-combobox-menu');
+    if (!menu) return;
+    body.querySelectorAll('.linea-entrada').forEach(function (otra) {
+      if (otra !== tr) cerrarMenu(otra);
+    });
+    menu.classList.remove('d-none');
+    menu.classList.add('is-open');
+    posicionarMenu(tr);
   }
 
   function renderMenu(tr, items) {
@@ -597,7 +750,7 @@
     menu.innerHTML = '';
     if (!items.length) {
       menu.innerHTML = '<div class="list-group-item text-muted small">Sin coincidencias</div>';
-      menu.classList.remove('d-none');
+      abrirMenu(tr);
       return;
     }
     items.forEach(function (p, idx) {
@@ -613,7 +766,7 @@
       });
       menu.appendChild(btn);
     });
-    menu.classList.remove('d-none');
+    abrirMenu(tr);
   }
 
   function seleccionarProducto(tr, prod) {
@@ -679,7 +832,7 @@
     });
 
     inp.addEventListener('keydown', function (e) {
-      if (!menu || menu.classList.contains('d-none')) return;
+      if (!menu || !menu.classList.contains('is-open')) return;
       var items = menu.querySelectorAll('.list-group-item-action');
       if (!items.length) return;
       if (e.key === 'ArrowDown') {
@@ -720,9 +873,23 @@
     });
   });
 
+  function reposicionarMenusAbiertos() {
+    if (!body) return;
+    body.querySelectorAll('.linea-entrada').forEach(function (tr) {
+      var menu = tr.querySelector('.producto-combobox-menu');
+      if (menu && menu.classList.contains('is-open')) posicionarMenu(tr);
+    });
+  }
+
+  var wrapLineas = document.getElementById('wrapTablaLineas');
+  if (wrapLineas) wrapLineas.addEventListener('scroll', reposicionarMenusAbiertos);
+  window.addEventListener('resize', reposicionarMenusAbiertos);
+  window.addEventListener('scroll', reposicionarMenusAbiertos, true);
+
   function enlazarFila(tr) {
     var cant = tr.querySelector('.linea-cantidad');
     var prec = tr.querySelector('.linea-precio');
+    var ivaInp = tr.querySelector('.linea-iva-input');
     var btn = tr.querySelector('.btn-quitar-linea');
     initCombobox(tr);
     if (cant) {
@@ -732,6 +899,13 @@
     if (prec) {
       prec.addEventListener('input', function () { actualizarFila(tr); });
       prec.addEventListener('keydown', function (e) { onEnterUltimaFila(e, tr); });
+    }
+    if (ivaInp) {
+      ivaInp.addEventListener('input', function () {
+        tr.setAttribute('data-iva-auto', '0');
+        actualizarFila(tr, { omitirIva: true });
+      });
+      ivaInp.addEventListener('keydown', function (e) { onEnterUltimaFila(e, tr); });
     }
     if (btn) {
       btn.addEventListener('click', function () {
@@ -754,12 +928,24 @@
       else if (inp.classList.contains('linea-marca')) inp.value = '';
       else if (inp.classList.contains('linea-producto-id')) inp.value = '';
       else if (inp.classList.contains('linea-producto-buscar')) inp.value = '';
+      else if (inp.classList.contains('linea-iva-input')) inp.value = '0';
     });
     var menu = tr.querySelector('.producto-combobox-menu');
     if (menu) {
       menu.innerHTML = '';
+      menu.classList.remove('is-open');
       menu.classList.add('d-none');
+      menu.style.left = '';
+      menu.style.top = '';
+      menu.style.width = '';
     }
+    var ivaInp = tr.querySelector('.linea-iva-input');
+    if (ivaInp) {
+      ivaInp.value = '0';
+      ivaInp.readOnly = true;
+      ivaInp.classList.add('text-muted', 'bg-light');
+    }
+    tr.removeAttribute('data-iva-auto');
     var sub = tr.querySelector('.linea-subtotal');
     if (sub) sub.textContent = '0';
     limpiarAlertaCosto(tr);
@@ -812,7 +998,12 @@
       if (cant) cant.value = l.cantidad;
       if (prec) prec.value = l.precio_unitario;
       if (marca) marca.value = l.marca || '';
-      actualizarFila(tr);
+      var ivaInp = tr.querySelector('.linea-iva-input');
+      if (ivaInp && l.tasa_iva != null && l.tasa_iva > 0) {
+        ivaInp.value = String(l.tasa_iva);
+        tr.setAttribute('data-iva-auto', '0');
+      }
+      actualizarFila(tr, { omitirIva: true });
     });
   }
 
@@ -828,16 +1019,17 @@
       actualizarEtiquetasMoneda();
       body.querySelectorAll('.linea-entrada').forEach(function (tr) {
         var prec = tr.querySelector('.linea-precio');
-        if (!prec) return;
-        var base = parseFloat(prec.dataset.precioBase);
-        if (isNaN(base)) base = precioABase(parseFloat(prec.value) || 0);
-        prec.dataset.precioBase = String(base);
-        if (monedaFacturaActual() === monedaBase) {
-          prec.value = base ? String(base) : '0';
-        } else if (tasaActual() > 0) {
-          prec.value = precioAFactura(base).toFixed(4);
+        if (prec) {
+          var base = parseFloat(prec.dataset.precioBase);
+          if (isNaN(base)) base = precioABase(parseFloat(prec.value) || 0);
+          prec.dataset.precioBase = String(base);
+          if (monedaFacturaActual() === monedaBase) {
+            prec.value = base ? String(base) : '0';
+          } else if (tasaActual() > 0) {
+            prec.value = precioAFactura(base).toFixed(4);
+          }
         }
-        actualizarFila(tr);
+        actualizarFila(tr, { omitirIva: tr.getAttribute('data-iva-auto') === '0' });
       });
     });
   }
@@ -847,7 +1039,15 @@
     });
   }
   if (selTipoIva) {
-    selTipoIva.addEventListener('change', actualizarTotal);
+    selTipoIva.addEventListener('change', function () {
+      actualizarEtiquetasMoneda();
+      body.querySelectorAll('.linea-entrada').forEach(function (tr) {
+        if (aplicaIva() && tr.getAttribute('data-iva-auto') !== '0') {
+          tr.setAttribute('data-iva-auto', '1');
+        }
+        actualizarFila(tr);
+      });
+    });
   }
 
   var formEntrada = document.getElementById('formEntrada');

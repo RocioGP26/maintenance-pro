@@ -49,6 +49,7 @@ from app.inventario_comercial.service import (
     siguiente_numero_entrada,
     siguiente_numero_venta,
     ultimo_costo_entrada_producto,
+    iva_default_pct_empresa,
 )
 from app.models import Empresa, InvCliente, InvCompra, InvProducto, InvProveedor, InvVenta
 from app.module_guard import require_module
@@ -605,6 +606,7 @@ def _render_compras_form(
         else (parse_tipo_iva_entrada(request.form) if request.method == "POST" else "exento")
     )
     producto_ids = [l.producto_id for l in compra.lineas] if compra else []
+    empresa = Empresa.query.get(eid)
     return render_template(
         "inventario_comercial/compras_form.html",
         compra=compra,
@@ -621,6 +623,7 @@ def _render_compras_form(
         moneda_factura_sel=moneda_factura_sel,
         tasa_cambio_sel=tasa_cambio_sel,
         tipo_iva_sel=tipo_iva_sel,
+        iva_default_pct=iva_default_pct_empresa(empresa),
         numero_sugerido=compra.numero if compra else siguiente_numero_entrada(eid),
         hoy=compra.fecha if compra else date.today(),
         fecha_factura_sel=_fecha_factura_form(compra),
@@ -648,6 +651,7 @@ def _datos_entrada_desde_form(eid: int):
             moneda_factura=moneda_factura,
             moneda_base=moneda_base,
             tasa=tasa,
+            tipo_iva=parse_tipo_iva_entrada(request.form),
         ),
     }
 
