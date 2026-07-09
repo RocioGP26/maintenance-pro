@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MUX 1.2 — Maintix User Experience Guide</title>
+  <link rel="stylesheet" href="css/brand-book.css">
+  <link rel="stylesheet" href="css/ux-docs.css">
+</head>
+<body>
+<div class="bb-shell">
+  <nav class="bb-nav" aria-label="MUX 1.1">
+    <div class="bb-nav-brand">
+      <p class="bb-wordmark">MUX</p>
+      <p class="bb-sub">Maintix User Experience · 1.2</p>
+      <p class="bb-nav-meta"><a href="/brandbook/" style="color:rgba(255,255,255,0.55)">Brand Book</a> · <a href="/mdl/" style="color:rgba(255,255,255,0.55)">MDL</a></p>
+    </div>
+    <div class="bb-nav-group">
+      <p class="bb-nav-label">Cultura · MUX</p>
+      <a href="#laws">UX Laws</a>
+      <a href="#dec">DEC Matrix</a>
+      <a href="#copy">COPY</a>
+      <a href="#measure">MEASURE</a>
+      <a href="#research">RESEARCH</a>
+    </div>
+    <div class="bb-nav-group">
+      <p class="bb-nav-label">Personas</p>
+      <a href="#personas">Ilustradas</a>
+      <a href="#reservados">006–008</a>
+      <a href="#goals">Goals</a>
+      <a href="#journey-carlos">Journey Carlos</a>
+    </div>
+    <div class="bb-nav-group">
+      <p class="bb-nav-label">Marco UX</p>
+      <a href="#laws">UX Laws</a>
+      <a href="#north-star">North Star ×3</a>
+      <a href="#a11y">A11Y</a>
+      <a href="#suite">Doc Suite</a>
+    </div>
+  </nav>
+
+  <main class="bb-main">
+
+    <section id="intro" class="bb-page bb-page--dark">
+      <div class="bb-page-inner bb-sprint-hero">
+        <span class="bb-mdl-badge">MUX 1.2 · Cultura de desarrollo</span>
+        <h2 class="bb-h1" style="color:#fff">Las UX Laws<br>no son decorativas.</h2>
+        <p class="bb-lead" style="color:rgba(255,255,255,0.82);text-align:center;max-width:44rem">
+          Cada funcionalidad cumple las <strong>cinco leyes</strong> antes de producción.
+          Una sola violación → <strong>rediseñar antes del merge</strong>.
+        </p>
+        <div class="ux-doc-links">
+          <a href="laws.md">UX Laws</a>
+          <a href="decision-matrix.md">DEC</a>
+          <a href="copy.md">COPY</a>
+          <a href="measure.md">MEASURE</a>
+          <a href="research.md">RESEARCH</a>
+        </div>
+        <p class="bb-tagline bb-tagline--light"><span>Toda la operación.</span><span>Una sola plataforma.</span></p>
+      </div>
+    </section>
+
+    <section id="dec" class="bb-page bb-page--soft">
+      <div class="bb-page-inner">
+        <p class="bb-page-num">MTX-UX-DEC</p>
+        <h2 class="bb-h2">Decision Matrix</h2>
+        <table class="bb-spec-table">
+          <thead><tr><th>Situación</th><th>Decisión</th></tr></thead>
+          <tbody>
+            <tr><td>Más de 8 campos</td><td>Dividir en pasos</td></tr>
+            <tr><td>Acción irreversible</td><td>Solicitar confirmación</td></tr>
+            <tr><td>Error del usuario</td><td>Explicar y sugerir solución</td></tr>
+            <tr><td>Proceso largo</td><td>Mostrar progreso</td></tr>
+            <tr><td>Sin información</td><td>Empty State + CTA</td></tr>
+          </tbody>
+        </table>
+        <p class="bb-body"><a href="decision-matrix.md">decision-matrix.md</a> — 15 reglas · sin discusiones en review</p>
+      </div>
+    </section>
+
+    <section id="copy" class="bb-page">
+      <div class="bb-page-inner">
+        <p class="bb-page-num">MTX-UX-COPY</p>
+        <h2 class="bb-h2">Una sola voz en producto</h2>
+        <table class="bb-spec-table">
+          <thead><tr><th>✅ Correcto</th><th>❌ Incorrecto</th></tr></thead>
+          <tbody>
+            <tr><td>Guardar cambios</td><td>Aceptar</td></tr>
+            <tr><td>Crear orden de trabajo</td><td>Enviar</td></tr>
+            <tr><td>No encontramos resultados.</td><td>Error.</td></tr>
+          </tbody>
+        </table>
+        <p class="bb-body"><a href="copy.md">copy.md</a></p>
+      </div>
+    </section>
+
+    <section id="measure" class="bb-page bb-page--dark">
+      <div class="bb-page-inner">
+        <p class="bb-page-num" style="color:rgba(255,255,255,0.5)">MTX-UX-MEASURE</p>
+        <h2 class="bb-h1" style="color:#fff">Objetivos medibles</h2>
+        <div class="ux-north-star-grid" style="margin-top:1.5rem">
+          <div class="ux-north-star-card" style="background:rgba(255,255,255,0.08)"><strong>&lt; 3 min</strong>TTFAV</div>
+          <div class="ux-north-star-card" style="background:rgba(255,255,255,0.08)"><strong>&lt; 2 min</strong>TTCOT</div>
+          <div class="ux-north-star-card" style="background:rgba(255,255,255,0.08)"><strong>&lt; 15 s</strong>TTFFI</div>
+        </div>
+        <p style="text-align:center;margin-top:1rem"><a href="measure.md" style="color:#378ADD">measure.md →</a></p>
+      </div>
+    </section>
+
+    <section id="research" class="bb-page bb-page--soft">
+      <div class="bb-page-inner">
+        <p class="bb-page-num">MTX-UX-RESEARCH</p>
+        <h2 class="bb-h2">Evolución con evidencia</h2>
+        <ul class="bb-body" style="line-height:1.9">
+          <li>¿Cómo hacemos pruebas con usuarios? → Protocolo en research.md</li>
+          <li>¿Cada cuánto revisamos UX? → Cada PR, sprint, release, trimestre</li>
+          <li>¿Cómo priorizamos? → Impacto × evidencia × North Star</li>
+          <li>¿Feedback de clientes? → Plantilla `ux-feedback`</li>
+        </ul>
+        <p class="bb-body"><a href="research.md">research.md</a></p>
+      </div>
+    </section>
+
+    <section id="personas" class="bb-page">
+      <div class="bb-page-inner">
+        <p class="bb-page-num">MUX · Personas ilustradas</p>
+        <h2 class="bb-h1">Ocho códigos.<br>Cinco vivos hoy.</h2>
+        <div class="ux-persona-grid">
+          <article class="ux-persona-card">
+            <span class="ux-persona-avatar" aria-hidden="true">👩‍💼</span>
+            <span class="ux-id">MTX-UX-PER-001</span>
+            <p class="ux-persona-name">Laura</p>
+            <p class="ux-persona-meta">42 años · Gerente</p>
+            <p class="ux-persona-goal"><strong>Goal:</strong> Tomar decisiones</p>
+            <p class="ux-anti-goal"><strong>Anti-Goal:</strong> Aprender un ERP</p>
+          </article>
+          <article class="ux-persona-card ux-persona-card--tecnico">
+            <span class="ux-persona-avatar" aria-hidden="true">👨‍🔧</span>
+            <span class="ux-id">MTX-UX-PER-002</span>
+            <p class="ux-persona-name">Carlos</p>
+            <p class="ux-persona-meta">35 años · Técnico</p>
+            <p class="ux-persona-goal"><strong>Goal:</strong> Registrar rápido</p>
+            <p class="ux-anti-goal"><strong>Anti-Goal:</strong> Llenar formularios</p>
+          </article>
+          <article class="ux-persona-card ux-persona-card--vendedor">
+            <span class="ux-persona-avatar" aria-hidden="true">👩‍💻</span>
+            <span class="ux-id">MTX-UX-PER-003</span>
+            <p class="ux-persona-name">Valentina</p>
+            <p class="ux-persona-meta">28 años · Vendedora</p>
+            <p class="ux-persona-goal"><strong>Goal:</strong> Vender</p>
+            <p class="ux-anti-goal"><strong>Anti-Goal:</strong> Buscar inventario</p>
+          </article>
+          <article class="ux-persona-card ux-persona-card--bodeguero">
+            <span class="ux-persona-avatar" aria-hidden="true">👨‍🏭</span>
+            <span class="ux-id">MTX-UX-PER-004</span>
+            <p class="ux-persona-name">Roberto</p>
+            <p class="ux-persona-meta">45 años · Bodeguero</p>
+            <p class="ux-persona-goal"><strong>Goal:</strong> Trazabilidad</p>
+            <p class="ux-anti-goal"><strong>Anti-Goal:</strong> Contar dos veces</p>
+          </article>
+          <article class="ux-persona-card ux-persona-card--admin">
+            <span class="ux-persona-avatar" aria-hidden="true">👩‍💻</span>
+            <span class="ux-id">MTX-UX-PER-005</span>
+            <p class="ux-persona-name">Andrea</p>
+            <p class="ux-persona-meta">38 años · Administradora</p>
+            <p class="ux-persona-goal"><strong>Goal:</strong> Dejar operando</p>
+            <p class="ux-anti-goal"><strong>Anti-Goal:</strong> Ser IT de todos</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="reservados" class="bb-page bb-page--soft">
+      <div class="bb-page-inner">
+        <p class="bb-page-num">Códigos reservados</p>
+        <h2 class="bb-h2">No hoy. Pero previsto.</h2>
+        <div class="ux-persona-grid">
+          <article class="ux-persona-card ux-persona-card--reserved">
+            <span class="ux-persona-avatar">📋</span>
+            <span class="ux-id">MTX-UX-PER-006</span>
+            <p class="ux-persona-name">Auditor</p>
+            <p class="ux-persona-meta">ISO · Checklists · Cumplimiento</p>
+          </article>
+          <article class="ux-persona-card ux-persona-card--reserved">
+            <span class="ux-persona-avatar">🚚</span>
+            <span class="ux-id">MTX-UX-PER-007</span>
+            <p class="ux-persona-name">Proveedor</p>
+            <p class="ux-persona-meta">Portal · Cotizaciones · Compras</p>
+          </article>
+          <article class="ux-persona-card ux-persona-card--reserved">
+            <span class="ux-persona-avatar">🤝</span>
+            <span class="ux-id">MTX-UX-PER-008</span>
+            <p class="ux-persona-name">Cliente</p>
+            <p class="ux-persona-meta">CRM · Portal · Autoservicio</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="journey-carlos" class="bb-page">
+      <div class="bb-page-inner">
+        <p class="bb-page-num">User Journey · Carlos</p>
+        <h2 class="bb-h2">👨‍🔧 Del login al dashboard actualizado</h2>
+        <div class="ux-journey-vertical">
+          <p>Inicia sesión</p>
+          <p>Ve OTs asignadas</p>
+          <p>Abre OT</p>
+          <p>Consulta activo</p>
+          <p>Registra trabajo</p>
+          <p>Adjunta fotos</p>
+          <p>Cierra OT</p>
+          <p>Dashboard de Laura actualizado</p>
+        </div>
+        <p class="bb-body"><a href="journeys/tecnico.md">journeys/tecnico.md</a> · <a href="journeys.md">Todos los journeys</a></p>
+      </div>
+    </section>
+
+    <section id="goals" class="bb-page bb-page--dark">
+      <div class="bb-page-inner">
+        <p class="bb-page-num" style="color:rgba(255,255,255,0.5)">Goals · Anti-Goals</p>
+        <h2 class="bb-h1" style="color:#fff">Cambia el diseño</h2>
+        <div class="bb-split" style="margin-top:1.5rem">
+          <div class="bb-card" style="background:rgba(255,255,255,0.06);border-color:rgba(255,255,255,0.1)">
+            <h3 class="bb-h3" style="color:#fff">Gerente</h3>
+            <p style="color:rgba(255,255,255,0.8);font-size:0.9rem;margin:0"><strong>Goal:</strong> Decidir<br><strong style="color:#fca5a5">Anti:</strong> Aprender ERP</p>
+          </div>
+          <div class="bb-card" style="background:rgba(255,255,255,0.06);border-color:rgba(255,255,255,0.1)">
+            <h3 class="bb-h3" style="color:#fff">Técnico</h3>
+            <p style="color:rgba(255,255,255,0.8);font-size:0.9rem;margin:0"><strong>Goal:</strong> Registrar<br><strong style="color:#fca5a5">Anti:</strong> Formularios</p>
+          </div>
+          <div class="bb-card" style="background:rgba(255,255,255,0.06);border-color:rgba(255,255,255,0.1)">
+            <h3 class="bb-h3" style="color:#fff">Vendedor</h3>
+            <p style="color:rgba(255,255,255,0.8);font-size:0.9rem;margin:0"><strong>Goal:</strong> Vender<br><strong style="color:#fca5a5">Anti:</strong> Buscar stock</p>
+          </div>
+        </div>
+        <p style="text-align:center;margin-top:1.5rem"><a href="goals.md" style="color:#378ADD">goals.md completo →</a></p>
+      </div>
+    </section>
+
+    <section id="north-star" class="bb-page bb-page--soft">
+      <div class="bb-page-inner">
+        <p class="bb-page-num">North Star × 3</p>
+        <div class="ux-north-star-grid">
+          <div class="ux-north-star-card"><strong>NS1</strong>TTFAV<br><span style="font-size:0.82rem;color:var(--bb-secundario)">Primera acción útil</span></div>
+          <div class="ux-north-star-card"><strong>NS2</strong>TTCOT<br><span style="font-size:0.82rem;color:var(--bb-secundario)">Cerrar una OT</span></div>
+          <div class="ux-north-star-card"><strong>NS3</strong>TTFFI<br><span style="font-size:0.82rem;color:var(--bb-secundario)">Encontrar información</span></div>
+        </div>
+        <p class="bb-body"><a href="north-star.md">north-star.md</a> — métricas y objetivos por perfil</p>
+      </div>
+    </section>
+
+    <section id="laws" class="bb-page">
+      <div class="bb-page-inner">
+        <p class="bb-page-num">Maintix UX Laws</p>
+        <h2 class="bb-h2">No principios. Leyes.</h2>
+        <div class="ux-law"><p class="ux-law-num">MTX-UX-LAW-001</p><p style="margin:0.35rem 0 0"><strong>Nunca mostrar una pantalla vacía.</strong></p></div>
+        <div class="ux-law"><p class="ux-law-num">MTX-UX-LAW-002</p><p style="margin:0.35rem 0 0"><strong>Toda acción debe tener retroalimentación.</strong></p></div>
+        <div class="ux-law"><p class="ux-law-num">MTX-UX-LAW-003</p><p style="margin:0.35rem 0 0"><strong>Nunca hacer perder información al usuario.</strong></p></div>
+        <div class="ux-law"><p class="ux-law-num">MTX-UX-LAW-004</p><p style="margin:0.35rem 0 0"><strong>Siempre explicar el siguiente paso.</strong></p></div>
+        <div class="ux-law"><p class="ux-law-num">MTX-UX-LAW-005</p><p style="margin:0.35rem 0 0"><strong>La acción principal siempre es evidente.</strong></p></div>
+        <p class="bb-body"><a href="laws.md">laws.md</a> · checklist pre-merge</p>
+      </div>
+    </section>
+
+    <section id="a11y" class="bb-page bb-page--dark">
+      <div class="bb-page-inner">
+        <p class="bb-page-num" style="color:rgba(255,255,255,0.5)">MTX-UX-A11Y</p>
+        <h2 class="bb-h1" style="color:#fff">Accesibilidad</h2>
+        <table class="bb-spec-table" style="margin-top:1.5rem">
+          <tbody>
+            <tr><td>A11Y-001</td><td>Contraste WCAG AA</td></tr>
+            <tr><td>A11Y-002</td><td>Navegación teclado</td></tr>
+            <tr><td>A11Y-003</td><td>Focus visible</td></tr>
+            <tr><td>A11Y-004</td><td>Lectores de pantalla</td></tr>
+            <tr><td>A11Y-005</td><td>Targets 44×44 px</td></tr>
+            <tr><td>A11Y-006</td><td>Alt text</td></tr>
+          </tbody>
+        </table>
+        <p style="margin-top:1rem"><a href="accessibility.md" style="color:#378ADD">accessibility.md →</a></p>
+      </div>
+    </section>
+
+    <section id="suite" class="bb-page">
+      <div class="bb-page-inner">
+        <p class="bb-page-num">Maintix Documentation Suite</p>
+        <h2 class="bb-h2">Nomenclatura M*</h2>
+        <table class="bb-spec-table" style="margin-top:1rem">
+          <thead><tr><th>Código</th><th>Nombre completo</th></tr></thead>
+          <tbody>
+            <tr><td><strong>MBB</strong></td><td>Maintix Brand Book</td></tr>
+            <tr><td><strong>MDL</strong></td><td>Maintix Design Language</td></tr>
+            <tr><td><strong>MUX</strong></td><td>Maintix User Experience Guide</td></tr>
+            <tr><td><strong>MRL</strong></td><td>Maintix Report Language</td></tr>
+            <tr><td><strong>MCM</strong></td><td>Maintix Commercial Manual</td></tr>
+            <tr><td><strong>MAG</strong></td><td>Maintix API Guide</td></tr>
+            <tr><td><strong>MADR</strong></td><td>Maintix Architecture Decision Records</td></tr>
+          </tbody>
+        </table>
+        <p class="bb-lead" style="margin-top:1.5rem;text-align:center">Sprint 5: <strong>MCM</strong> — cómo vender Maintix.</p>
+        <p class="bb-body" style="text-align:center"><a href="../README.md">docs/README.md</a> · <a href="../mcm/README.md">MCM →</a></p>
+        <div class="bb-tagline-strip"><p class="bb-tagline"><span>Toda la operación.</span><span>Una sola plataforma.</span></p></div>
+        <div class="bb-page-footer"><span>MUX v1.2</span><span>Cultura · Laws · DEC · COPY</span></div>
+      </div>
+    </section>
+
+  </main>
+</div>
+</body>
+</html>

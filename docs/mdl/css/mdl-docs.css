@@ -1,0 +1,107 @@
+/**
+ * MDL Docs — estilos del catálogo independiente
+ * Complementa brand-book.css reutilizado en index.html
+ */
+
+.mdl-id {
+  background: rgba(24, 95, 165, 0.1);
+  border-radius: var(--mdl-radius-sm);
+  color: var(--mdl-primary);
+  display: inline-block;
+  font-family: ui-monospace, monospace;
+  font-size: var(--mdl-text-caption-size);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  margin-bottom: var(--mdl-space-sm);
+  padding: var(--mdl-space-xs) var(--mdl-space-sm);
+}
+
+.mdl-state-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--mdl-space-md);
+}
+
+.mdl-state-cell {
+  align-items: center;
+  background: var(--mdl-surface);
+  border: 1px solid var(--mdl-border);
+  border-radius: var(--mdl-radius-md);
+  display: flex;
+  flex-direction: column;
+  gap: var(--mdl-space-sm);
+  min-width: 120px;
+  padding: var(--mdl-space-md);
+}
+
+.mdl-state-cell span {
+  color: var(--mdl-text-secondary);
+  font-size: var(--mdl-text-caption-size);
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.mdl-doc-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--mdl-space-sm);
+  justify-content: center;
+  margin-top: var(--mdl-space-lg);
+}
+
+.mdl-doc-links a {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: var(--mdl-radius-md);
+  color: rgba(255, 255, 255, 0.85);
+  font-size: var(--mdl-text-sm-size);
+  padding: var(--mdl-space-sm) var(--mdl-space-md);
+  text-decoration: none;
+}
+
+.mdl-doc-links a:hover {
+  background: rgba(255, 255, 255, 0.14);
+}
+
+.mdl-chapter-nav {
+  border-top: 1px solid var(--mdl-border);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--mdl-space-md);
+  margin-top: var(--mdl-space-2xl);
+  padding-top: var(--mdl-space-lg);
+}
+
+.mdl-chapter-nav a {
+  color: var(--mdl-primary);
+  font-size: var(--mdl-text-sm-size);
+  font-weight: 500;
+}
+
+.mdl-ficha-table {
+  border-collapse: collapse;
+  font-size: var(--mdl-text-sm-size);
+  margin: var(--mdl-space-md) 0;
+  width: 100%;
+}
+
+.mdl-ficha-table th,
+.mdl-ficha-table td {
+  border: 1px solid var(--mdl-border);
+  padding: var(--mdl-space-sm) var(--mdl-space-md);
+  text-align: left;
+}
+
+.mdl-ficha-table th {
+  background: var(--mdl-background);
+  color: var(--mdl-secondary);
+  font-weight: 600;
+  width: 28%;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

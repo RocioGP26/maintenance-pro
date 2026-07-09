@@ -199,9 +199,17 @@ def create_app(config_name: str | None = None):
     from app.tenancy.admin_routes import admin_bp
     from app.tenancy.api_routes import tenancy_api_bp
     from app.tenancy.platform_routes import platform_bp
+    from app.brand_book_routes import brand_book_bp, _legacy_bp
+    from app.mdl_routes import mdl_bp
+    from app.mux_routes import mux_bp, _legacy_ux_bp
 
     app.register_blueprint(health_bp)
     app.register_blueprint(routes.bp)
+    app.register_blueprint(brand_book_bp)
+    app.register_blueprint(_legacy_bp)
+    app.register_blueprint(mdl_bp)
+    app.register_blueprint(mux_bp)
+    app.register_blueprint(_legacy_ux_bp)
     app.register_blueprint(onboarding_bp)
     app.register_blueprint(inv_comercial_bp)
     app.register_blueprint(tenancy_api_bp)

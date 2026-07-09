@@ -1,8 +1,26 @@
-# Mantis — Mantenimiento industrial (CMMS)
+# Maintix — Enterprise Management Platform
 
-Aplicación web para gestión de mantenimiento: activos, órdenes de trabajo, inventario, incidencias, planeación preventiva y dashboard por sector industrial.
+Plataforma web para operación empresarial: activos, órdenes de trabajo, inventario, ventas y dashboard por sector.
 
 **Repositorio:** [github.com/RocioGP26/maintenance-pro](https://github.com/RocioGP26/maintenance-pro)
+
+> **Toda la operación. Una sola plataforma.**
+
+## Filosofía de desarrollo
+
+Cada nueva funcionalidad desarrollada para Maintix deberá cumplir las **cinco UX Laws** (MUX) antes de ser considerada lista para producción.
+
+**Si una funcionalidad incumple una sola ley, deberá rediseñarse antes del merge.**
+
+| Ley | Regla |
+|-----|-------|
+| 1 | Nunca pantalla vacía |
+| 2 | Toda acción con retroalimentación |
+| 3 | Nunca perder información del usuario |
+| 4 | Siempre explicar el siguiente paso |
+| 5 | Acción principal evidente |
+
+Documentación completa: [docs/mux/laws.md](docs/mux/laws.md) · [Decision Matrix](docs/mux/decision-matrix.md) · [docs/README.md](docs/README.md)
 
 ## Requisitos
 
@@ -115,10 +133,21 @@ requirements.txt
 - Dashboard con KPIs y planeación mensual preventiva
 - Configuración de empresa (logo, jornada laboral, moneda)
 
-## Documentación adicional
+## Documentación · Maintix Documentation Suite
 
-- [Marca y UI](docs/marca-mantis.md)
+| Código | Proyecto | URL local |
+|--------|----------|-----------|
+| **MBB** | Maintix Brand Book | http://127.0.0.1:5000/brandbook/ |
+| **MDL** | Maintix Design Language | http://127.0.0.1:5000/mdl/ |
+| **MUX** | Maintix User Experience Guide | http://127.0.0.1:5000/mux/ |
+| **MRL** | Maintix Report Language | `docs/mrl/` |
+
+Índice completo: [docs/README.md](docs/README.md) · Nomenclatura: [docs/NOMENCLATURE.md](docs/NOMENCLATURE.md)
+
+### Técnica
+
 - [Arquitectura por sectores](docs/arquitectura-sectores.md)
+- [Brand Book textual v1](docs/brand-book-maintix.md)
 
 ## Licencia
 

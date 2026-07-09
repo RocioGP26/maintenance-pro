@@ -1,0 +1,58 @@
+/**
+ * MDL — Maintix Design Language
+ * Tokens de referencia para Brand Book v2.0
+ * Implementación en producto: static/css/app.css (mapeo en Brand Book)
+ */
+:root {
+  /* Color */
+  --mdl-primary: #185fa5;
+  --mdl-secondary: #042c53;
+  --mdl-background: #e6f1fb;
+  --mdl-surface: #ffffff;
+  --mdl-text-primary: #444441;
+  --mdl-text-secondary: #888780;
+  --mdl-border: #e5e7eb;
+  --mdl-success: #38a169;
+  --mdl-warning: #ed8936;
+  --mdl-danger: #e53e3e;
+
+  /* Radius */
+  --mdl-radius-button: 10px;
+  --mdl-radius-input: 12px;
+  --mdl-radius-card: 16px;
+  --mdl-radius-modal: 20px;
+
+  /* Shadow */
+  --mdl-shadow-sm: 0 1px 2px rgba(4, 44, 83, 0.05);
+  --mdl-shadow-md: 0 4px 14px rgba(4, 44, 83, 0.08);
+  --mdl-shadow-lg: 0 8px 24px rgba(4, 44, 83, 0.12);
+
+  /* Space (8px grid) */
+  --mdl-space-xs: 4px;
+  --mdl-space-sm: 8px;
+  --mdl-space-md: 16px;
+  --mdl-space-lg: 24px;
+  --mdl-space-xl: 32px;
+  --mdl-space-2xl: 48px;
+  --mdl-space-3xl: 64px;
+
+  /* Motion */
+  --mdl-duration-hover: 150ms;
+  --mdl-duration-dropdown: 200ms;
+  --mdl-duration-sidebar: 250ms;
+  --mdl-duration-modal: 300ms;
+  --mdl-ease: cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* Typography */
+  --mdl-font-family: "Inter", system-ui, sans-serif;
+  --mdl-text-h1-size: 48px;
+  --mdl-text-h1-lh: 56px;
+  --mdl-text-h2-size: 36px;
+  --mdl-text-h2-lh: 44px;
+  --mdl-text-h3-size: 28px;
+  --mdl-text-h3-lh: 36px;
+  --mdl-text-body-size: 16px;
+  --mdl-text-body-lh: 24px;
+  --mdl-text-sm-size: 14px;
+  --mdl-text-sm-lh: 20px;
+}

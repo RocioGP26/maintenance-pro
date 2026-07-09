@@ -1,0 +1,102 @@
+/**
+ * MDL 1.0 — Maintix Design Language · Design Tokens
+ * Fuente de verdad para componentes mtx-*
+ * Regla: nunca valores sueltos — siempre var(--mdl-*)
+ */
+:root {
+  /* ── Color ── */
+  --mdl-primary: var(--acento, #185fa5);
+  --mdl-primary-hover: var(--primario, #042c53);
+  --mdl-secondary: var(--primario, #042c53);
+  --mdl-accent-light: var(--claro, #378add);
+  --mdl-background: var(--fondo, #e6f1fb);
+  --mdl-surface: #ffffff;
+  --mdl-sidebar: var(--sidebar-bg, #1a2332);
+  --mdl-text-primary: var(--texto, #444441);
+  --mdl-text-secondary: var(--secundario, #888780);
+  --mdl-border: #e5e7eb;
+  --mdl-success: var(--success-green, #38a169);
+  --mdl-warning: var(--warning-orange, #ed8936);
+  --mdl-danger: var(--danger-red, #e53e3e);
+
+  /* ── Radius (escala oficial) ── */
+  --mdl-radius-sm: 8px;
+  --mdl-radius-md: 12px;
+  --mdl-radius-lg: 16px;
+  --mdl-radius-xl: 20px;
+  --mdl-radius-full: 999px;
+
+  /* Alias por componente → escala */
+  --mdl-radius-button: 10px;
+  --mdl-radius-input: var(--mdl-radius-md);
+  --mdl-radius-card: var(--mdl-radius-lg);
+  --mdl-radius-modal: var(--mdl-radius-xl);
+  --mdl-radius-badge: var(--mdl-radius-full);
+
+  /* ── Shadow (escala oficial) ── */
+  --mdl-shadow-xs: 0 1px 1px rgba(4, 44, 83, 0.04);
+  --mdl-shadow-sm: 0 1px 2px rgba(4, 44, 83, 0.05);
+  --mdl-shadow-md: 0 4px 14px rgba(4, 44, 83, 0.08);
+  --mdl-shadow-lg: 0 8px 24px rgba(4, 44, 83, 0.12);
+  --mdl-shadow-xl: 0 16px 40px rgba(4, 44, 83, 0.16);
+
+  /* ── Spacing (grid 8px) ── */
+  --mdl-space-xs: 4px;
+  --mdl-space-sm: 8px;
+  --mdl-space-md: 16px;
+  --mdl-space-lg: 24px;
+  --mdl-space-xl: 32px;
+  --mdl-space-2xl: 48px;
+  --mdl-space-3xl: 64px;
+
+  /* ── Breakpoints (referencia; usar en @media) ── */
+  --mdl-bp-xs: 480px;
+  --mdl-bp-sm: 640px;
+  --mdl-bp-md: 768px;
+  --mdl-bp-lg: 1024px;
+  --mdl-bp-xl: 1280px;
+  --mdl-bp-2xl: 1536px;
+
+  /* ── Maintix Motion ── */
+  --mdl-duration-hover: 150ms;
+  --mdl-duration-fade: 200ms;
+  --mdl-duration-modal: 250ms;
+  --mdl-duration-sidebar: 300ms;
+  --mdl-ease: cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* Alias legacy */
+  --mdl-duration-dropdown: var(--mdl-duration-fade);
+
+  /* ── Typography ── */
+  --mdl-font-family: "Inter", system-ui, -apple-system, sans-serif;
+  --mdl-text-h1-size: 48px;
+  --mdl-text-h1-lh: 56px;
+  --mdl-text-h2-size: 36px;
+  --mdl-text-h2-lh: 44px;
+  --mdl-text-h3-size: 28px;
+  --mdl-text-h3-lh: 36px;
+  --mdl-text-h4-size: 22px;
+  --mdl-text-h4-lh: 28px;
+  --mdl-text-body-size: 16px;
+  --mdl-text-body-lh: 24px;
+  --mdl-text-sm-size: 14px;
+  --mdl-text-sm-lh: 20px;
+  --mdl-text-caption-size: 12px;
+  --mdl-text-caption-lh: 16px;
+}
+
+/* ── Dark mode (dashboard híbrido + futuro global) ── */
+.theme-dashboard-dark,
+[data-mdl-theme="dark"] {
+  --mdl-background: #0f1419;
+  --mdl-surface: #1a2332;
+  --mdl-sidebar: #151b26;
+  --mdl-text-primary: rgba(255, 255, 255, 0.88);
+  --mdl-text-secondary: rgba(255, 255, 255, 0.5);
+  --mdl-border: rgba(255, 255, 255, 0.08);
+  --mdl-shadow-xs: 0 1px 1px rgba(0, 0, 0, 0.2);
+  --mdl-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.25);
+  --mdl-shadow-md: 0 4px 14px rgba(0, 0, 0, 0.2);
+  --mdl-shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.35);
+  --mdl-shadow-xl: 0 16px 40px rgba(0, 0, 0, 0.45);
+}

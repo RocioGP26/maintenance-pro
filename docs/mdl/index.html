@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MDL 1.0 — Maintix Design Language</title>
+  <link rel="stylesheet" href="css/brand-book.css">
+  <link rel="stylesheet" href="/static/css/mdl-tokens.css">
+  <link rel="stylesheet" href="/static/css/mdl.css">
+  <link rel="stylesheet" href="css/mdl-docs.css">
+</head>
+<body>
+<div class="bb-shell">
+  <nav class="bb-nav" aria-label="MDL 1.0">
+    <div class="bb-nav-brand">
+      <p class="bb-wordmark">MDL</p>
+      <p class="bb-sub">Maintix Design Language · 1.0</p>
+      <p class="bb-nav-meta"><a href="/brandbook/" style="color:rgba(255,255,255,0.55)">← Brand Book</a></p>
+    </div>
+    <div class="bb-nav-group">
+      <p class="bb-nav-label">Fundamentos</p>
+      <a href="#intro">Intro</a>
+      <a href="#tokens">Tokens</a>
+      <a href="#motion">Motion</a>
+      <a href="#dark">Dark Mode</a>
+      <a href="#responsive">Responsive</a>
+      <a href="#patterns">Patrones</a>
+    </div>
+    <div class="bb-nav-group">
+      <p class="bb-nav-label">Componentes · MTX-*</p>
+      <a href="#mtx-btn-001">MTX-BTN-001</a>
+      <a href="#mdl-01">01 · Botones</a>
+      <a href="#mdl-02">02 · Cards</a>
+      <a href="#mdl-03">03 · Formularios</a>
+      <a href="#mdl-05">05 · Tables</a>
+      <a href="#mdl-12">12 · Modals</a>
+      <a href="#mdl-18">18 · PDF / MRL</a>
+      <a href="#mdl-19">19 · Email</a>
+    </div>
+    <div class="bb-nav-group">
+      <p class="bb-nav-label">Docs</p>
+      <a href="components.md">components.md</a>
+      <a href="tokens.md">tokens.md</a>
+      <a href="patterns.md">patterns.md</a>
+      <a href="changelog.md">changelog.md</a>
+    </div>
+  </nav>
+
+  <main class="bb-main">
+
+    <section id="intro" class="bb-page bb-page--dark">
+      <div class="bb-page-inner bb-sprint-hero">
+        <span class="bb-mdl-badge">Proyecto independiente</span>
+        <h2 class="bb-h1" style="color:#fff">MDL 1.0</h2>
+        <p class="bb-lead" style="color:rgba(255,255,255,0.82);text-align:center;max-width:44rem">
+          Herramienta de desarrollo: identificadores <code style="color:#fff">MTX-*</code>,
+          fichas técnicas, estados completos y biblioteca <code style="color:var(--bb-claro)">mtx-*</code>
+          en <code style="color:var(--bb-claro)">static/css/mdl.css</code>.
+        </p>
+        <div class="mdl-doc-links">
+          <a href="tokens.md">tokens.md</a>
+          <a href="components.md">components.md</a>
+          <a href="patterns.md">patterns.md</a>
+          <a href="../mrl/README.md">MRL →</a>
+        </div>
+        <p class="bb-tagline bb-tagline--light"><span>Toda la operación.</span><span>Una sola plataforma.</span></p>
+      </div>
+    </section>
+
+    <section id="tokens" class="bb-page bb-page--soft"><div class="bb-page-inner mdl-catalog-section">
+      <p class="mdl-catalog-label">Design Tokens</p>
+      <h2 class="bb-h2">Nunca valores sueltos</h2>
+      <table class="mdl-ficha-table">
+        <tr><th>Radius</th><td><code>--mdl-radius-sm</code> → <code>--mdl-radius-xl</code></td></tr>
+        <tr><th>Shadow</th><td><code>--mdl-shadow-xs</code> → <code>--mdl-shadow-xl</code></td></tr>
+        <tr><th>Breakpoints</th><td>XS 480 · SM 640 · MD 768 · LG 1024 · XL 1280 · 2XL 1536</td></tr>
+        <tr><th>Regla</th><td>❌ <code>border-radius: 14px</code> · ✅ <code>var(--mdl-radius-lg)</code></td></tr>
+      </table>
+      <p class="mdl-catalog-code">Ver <a href="tokens.md">tokens.md</a> completo</p>
+    </div></section>
+
+    <section id="motion" class="bb-page"><div class="bb-page-inner mdl-catalog-section">
+      <p class="mdl-catalog-label">Maintix Motion</p>
+      <table class="mdl-ficha-table">
+        <tr><th>Hover</th><td>150ms · <code>--mdl-duration-hover</code></td></tr>
+        <tr><th>Fade</th><td>200ms · <code>--mdl-duration-fade</code></td></tr>
+        <tr><th>Modal</th><td>250ms · <code>--mdl-duration-modal</code></td></tr>
+        <tr><th>Sidebar</th><td>300ms · <code>--mdl-duration-sidebar</code></td></tr>
+      </table>
+    </div></section>
+
+    <section id="dark" class="bb-page bb-page--dark"><div class="bb-page-inner mdl-catalog-section">
+      <p class="mdl-catalog-label">Dark Mode</p>
+      <p style="color:rgba(255,255,255,0.82);max-width:36rem">Selectores: <code>.theme-dashboard-dark</code>, <code>[data-mdl-theme="dark"]</code>. Capítulo completo en <a href="dark-mode.md" style="color:#378ADD">dark-mode.md</a>.</p>
+      <div class="mdl-catalog-demo" data-mdl-theme="dark" style="margin-top:16px">
+        <div class="mtx-card" style="max-width:280px"><div class="mtx-card-body"><div class="mtx-kpi"><span class="mtx-kpi-label">Demo dark</span><span class="mtx-kpi-value">99.2%</span></div></div></div>
+      </div>
+    </div></section>
+
+    <section id="responsive" class="bb-page"><div class="bb-page-inner mdl-catalog-section">
+      <p class="mdl-catalog-label">Responsive · XS → 2XL</p>
+      <p class="bb-body">Medidas oficiales en <a href="responsive.md">responsive.md</a>. Utilidades: <code>mtx-hide-sm</code>, <code>mtx-stack-sm</code>.</p>
+    </div></section>
+
+    <section id="patterns" class="bb-page bb-page--soft"><div class="bb-page-inner mdl-catalog-section">
+      <p class="mdl-catalog-label">Patrones · MTX-PAT-*</p>
+      <h2 class="bb-h2">Flujos, no botones sueltos</h2>
+      <table class="mdl-ficha-table">
+        <tr><th>MTX-PAT-001</th><td>Registrar OT</td></tr>
+        <tr><th>MTX-PAT-002</th><td>Buscar Activo</td></tr>
+        <tr><th>MTX-PAT-005</th><td>Importar Excel</td></tr>
+        <tr><th>MTX-PAT-007</th><td>Confirmar Acción</td></tr>
+      </table>
+      <p><a href="patterns.md">patterns.md</a> — corazón del MDL</p>
+    </div></section>
+
+    <!-- Ficha MTX-BTN-001 -->
+    <section id="mtx-btn-001" class="bb-page"><div class="bb-page-inner mdl-catalog-section">
+      <span class="mdl-id">MTX-BTN-001</span>
+      <h2 class="bb-h2">Primary Button</h2>
+      <table class="mdl-ficha-table">
+        <tr><th>Uso</th><td>Acción principal — Guardar, Crear OT, Confirmar</td></tr>
+        <tr><th>No usar</th><td>Destructivas, secundarias, más de uno por vista</td></tr>
+        <tr><th>Clase</th><td><code>mtx-btn mtx-btn-primary</code></td></tr>
+        <tr><th>Ficha</th><td><a href="components/MTX-BTN-001.md">components/MTX-BTN-001.md</a></td></tr>
+      </table>
+      <p class="mdl-catalog-label" style="margin-top:24px">Estados</p>
+      <div class="mdl-state-grid">
+        <div class="mdl-state-cell"><button type="button" class="mtx-btn mtx-btn-primary">Default</button><span>Default</span></div>
+        <div class="mdl-state-cell"><button type="button" class="mtx-btn mtx-btn-primary" style="background:var(--mdl-primary-hover)">Hover</button><span>Hover</span></div>
+        <div class="mdl-state-cell"><button type="button" class="mtx-btn mtx-btn-primary" disabled>Disabled</button><span>Disabled</span></div>
+        <div class="mdl-state-cell"><button type="button" class="mtx-btn mtx-btn-primary is-loading">Loading</button><span>Loading</span></div>
+        <div class="mdl-state-cell"><button type="button" class="mtx-btn mtx-btn-primary mtx-btn-sm">Small</button><span>Small</span></div>
+        <div class="mdl-state-cell"><button type="button" class="mtx-btn mtx-btn-primary mtx-btn-lg">Large</button><span>Large</span></div>
+      </div>
+      <p class="mdl-catalog-code">&lt;button class="mtx-btn mtx-btn-primary"&gt;Guardar&lt;/button&gt;</p>
+    </div></section>
+
+    <section id="mdl-01" class="bb-page bb-page--soft"><div class="bb-page-inner mdl-catalog-section">
+      <span class="mdl-id">MTX-BTN-002</span>
+      <p class="mdl-catalog-label">01 · Botones</p>
+      <div class="mdl-catalog-demo">
+        <button type="button" class="mtx-btn mtx-btn-primary">Primary</button>
+        <button type="button" class="mtx-btn mtx-btn-secondary" style="margin-left:8px">Secondary</button>
+        <button type="button" class="mtx-btn mtx-btn-outline" style="margin-left:8px">Outline</button>
+        <button type="button" class="mtx-btn mtx-btn-ghost" style="margin-left:8px">Ghost</button>
+        <button type="button" class="mtx-btn mtx-btn-danger mtx-btn-sm" style="margin-left:8px">Danger</button>
+      </div>
+    </div></section>
+
+    <section id="mdl-02" class="bb-page"><div class="bb-page-inner mdl-catalog-section">
+      <span class="mdl-id">MTX-CRD-001</span>
+      <p class="mdl-catalog-label">02 · Cards · estados</p>
+      <div class="mdl-catalog-demo" style="display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(200px,1fr))">
+        <div class="mtx-card"><div class="mtx-card-head"><h3 class="mtx-card-head-title">Default</h3></div><div class="mtx-card-body">mtx-card</div></div>
+        <div class="mtx-card mtx-card--interactive"><div class="mtx-card-body">Hover me</div></div>
+        <div class="mtx-card mtx-card--selected"><div class="mtx-card-body">Selected</div></div>
+        <div class="mtx-stat-card"><div class="mtx-kpi"><span class="mtx-kpi-label">MTX-CRD-002</span><span class="mtx-kpi-value mtx-kpi-value--success">99.2%</span></div></div>
+      </div>
+    </div></section>
+
+    <section id="mdl-03" class="bb-page"><div class="bb-page-inner mdl-catalog-section">
+      <span class="mdl-id">MTX-INP-001</span>
+      <p class="mdl-catalog-label">03 · Formularios · estados</p>
+      <div class="mdl-catalog-demo" style="display:grid;gap:12px;max-width:360px">
+        <input class="mtx-input" placeholder="Default">
+        <input class="mtx-input" placeholder="Focus" style="border-color:var(--mdl-primary);box-shadow:0 0 0 3px rgba(24,95,165,0.15)">
+        <input class="mtx-input is-error" placeholder="Error" aria-invalid="true">
+        <input class="mtx-input is-success" placeholder="Success" value="CPS-001">
+        <input class="mtx-input" placeholder="Disabled" disabled>
+        <input class="mtx-input" placeholder="ReadOnly" readonly value="Solo lectura">
+      </div>
+    </div></section>
+
+    <section id="mdl-05" class="bb-page bb-page--soft"><div class="bb-page-inner mdl-catalog-section">
+      <span class="mdl-id">MTX-TBL-001</span>
+      <p class="mdl-catalog-label">05 · Tables</p>
+      <div class="mdl-catalog-demo"><div class="mtx-table-wrap"><table class="mtx-data-table"><thead><tr><th>Activo</th><th>Estado</th></tr></thead><tbody><tr><td>CPS-001</td><td><span class="mtx-badge mtx-badge-success">Operativo</span></td></tr></tbody></table></div></div>
+    </div></section>
+
+    <section id="mdl-12" class="bb-page"><div class="bb-page-inner mdl-catalog-section">
+      <span class="mdl-id">MTX-MDL-001</span>
+      <p class="mdl-catalog-label">12 · Modals · 250ms</p>
+      <div class="mdl-catalog-demo" style="position:relative;min-height:240px;background:#f4f7fb;padding:24px">
+        <div class="mtx-modal" style="position:relative;box-shadow:var(--mdl-shadow-xl)">
+          <div class="mtx-modal-header"><h3 class="mtx-modal-title">Confirmar acción</h3></div>
+          <div class="mtx-modal-body"><p style="margin:0;font-size:14px">¿Cerrar esta OT?</p></div>
+          <div class="mtx-modal-footer"><button type="button" class="mtx-btn mtx-btn-ghost">Cancelar</button><button type="button" class="mtx-btn mtx-btn-primary">Confirmar</button></div>
+        </div>
+      </div>
+    </div></section>
+
+    <section id="mdl-18" class="bb-page bb-page--soft"><div class="bb-page-inner mdl-catalog-section">
+      <span class="mdl-id">MRL · Maintix Report Language</span>
+      <p class="mdl-catalog-label">18 · PDF</p>
+      <p class="bb-body">Header · Footer · Tabla · KPIs · Gráficas · Numeración · Firma · QR — ver <a href="../mrl/README.md">docs/mrl/</a></p>
+      <div class="mdl-catalog-demo"><div class="mtx-pdf-page" style="min-height:160px"><div class="mtx-pdf-header"><strong>MAINTIX</strong><span>OT #1042</span></div><p style="margin:0;font-size:14px">MRL-HDR-001 · MRL-TBL-001</p></div></div>
+    </div></section>
+
+    <section id="mdl-19" class="bb-page"><div class="bb-page-inner mdl-catalog-section">
+      <span class="mdl-id">MTX-EML-010 … 017</span>
+      <p class="mdl-catalog-label">19 · Email</p>
+      <p class="bb-body">Bienvenida · Reset password · Nueva OT · Trial · Factura · Pago · Empresa · Invitación — <a href="email.md">email.md</a></p>
+      <div class="mdl-catalog-demo"><div class="mtx-email"><div class="mtx-email-body"><div class="mtx-email-header">MAINTIX</div><div class="mtx-email-content"><p style="margin:0">Plantilla transaccional unificada.</p></div><div class="mtx-email-footer">© Maintix</div></div></div></div>
+      <div class="bb-tagline-strip" style="margin-top:32px"><p class="bb-tagline"><span>Toda la operación.</span><span>Una sola plataforma.</span></p></div>
+    </div></section>
+
+  </main>
+</div>
+</body>
+</html>
