@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MRL — Maintix Report Language</title>
+  <link rel="stylesheet" href="/brandbook/css/brand-book.css">
+  <link rel="stylesheet" href="css/mrl-docs.css">
+</head>
+<body>
+<div class="bb-shell">
+  <nav class="bb-nav" aria-label="MRL Sprint 7">
+    <div class="bb-nav-brand">
+      <p class="bb-wordmark">MRL</p>
+      <p class="bb-sub">Maintix Report Language</p>
+      <p class="bb-nav-meta"><a href="/docs/" style="color:rgba(255,255,255,0.55)">Maintix Docs</a> · <a href="/mdl/" style="color:rgba(255,255,255,0.55)">MDL</a> · <a href="/mpa/" style="color:rgba(255,255,255,0.55)">MPA</a></p>
+    </div>
+    <div class="bb-nav-group">
+      <p class="bb-nav-label">Sprint 7 · Reportes</p>
+      <a href="#indice">Índice</a>
+      <a href="#mrl-01" class="is-done">01 · Filosofía</a>
+      <a href="#mrl-02" class="is-done">02 · Tipos DOC</a>
+      <a href="#mrl-03" class="is-done">03 · Anatomía</a>
+      <a href="#mrl-04" class="is-done">04 · Header</a>
+      <a href="#mrl-05" class="is-done">05 · Tablas</a>
+      <a href="#mrl-06" class="is-done">06 · KPI</a>
+      <a href="#mrl-07" class="is-done">07 · Colores</a>
+      <a href="#mrl-08" class="is-done">08 · Gráficos</a>
+      <a href="#mrl-09" class="is-done">09 · Exportaciones</a>
+      <a href="#mrl-10" class="is-done">10 · Roadmap</a>
+    </div>
+    <div class="bb-nav-group">
+      <p class="bb-nav-label">Complementos</p>
+      <a href="#mrl-11" class="is-done">11 · Metadata</a>
+      <a href="#mrl-12" class="is-done">12 · Plantillas</a>
+      <a href="#mrl-13" class="is-done">13 · Accesibilidad</a>
+    </div>
+    <div class="bb-nav-group">
+      <p class="bb-nav-label">Docs</p>
+      <a href="NOMENCLATURE.md">NOMENCLATURE</a>
+      <a href="strategy.md">strategy.md</a>
+      <a href="changelog.md">Changelog</a>
+    </div>
+  </nav>
+
+  <main class="bb-main">
+
+    <section id="indice" class="bb-page bb-page--dark">
+      <div class="bb-page-inner bb-sprint-hero">
+        <span class="bb-mdl-badge">Sprint 7 · Cómo comunica información Maintix</span>
+        <h2 class="bb-h1" style="color:#fff">Un PDF no es un archivo.<br>Es Maintix.</h2>
+        <p class="bb-lead" style="color:rgba(255,255,255,0.82);text-align:center;max-width:44rem">
+          Estándar único para reportes, órdenes de trabajo, facturas, inventarios y exportaciones.
+          <strong>Reconocible sin ver el logo.</strong>
+        </p>
+        <p class="bb-tagline bb-tagline--light"><span>Toda la operación.</span><span>Una sola plataforma.</span></p>
+        <div class="bb-page-footer" style="border:none;margin-top:2rem">
+          <span>MRL v1.0.1</span>
+          <span>Sprint 7 · 10 capítulos + 3 complementos</span>
+        </div>
+      </div>
+    </section>
+
+    <section id="mrl-01" class="bb-page bb-page--soft">
+      <div class="bb-page-inner">
+        <span class="mrl-doc-code">MRL-01-PHIL</span>
+        <p class="bb-page-num">01 · Filosofía</p>
+        <h2 class="bb-h1">Los reportes son parte del producto.</h2>
+        <p class="bb-lead">Ya no «hacer un PDF que funcione». Ahora: <strong>generar un documento Maintix</strong> con ReportLab y bloques MRL.</p>
+        <div class="bb-rule-box" style="border-left-color:#38A169">
+          <p style="margin:0">Hermano del <a href="/mdl/">MDL</a> — misma marca en pantalla y en papel.</p>
+        </div>
+        <div class="mrl-chapter-nav">
+          <a href="chapters/01-filosofia.md">Leer completo →</a>
+          <a href="#mrl-02">Tipos DOC →</a>
+        </div>
+        <div class="bb-page-footer"><span>MRL v1.0</span><span>Filosofía</span></div>
+      </div>
+    </section>
+
+    <section id="mrl-02" class="bb-page">
+      <div class="bb-page-inner">
+        <span class="mrl-doc-code">MRL-02-DOC</span>
+        <p class="bb-page-num">02 · Tipos de documentos</p>
+        <table class="mrl-doc-table">
+          <thead><tr><th>Código</th><th>Documento</th></tr></thead>
+          <tbody>
+            <tr><td><span class="mrl-doc-code-badge">DOC-001</span></td><td>Orden de Trabajo</td></tr>
+            <tr><td><span class="mrl-doc-code-badge">DOC-002</span></td><td>Activo</td></tr>
+            <tr><td><span class="mrl-doc-code-badge">DOC-003</span></td><td>Inventario</td></tr>
+            <tr><td><span class="mrl-doc-code-badge">DOC-004</span></td><td>Factura</td></tr>
+            <tr><td><span class="mrl-doc-code-badge">DOC-005</span></td><td>Cotización</td></tr>
+            <tr><td><span class="mrl-doc-code-badge">DOC-006</span></td><td>Compra</td></tr>
+            <tr><td><span class="mrl-doc-code-badge">DOC-007</span></td><td>Dashboard PDF</td></tr>
+            <tr><td><span class="mrl-doc-code-badge">DOC-008</span></td><td>Auditoría</td></tr>
+            <tr><td><span class="mrl-doc-code-badge">DOC-009</span></td><td>Reporte Ejecutivo</td></tr>
+            <tr><td><span class="mrl-doc-code-badge">DOC-010</span></td><td>Exportación</td></tr>
+          </tbody>
+        </table>
+        <div class="mrl-chapter-nav">
+          <a href="chapters/02-tipos-documentos.md">Leer completo →</a>
+        </div>
+        <div class="bb-page-footer"><span>MRL v1.0</span><span>DOC-001–010</span></div>
+      </div>
+    </section>
+
+    <section id="mrl-03" class="bb-page bb-page--soft">
+      <div class="bb-page-inner">
+        <span class="mrl-doc-code">MRL-03-ANAT</span>
+        <p class="bb-page-num">03 · Anatomía del documento</p>
+        <pre class="mrl-anatomy">┌ HEADER ─────────────────────────┐
+│ Logo · Empresa · Título · Código│
+├ KPI ROW (opcional) ─────────────┤
+├ CONTENIDO ──────────────────────┤
+│ Tablas · gráficos · texto       │
+├ FOOTER ─────────────────────────┤
+│ Página N de M · Generado Maintix│
+└─────────────────────────────────┘</pre>
+        <div class="mrl-chapter-nav"><a href="chapters/03-anatomia-documento.md">Leer completo →</a></div>
+        <div class="bb-page-footer"><span>MRL v1.0</span><span>Anatomía</span></div>
+      </div>
+    </section>
+
+    <section id="mrl-04" class="bb-page">
+      <div class="bb-page-inner">
+        <span class="mrl-doc-code">MRL-04-HDR · MRL-HDR-001</span>
+        <p class="bb-page-num">04 · Header estándar</p>
+        <div class="mrl-sample-header">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start">
+            <strong style="color:var(--bb-primario)">[LOGO]</strong>
+            <div style="text-align:right">
+              <span style="color:var(--bb-secundario);font-size:0.7rem">MAINTIX</span>
+              <h3 style="margin:0.25rem 0;font-size:1rem;color:var(--bb-primario)">Reporte de Disponibilidad</h3>
+              <span style="font-size:0.82rem">Empresa XYZ · Abril 2026</span>
+            </div>
+          </div>
+          <div class="meta"><span>DOC-007 · Módulo Maintenance</span><span>10/07/2026 · MRL v1.0</span></div>
+        </div>
+        <div class="mrl-sample-footer">Página 1 de 4 · Generado por Maintix</div>
+        <div class="mrl-chapter-nav">
+          <a href="chapters/04-header-estandar.md">Leer completo →</a>
+          <a href="#mrl-11">Metadata MRL-11 →</a>
+        </div>
+        <div class="bb-page-footer"><span>MRL v1.0.1</span><span>Header</span></div>
+      </div>
+    </section>
+
+    <section id="mrl-05" class="bb-page bb-page--soft">
+      <div class="bb-page-inner">
+        <span class="mrl-doc-code">MRL-05-TBL · MRL-TBL-001</span>
+        <p class="bb-page-num">05 · Tablas</p>
+        <p class="bb-body">Cabecera azul · filas blancas · zebra suave · totales destacados — OT, compras, ventas, inventario.</p>
+        <table class="mrl-doc-table">
+          <thead><tr><th>Repuesto</th><th>Cant.</th><th>Unit.</th><th>Subtotal</th></tr></thead>
+          <tbody>
+            <tr><td>Rodamiento</td><td>2</td><td>$45.000</td><td>$90.000</td></tr>
+            <tr><td>Sello</td><td>1</td><td>$12.000</td><td>$12.000</td></tr>
+            <tr class="mrl-total"><td colspan="3">Total</td><td>$102.000</td></tr>
+          </tbody>
+        </table>
+        <div class="mrl-chapter-nav"><a href="chapters/05-tablas.md">Leer completo →</a></div>
+        <div class="bb-page-footer"><span>MRL v1.0</span><span>Tablas</span></div>
+      </div>
+    </section>
+
+    <section id="mrl-06" class="bb-page">
+      <div class="bb-page-inner">
+        <span class="mrl-doc-code">MRL-06-KPI · MRL-KPI-001</span>
+        <p class="bb-page-num">06 · KPI Cards</p>
+        <div class="mrl-kpi-row">
+          <div class="mrl-kpi-card"><div class="label">Disponibilidad</div><div class="value">94.2%</div><div class="delta">▲ +1.2%</div></div>
+          <div class="mrl-kpi-card"><div class="label">MTTR</div><div class="value">2.4 h</div><div class="delta" style="color:#e53e3e">▼ -0.3h</div></div>
+          <div class="mrl-kpi-card"><div class="label">Stock bajo mín.</div><div class="value">7</div><div class="delta">—</div></div>
+          <div class="mrl-kpi-card"><div class="label">Ventas mes</div><div class="value">$48M</div><div class="delta">▲ +8%</div></div>
+        </div>
+        <div class="mrl-chapter-nav"><a href="chapters/06-kpi-cards.md">Leer completo →</a></div>
+        <div class="bb-page-footer"><span>MRL v1.0</span><span>KPI</span></div>
+      </div>
+    </section>
+
+    <section id="mrl-07" class="bb-page bb-page--soft">
+      <div class="bb-page-inner">
+        <span class="mrl-doc-code">MRL-07-COL</span>
+        <p class="bb-page-num">07 · Colores</p>
+        <p class="bb-body">Reutiliza MDL — no se inventan colores nuevos.</p>
+        <div class="mrl-color-grid">
+          <div class="mrl-color-swatch" style="background:#38A169;color:#fff">Verde · OK</div>
+          <div class="mrl-color-swatch" style="background:#E53E3E;color:#fff">Rojo · Crítico</div>
+          <div class="mrl-color-swatch" style="background:#D69E2E;color:#fff">Ámbar · Aviso</div>
+          <div class="mrl-color-swatch" style="background:#185FA5;color:#fff">Azul · Info</div>
+        </div>
+        <div class="mrl-chapter-nav"><a href="chapters/07-colores.md">Leer completo →</a></div>
+        <div class="bb-page-footer"><span>MRL v1.0</span><span>Colores</span></div>
+      </div>
+    </section>
+
+    <section id="mrl-08" class="bb-page">
+      <div class="bb-page-inner">
+        <span class="mrl-doc-code">MRL-08-CHT · MRL-CHT-001</span>
+        <p class="bb-page-num">08 · Gráficos</p>
+        <p class="bb-body">Barras · líneas · pie/donut · comparativos. <strong>Sin 3D. Sin degradados.</strong> Paleta fija MRL-07.</p>
+        <div class="mrl-chapter-nav"><a href="chapters/08-graficos.md">Leer completo →</a></div>
+        <div class="bb-page-footer"><span>MRL v1.0</span><span>Gráficos</span></div>
+      </div>
+    </section>
+
+    <section id="mrl-09" class="bb-page bb-page--soft">
+      <div class="bb-page-inner">
+        <span class="mrl-doc-code">MRL-09-EXP</span>
+        <p class="bb-page-num">09 · Exportaciones</p>
+        <table class="mrl-doc-table">
+          <thead><tr><th>Formato</th><th>Estándar</th></tr></thead>
+          <tbody>
+            <tr><td><strong>PDF</strong></td><td>ReportLab · anatomía MRL completa</td></tr>
+            <tr><td><strong>Excel</strong></td><td>Header azul · zebra · metadata Maintix</td></tr>
+            <tr><td><strong>CSV</strong></td><td>UTF-8 BOM · headers MRL</td></tr>
+          </tbody>
+        </table>
+        <div class="mrl-chapter-nav">
+          <a href="chapters/09-exportaciones.md">Leer completo →</a>
+          <a href="#mrl-11">Metadata MRL-11 →</a>
+        </div>
+        <div class="bb-page-footer"><span>MRL v1.0.1</span><span>Exportaciones</span></div>
+      </div>
+    </section>
+
+    <section id="mrl-10" class="bb-page bb-page--dark">
+      <div class="bb-page-inner">
+        <span class="mrl-doc-code" style="color:#90cdf4">MRL-10-ROAD</span>
+        <p class="bb-page-num" style="color:rgba(255,255,255,0.7)">10 · Roadmap</p>
+        <h2 class="bb-h1" style="color:#fff">Power BI · reportes programados · BI · IA</h2>
+        <p class="bb-lead" style="color:rgba(255,255,255,0.85);text-align:center">
+          Sin ver el logo, sabrás que fue generado por <strong>Maintix</strong>.
+        </p>
+        <div class="mrl-chapter-nav" style="justify-content:center">
+          <a href="chapters/10-roadmap.md">Leer completo →</a>
+          <a href="#mrl-11">Complementos →</a>
+        </div>
+        <div class="bb-page-footer" style="border-color:rgba(255,255,255,0.15)">
+          <span>MRL v1.0.1</span>
+          <span>Núcleo completo</span>
+        </div>
+      </div>
+    </section>
+
+    <section id="mrl-11" class="bb-page">
+      <div class="bb-page-inner">
+        <span class="mrl-doc-code">MRL-11-META</span>
+        <p class="bb-page-num">11 · Metadata del documento</p>
+        <p class="bb-body">Metadatos <strong>consistentes</strong> en todo PDF, Excel y CSV generado por Maintix.</p>
+        <table class="mrl-doc-table">
+          <thead><tr><th>Campo</th><th>Descripción</th><th>Ejemplo</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Documento</strong></td><td>Código DOC</td><td>DOC-007</td></tr>
+            <tr><td><strong>Versión</strong></td><td>Versión instancia</td><td>1.0</td></tr>
+            <tr><td><strong>Empresa</strong></td><td>Tenant</td><td>Empresa XYZ</td></tr>
+            <tr><td><strong>Usuario</strong></td><td>Quién generó</td><td>Ana García</td></tr>
+            <tr><td><strong>Fecha</strong></td><td>Timestamp</td><td>2026-07-10T10:30</td></tr>
+            <tr><td><strong>Zona horaria</strong></td><td>IANA tenant</td><td>America/Bogota</td></tr>
+            <tr><td><strong>Idioma</strong></td><td>Locale</td><td>es-CO</td></tr>
+            <tr><td><strong>Hash</strong></td><td>Integridad (opcional)</td><td>sha256:…</td></tr>
+          </tbody>
+        </table>
+        <div class="mrl-chapter-nav">
+          <a href="chapters/11-metadata-documento.md">Leer completo →</a>
+          <a href="#mrl-12">Plantillas →</a>
+        </div>
+        <div class="bb-page-footer"><span>MRL v1.0.1</span><span>Metadata</span></div>
+      </div>
+    </section>
+
+    <section id="mrl-12" class="bb-page bb-page--soft">
+      <div class="bb-page-inner">
+        <span class="mrl-doc-code">MRL-12-TPL</span>
+        <p class="bb-page-num">12 · Versionado de plantillas</p>
+        <p class="bb-body">Trazabilidad: saber <strong>con qué plantilla</strong> se generó cada documento archivado.</p>
+        <div class="mrl-sample-header" style="margin-top:1rem">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div>
+              <span class="mrl-doc-code-badge">MRL-TPL-001</span>
+              <h3 style="margin:0.35rem 0 0;font-size:1rem;color:var(--bb-primario)">Reporte Ejecutivo</h3>
+            </div>
+            <span style="font-size:0.9rem;color:var(--bb-secundario)">v1.0 · DOC-009</span>
+          </div>
+        </div>
+        <table class="mrl-doc-table" style="margin-top:1.25rem">
+          <thead><tr><th>Plantilla</th><th>Nombre</th><th>DOC</th></tr></thead>
+          <tbody>
+            <tr><td><span class="mrl-doc-code-badge">MRL-TPL-001</span></td><td>Reporte Ejecutivo</td><td>DOC-009</td></tr>
+            <tr><td><span class="mrl-doc-code-badge">MRL-TPL-002</span></td><td>Orden de Trabajo</td><td>DOC-001</td></tr>
+            <tr><td><span class="mrl-doc-code-badge">MRL-TPL-003</span></td><td>Inventario valorizado</td><td>DOC-003</td></tr>
+          </tbody>
+        </table>
+        <div class="mrl-chapter-nav">
+          <a href="chapters/12-versionado-plantillas.md">Leer completo →</a>
+          <a href="#mrl-13">Accesibilidad →</a>
+        </div>
+        <div class="bb-page-footer"><span>MRL v1.0.1</span><span>Plantillas</span></div>
+      </div>
+    </section>
+
+    <section id="mrl-13" class="bb-page bb-page--dark">
+      <div class="bb-page-inner">
+        <span class="mrl-doc-code" style="color:#90cdf4">MRL-13-A11Y</span>
+        <p class="bb-page-num" style="color:rgba(255,255,255,0.7)">13 · Accesibilidad</p>
+        <h2 class="bb-h1" style="color:#fff">Legible en impresión,<br>escala de grises y sala.</h2>
+        <ul class="bb-body" style="color:rgba(255,255,255,0.88);max-width:36rem;margin:1.5rem auto;text-align:left">
+          <li>Contraste adecuado para impresión</li>
+          <li>No depender solo del color para transmitir información</li>
+          <li>Tipografía mínima legible (cuerpo ≥ 9pt)</li>
+          <li>Gráficos comprensibles en escala de grises</li>
+        </ul>
+        <div class="mrl-chapter-nav" style="justify-content:center">
+          <a href="chapters/13-accesibilidad.md">Leer completo →</a>
+          <a href="/mux/">MUX A11Y →</a>
+          <a href="/docs/">Maintix Docs →</a>
+        </div>
+        <div class="bb-page-footer" style="border-color:rgba(255,255,255,0.15)">
+          <span>MRL v1.0.1</span>
+          <span>Sprint 7 · Complementos completos</span>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+</body>
+</html>

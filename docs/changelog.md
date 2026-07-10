@@ -1,5 +1,36 @@
 # Changelog · Maintix Documentation Suite
 
+## [1.12.0] — 2026-07-10 · MKT v1.0.0 · Sprint 12 finalizado
+
+### Added
+- **MKT v1.0.0** — Manual de Marketing completo (10 capítulos)
+- **MKT-10** · Guía de Estilo y Gobernanza de Marca · proceso editorial · auditoría
+
+### Status
+- ✅ Sprint 12 finalizado · MKT v1.0.0
+
+---
+
+## [1.11.0] — 2026-07-10 · MKT v0.9.0 · Sprint 12 en curso
+
+### Added
+- **MKT v0.1.0** — Sales Enablement & Marketing Assets
+- **MKT-01** · Identidad y mensajes de marca — Biblia de Marketing
+- **MKT-02** · Elevator Pitch y guiones — 30 s · 1 min · 2 min · 5 sectores
+- **MKT-03** · Casos de éxito · biblioteca `mtx-case/` · MTX-CASE-001–006
+- **MKT-04** · Presentación comercial oficial · 12 slides · guía presentador
+- **MKT-05** · Landing Page y sitio web · arquitectura · CTAs · SEO
+- **MKT-06** · Secuencias Email · Trial 15 d · Demo · Lead · Onboarding
+- **MKT-07** · Brochure y material comercial · One Pager · fichas
+- **MKT-08** · Kit Partners · modelo canal · certificación · Deal Registration
+- **MKT-09** · Estrategia de Contenidos y Redes Sociales · pilares · calendario
+- Estructura `docs/mkt/` · portada `/mkt/` · `mkt_routes.py`
+
+### Status
+- 🟡 Sprint 12 en curso · MKT-10 planificado
+
+---
+
 ## [1.10.0] — 2026-07-10 · MCM v1.0.0 · Sprint 11 finalizado
 
 ### Added

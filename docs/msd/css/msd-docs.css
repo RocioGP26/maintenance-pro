@@ -1,0 +1,91 @@
+/**
+ * MSD Docs — Maintix SDK & Developer Portal
+ */
+
+.msd-doc-code {
+  color: #9ae6b4;
+  display: block;
+  font-family: ui-monospace, monospace;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  margin-bottom: 0.35rem;
+  text-transform: uppercase;
+}
+
+.msd-endpoint {
+  background: #1a2332;
+  border-radius: 12px;
+  color: rgba(255, 255, 255, 0.92);
+  font-family: ui-monospace, monospace;
+  font-size: 0.78rem;
+  line-height: 1.6;
+  margin: 1.25rem 0;
+  padding: 1rem 1.25rem;
+}
+
+.msd-doc-table {
+  border-collapse: collapse;
+  font-size: 0.84rem;
+  margin: 1.25rem 0;
+  width: 100%;
+}
+
+.msd-doc-table th,
+.msd-doc-table td {
+  border-bottom: 1px solid var(--bb-borde);
+  padding: 0.5rem 0.75rem;
+  text-align: left;
+}
+
+.msd-doc-table th {
+  background: #042c53;
+  color: #fff;
+  font-size: 0.75rem;
+}
+
+.msd-doc-table tr:nth-child(even) td {
+  background: #f4f7fb;
+}
+
+.msd-chapter-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  justify-content: space-between;
+  margin-top: 1.75rem;
+}
+
+.msd-chapter-nav a {
+  color: var(--bb-acento);
+  font-size: 0.88rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.msd-chapter-nav a:hover {
+  text-decoration: underline;
+}
+
+.msd-mag-note {
+  background: #f0fff4;
+  border-left: 4px solid #38a169;
+  border-radius: 0 8px 8px 0;
+  margin: 1.25rem 0;
+  padding: 0.85rem 1rem;
+}
+
+.msd-mag-note p {
+  margin: 0;
+}
+
+.msd-code-badge {
+  background: #f0fff4;
+  border: 1px solid #9ae6b4;
+  border-radius: 4px;
+  color: #276749;
+  font-family: ui-monospace, monospace;
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 0.15rem 0.45rem;
+}

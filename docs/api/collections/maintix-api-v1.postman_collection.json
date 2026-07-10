@@ -1,0 +1,178 @@
+{
+  "info": {
+    "_postman_id": "maintix-api-v1",
+    "name": "Maintix API v1",
+    "description": "Colección oficial Maintix API v1 · generada desde openapi.v1.yaml · MSD-08",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "base_url", "value": "http://127.0.0.1:5000" },
+    { "key": "api_v1", "value": "{{base_url}}/api/v1" },
+    { "key": "api_legacy", "value": "{{base_url}}/api" },
+    { "key": "token", "value": "" },
+    { "key": "empresa_slug", "value": "empresa-demo" },
+    { "key": "asset_id", "value": "1" },
+    { "key": "work_order_id", "value": "1" }
+  ],
+  "item": [
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "Login (v1 contract)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"admin\",\n  \"password\": \"YOUR_PASSWORD\",\n  \"empresa_slug\": \"{{empresa_slug}}\"\n}"
+            },
+            "url": "{{api_v1}}/auth/login"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  var j = pm.response.json();",
+                  "  if (j.token) pm.collectionVariables.set('token', j.token);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login (legacy local)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"admin\",\n  \"password\": \"YOUR_PASSWORD\",\n  \"empresa_slug\": \"{{empresa_slug}}\"\n}"
+            },
+            "url": "{{api_legacy}}/auth/login"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  var j = pm.response.json();",
+                  "  if (j.token) pm.collectionVariables.set('token', j.token);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Me",
+      "item": [
+        {
+          "name": "GET /me",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "{{api_v1}}/me"
+          }
+        },
+        {
+          "name": "GET /me (legacy local)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "{{api_legacy}}/me"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Maintenance",
+      "item": [
+        {
+          "name": "Assets",
+          "item": [
+            {
+              "name": "List assets",
+              "request": {
+                "method": "GET",
+                "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+                "url": "{{api_v1}}/maintenance/assets?page=1&page_size=50"
+              }
+            },
+            {
+              "name": "List assets (legacy local)",
+              "request": {
+                "method": "GET",
+                "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+                "url": "{{api_legacy}}/activos"
+              }
+            },
+            {
+              "name": "Get asset by id",
+              "request": {
+                "method": "GET",
+                "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+                "url": "{{api_v1}}/maintenance/assets/{{asset_id}}"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Work Orders",
+          "item": [
+            {
+              "name": "List work orders",
+              "request": {
+                "method": "GET",
+                "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+                "url": "{{api_v1}}/maintenance/work-orders"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Inventory",
+      "item": [
+        {
+          "name": "List products",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "{{api_v1}}/inventory/products"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin",
+      "item": [
+        {
+          "name": "Summary",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "{{api_v1}}/admin/summary"
+          }
+        },
+        {
+          "name": "Summary (legacy local)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "{{api_legacy}}/admin/resumen"
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,96 @@
+/**
+ * MKT Docs — Sales Enablement & Marketing Assets
+ */
+
+.mkt-doc-code {
+  background: rgba(214, 158, 46, 0.15);
+  border-radius: 6px;
+  color: #B7791F;
+  display: inline-block;
+  font-family: ui-monospace, monospace;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  margin-bottom: 0.5rem;
+  padding: 0.2rem 0.55rem;
+}
+
+.mkt-doc-table {
+  border-collapse: collapse;
+  font-size: 0.88rem;
+  margin: 1rem auto;
+  width: 100%;
+}
+
+.mkt-doc-table th,
+.mkt-doc-table td {
+  border: 1px solid var(--bb-borde);
+  padding: 0.45rem 0.65rem;
+  text-align: left;
+}
+
+.mkt-doc-table thead th {
+  background: var(--bb-fondo);
+  font-weight: 600;
+}
+
+.mkt-chapter-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 2rem;
+}
+
+.mkt-chapter-nav a {
+  background: var(--bb-fondo);
+  border: 1px solid var(--bb-borde);
+  border-radius: 8px;
+  color: var(--bb-acento);
+  font-size: 0.82rem;
+  padding: 0.4rem 0.75rem;
+  text-decoration: none;
+}
+
+.mkt-message-approved {
+  background: rgba(56, 161, 105, 0.08);
+  border-left: 4px solid #38A169;
+  border-radius: 0 12px 12px 0;
+  margin: 1rem 0;
+  padding: 1rem 1.25rem;
+}
+
+.mkt-message-forbidden {
+  background: rgba(229, 62, 62, 0.06);
+  border-left: 4px solid #E53E3E;
+  border-radius: 0 12px 12px 0;
+  margin: 0.5rem 0;
+  padding: 0.65rem 1rem;
+  font-size: 0.9rem;
+}
+
+.mkt-pillar-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  margin: 1.5rem 0;
+}
+
+.mkt-pillar-card {
+  background: #fff;
+  border: 1px solid var(--bb-borde);
+  border-radius: 12px;
+  border-top: 3px solid #D69E2E;
+  padding: 1rem 1.15rem;
+}
+
+.mkt-pillar-card h4 {
+  color: var(--bb-primario);
+  font-size: 0.95rem;
+  margin: 0 0 0.35rem;
+}
+
+.mkt-pillar-card p {
+  color: var(--bb-secundario);
+  font-size: 0.85rem;
+  margin: 0;
+}

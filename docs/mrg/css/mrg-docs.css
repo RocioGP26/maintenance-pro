@@ -1,0 +1,81 @@
+/**
+ * MRG Docs — Maintix Reference Guide
+ */
+
+.mrg-doc-code {
+  color: #f6ad55;
+  display: block;
+  font-family: ui-monospace, monospace;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  margin-bottom: 0.35rem;
+  text-transform: uppercase;
+}
+
+.mrg-doc-table {
+  border-collapse: collapse;
+  font-size: 0.84rem;
+  margin: 1.25rem 0;
+  width: 100%;
+}
+
+.mrg-doc-table th,
+.mrg-doc-table td {
+  border-bottom: 1px solid var(--bb-borde);
+  padding: 0.5rem 0.75rem;
+  text-align: left;
+}
+
+.mrg-doc-table th {
+  background: #744210;
+  color: #fff;
+  font-size: 0.75rem;
+}
+
+.mrg-doc-table tr:nth-child(even) td {
+  background: #fffaf0;
+}
+
+.mrg-chapter-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  justify-content: space-between;
+  margin-top: 1.75rem;
+}
+
+.mrg-chapter-nav a {
+  color: var(--bb-acento);
+  font-size: 0.88rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.mrg-chapter-nav a:hover {
+  text-decoration: underline;
+}
+
+.mrg-suite-note {
+  background: #fffaf0;
+  border-left: 4px solid #dd6b20;
+  border-radius: 0 8px 8px 0;
+  margin: 1.25rem 0;
+  padding: 0.85rem 1rem;
+}
+
+.mrg-suite-note p {
+  margin: 0;
+}
+
+.mrg-flow {
+  background: #1a2332;
+  border-radius: 12px;
+  color: rgba(255, 255, 255, 0.92);
+  font-family: ui-monospace, monospace;
+  font-size: 0.78rem;
+  line-height: 1.6;
+  margin: 1.25rem 0;
+  padding: 1rem 1.25rem;
+  white-space: pre-wrap;
+}

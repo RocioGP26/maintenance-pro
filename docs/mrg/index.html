@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MRG — Maintix Reference Guide</title>
+  <link rel="stylesheet" href="/brandbook/css/brand-book.css">
+  <link rel="stylesheet" href="css/mrg-docs.css">
+</head>
+<body>
+<div class="bb-shell">
+  <nav class="bb-nav" aria-label="MRG Sprint 10">
+    <div class="bb-nav-brand">
+      <p class="bb-wordmark">MRG</p>
+      <p class="bb-sub">Maintix Reference Guide</p>
+      <p class="bb-nav-meta"><a href="/docs/" style="color:rgba(255,255,255,0.55)">Maintix Docs</a> · <a href="/mpa/" style="color:rgba(255,255,255,0.55)">MPA</a> · <a href="/mag/" style="color:rgba(255,255,255,0.55)">MAG</a> · <a href="/msd/" style="color:rgba(255,255,255,0.55)">MSD</a></p>
+    </div>
+    <div class="bb-nav-group">
+      <p class="bb-nav-label">Sprint 10 · Producto</p>
+      <a href="#indice">Índice</a>
+      <a href="#mrg-01" class="is-done">01 · Filosofía</a>
+      <a href="#mrg-02" class="is-done">02 · Mantenimiento</a>
+      <a href="#mrg-03" class="is-done">03 · Inventario</a>
+      <a href="#mrg-04" class="is-done">04 · Compras</a>
+      <a href="#mrg-05" class="is-done">05 · Ventas</a>
+      <a href="#mrg-06" class="is-done">06 · CRM</a>
+      <a href="#mrg-07" class="is-done">07 · Admin</a>
+      <a href="#mrg-08" class="is-done">08 · Reportes</a>
+      <a href="#mrg-09" class="is-done">09 · Workflows</a>
+      <a href="#mrg-10" class="is-done">10 · Buenas prácticas</a>
+    </div>
+    <div class="bb-nav-group">
+      <p class="bb-nav-label">Docs</p>
+      <a href="NOMENCLATURE.md">NOMENCLATURE</a>
+      <a href="strategy.md">strategy.md</a>
+      <a href="changelog.md">Changelog</a>
+    </div>
+  </nav>
+
+  <main class="bb-main">
+
+    <section id="indice" class="bb-page bb-page--dark">
+      <div class="bb-page-inner bb-sprint-hero">
+        <span class="bb-mdl-badge">Sprint 10 ✅ · MRG v1.0 completo</span>
+        <h2 class="bb-h1" style="color:#fff">MAG explica cómo integrar.<br>MRG explica cómo funciona.</h2>
+        <p class="bb-lead" style="color:rgba(255,255,255,0.82);text-align:center;max-width:44rem">
+          Documentación funcional oficial: módulos, procesos, roles e indicadores — en lenguaje de negocio.
+          <strong>No habla de Flask ni SQLAlchemy.</strong>
+        </p>
+        <p class="bb-tagline bb-tagline--light"><span>Toda la operación.</span><span>Una sola plataforma.</span></p>
+        <div class="mrg-suite-note" style="max-width:32rem;margin:1.5rem auto 0;text-align:left">
+          <p><strong>MPA ✅ · MAG ✅ · MSD ✅ · MRG ✅</strong> — ecosistema documental integral: arquitectura, API, desarrolladores y producto.</p>
+        </div>
+        <table class="mrg-doc-table" style="max-width:28rem;margin:1.5rem auto 0">
+          <thead><tr><th>Sprint 10</th><th>Estado</th></tr></thead>
+          <tbody>
+            <tr><td>MRG-01 – 10</td><td>✅ Entregado</td></tr>
+            <tr><td>MRG v1.0</td><td>✅ Sprint 10 completo</td></tr>
+          </tbody>
+        </table>
+        <div class="bb-page-footer" style="border:none;margin-top:2rem">
+          <span>MRG v1.0.0</span>
+          <span>Sprint 10 · Cierre completo</span>
+        </div>
+      </div>
+    </section>
+
+    <section id="mrg-01" class="bb-page bb-page--soft">
+      <div class="bb-page-inner">
+        <span class="mrg-doc-code">MRG-01-INTRO · Entregado</span>
+        <p class="bb-page-num">01 · Filosofía de Maintix</p>
+        <h2 class="bb-h1">Qué es Maintix y qué problema resuelve.</h2>
+        <div class="mrg-suite-note">
+          <p><strong>MPA</strong> = arquitectura. <strong>MAG</strong> = API. <strong>MRG</strong> = producto y operación.</p>
+        </div>
+        <table class="mrg-doc-table">
+          <thead><tr><th>Código</th><th>Principio</th></tr></thead>
+          <tbody>
+            <tr><td>—</td><td>Plataforma SaaS · Tenant-first · Modular</td></tr>
+            <tr><td>—</td><td>API-first · Datos auditables · Escalable</td></tr>
+          </tbody>
+        </table>
+        <table class="mrg-doc-table">
+          <thead><tr><th>Código</th><th>Documento</th></tr></thead>
+          <tbody>
+            <tr><td>MPA</td><td>Platform Architecture</td></tr>
+            <tr><td>MAG</td><td>API Guide</td></tr>
+            <tr><td>MSD</td><td>SDK & Developer Portal</td></tr>
+            <tr><td>MRG</td><td>Reference Guide</td></tr>
+          </tbody>
+        </table>
+        <div class="mrg-chapter-nav">
+          <a href="chapters/01-intro-filosofia.md">Leer completo →</a>
+          <a href="#mrg-02">Maintenance →</a>
+        </div>
+        <div class="bb-page-footer"><span>MRG v0.1.0</span><span>Sprint 10.1 · Entregado</span></div>
+      </div>
+    </section>
+
+    <section id="mrg-02" class="bb-page">
+      <div class="bb-page-inner">
+        <span class="mrg-doc-code">MRG-02-MAINT · Entregado (parcial)</span>
+        <p class="bb-page-num">02 · Mantenimiento</p>
+        <h2 class="bb-h1" style="font-size:1.35rem">Activos · OT · roles · costos · historial.</h2>
+        <p class="bb-body">CMMS en producción — ciclo de vida del activo, estados de OT, dashboard y trazabilidad operativa.</p>
+        <table class="mrg-doc-table">
+          <thead><tr><th>Área</th><th>Contenido</th></tr></thead>
+          <tbody>
+            <tr><td>Roles</td><td>Admin · Supervisor · Técnico · Solicitante · Proveedor</td></tr>
+            <tr><td>OT</td><td>Programada → Asignada → En espera → Cerrada</td></tr>
+            <tr><td>Costos</td><td>Mano de obra · repuestos · servicios externos</td></tr>
+          </tbody>
+        </table>
+        <div class="mrg-chapter-nav">
+          <a href="chapters/02-maintenance.md">Leer completo →</a>
+          <a href="#mrg-03">Inventario →</a>
+        </div>
+        <div class="bb-page-footer"><span>MRG v0.1.0</span><span>Sprint 10.2 · Parcial</span></div>
+      </div>
+    </section>
+
+    <section id="mrg-03" class="bb-page bb-page--soft">
+      <div class="bb-page-inner">
+        <span class="mrg-doc-code">MRG-03-INV</span>
+        <p class="bb-page-num">03 · Inventario</p>
+        <h2 class="bb-h1" style="font-size:1.35rem">Productos · stock · mínimos · kardex.</h2>
+        <div class="mrg-chapter-nav">
+          <a href="chapters/03-inventario.md">Leer borrador →</a>
+          <a href="#mrg-04">Compras →</a>
+        </div>
+        <div class="bb-page-footer"><span>MRG v0.1.0</span><span>Sprint 10.3</span></div>
+      </div>
+    </section>
+
+    <section id="mrg-04" class="bb-page">
+      <div class="bb-page-inner">
+        <span class="mrg-doc-code">MRG-04-PUR · Entregado (parcial)</span>
+        <p class="bb-page-num">04 · Compras · Purchasing</p>
+        <h2 class="bb-h1" style="font-size:1.35rem">Abastecimiento · proveedores · recepción · CxP.</h2>
+        <p class="bb-body">Modelo Purchasing completo · subflujo operativo hoy en Inventory.</p>
+        <pre class="mrg-flow" style="font-size:0.72rem">Necesidad → Solicitud → OC → Recepción → Stock → CxP</pre>
+        <div class="mrg-chapter-nav">
+          <a href="chapters/04-compras.md">Leer completo →</a>
+          <a href="#mrg-05">Ventas →</a>
+        </div>
+        <div class="bb-page-footer"><span>MRG v0.1.0</span><span>Sprint 10.4 · Parcial</span></div>
+      </div>
+    </section>
+
+    <section id="mrg-05" class="bb-page bb-page--soft">
+      <div class="bb-page-inner">
+        <span class="mrg-doc-code">MRG-05-SALES · Entregado (parcial)</span>
+        <p class="bb-page-num">05 · Ventas · Sales</p>
+        <h2 class="bb-h1" style="font-size:1.35rem">POS · crédito · clientes · cobros.</h2>
+        <p class="bb-body">Ciclo comercial completo · operativo hoy en Inventory · evolución Sales Pro.</p>
+        <pre class="mrg-flow" style="font-size:0.72rem">Cliente → POS → Stock ↓ → Cobro / Cartera</pre>
+        <div class="mrg-chapter-nav">
+          <a href="chapters/05-ventas.md">Leer completo →</a>
+          <a href="#mrg-06">CRM →</a>
+        </div>
+        <div class="bb-page-footer"><span>MRG v0.1.0</span><span>Sprint 10.5 · Parcial</span></div>
+      </div>
+    </section>
+
+    <section id="mrg-06" class="bb-page">
+      <div class="bb-page-inner">
+        <span class="mrg-doc-code">MRG-06-CRM · Entregado (parcial)</span>
+        <p class="bb-page-num">06 · CRM</p>
+        <h2 class="bb-h1" style="font-size:1.35rem">Clientes · pipeline · oportunidades · actividades.</h2>
+        <p class="bb-body">Especificación CRM · maestro clientes hoy en Inventory · integración Sales.</p>
+        <pre class="mrg-flow" style="font-size:0.72rem">Lead → Oportunidad → Cotización → Venta</pre>
+        <div class="mrg-chapter-nav">
+          <a href="chapters/06-crm.md">Leer completo →</a>
+          <a href="#mrg-07">Admin →</a>
+        </div>
+        <div class="bb-page-footer"><span>MRG v0.1.0</span><span>Sprint 10.6 · Especificación</span></div>
+      </div>
+    </section>
+
+    <section id="mrg-07" class="bb-page bb-page--soft">
+      <div class="bb-page-inner">
+        <span class="mrg-doc-code">MRG-07-ADMIN · Entregado</span>
+        <p class="bb-page-num">07 · Administración</p>
+        <h2 class="bb-h1" style="font-size:1.35rem">Tenant · roles · Mantis · onboarding.</h2>
+        <p class="bb-body">Dos niveles: admin empresa vs operador plataforma · núcleo en producción.</p>
+        <table class="mrg-doc-table">
+          <thead><tr><th>Nivel</th><th>Alcance</th></tr></thead>
+          <tbody>
+            <tr><td>Tenant</td><td>Usuarios · sedes · config</td></tr>
+            <tr><td>Mantis</td><td>Tenants · planes · impersonación</td></tr>
+          </tbody>
+        </table>
+        <div class="mrg-chapter-nav">
+          <a href="chapters/07-administracion.md">Leer completo →</a>
+          <a href="#mrg-08">Reportes →</a>
+        </div>
+        <div class="bb-page-footer"><span>MRG v0.1.0</span><span>Sprint 10.7 · Producción</span></div>
+      </div>
+    </section>
+
+    <section id="mrg-08" class="bb-page">
+      <div class="bb-page-inner">
+        <span class="mrg-doc-code">MRG-08-REPORTS · Entregado</span>
+        <p class="bb-page-num">08 · Indicadores y reportes</p>
+        <h2 class="bb-h1" style="font-size:1.35rem">Dashboards · KPIs · exportaciones.</h2>
+        <p class="bb-body">Mantenimiento · Inventario · MRL · Excel.</p>
+        <div class="mrg-chapter-nav">
+          <a href="chapters/08-reportes.md">Leer completo →</a>
+          <a href="#mrg-09">Workflows →</a>
+        </div>
+        <div class="bb-page-footer"><span>MRG v1.0.0</span><span>Sprint 10.8 · Entregado</span></div>
+      </div>
+    </section>
+
+    <section id="mrg-09" class="bb-page bb-page--dark">
+      <div class="bb-page-inner">
+        <span class="mrg-doc-code" style="color:#f6ad55">MRG-09-WORKFLOWS · Entregado</span>
+        <p class="bb-page-num" style="color:rgba(255,255,255,0.7)">09 · Flujos de trabajo</p>
+        <h2 class="bb-h1" style="color:#fff">Procesos de extremo a extremo.<br>Módulos conectados.</h2>
+        <p class="bb-lead" style="color:rgba(255,255,255,0.85);text-align:center;font-size:0.92rem">
+          Maintenance · abastecimiento · ventas · onboarding · trazabilidad.
+        </p>
+        <pre class="mrg-flow" style="background:rgba(0,0,0,0.35);max-width:28rem;margin:1.5rem auto">Proveedor → Compra → Inventario → Venta → Cobro</pre>
+        <div class="mrg-chapter-nav" style="justify-content:center">
+          <a href="chapters/09-workflows.md" style="color:#fbd38d">Leer completo →</a>
+          <a href="#mrg-10" style="color:#fbd38d">Buenas prácticas →</a>
+        </div>
+        <div class="bb-page-footer" style="border-color:rgba(255,255,255,0.15)">
+          <span>MRG v1.0.0</span>
+          <span>Sprint 10.9 · Entregado</span>
+        </div>
+      </div>
+    </section>
+
+    <section id="mrg-10" class="bb-page bb-page--soft">
+      <div class="bb-page-inner">
+        <span class="mrg-doc-code">MRG-10-BEST · Entregado</span>
+        <p class="bb-page-num">10 · Buenas prácticas</p>
+        <h2 class="bb-h1">Cómo implementar Maintix correctamente.</h2>
+        <p class="bb-body">Adopción · evolución continua · cierre MRG v1.0 · 🎉 Sprint 10.</p>
+        <div class="mrg-chapter-nav">
+          <a href="chapters/10-buenas-practicas.md">Leer completo →</a>
+          <a href="/docs/">Maintix Docs →</a>
+        </div>
+        <div class="bb-page-footer"><span>MRG v1.0.0</span><span>Sprint 10.10 · MRG v1.0 completo</span></div>
+      </div>
+    </section>
+
+  </main>
+</div>
+</body>
+</html>

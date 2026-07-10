@@ -1,0 +1,381 @@
+/**
+ * MPA Docs — Maintix Platform Architecture
+ */
+
+.mpa-doc-code {
+  color: var(--bb-acento);
+  display: block;
+  font-family: ui-monospace, monospace;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  margin-bottom: 0.35rem;
+  text-transform: uppercase;
+}
+
+/* Ecosystem map */
+.mpa-eco-map {
+  background: linear-gradient(180deg, #0d2137 0%, #1a365d 100%);
+  border-radius: 16px;
+  color: #fff;
+  font-family: ui-monospace, monospace;
+  font-size: 0.78rem;
+  line-height: 1.7;
+  margin: 2rem 0;
+  overflow-x: auto;
+  padding: 1.75rem 2rem;
+  text-align: center;
+  white-space: pre;
+}
+
+.mpa-eco-map .mpa-eco-live {
+  color: #68d391;
+  font-weight: 700;
+}
+
+.mpa-eco-map .mpa-eco-future {
+  color: rgba(255, 255, 255, 0.55);
+}
+
+/* Modular stack */
+.mpa-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin: 2rem auto;
+  max-width: 320px;
+}
+
+.mpa-stack-step {
+  background: #fff;
+  border: 2px solid var(--bb-acento);
+  border-radius: 10px;
+  font-size: 0.92rem;
+  font-weight: 600;
+  padding: 0.85rem 1.25rem;
+  position: relative;
+  text-align: center;
+}
+
+.mpa-stack-step span {
+  color: var(--bb-secundario);
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 400;
+  margin-top: 0.2rem;
+}
+
+.mpa-stack-arrow {
+  color: var(--bb-acento);
+  font-size: 1.25rem;
+  line-height: 1;
+  padding: 0.25rem 0;
+  text-align: center;
+}
+
+/* Compare table EMP */
+.mpa-compare-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  margin: 1.5rem 0;
+}
+
+.mpa-compare-card {
+  background: #fff;
+  border: 1px solid var(--bb-borde);
+  border-radius: 12px;
+  padding: 1rem 1.15rem;
+}
+
+.mpa-compare-card--no {
+  border-top: 3px solid #e53e3e;
+}
+
+.mpa-compare-card--yes {
+  border-top: 3px solid #38a169;
+}
+
+.mpa-compare-card h4 {
+  color: var(--bb-primario);
+  font-size: 0.95rem;
+  margin: 0 0 0.5rem;
+}
+
+.mpa-compare-card p {
+  color: var(--bb-secundario);
+  font-size: 0.84rem;
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* Module status */
+.mpa-module-table {
+  border-collapse: collapse;
+  font-size: 0.86rem;
+  margin: 1.25rem 0;
+  width: 100%;
+}
+
+.mpa-module-table th,
+.mpa-module-table td {
+  border-bottom: 1px solid var(--bb-borde);
+  padding: 0.55rem 0.75rem;
+  text-align: left;
+}
+
+.mpa-module-table th {
+  background: var(--bb-fondo);
+  color: var(--bb-primario);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+}
+
+.mpa-status-live { color: #276749; font-weight: 600; }
+.mpa-status-wip { color: #975a16; font-weight: 600; }
+.mpa-status-plan { color: var(--bb-secundario); }
+
+/* Timeline 2030 */
+.mpa-timeline {
+  display: grid;
+  gap: 0;
+  grid-template-columns: repeat(5, 1fr);
+  margin: 2rem 0;
+  position: relative;
+}
+
+.mpa-timeline::before {
+  background: var(--bb-acento);
+  content: "";
+  height: 3px;
+  left: 5%;
+  position: absolute;
+  right: 5%;
+  top: 28px;
+}
+
+.mpa-timeline-year {
+  position: relative;
+  text-align: center;
+  z-index: 1;
+}
+
+.mpa-timeline-dot {
+  background: var(--bb-acento);
+  border: 3px solid #fff;
+  border-radius: 50%;
+  box-shadow: 0 0 0 2px var(--bb-acento);
+  height: 14px;
+  margin: 22px auto 0.75rem;
+  width: 14px;
+}
+
+.mpa-timeline-year strong {
+  color: var(--bb-primario);
+  display: block;
+  font-size: 1rem;
+}
+
+.mpa-timeline-year ul {
+  font-size: 0.75rem;
+  list-style: none;
+  margin: 0.5rem 0 0;
+  padding: 0;
+  color: var(--bb-secundario);
+}
+
+.mpa-timeline-year li { margin-bottom: 0.25rem; }
+
+@media (max-width: 768px) {
+  .mpa-timeline {
+    grid-template-columns: 1fr;
+    gap: 1.25rem;
+  }
+  .mpa-timeline::before { display: none; }
+}
+
+/* Philosophy quote */
+.mpa-philosophy {
+  background: linear-gradient(135deg, #042c53, #185fa5);
+  border-radius: 12px;
+  color: #fff;
+  font-size: 1.1rem;
+  font-style: italic;
+  line-height: 1.6;
+  margin: 2rem 0;
+  padding: 1.5rem 2rem;
+  text-align: center;
+}
+
+.mpa-chapter-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 2rem;
+}
+
+.mpa-chapter-nav a {
+  background: var(--bb-fondo);
+  border: 1px solid var(--bb-borde);
+  border-radius: 8px;
+  color: var(--bb-acento);
+  font-size: 0.8rem;
+  padding: 0.4rem 0.75rem;
+  text-decoration: none;
+}
+
+.mpa-chapter-nav a:hover {
+  background: var(--bb-acento);
+  border-color: var(--bb-acento);
+  color: #fff;
+}
+
+/* MPA-01 · Visión */
+.mpa-identity-strip {
+  background: var(--bb-fondo);
+  border: 1px solid var(--bb-borde);
+  border-radius: 12px;
+  display: grid;
+  gap: 0;
+  grid-template-columns: 1fr 1fr;
+  margin: 1.75rem 0;
+  overflow: hidden;
+}
+
+.mpa-identity-col {
+  padding: 1.15rem 1.35rem;
+}
+
+.mpa-identity-col:first-child {
+  background: #fff;
+  border-right: 1px solid var(--bb-borde);
+}
+
+.mpa-identity-col h4 {
+  color: var(--bb-primario);
+  font-size: 0.82rem;
+  letter-spacing: 0.04em;
+  margin: 0 0 0.35rem;
+  text-transform: uppercase;
+}
+
+.mpa-identity-col p {
+  color: var(--bb-secundario);
+  font-size: 0.86rem;
+  line-height: 1.55;
+  margin: 0;
+}
+
+.mpa-principles {
+  list-style: none;
+  margin: 1.25rem 0;
+  padding: 0;
+}
+
+.mpa-principles li {
+  border-bottom: 1px solid var(--bb-borde);
+  display: grid;
+  font-size: 0.86rem;
+  gap: 0.5rem;
+  grid-template-columns: 2rem 1fr;
+  padding: 0.65rem 0;
+}
+
+.mpa-principles li span:first-child {
+  color: var(--bb-acento);
+  font-weight: 700;
+}
+
+.mpa-vision-phases {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  margin: 1.5rem 0;
+}
+
+.mpa-vision-phase {
+  background: #fff;
+  border: 1px solid var(--bb-borde);
+  border-radius: 12px;
+  border-top: 3px solid var(--bb-acento);
+  padding: 1rem 1.15rem;
+}
+
+.mpa-vision-phase h4 {
+  color: var(--bb-primario);
+  font-size: 0.9rem;
+  margin: 0 0 0.5rem;
+}
+
+.mpa-vision-phase p {
+  color: var(--bb-secundario);
+  font-size: 0.8rem;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.mpa-checklist {
+  background: #fff;
+  border: 1px solid var(--bb-borde);
+  border-radius: 12px;
+  list-style: none;
+  margin: 1.25rem 0;
+  padding: 0.75rem 1rem;
+}
+
+.mpa-checklist li {
+  color: var(--bb-secundario);
+  font-size: 0.86rem;
+  padding: 0.4rem 0 0.4rem 1.5rem;
+  position: relative;
+}
+
+.mpa-checklist li::before {
+  color: #38a169;
+  content: "☐";
+  left: 0;
+  position: absolute;
+}
+
+.mpa-layer-table td:first-child {
+  font-weight: 600;
+  width: 28%;
+}
+
+.mpa-layer-stack {
+  margin: 1.75rem auto;
+  max-width: 360px;
+}
+
+.mpa-layer-stack .mpa-stack-step {
+  font-size: 0.85rem;
+  padding: 0.7rem 1rem;
+}
+
+.mpa-constitution {
+  list-style: none;
+  margin: 1.5rem 0;
+  padding: 0;
+}
+
+.mpa-constitution li {
+  background: #fff;
+  border: 1px solid var(--bb-borde);
+  border-left: 4px solid var(--bb-acento);
+  border-radius: 0 10px 10px 0;
+  margin-bottom: 0.65rem;
+  padding: 0.85rem 1.1rem;
+}
+
+.mpa-constitution li strong {
+  color: var(--bb-primario);
+  display: block;
+  font-size: 0.88rem;
+  margin-bottom: 0.25rem;
+}
+
+.mpa-constitution li span {
+  color: var(--bb-secundario);
+  font-size: 0.82rem;
+  line-height: 1.5;
+}

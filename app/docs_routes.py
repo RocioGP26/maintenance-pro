@@ -36,6 +36,10 @@ def docs_file(filename: str):
         abort(404)
     if filename.endswith(".md"):
         return send_from_directory(_ROOT, filename, mimetype="text/markdown; charset=utf-8")
+    if filename.endswith((".yaml", ".yml")):
+        return send_from_directory(_ROOT, filename, mimetype="text/yaml; charset=utf-8")
+    if filename.endswith(".json"):
+        return send_from_directory(_ROOT, filename, mimetype="application/json; charset=utf-8")
     abort(404)
 
 

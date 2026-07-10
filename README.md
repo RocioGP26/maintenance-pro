@@ -135,23 +135,23 @@ requirements.txt
 
 ## Documentación · Maintix Documentation Suite
 
-**Índice maestro:** http://127.0.0.1:5000/docs/  
-**Release:** [docs/RELEASE-v1.0.md](docs/RELEASE-v1.0.md) · Tag: `docs-v1.0`
+**Índice maestro:** http://127.0.0.1:5000/docs/
 
 | # | Código | Proyecto | URL local |
 |---|--------|----------|-----------|
 | — | — | **Maintix Docs** (índice) | http://127.0.0.1:5000/docs/ |
-| 01 | **MBB** | Maintix Brand Book | http://127.0.0.1:5000/brandbook/ |
-| 02 | **MDL** | Maintix Design Language | http://127.0.0.1:5000/mdl/ |
-| 03 | **MUX** | Maintix User Experience Guide | http://127.0.0.1:5000/mux/ |
-| 04 | **MCM** | Maintix Commercial Manual | http://127.0.0.1:5000/mcm/ |
-| 05 | **MRL** | Maintix Report Language | `docs/mrl/` |
-| 06 | **MAG** | Maintix API Guide | `docs/mag/` |
-| 07 | **API** | Referencia técnica | `docs/api/` |
-| 08 | **—** | Architecture | `docs/architecture/` |
-| 09 | **—** | Roadmap | `docs/roadmap/` |
+| 01 | **MBB** | Brand Book | http://127.0.0.1:5000/brandbook/ |
+| 02 | **MDL** | Design Language | http://127.0.0.1:5000/mdl/ |
+| 03 | **MUX** | User Experience | http://127.0.0.1:5000/mux/ |
+| 04 | **MCM** | Commercial Manual | http://127.0.0.1:5000/mcm/ |
+| 05 | **MPA** | Platform Architecture | http://127.0.0.1:5000/mpa/ |
+| 06 | **MRL** | Report Language | `docs/mrl/` |
+| 07 | **MAG** | API Guide | `docs/mag/` |
+| 08 | **SDK** | SDK | `docs/sdk/` |
+| 09 | **—** | Developer Docs | `docs/developer/` |
+| 10 | **—** | Release Notes | `docs/release-notes/` |
 
-Índice: [docs/README.md](docs/README.md) · Nomenclatura: [docs/NOMENCLATURE.md](docs/NOMENCLATURE.md)
+Índice: [docs/README.md](docs/README.md) · MPA: [docs/mpa/README.md](docs/mpa/README.md)
 
 ### Técnica
 

@@ -1,15 +1,12 @@
-# Roadmap · Producto Maintix
+# Roadmap (legacy)
 
-**Suite docs 09**
+**Reorganizado en Sprint 6** → ahora vive en **MPA (05)**.
 
-📋 Planificado — prioridades de módulos, sectores y capacidades futuras.
+| Contenido | Nueva ubicación |
+|-----------|-----------------|
+| Roadmap de módulos | [MPA-05-ROAD](../mpa/chapters/05-roadmap-modulos.md) |
+| Visión 2030 | [MPA-10-2030](../mpa/chapters/10-roadmap-2030.md) |
+| Sectores y módulos futuros (comercial) | [MCM-05-SECT](/mcm/chapters/05-sectores.md) |
+| GTM y fases de mercado | [MCM-10-GTM](/mcm/chapters/10-gtm.md) |
 
-## Fuentes relacionadas (hoy)
-
-| Documento | Contenido roadmap |
-|-----------|-------------------|
-| [MCM-05 Sectores](../mcm/chapters/05-sectores.md) | Módulos futuros por sector |
-| [MCM-10 GTM](../mcm/chapters/10-gtm.md) | Fases de mercado |
-| [MRL](../mrl/README.md) | Tipos de reporte PDF |
-
-→ [Índice maestro](../README.md) · [/docs/](http://127.0.0.1:5000/docs/)
+→ [MPA · Maintix Platform Architecture](/mpa/)

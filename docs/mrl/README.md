@@ -1,118 +1,58 @@
 # MRL · Maintix Report Language
 
-Lenguaje de reportes PDF de Maintix. Hermano del MDL, enfocado en **documentos impresos y exportables**.
+**Código:** MRL · Suite docs **06**  
+**Versión:** v1.0.1 · Sprint 7  
+**Frase:** Toda la operación. Una sola plataforma.
 
-**Principio:** todos los PDF comparten la misma gramática visual. Ningún reporte inventa su propio estilo.
+> El lenguaje oficial para **reportes, PDF y documentos** generados por Maintix.
 
-## Por qué MRL
+## Ver manual
 
-Maintix genera muchísimos PDF: facturas, OT, inventario, KPIs, disponibilidad. Sin MRL, cada módulo diverge en tipografía, márgenes y tablas.
-
-## Estructura de un reporte MRL
-
-```
-┌─────────────────────────────────────┐
-│ HEADER (logo, título, meta)         │
-├─────────────────────────────────────┤
-│ KPI ROW (opcional)                  │
-├─────────────────────────────────────┤
-│ BODY (tablas, gráficas, texto)      │
-├─────────────────────────────────────┤
-│ FOOTER (numeración, legal)          │
-│ FIRMA · QR (opcional)               │
-└─────────────────────────────────────┘
+```powershell
+python run.py
 ```
 
-## Registro MRL
+→ http://127.0.0.1:5000/mrl/
 
-| ID | Bloque | Clase MDL | Descripción |
-|----|--------|-----------|-------------|
-| MRL-HDR-001 | Header | `mtx-pdf-header` | Logo + título + fecha |
-| MRL-FTR-001 | Footer | `mtx-pdf-footer` | Paginación + copyright |
-| MRL-TBL-001 | Tabla | `mtx-data-table` | Misma grilla que UI |
-| MRL-KPI-001 | KPIs | `mtx-kpi` | Fila métricas resumen |
-| MRL-CHT-001 | Gráfica | `mtx-chart` | Barras simplificadas print |
-| MRL-SIG-001 | Firma | — | Línea + nombre + cargo |
-| MRL-QR-001 | QR | — | Validación documento |
+## Objetivo
 
-## Tipografía PDF
+Un estándar único para que **cualquier PDF** se reconozca como Maintix — sin depender del logo.
 
-- Títulos: `#042C53` (secondary)
-- Cuerpo: `#444441`
-- Metadata: `#888780` · 10pt
-- Fuente: Inter o Helvetica fallback
+## Capítulos
 
-## Página
+| # | Código | Título |
+|---|--------|--------|
+| 01 | MRL-01-PHIL | [Filosofía](chapters/01-filosofia.md) |
+| 02 | MRL-02-DOC | [Tipos de documentos](chapters/02-tipos-documentos.md) |
+| 03 | MRL-03-ANAT | [Anatomía del documento](chapters/03-anatomia-documento.md) |
+| 04 | MRL-04-HDR | [Header estándar](chapters/04-header-estandar.md) |
+| 05 | MRL-05-TBL | [Tablas](chapters/05-tablas.md) |
+| 06 | MRL-06-KPI | [KPI Cards](chapters/06-kpi-cards.md) |
+| 07 | MRL-07-COL | [Colores](chapters/07-colores.md) |
+| 08 | MRL-08-CHT | [Gráficos](chapters/08-graficos.md) |
+| 09 | MRL-09-EXP | [Exportaciones](chapters/09-exportaciones.md) |
+| 10 | MRL-10-ROAD | [Roadmap](chapters/10-roadmap.md) |
 
-- Formato: **A4**
-- Márgenes: 20mm superior/inferior, 15mm laterales
-- Clase contenedor: `mtx-pdf-page`
+### Complementos
 
-## Header (MRL-HDR-001)
+| # | Código | Título |
+|---|--------|--------|
+| 11 | MRL-11-META | [Metadata del documento](chapters/11-metadata-documento.md) |
+| 12 | MRL-12-TPL | [Versionado de plantillas](chapters/12-versionado-plantillas.md) |
+| 13 | MRL-13-A11Y | [Accesibilidad](chapters/13-accesibilidad.md) |
 
-```
-[LOGO MAINTIX]                    [Factura #1024]
-Reporte de disponibilidad       Empresa · Marzo 2026
-```
+## Relacionado
 
-## Footer (MRL-FTR-001)
+| Doc | Rol |
+|-----|-----|
+| [MDL](/mdl/) | Tokens · `mtx-pdf-*` |
+| [MUX](/mux/) | Legibilidad export |
+| [MPA](/mpa/) | Integraciones · capas |
 
-```
-Página 1 de 12          © Maintix · Generado 09/07/2026
-```
+## Maintix Documentation Suite
 
-## Numeración
-
-Formato: `Página {n} de {total}` · pie derecho · 9pt secondary.
-
-## Firma (MRL-SIG-001)
-
-```
-_________________________
-Nombre Apellido
-Cargo · Empresa
-```
-
-## QR (MRL-QR-001)
-
-URL de verificación o ID documento. 24×24mm, esquina inferior derecha sobre footer.
-
-## Reglas
-
-1. Mismo header/footer en **todos** los tipos de reporte.
-2. Tablas: zebra sutil, header `--mdl-secondary` fondo 5%.
-3. No más de 6 columnas por tabla en A4; rotar a landscape si necesario.
-4. Gráficas: preferir barras horizontales en print.
-5. KPIs: máximo 4 por fila.
-
-## Tipos de reporte (roadmap)
-
-| Reporte | Módulo | Estado |
-|---------|--------|--------|
-| Orden de trabajo | CMMS | Planificado |
-| Factura | Ventas | Planificado |
-| Inventario valorizado | Inventario | Planificado |
-| Disponibilidad activos | Activos | Planificado |
-
-## Código referencia
-
-```html
-<div class="mtx-pdf-page">
-  <header class="mtx-pdf-header">
-    <strong>MAINTIX</strong>
-    <span>OT #1042</span>
-  </header>
-  <!-- body -->
-  <footer class="mtx-pdf-footer">Página 1 de 3</footer>
-</div>
-```
-
-## Relación con MDL
-
-| MDL (pantalla) | MRL (PDF) |
-|----------------|-----------|
-| `mtx-report-header` | `MRL-HDR-001` |
-| `mtx-data-table` | `MRL-TBL-001` |
-| `mtx-kpi` | `MRL-KPI-001` |
-
-Ver también: `docs/mdl/components.md` · MTX-PDF-001
+| Meta | Enlace |
+|------|--------|
+| Índice | [/docs/](http://127.0.0.1:5000/docs/) |
+| Fundación 1.0 | [RELEASE-FOUNDATION-1.0.md](../RELEASE-FOUNDATION-1.0.md) |
+| Versiones | [VERSIONS.md](../VERSIONS.md) |

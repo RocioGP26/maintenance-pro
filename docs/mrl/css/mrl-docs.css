@@ -1,0 +1,163 @@
+/**
+ * MRL Docs — Maintix Report Language
+ */
+
+.mrl-doc-code {
+  color: var(--bb-acento);
+  display: block;
+  font-family: ui-monospace, monospace;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  margin-bottom: 0.35rem;
+  text-transform: uppercase;
+}
+
+.mrl-anatomy {
+  background: #1a2332;
+  border-radius: 12px;
+  color: rgba(255, 255, 255, 0.9);
+  font-family: ui-monospace, monospace;
+  font-size: 0.72rem;
+  line-height: 1.65;
+  margin: 1.75rem 0;
+  padding: 1.5rem 1.75rem;
+  white-space: pre;
+}
+
+.mrl-doc-table {
+  border-collapse: collapse;
+  font-size: 0.84rem;
+  margin: 1.25rem 0;
+  width: 100%;
+}
+
+.mrl-doc-table th,
+.mrl-doc-table td {
+  border-bottom: 1px solid var(--bb-borde);
+  padding: 0.5rem 0.75rem;
+  text-align: left;
+}
+
+.mrl-doc-table th {
+  background: #042c53;
+  color: #fff;
+  font-size: 0.75rem;
+}
+
+.mrl-doc-table tr:nth-child(even) td {
+  background: #f4f7fb;
+}
+
+.mrl-doc-table tr.mrl-total td {
+  background: #ebf4ff;
+  font-weight: 700;
+}
+
+.mrl-kpi-row {
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  margin: 1.5rem 0;
+}
+
+.mrl-kpi-card {
+  background: #fff;
+  border: 1px solid var(--bb-borde);
+  border-radius: 8px;
+  padding: 0.85rem 1rem;
+  text-align: center;
+}
+
+.mrl-kpi-card .label {
+  color: var(--bb-secundario);
+  font-size: 0.65rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.mrl-kpi-card .value {
+  color: var(--bb-primario);
+  font-size: 1.35rem;
+  font-weight: 700;
+  margin: 0.25rem 0;
+}
+
+.mrl-kpi-card .delta {
+  color: #38a169;
+  font-size: 0.75rem;
+}
+
+.mrl-sample-header {
+  background: #fff;
+  border: 1px solid var(--bb-borde);
+  border-bottom: 2px solid rgba(4, 44, 83, 0.15);
+  border-radius: 8px 8px 0 0;
+  margin-top: 1.5rem;
+  padding: 1rem 1.25rem;
+}
+
+.mrl-sample-header .meta {
+  color: var(--bb-secundario);
+  display: flex;
+  font-size: 0.75rem;
+  justify-content: space-between;
+  margin-top: 0.75rem;
+}
+
+.mrl-sample-footer {
+  background: #f4f7fb;
+  border: 1px solid var(--bb-borde);
+  border-radius: 0 0 8px 8px;
+  border-top: none;
+  color: var(--bb-secundario);
+  font-size: 0.72rem;
+  padding: 0.5rem 1.25rem;
+  text-align: center;
+}
+
+.mrl-color-grid {
+  display: grid;
+  gap: 0.65rem;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  margin: 1.25rem 0;
+}
+
+.mrl-color-swatch {
+  border-radius: 8px;
+  font-size: 0.72rem;
+  padding: 0.65rem;
+  text-align: center;
+}
+
+.mrl-chapter-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 2rem;
+}
+
+.mrl-chapter-nav a {
+  background: var(--bb-fondo);
+  border: 1px solid var(--bb-borde);
+  border-radius: 8px;
+  color: var(--bb-acento);
+  font-size: 0.8rem;
+  padding: 0.4rem 0.75rem;
+  text-decoration: none;
+}
+
+.mrl-chapter-nav a:hover {
+  background: var(--bb-acento);
+  border-color: var(--bb-acento);
+  color: #fff;
+}
+
+.mrl-doc-code-badge {
+  background: rgba(24, 95, 165, 0.12);
+  border-radius: 4px;
+  color: var(--bb-acento);
+  font-family: ui-monospace, monospace;
+  font-size: 0.7rem;
+  padding: 0.15rem 0.4rem;
+}

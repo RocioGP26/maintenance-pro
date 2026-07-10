@@ -1,0 +1,520 @@
+openapi: 3.1.0
+info:
+  title: Maintix API
+  version: 1.0.0
+  description: |
+    Contrato oficial Maintix API v1 — fuente machine-readable alineada a MAG v1.0.
+    MAG describe la API para personas; OpenAPI describe la misma API para herramientas.
+  contact:
+    name: Maintix Developer Support
+    url: https://developer.maintix.app
+  license:
+    name: Proprietary
+    url: https://maintix.app/terms
+
+servers:
+  - url: https://api.maintix.app/api/v1
+    description: Producción
+  - url: http://127.0.0.1:5000/api/v1
+    description: Desarrollo local
+
+security:
+  - bearerAuth: []
+
+tags:
+  - name: Authentication
+    description: JWT · MAG-02
+  - name: Maintenance
+    description: Activos · órdenes · mantenimiento · MAG-04
+  - name: Inventory
+    description: Productos · stock · almacenes
+  - name: Purchasing
+    description: Compras
+  - name: Sales
+    description: Ventas
+  - name: CRM
+    description: Clientes y relaciones
+  - name: Admin
+    description: Administración del tenant
+
+paths:
+  /auth/login:
+    post:
+      tags: [Authentication]
+      summary: Login JWT
+      description: Emite token JWT con contexto de tenant (empresa_slug).
+      operationId: authLogin
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginRequest"
+      responses:
+        "200":
+          description: Token emitido
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LoginResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "429":
+          $ref: "#/components/responses/RateLimitExceeded"
+
+  /me:
+    get:
+      tags: [Authentication]
+      summary: Contexto del tenant activo
+      operationId: authMe
+      responses:
+        "200":
+          description: Usuario y tenant del JWT
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MeResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /maintenance/assets:
+    get:
+      tags: [Maintenance]
+      summary: Listar activos
+      operationId: maintenanceAssetsList
+      parameters:
+        - $ref: "#/components/parameters/Page"
+        - $ref: "#/components/parameters/PageSize"
+      responses:
+        "200":
+          description: Lista paginada de activos
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AssetListResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+    post:
+      tags: [Maintenance]
+      summary: Crear activo
+      operationId: maintenanceAssetsCreate
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AssetCreateRequest"
+      responses:
+        "201":
+          description: Activo creado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResourceCreatedResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+
+  /maintenance/assets/{asset_id}:
+    get:
+      tags: [Maintenance]
+      summary: Obtener activo
+      operationId: maintenanceAssetsGet
+      parameters:
+        - $ref: "#/components/parameters/AssetId"
+      responses:
+        "200":
+          description: Activo
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AssetResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    patch:
+      tags: [Maintenance]
+      summary: Actualizar activo
+      operationId: maintenanceAssetsPatch
+      parameters:
+        - $ref: "#/components/parameters/AssetId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AssetPatchRequest"
+      responses:
+        "200":
+          description: Activo actualizado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AssetResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+
+  /maintenance/work-orders:
+    get:
+      tags: [Maintenance]
+      summary: Listar órdenes de trabajo
+      operationId: maintenanceWorkOrdersList
+      x-mag-status: planned
+      responses:
+        "200":
+          description: Lista paginada
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WorkOrderListResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /inventory/products:
+    get:
+      tags: [Inventory]
+      summary: Listar productos
+      operationId: inventoryProductsList
+      x-mag-status: planned
+      parameters:
+        - $ref: "#/components/parameters/Page"
+        - $ref: "#/components/parameters/PageSize"
+      responses:
+        "200":
+          description: Lista paginada de productos
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Product"
+                  meta:
+                    $ref: "#/components/schemas/Pagination"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /admin/summary:
+    get:
+      tags: [Admin]
+      summary: Resumen administrativo del tenant
+      operationId: adminSummary
+      responses:
+        "200":
+          description: Métricas resumidas
+          content:
+            application/json:
+              schema:
+                type: object
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT emitido por POST /auth/login · MAG-02
+
+  parameters:
+    Page:
+      name: page
+      in: query
+      schema:
+        type: integer
+        minimum: 1
+        default: 1
+    PageSize:
+      name: page_size
+      in: query
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 200
+        default: 50
+    AssetId:
+      name: asset_id
+      in: path
+      required: true
+      schema:
+        type: integer
+
+  schemas:
+    LoginRequest:
+      type: object
+      required: [username, password, empresa_slug]
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+          format: password
+        empresa_slug:
+          type: string
+
+    LoginResponse:
+      type: object
+      required: [token]
+      properties:
+        token:
+          type: string
+        expires_in:
+          type: integer
+          example: 86400
+        empresa_id:
+          type: integer
+        empresa_slug:
+          type: string
+        rol:
+          type: string
+        username:
+          type: string
+
+    MeResponse:
+      type: object
+      properties:
+        user_id:
+          type: integer
+        empresa_id:
+          type: integer
+        empresa_slug:
+          type: string
+        rol:
+          type: string
+
+    User:
+      type: object
+      properties:
+        user_id:
+          type: integer
+        name:
+          type: string
+        role:
+          type: string
+
+    Asset:
+      type: object
+      properties:
+        asset_id:
+          type: integer
+        asset_code:
+          type: string
+        name:
+          type: string
+        status:
+          type: string
+          enum: [operational, maintenance, inactive]
+        critical:
+          type: boolean
+        location:
+          type: string
+
+    AssetCreateRequest:
+      type: object
+      required: [asset_code, name]
+      properties:
+        asset_code:
+          type: string
+        name:
+          type: string
+        critical:
+          type: boolean
+          default: false
+
+    AssetPatchRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        status:
+          type: string
+          enum: [operational, maintenance, inactive]
+        critical:
+          type: boolean
+
+    AssetResponse:
+      type: object
+      properties:
+        data:
+          $ref: "#/components/schemas/Asset"
+
+    AssetListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/Asset"
+        meta:
+          type: object
+          properties:
+            pagination:
+              $ref: "#/components/schemas/Pagination"
+
+    WorkOrder:
+      type: object
+      properties:
+        work_order_id:
+          type: integer
+        asset_id:
+          type: integer
+        status:
+          type: string
+        title:
+          type: string
+
+    WorkOrderListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/WorkOrder"
+        meta:
+          type: object
+          properties:
+            pagination:
+              $ref: "#/components/schemas/Pagination"
+
+    Product:
+      type: object
+      properties:
+        product_id:
+          type: integer
+        sku:
+          type: string
+        name:
+          type: string
+
+    Pagination:
+      type: object
+      properties:
+        page:
+          type: integer
+        page_size:
+          type: integer
+        total:
+          type: integer
+
+    ResourceCreatedResponse:
+      type: object
+      properties:
+        data:
+          type: object
+          additionalProperties: true
+        meta:
+          type: object
+          properties:
+            api_version:
+              type: string
+              example: v1
+
+    ErrorResponse:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: object
+          required: [code, message]
+          properties:
+            code:
+              type: string
+              example: RESOURCE_NOT_FOUND
+            message:
+              type: string
+            details:
+              type: object
+              additionalProperties: true
+
+  responses:
+    BadRequest:
+      description: Solicitud inválida
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          example:
+            error:
+              code: INVALID_REQUEST
+              message: Solicitud inválida
+    Unauthorized:
+      description: No autenticado
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          example:
+            error:
+              code: UNAUTHORIZED
+              message: Token inválido o expirado
+    Forbidden:
+      description: Sin permisos
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          example:
+            error:
+              code: FORBIDDEN
+              message: Acceso denegado
+    NotFound:
+      description: Recurso no encontrado
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          example:
+            error:
+              code: RESOURCE_NOT_FOUND
+              message: Recurso no encontrado
+    ValidationError:
+      description: Error de validación
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          example:
+            error:
+              code: VALIDATION_ERROR
+              message: Datos inválidos
+              details: {}
+    RateLimitExceeded:
+      description: Límite de solicitudes excedido
+      headers:
+        Retry-After:
+          schema:
+            type: integer
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          example:
+            error:
+              code: RATE_LIMIT_EXCEEDED
+              message: Se ha excedido el límite de solicitudes.
+    InternalError:
+      description: Error interno
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          example:
+            error:
+              code: INTERNAL_ERROR
+              message: Error interno del servidor

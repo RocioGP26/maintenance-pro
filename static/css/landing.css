@@ -330,6 +330,21 @@ body.landing-body {
   padding: 2rem 0;
 }
 
+.landing-growth-band {
+  background: linear-gradient(135deg, #eff6ff 0%, #f0fdf4 100%);
+  border-block: 1px solid var(--landing-border);
+  padding: 2.25rem 0;
+}
+
+.landing-growth-quote {
+  color: var(--landing-text);
+  font-size: clamp(1.15rem, 2.5vw, 1.45rem);
+  font-weight: 700;
+  line-height: 1.5;
+  margin: 0 auto;
+  max-width: 36rem;
+}
+
 .landing-stats-grid {
   display: grid;
   gap: 1rem;

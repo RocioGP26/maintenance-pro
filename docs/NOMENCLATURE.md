@@ -1,60 +1,51 @@
 # Nomenclatura · Maintix Documentation Suite
 
-Índice maestro: [README.md](README.md) · Visual: [/docs/](http://127.0.0.1:5000/docs/)
+Índice maestro: [README.md](README.md) · Visual: [/docs/](http://127.0.0.1:5000/docs/)  
+Versiones: [VERSIONS.md](VERSIONS.md) · Cross-refs: [CROSS-REFERENCES.md](CROSS-REFERENCES.md)
 
-## Árbol maestro (01 – 09)
+## Árbol maestro (01 – 10)
 
-| # | Código | Nombre completo | Carpeta |
-|---|--------|-----------------|---------|
-| **01** | **MBB** | Maintix Brand Book | `docs/brandbook/` |
-| **02** | **MDL** | Maintix Design Language | `docs/mdl/` |
-| **03** | **MUX** | Maintix User Experience Guide | `docs/mux/` |
-| **04** | **MCM** | Maintix Commercial Manual | `docs/mcm/` |
-| **05** | **MRL** | Maintix Report Language | `docs/mrl/` |
-| **06** | **MAG** | Maintix API Guide | `docs/mag/` |
-| **07** | **API** | Referencia técnica API | `docs/api/` |
-| **08** | **—** | Architecture (MADR, Handbook, …) | `docs/architecture/` |
-| **09** | **—** | Product Roadmap | `docs/roadmap/` |
+| # | Código | Nombre completo | Carpeta | URL |
+|---|--------|-----------------|---------|-----|
+| **01** | **MBB** | Maintix Brand Book | `docs/brandbook/` | `/brandbook/` |
+| **02** | **MDL** | Maintix Design Language | `docs/mdl/` | `/mdl/` |
+| **03** | **MUX** | Maintix User Experience Guide | `docs/mux/` | `/mux/` |
+| **04** | **MCM** | Maintix Commercial Manual | `docs/mcm/` | `/mcm/` |
+| **12** | **MKT** | Sales Enablement & Marketing Assets | `docs/mkt/` | `/mkt/` |
+| **05** | **MPA** | Maintix Platform Architecture | `docs/mpa/` | `/mpa/` |
+| **06** | **MRL** | Maintix Report Language | `docs/mrl/` | — |
+| **07** | **MAG** | Maintix API Guide | `docs/mag/` | — |
+| **08** | **SDK** | Maintix SDK & Developer Portal | `docs/msd/` | `/msd/` |
+| **11** | **MRG** | Maintix Reference Guide | `docs/mrg/` | `/mrg/` |
+| **09** | **—** | Developer Docs | `docs/developer/` | — |
+| **10** | **—** | Release Notes | `docs/release-notes/` | — |
 
-**Patrón:** siglas **M** + nombre corto → proyecto independiente.
+**Patrón:** siglas **M** + nombre corto → proyecto independiente (MBB, MDL, MUX, MCM, MPA, MRL, MAG, MKT).
 
-## URLs web (catálogos HTML)
-
-| Proyecto | URL |
-|----------|-----|
-| Índice maestro | `/docs/` |
-| Brand Book | `/brandbook/` |
-| MDL | `/mdl/` |
-| MUX | `/mux/` |
-| MCM | `/mcm/` |
-
-## Subproyectos Architecture (08)
+## Subproyectos Developer (09)
 
 | Carpeta | Contenido |
 |---------|-----------|
-| `docs/madr/` | Decision records |
 | `docs/handbook/` | Developer handbook |
+| `docs/madr/` | Decision records |
 | `docs/deployment/` | Despliegue |
-| `docs/security/` | Seguridad |
-| `docs/arquitectura-sectores.md` | Sectores técnicos |
+| `docs/security/` | Seguridad operativa |
+| `docs/arquitectura-sectores.md` | Plantillas sectoriales |
 
-## Identificadores MUX
+## Legacy (redirigen)
 
-| Prefijo | Documento |
-|---------|-----------|
-| `MTX-UX-PER-*` | Personas |
-| `MTX-UX-LAW-*` | UX Laws |
-| `MTX-UX-DEC-*` | Decision Matrix |
-| `MTX-UX-COPY` | Guía de copy |
+| Antes | Ahora |
+|-------|-------|
+| `docs/architecture/` (08) | MPA (05) + Developer (09) |
+| `docs/roadmap/` (09) | MPA-05 · MPA-10 |
+| `docs/api/` | MAG (07) |
 
-## Identificadores MDL
+## Identificadores MPA
 
 | Prefijo | Ejemplo |
 |---------|---------|
-| `MTX-BTN-*` | Botones |
-| `MTX-PAT-*` | Patrones |
-| `MTX-MDL-*` | Fichas componente |
+| `MPA-01-VIS` | Visión de plataforma |
+| `MPA-03-MOD` | Arquitectura modular |
+| `MPA-10-2030` | Roadmap 2030 |
 
-## Identificadores MCM
-
-Ver [mcm/NOMENCLATURE.md](mcm/NOMENCLATURE.md) — PLAY, OBJ, MTX-CASE.
+Ver [mpa/NOMENCLATURE.md](mpa/NOMENCLATURE.md).

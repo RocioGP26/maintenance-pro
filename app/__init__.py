@@ -203,6 +203,13 @@ def create_app(config_name: str | None = None):
     from app.mdl_routes import mdl_bp
     from app.mux_routes import mux_bp, _legacy_ux_bp
     from app.mcm_routes import mcm_bp
+    from app.mpa_routes import mpa_bp
+    from app.mrl_routes import mrl_bp
+    from app.mag_routes import mag_bp
+    from app.msd_routes import msd_bp
+    from app.mrg_routes import mrg_bp
+    from app.mkt_routes import mkt_bp
+    from app.openapi_routes import openapi_bp
     from app.docs_routes import docs_bp
 
     app.register_blueprint(health_bp)
@@ -213,6 +220,13 @@ def create_app(config_name: str | None = None):
     app.register_blueprint(mux_bp)
     app.register_blueprint(_legacy_ux_bp)
     app.register_blueprint(mcm_bp)
+    app.register_blueprint(mpa_bp)
+    app.register_blueprint(mrl_bp)
+    app.register_blueprint(mag_bp)
+    app.register_blueprint(msd_bp)
+    app.register_blueprint(mrg_bp)
+    app.register_blueprint(mkt_bp)
+    app.register_blueprint(openapi_bp)
     app.register_blueprint(docs_bp)
     app.register_blueprint(onboarding_bp)
     app.register_blueprint(inv_comercial_bp)

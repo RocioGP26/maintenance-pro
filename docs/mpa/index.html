@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MPA — Maintix Platform Architecture</title>
+  <link rel="stylesheet" href="/brandbook/css/brand-book.css">
+  <link rel="stylesheet" href="css/mpa-docs.css">
+</head>
+<body>
+<div class="bb-shell">
+  <nav class="bb-nav" aria-label="MPA Sprint 6">
+    <div class="bb-nav-brand">
+      <p class="bb-wordmark">MPA</p>
+      <p class="bb-sub">Maintix Platform Architecture</p>
+      <p class="bb-nav-meta"><a href="/docs/" style="color:rgba(255,255,255,0.55)">Maintix Docs</a> · <a href="/mcm/" style="color:rgba(255,255,255,0.55)">MCM</a> · <a href="/mux/" style="color:rgba(255,255,255,0.55)">MUX</a></p>
+    </div>
+    <div class="bb-nav-group">
+      <p class="bb-nav-label">Sprint 6 · Plataforma</p>
+      <a href="#indice">Índice</a>
+      <a href="#mpa-01" class="is-done">01 · Visión</a>
+      <a href="#mpa-02" class="is-done">02 · Ecosistema</a>
+      <a href="#mpa-03" class="is-done">03 · Modular</a>
+      <a href="#mpa-04" class="is-done">04 · SaaS</a>
+      <a href="#mpa-05" class="is-done">05 · Roadmap módulos</a>
+      <a href="#mpa-06" class="is-done">06 · Integraciones</a>
+      <a href="#mpa-07" class="is-done">07 · Seguridad</a>
+      <a href="#mpa-08" class="is-done">08 · Escalabilidad</a>
+      <a href="#mpa-09" class="is-done">09 · Filosofía</a>
+      <a href="#mpa-10" class="is-done">10 · 2030</a>
+    </div>
+    <div class="bb-nav-group">
+      <p class="bb-nav-label">Complementos</p>
+      <a href="#mpa-11" class="is-done">11 · Capas lógicas</a>
+      <a href="#mpa-12" class="is-done">12 · Constitución</a>
+      <p class="bb-nav-label">Docs</p>
+      <a href="NOMENCLATURE.md">NOMENCLATURE</a>
+      <a href="strategy.md">strategy.md</a>
+      <a href="changelog.md">Changelog</a>
+      <a href="chapters/01-vision-plataforma.md">MPA-01.md</a>
+      <a href="chapters/02-ecosistema.md">MPA-02.md</a>
+      <a href="chapters/03-arquitectura-modular.md">MPA-03.md</a>
+      <a href="chapters/04-arquitectura-saas.md">MPA-04.md</a>
+      <a href="chapters/05-roadmap-modulos.md">MPA-05.md</a>
+      <a href="chapters/06-integraciones.md">MPA-06.md</a>
+      <a href="chapters/07-seguridad.md">MPA-07.md</a>
+      <a href="chapters/08-escalabilidad.md">MPA-08.md</a>
+      <a href="chapters/09-filosofia-tecnica.md">MPA-09.md</a>
+      <a href="chapters/10-roadmap-2030.md">MPA-10.md</a>
+      <a href="chapters/11-arquitectura-logica.md">MPA-11.md</a>
+      <a href="chapters/12-principios-evolucion.md">MPA-12.md</a>
+    </div>
+  </nav>
+
+  <main class="bb-main">
+    <div class="bb-freeze-banner" role="status">
+      <strong>MPA v1.0</strong> · Edición congelada · Fundación 1.0 · <a href="/docs/">Maintix Docs</a>
+      <span class="bb-freeze-badge">Congelado</span>
+    </div>
+
+    <section id="indice" class="bb-page bb-page--dark">
+      <div class="bb-page-inner bb-sprint-hero">
+        <span class="bb-mdl-badge">Sprint 6 · Arquitectura de plataforma</span>
+        <h2 class="bb-h1" style="color:#fff">¿Cómo está construido Maintix<br>y hacia dónde crecerá?</h2>
+        <p class="bb-lead" style="color:rgba(255,255,255,0.82);text-align:center;max-width:44rem">
+          El <strong>Architecture Handbook</strong> del producto.
+          No es documentación de Flask — es documentación de <strong>plataforma</strong>.
+        </p>
+        <p class="bb-tagline bb-tagline--light"><span>Toda la operación.</span><span>Una sola plataforma.</span></p>
+        <div class="bb-page-footer" style="border:none;margin-top:2rem">
+          <span>MPA v1.0</span>
+          <span>12 capítulos · 10 + 2 complementos</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- MPA-01 -->
+    <section id="mpa-01" class="bb-page bb-page--soft">
+      <div class="bb-page-inner">
+        <span class="mpa-doc-code">MPA-01-VIS</span>
+        <p class="bb-page-num">01 · Visión de plataforma</p>
+        <p class="bb-eyebrow">Sprint 6.1 · Cimiento del MPA</p>
+        <h2 class="bb-h1">La identidad del producto.</h2>
+        <p class="bb-lead">
+          Si el <strong>Brand Book</strong> explica la identidad de la <strong>marca</strong>,
+          MPA-01 explica la identidad del <strong>producto</strong>.
+        </p>
+
+        <div class="mpa-identity-strip">
+          <div class="mpa-identity-col">
+            <h4>MBB · Marca</h4>
+            <p>¿Quiénes somos? Historia, voz, pilares, isotipo.</p>
+          </div>
+          <div class="mpa-identity-col">
+            <h4>MPA · Producto</h4>
+            <p>¿Qué construimos? EMP, módulos, tenancy, visión 10 años.</p>
+          </div>
+        </div>
+
+        <h3 class="bb-h3">¿Qué es realmente Maintix?</h3>
+        <p class="bb-body">
+          Una <strong>Enterprise Management Platform (EMP)</strong> — SaaS multi-tenant que permite
+          controlar la operación activando solo los módulos necesarios hoy, con crecimiento
+          mañana <strong>sin cambiar de sistema</strong>.
+        </p>
+
+        <div class="mpa-compare-grid">
+          <article class="mpa-compare-card mpa-compare-card--no">
+            <h4>❌ No es solo CMMS</h4>
+            <p>Maintenance es una <strong>puerta de entrada</strong>, no el techo. Incluye OT y activos; no se define por ellos.</p>
+          </article>
+          <article class="mpa-compare-card mpa-compare-card--no">
+            <h4>❌ No es ERP tradicional</h4>
+            <p>No compite con SAP. Compite con <strong>Excel + WhatsApp + caos operativo</strong>. Operación primero.</p>
+          </article>
+          <article class="mpa-compare-card mpa-compare-card--yes">
+            <h4>✅ Es EMP</h4>
+            <p><strong>Enterprise</strong> · <strong>Management</strong> · <strong>Platform</strong>. Una base, módulos activables.</p>
+          </article>
+        </div>
+
+        <h3 class="bb-h3" style="margin-top:2rem">EMP · Las tres palabras</h3>
+        <table class="mpa-module-table mpa-layer-table">
+          <tbody>
+            <tr><td>Enterprise</td><td>Tenant real: empresa, usuarios, roles, sedes, aislamiento <code>empresa_id</code></td></tr>
+            <tr><td>Management</td><td>Gestión operativa diaria: activos, stock, compras, ventas, KPIs</td></tr>
+            <tr><td>Platform</td><td>Un codebase · módulos en <code>modules.py</code> · API e integraciones futuras</td></tr>
+          </tbody>
+        </table>
+
+        <h3 class="bb-h3" style="margin-top:2rem">Origen dual → una arquitectura</h3>
+        <div class="mpa-compare-grid">
+          <article class="mpa-compare-card">
+            <h4>🇨🇴 Maintenance</h4>
+            <p>Industrial Colombia — activos, OT, disponibilidad. Clave: <code>mantenimiento</code>.</p>
+          </article>
+          <article class="mpa-compare-card">
+            <h4>🇻🇪 Inventory</h4>
+            <p>Comercio Venezuela — stock, compras, ventas. Clave: <code>inventario</code>.</p>
+          </article>
+        </div>
+        <blockquote class="bb-rule-box" style="border-left-color:var(--bb-acento);margin-top:1rem">
+          Mismo dolor: información dispersa. Misma decisión: <strong>una plataforma</strong>, no dos apps.
+        </blockquote>
+
+        <h3 class="bb-h3" style="margin-top:2rem">Principios inmutables</h3>
+        <ul class="mpa-principles">
+          <li><span>1</span><span>Una plataforma — sin ediciones ni forks por industria</span></li>
+          <li><span>2</span><span>Tenant primero — <code>empresa_id</code> en toda entidad de negocio</span></li>
+          <li><span>3</span><span>Módulo explícito — registrar antes de exponer rutas</span></li>
+          <li><span>4</span><span>Sector = configuración — plantillas, no tablas duplicadas</span></li>
+          <li><span>7</span><span>Crecimiento interno — activar módulo, no migrar sistema</span></li>
+        </ul>
+
+        <h3 class="bb-h3" style="margin-top:2rem">Visión · 10 años</h3>
+        <div class="mpa-vision-phases">
+          <div class="mpa-vision-phase">
+            <h4>2026 – 2028</h4>
+            <p>Fundación: Maintenance + Inventory → CRM, Purchasing, Finance. EMP de referencia LatAm.</p>
+          </div>
+          <div class="mpa-vision-phase">
+            <h4>2029 – 2031</h4>
+            <p>Ecosistema: API pública, marketplace, mobile, AI operativo. Hub que conecta con ERP del cliente.</p>
+          </div>
+          <div class="mpa-vision-phase">
+            <h4>2032 – 2036</h4>
+            <p>Enterprise: 10 000+ empresas, AI Platform, compliance. La EMP que no se reemplaza al crecer.</p>
+          </div>
+        </div>
+
+        <p class="bb-body" style="font-size:0.88rem;color:var(--bb-secundario)">
+          <strong>Norte constante:</strong> Toda la operación. Una sola plataforma.
+        </p>
+
+        <h3 class="bb-h3" style="margin-top:1.5rem">Checklist pre-merge</h3>
+        <ul class="mpa-checklist">
+          <li>¿Activable por módulo sin romper otros tenants?</li>
+          <li>¿Respeta tenancy y permisos en servidor?</li>
+          <li>¿Sirve a la plataforma completa, no solo a un vertical?</li>
+        </ul>
+
+        <div class="mpa-chapter-nav">
+          <a href="chapters/01-vision-plataforma.md">Leer MPA-01 completo →</a>
+          <a href="/mcm/chapters/01-posicionamiento.md">MCM-01 · Posicionamiento</a>
+          <a href="#mpa-02">Siguiente: Ecosistema →</a>
+        </div>
+        <div class="bb-page-footer"><span>MPA v1.0</span><span>Sprint 6.1 · Visión EMP</span></div>
+      </div>
+    </section>
+
+    <!-- MPA-02 -->
+    <section id="mpa-02" class="bb-page">
+      <div class="bb-page-inner">
+        <span class="mpa-doc-code">MPA-02-ECO</span>
+        <p class="bb-page-num">02 · Ecosistema Maintix</p>
+        <h2 class="bb-h1">Mapa oficial de producto</h2>
+        <p class="bb-body">Taxonomía que el equipo usa para nombrar módulos, priorizar roadmap y evitar duplicar capacidades.</p>
+
+        <pre class="mpa-eco-map" aria-label="Mapa ecosistema Maintix"><span class="mpa-eco-live">                 MAINTIX
+
+          Enterprise Platform
+                    │
+    ────────────────────────────────────
+    │                                  │
+ <span class="mpa-eco-live">Maintenance</span>    <span class="mpa-eco-live">Inventory</span>         <span class="mpa-eco-live">(hoy)</span>
+    │                                  │
+    └──────────┬───────────────────────┘
+               │
+    ────────────────────────────────────
+ <span class="mpa-eco-future">Purchasing · CRM · Sales · Finance</span>
+ <span class="mpa-eco-future">BI · IAM · AI · API · Mobile</span>
+    ────────────────────────────────────</span></pre>
+
+        <table class="mpa-module-table">
+          <thead><tr><th>Módulo</th><th>Clave</th><th>Estado</th></tr></thead>
+          <tbody>
+            <tr><td>Maintenance</td><td><code>mantenimiento</code></td><td class="mpa-status-live">✅ Producción</td></tr>
+            <tr><td>Inventory</td><td><code>inventario</code></td><td class="mpa-status-live">✅ Producción</td></tr>
+            <tr><td>Purchasing</td><td>—</td><td class="mpa-status-plan">📋 Planificado</td></tr>
+            <tr><td>CRM · Sales Pro</td><td>—</td><td class="mpa-status-plan">📋 Planificado</td></tr>
+            <tr><td>Finance · Analytics</td><td>—</td><td class="mpa-status-plan">📋 Planificado</td></tr>
+          </tbody>
+        </table>
+
+        <div class="mpa-chapter-nav">
+          <a href="chapters/02-ecosistema.md">Leer MPA-02 completo →</a>
+          <a href="#mpa-03">Siguiente: Modular →</a>
+        </div>
+        <div class="bb-page-footer"><span>MPA v1.0</span><span>Ecosistema</span></div>
+      </div>
+    </section>
+
+    <!-- MPA-03 -->
+    <section id="mpa-03" class="bb-page bb-page--soft">
+      <div class="bb-page-inner">
+        <span class="mpa-doc-code">MPA-03-MOD</span>
+        <p class="bb-page-num">03 · Arquitectura modular</p>
+        <h2 class="bb-h1">Una plataforma.<br>Cero instalaciones distintas.</h2>
+        <p class="bb-lead">El concepto más importante: cada empresa activa únicamente lo que necesita sobre el mismo código.</p>
+
+        <div class="mpa-stack">
+          <div class="mpa-stack-step">Tenant (Empresa)<span>empresa_id · slug · sector · plan</span></div>
+          <div class="mpa-stack-arrow">↓</div>
+          <div class="mpa-stack-step">Módulos activos<span>modulos_activos_json</span></div>
+          <div class="mpa-stack-arrow">↓</div>
+          <div class="mpa-stack-step">Permisos<span>rol × módulo · permissions.py</span></div>
+          <div class="mpa-stack-arrow">↓</div>
+          <div class="mpa-stack-step">Datos<span>aislados por empresa_id</span></div>
+          <div class="mpa-stack-arrow">↓</div>
+          <div class="mpa-stack-step">Dashboards<span>KPIs por contexto y sector</span></div>
+        </div>
+
+        <p class="bb-body" style="text-align:center;max-width:36rem;margin:1.5rem auto 0">
+          Enforcement en <code>app/modules.py</code> y middleware de tenancy.
+          El menú oculta; el servidor <strong>rechaza</strong>.
+        </p>
+
+        <div class="mpa-chapter-nav">
+          <a href="chapters/03-arquitectura-modular.md">Leer MPA-03 completo →</a>
+          <a href="#mpa-04">Siguiente: SaaS →</a>
+        </div>
+        <div class="bb-page-footer"><span>MPA v1.0</span><span>Modular</span></div>
+      </div>
+    </section>
+
+    <!-- MPA-04 -->
+    <section id="mpa-04" class="bb-page">
+      <div class="bb-page-inner">
+        <span class="mpa-doc-code">MPA-04-SAAS</span>
+        <p class="bb-page-num">04 · Arquitectura SaaS</p>
+        <h2 class="bb-h1">Multi-tenant desde el diseño</h2>
+
+        <table class="mpa-module-table">
+          <thead><tr><th>Capa</th><th>Implementación</th></tr></thead>
+          <tbody>
+            <tr><td>Empresas</td><td><code>Empresa</code> · sedes · sector · módulos</td></tr>
+            <tr><td>Usuarios</td><td>Un tenant por usuario · Flask-Login + JWT API</td></tr>
+            <tr><td>Roles</td><td>superadmin · admin · tecnico · usuario</td></tr>
+            <tr><td>Planes</td><td>trial · basico · profesional · enterprise</td></tr>
+            <tr><td>Facturación</td><td><code>/platform/</code> · suscripciones</td></tr>
+            <tr><td>Aislamiento</td><td>empresa_id · suspendida · auditoría</td></tr>
+            <tr><td>Backups</td><td><code>backup_service.py</code> · SQLite / PostgreSQL</td></tr>
+          </tbody>
+        </table>
+
+        <div class="mpa-chapter-nav">
+          <a href="chapters/04-arquitectura-saas.md">Leer MPA-04 completo →</a>
+          <a href="#mpa-05">Siguiente: Roadmap →</a>
+        </div>
+        <div class="bb-page-footer"><span>MPA v1.0</span><span>SaaS</span></div>
+      </div>
+    </section>
+
+    <!-- MPA-05 -->
+    <section id="mpa-05" class="bb-page bb-page--soft">
+      <div class="bb-page-inner">
+        <span class="mpa-doc-code">MPA-05-ROAD</span>
+        <p class="bb-page-num">05 · Roadmap de módulos</p>
+        <h2 class="bb-h1">Hoy, próximo y largo plazo</h2>
+
+        <table class="mpa-module-table">
+          <thead><tr><th>Horizonte</th><th>Módulos</th></tr></thead>
+          <tbody>
+            <tr><td class="mpa-status-live"><strong>Hoy</strong></td><td>Maintenance · Inventory</td></tr>
+            <tr><td class="mpa-status-wip"><strong>Próximo</strong></td><td>Purchasing · CRM · Sales Pro · Analytics</td></tr>
+            <tr><td class="mpa-status-plan"><strong>Largo plazo</strong></td><td>IAM · Marketplace · API pública · AI · Mobile · ERP</td></tr>
+          </tbody>
+        </table>
+
+        <p class="bb-body">Los módulos futuros se <strong>añaden al catálogo</strong>, no a productos con otra marca. Alineado con planes Start → Grow → Scale (MCM-06).</p>
+
+        <div class="mpa-chapter-nav">
+          <a href="chapters/05-roadmap-modulos.md">Leer MPA-05 completo →</a>
+          <a href="#mpa-10">Ver Roadmap 2030 →</a>
+        </div>
+        <div class="bb-page-footer"><span>MPA v1.0</span><span>Roadmap</span></div>
+      </div>
+    </section>
+
+    <!-- MPA-06 -->
+    <section id="mpa-06" class="bb-page">
+      <div class="bb-page-inner">
+        <span class="mpa-doc-code">MPA-06-INT</span>
+        <p class="bb-page-num">06 · Integraciones</p>
+        <h2 class="bb-h1">La plataforma habla con el mundo real</h2>
+
+        <table class="mpa-module-table">
+          <thead><tr><th>Canal</th><th>Estado</th><th>Notas</th></tr></thead>
+          <tbody>
+            <tr><td>Excel</td><td class="mpa-status-live">✅</td><td>Import/export Inventory</td></tr>
+            <tr><td>PDF</td><td class="mpa-status-live">✅</td><td>ReportLab · estándar MRL</td></tr>
+            <tr><td>Correo</td><td class="mpa-status-wip">🟡</td><td>Notificaciones · invitaciones</td></tr>
+            <tr><td>API REST</td><td class="mpa-status-wip">🟡</td><td>JWT tenancy · admin API</td></tr>
+            <tr><td>WhatsApp</td><td class="mpa-status-plan">📋</td><td>Crítico LatAm</td></tr>
+            <tr><td>Webhooks · ERP · Power BI</td><td class="mpa-status-plan">📋</td><td>MAG (07) · SDK (08)</td></tr>
+          </tbody>
+        </table>
+
+        <div class="mpa-chapter-nav">
+          <a href="chapters/06-integraciones.md">Leer MPA-06 completo →</a>
+          <a href="#mpa-07">Siguiente: Seguridad →</a>
+        </div>
+        <div class="bb-page-footer"><span>MPA v1.0</span><span>Integraciones</span></div>
+      </div>
+    </section>
+
+    <!-- MPA-07 -->
+    <section id="mpa-07" class="bb-page bb-page--soft">
+      <div class="bb-page-inner">
+        <span class="mpa-doc-code">MPA-07-SEC</span>
+        <p class="bb-page-num">07 · Seguridad</p>
+        <h2 class="bb-h1">Confianza en multi-tenant</h2>
+        <p class="bb-body">Login · permisos en servidor · auditoría de plataforma · backups · MFA en evolución.</p>
+
+        <div class="bb-rule-box" style="border-left-color:#E53E3E">
+          <p><strong>Regla:</strong> «Si está en el menú» no es seguridad. «Si pasa el check en el servidor» sí.</p>
+        </div>
+
+        <ul class="bb-body" style="margin-top:1.25rem">
+          <li>Cross-tenant → <code>empresa_id</code> obligatorio + middleware</li>
+          <li>CSRF en web · JWT en API</li>
+          <li><code>platform_audit.py</code> — impersonación registrada</li>
+          <li><code>flask backup-db</code> — retención 7 días</li>
+        </ul>
+
+        <div class="mpa-chapter-nav">
+          <a href="chapters/07-seguridad.md">Leer MPA-07 completo →</a>
+          <a href="#mpa-08">Siguiente: Escalabilidad →</a>
+        </div>
+        <div class="bb-page-footer"><span>MPA v1.0</span><span>Seguridad</span></div>
+      </div>
+    </section>
+
+    <!-- MPA-08 -->
+    <section id="mpa-08" class="bb-page">
+      <div class="bb-page-inner">
+        <span class="mpa-doc-code">MPA-08-SCALE</span>
+        <p class="bb-page-num">08 · Escalabilidad</p>
+        <h2 class="bb-h1">De 10 usuarios a 10.000 empresas</h2>
+
+        <table class="mpa-module-table">
+          <thead><tr><th>Escala</th><th>Enfoque</th></tr></thead>
+          <tbody>
+            <tr><td>10 usuarios / empresa</td><td>Single instance · DB compartida</td></tr>
+            <tr><td>100 usuarios</td><td>Pooling · índices empresa_id</td></tr>
+            <tr><td>100 empresas</td><td>Monolito modular bien indexado</td></tr>
+            <tr><td>10.000 empresas</td><td>Jobs async · cache KPIs · sharding tier</td></tr>
+          </tbody>
+        </table>
+
+        <div class="mpa-chapter-nav">
+          <a href="chapters/08-escalabilidad.md">Leer MPA-08 completo →</a>
+          <a href="#mpa-09">Siguiente: Filosofía →</a>
+        </div>
+        <div class="bb-page-footer"><span>MPA v1.0</span><span>Escalabilidad</span></div>
+      </div>
+    </section>
+
+    <!-- MPA-09 -->
+    <section id="mpa-09" class="bb-page bb-page--soft">
+      <div class="bb-page-inner">
+        <span class="mpa-doc-code">MPA-09-PHIL</span>
+        <p class="bb-page-num">09 · Filosofía técnica</p>
+
+        <blockquote class="mpa-philosophy">
+          Cada línea de código debe servir a la plataforma completa, no únicamente a un módulo.
+        </blockquote>
+
+        <table class="mpa-module-table">
+          <thead><tr><th>Principio</th><th>Práctica</th></tr></thead>
+          <tbody>
+            <tr><td>Tenant primero</td><td>empresa_id en toda entidad</td></tr>
+            <tr><td>Módulo explícito</td><td>modules.py antes de rutas</td></tr>
+            <tr><td>Una UI</td><td>MDL mtx-*</td></tr>
+            <tr><td>UX no negociable</td><td>MUX Laws pre-merge</td></tr>
+            <tr><td>Sector = config</td><td>Plantillas, no tablas duplicadas</td></tr>
+          </tbody>
+        </table>
+
+        <div class="mpa-chapter-nav">
+          <a href="chapters/09-filosofia-tecnica.md">Leer MPA-09 completo →</a>
+          <a href="#mpa-10">Siguiente: 2030 →</a>
+        </div>
+        <div class="bb-page-footer"><span>MPA v1.0</span><span>Filosofía</span></div>
+      </div>
+    </section>
+
+    <!-- MPA-10 -->
+    <section id="mpa-10" class="bb-page bb-page--dark">
+      <div class="bb-page-inner">
+        <span class="mpa-doc-code" style="color:#90cdf4">MPA-10-2030</span>
+        <p class="bb-page-num" style="color:rgba(255,255,255,0.7)">10 · Roadmap 2030</p>
+        <h2 class="bb-h1" style="color:#fff">Dirección, no fecha contractual</h2>
+
+        <div class="mpa-timeline">
+          <div class="mpa-timeline-year">
+            <div class="mpa-timeline-dot"></div>
+            <strong>2026</strong>
+            <ul><li>Maintenance</li><li>Inventory</li><li>MPA v1.0</li></ul>
+          </div>
+          <div class="mpa-timeline-year">
+            <div class="mpa-timeline-dot"></div>
+            <strong>2027</strong>
+            <ul><li>CRM</li><li>Purchasing</li><li>Webhooks</li></ul>
+          </div>
+          <div class="mpa-timeline-year">
+            <div class="mpa-timeline-dot"></div>
+            <strong>2028</strong>
+            <ul><li>Finance</li><li>Analytics</li><li>IAM</li></ul>
+          </div>
+          <div class="mpa-timeline-year">
+            <div class="mpa-timeline-dot"></div>
+            <strong>2029</strong>
+            <ul><li>Marketplace</li><li>API pública</li></ul>
+          </div>
+          <div class="mpa-timeline-year">
+            <div class="mpa-timeline-dot"></div>
+            <strong>2030</strong>
+            <ul><li>AI Platform</li><li>Mobile</li><li>Enterprise</li></ul>
+          </div>
+        </div>
+
+        <p class="bb-lead" style="color:rgba(255,255,255,0.85);text-align:center;margin-top:2rem">
+          Una plataforma. Multi-tenant. LatAm primero. Modular siempre.
+        </p>
+
+        <div class="mpa-chapter-nav" style="justify-content:center">
+          <a href="chapters/10-roadmap-2030.md">Leer MPA-10 completo →</a>
+          <a href="#mpa-11">Complemento: Capas →</a>
+        </div>
+        <div class="bb-page-footer" style="border-color:rgba(255,255,255,0.15)">
+          <span>MPA v1.0</span>
+          <span>Roadmap 2030</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- MPA-11 -->
+    <section id="mpa-11" class="bb-page bb-page--soft">
+      <div class="bb-page-inner">
+        <span class="mpa-doc-code">MPA-11-LOG</span>
+        <p class="bb-page-num">11 · Arquitectura lógica</p>
+        <p class="bb-eyebrow">Complemento · Onboarding desarrollador</p>
+        <h2 class="bb-h1">Mapa conceptual de capas.</h2>
+        <p class="bb-lead">Sin nombres de archivos — solo <strong>por dónde fluye una petición</strong> en Maintix.</p>
+
+        <div class="mpa-stack mpa-layer-stack">
+          <div class="mpa-stack-step">Frontend<span>Plantillas · Bootstrap · MDL (mtx-*)</span></div>
+          <div class="mpa-stack-arrow">↓</div>
+          <div class="mpa-stack-step">Flask<span>Blueprints · rutas · middleware tenancy</span></div>
+          <div class="mpa-stack-arrow">↓</div>
+          <div class="mpa-stack-step">Services<span>Reglas de negocio · orquestación</span></div>
+          <div class="mpa-stack-arrow">↓</div>
+          <div class="mpa-stack-step">Repositories<span>Queries · filtro empresa_id</span></div>
+          <div class="mpa-stack-arrow">↓</div>
+          <div class="mpa-stack-step">SQLAlchemy<span>Modelos · sesión · migraciones</span></div>
+          <div class="mpa-stack-arrow">↓</div>
+          <div class="mpa-stack-step">Database<span>SQLite (dev) · PostgreSQL (prod)</span></div>
+        </div>
+
+        <p class="bb-body" style="text-align:center;max-width:40rem;margin:1.25rem auto 0;font-size:0.88rem;color:var(--bb-secundario)">
+          Transversales: <strong>tenancy</strong> · <strong>permisos</strong> · <strong>módulos</strong> · MUX · MDL
+        </p>
+
+        <table class="mpa-module-table" style="margin-top:1.5rem">
+          <thead><tr><th>Si cambias…</th><th>Capa principal</th></tr></thead>
+          <tbody>
+            <tr><td>Color de botón</td><td>MDL</td></tr>
+            <tr><td>Validación de negocio</td><td>Service</td></tr>
+            <tr><td>Nueva columna</td><td>Modelo + migración</td></tr>
+            <tr><td>Bloqueo sin módulo</td><td>Flask · modules.py</td></tr>
+          </tbody>
+        </table>
+
+        <div class="mpa-chapter-nav">
+          <a href="chapters/11-arquitectura-logica.md">Leer MPA-11 completo →</a>
+          <a href="#mpa-12">Siguiente: Constitución →</a>
+        </div>
+        <div class="bb-page-footer"><span>MPA v1.0</span><span>Capas lógicas</span></div>
+      </div>
+    </section>
+
+    <!-- MPA-12 -->
+    <section id="mpa-12" class="bb-page">
+      <div class="bb-page-inner">
+        <span class="mpa-doc-code">MPA-12-EVO</span>
+        <p class="bb-page-num">12 · Principios de evolución</p>
+        <p class="bb-eyebrow">Complemento · Constitución del desarrollo</p>
+        <h2 class="bb-h1">Lo que no se negocia.</h2>
+        <p class="bb-lead">Reglas aplicables en cada PR y cada decisión de diseño. MPA-09 inspira; <strong>MPA-12 obliga</strong>.</p>
+
+        <ol class="mpa-constitution">
+          <li>
+            <strong>Artículo I · Compatibilidad</strong>
+            <span>No romper compatibilidad sin migración. Alembic obligatorio. Plan de rollback.</span>
+          </li>
+          <li>
+            <strong>Artículo II · MDL</strong>
+            <span>Un módulo nuevo reutiliza componentes mtx-* y tokens — sin CSS paralelo.</span>
+          </li>
+          <li>
+            <strong>Artículo III · Tenant</strong>
+            <span>Todo módulo respeta aislamiento por empresa_id. Sin fugas cross-tenant.</span>
+          </li>
+          <li>
+            <strong>Artículo IV · Impacto</strong>
+            <span>Toda funcionalidad nueva tiene impacto medible — KPI o métrica MUX.</span>
+          </li>
+          <li>
+            <strong>Artículo V · No duplicar</strong>
+            <span>Ningún módulo repite lógica existente. Tercera copia = refactor.</span>
+          </li>
+          <li>
+            <strong>Artículo VI · UX primero</strong>
+            <span>La experiencia de usuario prevalece sobre la complejidad técnica interna.</span>
+          </li>
+        </ol>
+
+        <div class="bb-rule-box" style="border-left-color:var(--bb-acento)">
+          <p style="margin:0"><strong>Jerarquía:</strong> Seguridad/tenant → UX → Compatibilidad → No duplicar → MDL → Impacto medible.</p>
+        </div>
+
+        <div class="mpa-chapter-nav">
+          <a href="chapters/12-principios-evolucion.md">Leer MPA-12 completo →</a>
+          <a href="/docs/">Maintix Docs →</a>
+        </div>
+        <div class="bb-page-footer"><span>MPA v1.0</span><span>Constitución</span></div>
+      </div>
+    </section>
+
+  </main>
+</div>
+</body>
+</html>
