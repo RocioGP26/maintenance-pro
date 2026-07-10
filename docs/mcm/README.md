@@ -1,10 +1,10 @@
 # MCM · Maintix Commercial Manual
 
-**Código:** MCM · v1.0  
-**Estado:** ✔ **Congelado** · Sprint 5 completo · tag `docs-v1.0`  
+**Código:** MCM · **v1.0.0**  
+**Estado:** ✅ **Sprint 11 Finalizado** · Alineado MRG v1.0  
 **Frase:** Toda la operación. Una sola plataforma.
 
-El tercer pilar: **cómo vender y comunicar** Maintix.
+**MRG explica cómo funciona. MCM explica por qué comprar Maintix.**
 
 ## Ver manual
 
@@ -14,45 +14,51 @@ python run.py
 
 → http://127.0.0.1:5000/mcm/
 
-## Plan por capítulos
+## Maintix Commercial Manual · Version 1.0.0
 
-Códigos oficiales: [NOMENCLATURE.md](NOMENCLATURE.md)
+| # | Código | Capítulo | Archivo |
+|---|--------|----------|---------|
+| 01 | **MCM-01-INTRO** | Introducción comercial | [01-intro-filosofia-comercial.md](chapters/01-intro-filosofia-comercial.md) |
+| 02 | **MCM-02-VALUE** | Propuesta de valor | [02-propuesta-de-valor.md](chapters/02-propuesta-de-valor.md) |
+| 03 | **MCM-03-MARKETS** | Mercados | [03-sectores-mercados.md](chapters/03-sectores-mercados.md) |
+| 04 | **MCM-04-PLANS** | Planes SaaS | [04-planes-saas.md](chapters/04-planes-saas.md) |
+| 05 | **MCM-05-MODULES** | Catálogo de módulos | [05-catalogo-modulos.md](chapters/05-catalogo-modulos.md) |
+| 06 | **MCM-06-ONBOARD** | Onboarding | [06-onboarding-implementacion.md](chapters/06-onboarding-implementacion.md) |
+| 07 | **MCM-07-DEMO** | Demo comercial | [07-demo-comercial.md](chapters/07-demo-comercial.md) |
+| 08 | **MCM-08-FAQ** | FAQ | [08-faq.md](chapters/08-faq.md) |
+| 09 | **MCM-09-OBJECTIONS** | Objeciones | [09-manejo-objeciones.md](chapters/09-manejo-objeciones.md) |
+| 10 | **MCM-10-PARTNERS** | Partners y canales | [10-partners-canales.md](chapters/10-partners-canales.md) |
 
-| Sprint | Código | Capítulo | Estado |
-|--------|--------|----------|--------|
-| 5.1 | **MCM-01-POS** | [Posicionamiento](chapters/01-posicionamiento.md) | ✅ Entregado |
-| 5.2 | **MCM-02-VALUE** | [Propuesta de valor](chapters/02-propuesta-de-valor.md) | ✅ Entregado |
-| 5.3 | **MCM-03-ICP** | [Cliente ideal e ICP Score](chapters/03-icp-score.md) | ✅ Entregado |
-| 5.4 | **MCM-04-DMU** | [Buyer Personas y DMU](chapters/04-buyer-personas-dmu.md) | ✅ Entregado |
-| 5.5 | **MCM-05-SECT** | [Sectores](chapters/05-sectores.md) | ✅ Entregado |
-| 5.6 | **MCM-06-PLAN** | [Planes comerciales](chapters/06-planes-comerciales.md) | ✅ Entregado |
-| 5.7 | **MCM-07-DEMO** | [La demo comercial](chapters/07-demo-comercial.md) | ✅ Entregado |
-| 5.8 | **MCM-08-OBJ** | [Objeciones](chapters/08-objeciones.md) | ✅ Entregado |
-| 5.9 | **MCM-09-CASE** | [Casos de éxito](chapters/09-casos-exito.md) | ✅ Entregado |
-| 5.10 | **MCM-10-GTM** | [Go To Market](chapters/10-gtm.md) | ✅ Entregado |
+**Portada:** [index.html](index.html) · **Changelog:** [changelog.md](changelog.md)
 
-**Sprint 5 · MCM completo** — v1.0
+## Checklist Sprint 11 · Cierre
 
-## Decisiones estratégicas
+- [x] MCM-09-OBJECTIONS
+- [x] MCM-10-PARTNERS (Partners / Canal / Cierre comercial)
+- [x] Índice `/mcm/`
+- [x] Versión MCM v1.0.0
+- [x] Changelog
+- [x] Portada del manual
 
-Ver [strategy.md](strategy.md):
+## Appendix
 
-- SaaS **mensual**
-- Trial **15 días**
-- Mercado **Latinoamérica**
-- Dos entradas: **Maintenance** · **Inventory**
-- Misma plataforma, módulos activables
+| Contenido | Archivo |
+|-----------|---------|
+| ICP Score | [appendix/icp-score.md](chapters/appendix/icp-score.md) |
+| Buyer Personas · DMU | [appendix/buyer-personas-dmu.md](chapters/appendix/buyer-personas-dmu.md) |
+| Casos MTX-CASE | [appendix/casos-exito.md](chapters/appendix/casos-exito.md) |
+| Go To Market | [appendix/gtm.md](chapters/appendix/gtm.md) |
+| Sectores detalle | [appendix/sectores-detalle.md](chapters/appendix/sectores-detalle.md) |
+| Demo PLAY detalle | [appendix/demo-play-detalle.md](chapters/appendix/demo-play-detalle.md) |
+| Buenas prácticas | [appendix/buenas-practicas-comerciales.md](chapters/appendix/buenas-practicas-comerciales.md) |
+
+Códigos: [NOMENCLATURE.md](NOMENCLATURE.md) · Estrategia: [strategy.md](strategy.md)
 
 ## Relación con la suite
 
 | Doc | Rol |
 |-----|-----|
-| MBB | Historia y marca (origen dual en cap. historia) |
-| MUX | Personas y demo por perfil |
-| MDL | Producto visual |
-| MCM-07 | PLAY-001…005 · Exit Criteria · Debrief |
-| MCM-08 | OBJ-001…010 · fichas por objeción |
-| MCM-09 | MTX-CASE-001…006 · transformación por sector |
-| MCM-10 | GTM · embudo · KPIs · ciclo crecimiento |
-
-Un capítulo a la vez — misma calidad que MBB.
+| **MRG** | Cómo funciona el producto |
+| **MCM** | Cómo vender y posicionar |
+| **MPA** | Arquitectura |
+| **MAG / MSD** | API e integradores |

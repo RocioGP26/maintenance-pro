@@ -11,41 +11,50 @@
   <nav class="docs-nav" aria-label="Maintix Docs">
     <div class="docs-nav-brand">
       <p class="wordmark">MAINTIX DOCS</p>
-      <p class="sub">Documentation Suite v1.0</p>
+      <p class="sub">Documentation Suite · v1.10</p>
     </div>
     <p class="docs-nav-label">Índice maestro</p>
     <a href="#indice" class="is-active">Inicio</a>
-    <a href="#suite">01 – 09 Suite</a>
-    <a href="#pilares">Tres pilares</a>
+    <a href="#suite">01 – 10 Suite</a>
+    <a href="#cross">Cross-refs</a>
+    <a href="#governance">Producto doc</a>
     <p class="docs-nav-label">Publicados</p>
     <a href="/brandbook/">01 · Brand Book</a>
     <a href="/mdl/">02 · MDL</a>
     <a href="/mux/">03 · MUX</a>
     <a href="/mcm/">04 · MCM</a>
+    <a href="/mpa/">05 · MPA</a>
+    <a href="/mrl/">06 · MRL</a>
+    <a href="/mag/">07 · MAG</a>
+    <a href="/msd/">08 · MSD</a>
+    <a href="/mrg/">11 · MRG</a>
     <p class="docs-nav-label">Markdown</p>
     <a href="README.md">README.md</a>
     <a href="NOMENCLATURE.md">NOMENCLATURE</a>
-    <a href="ecosystem/README.md">Ecosystem</a>
+    <a href="mpa/README.md">MPA</a>
     <a href="RELEASE-v1.0.md">Release v1.0</a>
-    <a href="VERSIONING.md">Versionado</a>
+    <a href="VERSIONS.md">VERSIONS</a>
+    <a href="changelog.md">Changelog</a>
+    <a href="CROSS-REFERENCES.md">Cross-refs</a>
+    <a href="DOCUMENTATION-PRODUCT.md">Producto doc</a>
   </nav>
 
   <main class="docs-main">
     <section class="docs-release" id="release">
-      <h2>Maintix Documentation Suite v1.0</h2>
-      <p>Primera edición oficial · release interno · tag <code style="background:rgba(0,0,0,0.2);padding:0.1rem 0.35rem;border-radius:3px">docs-v1.0</code></p>
+      <h2>Documentation Suite · v1.10</h2>
+      <p><strong>Sprint 10 ✅ MRG v1.0</strong> — guía funcional completa. MPA · MAG · MSD · MRG documentados.</p>
       <div class="docs-release-grid">
-        <div class="docs-release-item"><strong>📘 Brand Book</strong><span>v2.0 · ✔ Congelado</span></div>
-        <div class="docs-release-item"><strong>🎨 MDL</strong><span>v1.0 · ✔ Congelado</span></div>
-        <div class="docs-release-item"><strong>👥 MUX</strong><span>v1.2 · ✔ Congelado</span></div>
-        <div class="docs-release-item"><strong>💼 MCM</strong><span>v1.0 · ✔ Congelado</span></div>
+        <div class="docs-release-item"><strong>📘 MRG v1.0</strong><span>/mrg/ · producto funcional</span></div>
+        <div class="docs-release-item"><strong>🛠 MSD v1.0</strong><span>/msd/ · ecosistema desarrolladores</span></div>
+        <div class="docs-release-item"><strong>🔌 MAG v1.0</strong><span>/mag/ · contrato API</span></div>
+        <div class="docs-release-item"><strong>✓ Fundación 1.0</strong><span>MBB · MDL · MUX · MCM · MPA</span></div>
       </div>
-      <p class="docs-release-foot">Política: cambios importantes → nueva versión. <a href="VERSIONING.md">VERSIONING.md</a> · <a href="RELEASE-v1.0.md">RELEASE-v1.0.md</a></p>
+      <p class="docs-release-foot"><a href="RELEASE-FOUNDATION-1.0.md">RELEASE-FOUNDATION-1.0.md</a> · <a href="/mrg/">Abrir MRG →</a></p>
     </section>
 
     <header class="docs-hero" id="indice">
       <h1>Toda la documentación.<br>Un solo índice.</h1>
-      <p class="lead">Ecosistema documental de Maintix — marca, diseño, experiencia, comercial, reportes, API, arquitectura y roadmap.</p>
+      <p class="lead">Marca, diseño, experiencia, comercial, <strong>plataforma</strong>, reportes, API e ingeniería.</p>
       <p class="tagline">Toda la operación. Una sola plataforma.</p>
       <pre class="docs-tree" aria-label="Árbol de documentación">MAINTIX DOCS
 │
@@ -53,23 +62,24 @@
 ├── 02 MDL
 ├── 03 MUX
 ├── 04 MCM
-├── 05 MRL
-├── 06 MAG
-├── 07 API
-├── 08 Architecture
-├── 09 Roadmap
+├── 05 MPA             ← Sprint 6
+├── 06 MRL
+├── 07 MAG
+├── 08 SDK
+├── 09 Developer Docs
+├── 10 Release Notes
 └── README</pre>
     </header>
 
     <section class="docs-section" id="suite">
-      <h2>Suite documental · 01 – 09</h2>
+      <h2>Suite documental · 01 – 10</h2>
       <div class="docs-grid">
 
         <a class="docs-card" href="/brandbook/">
           <span class="docs-card-num">01</span>
           <h3>Brand Book</h3>
-          <span class="code">MBB · docs/brandbook/</span>
-          <p>Marca, historia dual, identidad visual, voz y pilares de mensaje.</p>
+          <span class="code">MBB</span>
+          <p>Marca, identidad visual, voz y pilares.</p>
           <div class="docs-card-foot">
             <span class="docs-badge docs-badge--frozen">v2.0 · Congelado</span>
             <span>/brandbook/</span>
@@ -79,8 +89,8 @@
         <a class="docs-card" href="/mdl/">
           <span class="docs-card-num">02</span>
           <h3>MDL</h3>
-          <span class="code">Maintix Design Language</span>
-          <p>Tokens, componentes mtx-*, patrones, dark mode, email.</p>
+          <span class="code">Design Language</span>
+          <p>Tokens, componentes mtx-*, patrones UI.</p>
           <div class="docs-card-foot">
             <span class="docs-badge docs-badge--frozen">v1.0 · Congelado</span>
             <span>/mdl/</span>
@@ -90,8 +100,8 @@
         <a class="docs-card" href="/mux/">
           <span class="docs-card-num">03</span>
           <h3>MUX</h3>
-          <span class="code">Maintix User Experience</span>
-          <p>Personas, UX Laws, journeys, copy, medición, accesibilidad.</p>
+          <span class="code">User Experience</span>
+          <p>UX Laws, personas, journeys, copy.</p>
           <div class="docs-card-foot">
             <span class="docs-badge docs-badge--frozen">v1.2 · Congelado</span>
             <span>/mux/</span>
@@ -101,102 +111,169 @@
         <a class="docs-card" href="/mcm/">
           <span class="docs-card-num">04</span>
           <h3>MCM</h3>
-          <span class="code">Maintix Commercial Manual</span>
-          <p>10 capítulos · PLAY · OBJ · MTX-CASE · GTM · Sprint 5 completo.</p>
+          <span class="code">Commercial Manual</span>
+          <p>10 capítulos · PLAY · OBJ · Partners · FAQ.</p>
           <div class="docs-card-foot">
-            <span class="docs-badge docs-badge--frozen">v1.0 · Congelado</span>
+            <span class="docs-badge">v1.0.0 · Sprint 11 ✅</span>
             <span>/mcm/</span>
           </div>
         </a>
 
-        <a class="docs-card" href="mrl/README.md">
+        <a class="docs-card" href="/mpa/">
           <span class="docs-card-num">05</span>
-          <h3>MRL</h3>
-          <span class="code">Maintix Report Language</span>
-          <p>Gramática visual de PDFs — header, tablas, KPIs, firma.</p>
+          <h3>MPA</h3>
+          <span class="code">Platform Architecture</span>
+          <p>EMP · modular · SaaS · roadmap 2030.</p>
           <div class="docs-card-foot">
-            <span class="docs-badge docs-badge--wip">v0.1</span>
-            <span>docs/mrl/</span>
+            <span class="docs-badge docs-badge--frozen">v1.0 · Congelado</span>
+            <span>/mpa/</span>
           </div>
         </a>
 
-        <a class="docs-card" href="mag/README.md">
+        <a class="docs-card" href="/mrl/" style="border-color:rgba(56,161,105,0.35)">
           <span class="docs-card-num">06</span>
-          <h3>MAG</h3>
-          <span class="code">Maintix API Guide</span>
-          <p>Guía para integradores — REST, auth, versionado, errores.</p>
+          <h3>MRL</h3>
+          <span class="code">Report Language</span>
+          <p>PDF · Excel · DOC-001–010 · metadata · plantillas · A11Y.</p>
           <div class="docs-card-foot">
-            <span class="docs-badge docs-badge--soon">Planificado</span>
-            <span>docs/mag/</span>
+            <span class="docs-badge docs-badge--done">v1.0.1</span>
+            <span>/mrl/</span>
           </div>
         </a>
 
-        <a class="docs-card" href="api/README.md">
+        <a class="docs-card" href="/mag/" style="border-color:rgba(99,179,237,0.4)">
           <span class="docs-card-num">07</span>
-          <h3>API</h3>
-          <span class="code">Referencia técnica</span>
-          <p>OpenAPI, endpoints tenancy, contratos y ejemplos.</p>
+          <h3>MAG</h3>
+          <span class="code">API Guide</span>
+          <p>JWT · multi-tenant · /api/v1 · errores · webhooks · ejemplos.</p>
           <div class="docs-card-foot">
-            <span class="docs-badge docs-badge--soon">Planificado</span>
-            <span>docs/api/</span>
+            <span class="docs-badge docs-badge--done">v1.0 · Nuevo</span>
+            <span>/mag/</span>
           </div>
         </a>
 
-        <a class="docs-card" href="architecture/README.md">
+        <a class="docs-card" href="/msd/" style="border-color:rgba(72,187,120,0.4)">
           <span class="docs-card-num">08</span>
-          <h3>Architecture</h3>
-          <span class="code">MADR · Handbook · Sectores</span>
-          <p>Decisiones, handbook dev, deployment, security, arquitectura.</p>
+          <h3>MSD</h3>
+          <span class="code">SDK & Developer Portal</span>
+          <p>Portal · OpenAPI · SDK · CLI · Sandbox · colecciones Postman.</p>
+          <div class="docs-card-foot">
+            <span class="docs-badge docs-badge--done">v1.0 · Sprint 9 ✅</span>
+            <span>/msd/</span>
+          </div>
+        </a>
+
+        <a class="docs-card" href="/mrg/" style="border-color:rgba(237,137,54,0.45)">
+          <span class="docs-card-num">11</span>
+          <h3>MRG</h3>
+          <span class="code">Maintix Reference Guide</span>
+          <p>Guía funcional del producto — módulos, procesos, roles e indicadores.</p>
+          <div class="docs-card-foot">
+            <span class="docs-badge docs-badge--done">v1.0 · Sprint 10 ✅</span>
+            <span>/mrg/</span>
+          </div>
+        </a>
+
+        <a class="docs-card" href="developer/README.md">
+          <span class="docs-card-num">09</span>
+          <h3>Developer Docs</h3>
+          <span class="code">Handbook · MADR · Deploy</span>
+          <p>Flask, SQLAlchemy, tenancy, despliegue.</p>
           <div class="docs-card-foot">
             <span class="docs-badge docs-badge--wip">En curso</span>
-            <span>docs/architecture/</span>
+            <span>docs/developer/</span>
           </div>
         </a>
 
-        <a class="docs-card" href="roadmap/README.md">
-          <span class="docs-card-num">09</span>
-          <h3>Roadmap</h3>
-          <span class="code">Product roadmap</span>
-          <p>Producto, módulos futuros, prioridades por sector.</p>
+        <a class="docs-card" href="release-notes/README.md">
+          <span class="docs-card-num">10</span>
+          <h3>Release Notes</h3>
+          <span class="code">Versiones</span>
+          <p>Historial docs y producto.</p>
           <div class="docs-card-foot">
-            <span class="docs-badge docs-badge--soon">Planificado</span>
-            <span>docs/roadmap/</span>
-          </div>
-        </a>
-
-        <a class="docs-card" href="README.md">
-          <span class="docs-card-num">—</span>
-          <h3>README</h3>
-          <span class="code">Índice maestro · markdown</span>
-          <p>Fuente de verdad del ecosistema — nomenclatura y enlaces.</p>
-          <div class="docs-card-foot">
-            <span class="docs-badge docs-badge--done">v1.0</span>
-            <span>docs/README.md</span>
+            <span class="docs-badge docs-badge--wip">Activo</span>
+            <span>docs/release-notes/</span>
           </div>
         </a>
 
       </div>
     </section>
 
+    <section class="docs-section" id="cross" style="background:#fff;border-top:1px solid var(--bb-borde)">
+      <h2>Referencias cruzadas · Núcleo</h2>
+      <p style="color:var(--bb-secundario);font-size:0.88rem;margin:-0.5rem 0 1rem">Navegación consistente entre manuales. Matriz completa en <a href="CROSS-REFERENCES.md">CROSS-REFERENCES.md</a>.</p>
+      <table class="docs-cross-table" style="width:100%;border-collapse:collapse;font-size:0.82rem">
+        <thead>
+          <tr style="background:var(--bb-fondo)">
+            <th style="padding:0.5rem;text-align:left"></th>
+            <th style="padding:0.5rem">MBB</th>
+            <th style="padding:0.5rem">MDL</th>
+            <th style="padding:0.5rem">MUX</th>
+            <th style="padding:0.5rem">MCM</th>
+            <th style="padding:0.5rem">MPA</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td style="padding:0.45rem;font-weight:600">Marca →</td><td>—</td><td><a href="/mdl/">UI</a></td><td><a href="/mux/">UX</a></td><td><a href="/mcm/">Venta</a></td><td><a href="/mpa/">Plataforma</a></td></tr>
+          <tr><td style="padding:0.45rem;font-weight:600">Producto →</td><td><a href="/brandbook/">Historia</a></td><td>—</td><td><a href="/mux/">Personas</a></td><td>—</td><td><a href="/mpa/#mpa-01">EMP</a></td></tr>
+          <tr><td style="padding:0.45rem;font-weight:600">Ingeniería →</td><td>—</td><td><a href="/mdl/">mtx-*</a></td><td><a href="/mux/">Laws</a></td><td>—</td><td><a href="/mpa/#mpa-12">Constitución</a></td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="docs-section" id="governance" style="background:var(--bb-fondo)">
+      <h2>Producto documental</h2>
+      <div class="docs-grid">
+        <a class="docs-card" href="VERSIONS.md">
+          <span class="docs-card-num">📌</span>
+          <h3>VERSIONS</h3>
+          <span class="code">Registro oficial</span>
+          <p>Versiones semver de cada manual y de la suite.</p>
+        </a>
+        <a class="docs-card" href="changelog.md">
+          <span class="docs-card-num">📌</span>
+          <h3>CHANGELOG</h3>
+          <span class="code">Suite</span>
+          <p>Control de cambios del producto documental.</p>
+        </a>
+        <a class="docs-card" href="VERSIONING.md">
+          <span class="docs-card-num">📌</span>
+          <h3>Versionado</h3>
+          <span class="code">Política</span>
+          <p>Congelamiento, bumps y tags Git docs-v*.</p>
+        </a>
+        <a class="docs-card" href="publishing/README.md">
+          <span class="docs-card-num">📌</span>
+          <h3>Publishing</h3>
+          <span class="code">MkDocs · Docusaurus</span>
+          <p>Plan para sitio público cuando llegue el momento.</p>
+        </a>
+      </div>
+    </section>
+
     <section class="docs-section" id="pilares" style="background:#fff;border-top:1px solid var(--bb-borde)">
-      <h2>Tres pilares del producto</h2>
+      <h2>Cuatro pilares</h2>
       <div class="docs-pillars">
         <div class="docs-pillar">
           <h4>Comunicación</h4>
-          <p>MBB · MCM — marca y ventas</p>
+          <p>MBB · MCM</p>
         </div>
         <div class="docs-pillar">
           <h4>Experiencia</h4>
-          <p>MUX · MRL — usuario y reportes</p>
+          <p>MUX · MRL</p>
+        </div>
+        <div class="docs-pillar" style="border-left-color:#2b6cb0">
+          <h4>Plataforma</h4>
+          <p>MPA — arquitectura de producto</p>
         </div>
         <div class="docs-pillar">
-          <h4>Tecnología</h4>
-          <p>MDL · MAG · API · Architecture</p>
+          <h4>Ingeniería</h4>
+          <p>MDL · MAG · SDK · Developer</p>
         </div>
       </div>
       <p style="font-size:0.82rem;color:var(--bb-secundario);margin-top:1.5rem;text-align:center">
-        <code>python run.py</code> → <a href="/docs/">/docs/</a> ·
-        Filosofía MUX: <a href="/mux/">5 UX Laws</a> obligatorias antes de merge
+        <code>python run.py</code> → <a href="/mpa/">/mpa/</a> ·
+        <a href="/mux/">5 UX Laws</a> obligatorias antes de merge
       </p>
     </section>
   </main>

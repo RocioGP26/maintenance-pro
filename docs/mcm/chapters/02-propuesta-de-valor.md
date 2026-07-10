@@ -1,12 +1,12 @@
 # MCM-02-VALUE · Propuesta de valor
 
-**Código:** MCM-02-VALUE · Sprint 5.2  
+**Código:** MCM-02-VALUE · Sprint 11.2 · **Entregado**  
 **Frase de marca:** Toda la operación. Una sola plataforma.
 
 > Este capítulo no vende software.  
 > Responde una sola pregunta: **¿Qué cambia en la vida de una empresa después de implementar Maintix?**
 
-**Prerequisito:** [MCM-01 · Posicionamiento](01-posicionamiento.md)
+**Prerequisito:** [MCM-01-INTRO · Filosofía comercial](01-intro-filosofia-comercial.md)
 
 ---
 
@@ -278,7 +278,7 @@ Las empresas no compran Maintix para tener otro sistema. Lo compran porque **su 
 
 **La transformación comienza con un módulo. El crecimiento ocurre dentro de una sola plataforma.**
 
-**Próximo capítulo:** MCM-03 · Cliente ideal e ICP Score (Sprint 5.3)
+**Próximo capítulo:** [MCM-03-MARKETS · Sectores objetivo](03-sectores-mercados.md)
 
 ---
 

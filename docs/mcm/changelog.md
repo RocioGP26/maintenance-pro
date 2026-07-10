@@ -1,5 +1,88 @@
 # MCM Changelog
 
+## [1.0.0] — 2026-07-10 · Sprint 11 Finalizado · Commercial Manual
+
+### Added
+- **MCM-10-PARTNERS** · Partners · canales · cierre comercial · exit criteria manual
+- Portada `/mcm/` · tabla de capítulos · sección Appendix
+- Checklist cierre Sprint 11 en README
+
+### Changed
+- **MCM v1.0.0** — versión oficial del manual comercial alineado MRG
+- MCM-10-BEST → appendix · consolidado en MCM-10-PARTNERS
+- NOMENCLATURE · strategy · suite v1.10.0
+
+### Status
+- ✅ **Sprint 11 – Commercial Manual (MCM) Finalizado**
+- 10 capítulos + Appendix · tag recomendado: `mcm-v1.0.0`
+
+---
+
+## [1.1.4] — 2026-07-10 · MCM-07-DEMO · Guía oficial de demostración
+
+### Changed
+- **MCM-07-DEMO** reescrito — 11 secciones · flujo oficial · 45–60 min
+- Descubrimiento del dolor · historias PLAY · qué mostrar / no mostrar
+- CRM post-demo · PLAY-001–005 en apéndice · legacy en `demo-play-detalle.md`
+
+---
+
+## [1.1.3] — 2026-07-10 · MCM-05-MODULES · Catálogo de módulos
+
+### Changed
+- **MCM-05-MODULES** reescrito — 10 secciones · producción vs roadmap
+- Mantenimiento · Inventario · Purchasing · CRM · Sales Pro · Analytics · Finance · IAM
+- Crecimiento modular · relación entre módulos · exit criteria
+
+---
+
+## [1.1.2] — 2026-07-10 · MCM-03-MARKETS · Sectores objetivo
+
+### Changed
+- **MCM-03-MARKETS** reescrito — 12 secciones · sectores prioritarios · mensajes por sector
+- Puertas Mantenimiento/Inventario · posicionamiento unificado · exit criteria
+- Apéndice `sectores-detalle.md` — matrices KPI/demo legacy Sprint 5
+
+---
+
+## [1.1.1] — 2026-07-10 · MCM-01 · Mensajes oficiales
+
+### Added
+- **Maintix en una frase** · canales web · presentaciones · LinkedIn · App Store
+- **Elevator Pitch** · texto listo para presentaciones
+- **Qué sí prometemos** · tabla Control · Trazabilidad · Escalabilidad · Simplicidad · Plataforma
+- **Slogan comercial:** «No necesitas otro software. Necesitas recuperar el control de tu operación.»
+
+### Changed
+- strategy.md · index.html MCM-01 — mensajes consolidados
+
+---
+
+## [1.1.0] — 2026-07-10 · Sprint 11 completo · Alineado MRG v1.0
+
+### Added
+- **MCM-01-INTRO** · Filosofía comercial — suite docs · principios comerciales
+- **MCM-03-MARKETS** · Sectores objetivo (reestructura MCM-05-SECT)
+- **MCM-04-PLANS** · Planes SaaS (reestructura MCM-06-PLAN)
+- **MCM-05-MODULES** · Catálogo de módulos alineado MRG/MPA
+- **MCM-06-ONBOARD** · Implementación y onboarding comercial
+- **MCM-08-FAQ** · Preguntas frecuentes oficiales
+- **MCM-09-OBJECTIONS** · Manejo de objeciones (reestructura MCM-08-OBJ)
+- **MCM-10-BEST** · Buenas prácticas comerciales · cierre Sprint 11
+- Apéndices: ICP · DMU · casos · GTM (Sprint 5 preservado)
+- Índice HTML Sprint 11 — catálogo estilo MRG · descongelado
+
+### Changed
+- MCM-02-VALUE · MCM-07-DEMO — actualizados a Sprint 11 · lenguaje Mantenimiento/Inventario
+- NOMENCLATURE · README · strategy — estructura capítulos Sprint 11
+- Legacy Sprint 5 marcado como supersedido
+
+### Status
+- ✅ **MCM v1.1.0** — 10 capítulos · Sprint 11 completo
+- Suite: **v1.9.0**
+
+---
+
 ## [1.0.0] — Frozen · Documentation Suite v1.0
 
 ### Status

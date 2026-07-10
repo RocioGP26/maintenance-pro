@@ -717,6 +717,25 @@
   padding: 0.2rem 0.55rem;
 }
 
+.mcm-doc-table {
+  border-collapse: collapse;
+  font-size: 0.88rem;
+  margin: 1rem auto;
+  width: 100%;
+}
+
+.mcm-doc-table th,
+.mcm-doc-table td {
+  border: 1px solid var(--bb-borde);
+  padding: 0.45rem 0.65rem;
+  text-align: left;
+}
+
+.mcm-doc-table thead th {
+  background: var(--bb-fondo);
+  font-weight: 600;
+}
+
 .mcm-influence-stars {
   color: #D69E2E;
   font-size: 0.9rem;

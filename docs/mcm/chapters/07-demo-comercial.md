@@ -1,420 +1,340 @@
-# MCM-07-DEMO · La demo comercial
+# MCM-07-DEMO · Guía oficial de demostración
 
-**Código:** MCM-07-DEMO · Sprint 5.7  
-**Frase de marca:** Toda la operación. Una sola plataforma.
+**Código:** MCM-07-DEMO · Sprint 11.7 · **Entregado**
 
-> La demo no es un recorrido de pantallas.  
-> Es una **experiencia comercial repetible** que cualquier miembro del equipo puede aprender y ejecutar.
+> Una demo no consiste en mostrar pantallas. Consiste en demostrar **cómo Maintix resuelve un problema real de operación**.
 
-**Prerequisitos:** [MCM-03-ICP](03-icp-score.md) · [MCM-04-DMU](04-buyer-personas-dmu.md) · [MCM-05-SECT](05-sectores.md) · [MCM-06-PLAN](06-planes-comerciales.md)
+**Toda la operación. Una sola plataforma.**
 
----
-
-## Enfoque de este capítulo
-
-### Lo que no es
-
-❌ «Voy a mostrar todas las funciones del sistema.»  
-❌ «Cada vendedor hace la demo a su manera.»  
-❌ «Empiezo por el menú y voy pantalla por pantalla.»
-
-Eso depende del estilo de quien presenta. No escala.
-
-### Lo que sí es
-
-✅ Una **metodología de cinco fases** con tiempos definidos.  
-✅ Un guion que conecta **problema → operación → indicadores → plan**.  
-✅ Un recorrido **personalizado** según ICP, sector, módulo de entrada y DMU — pero siempre con la misma estructura.
-
-**Duración objetivo:** ~20–25 minutos en reunión + preparación previa + debrief post-reunión.
+**Prerequisitos:** [MCM-01-INTRO](01-intro-filosofia-comercial.md) · [MCM-02-VALUE](02-propuesta-de-valor.md) · [MCM-03-MARKETS](03-sectores-mercados.md) · [MCM-04-PLANS](04-planes-saas.md) · [MCM-05-MODULES](05-catalogo-modulos.md) · [ICP (apéndice)](appendix/icp-score.md) · [DMU (apéndice)](appendix/buyer-personas-dmu.md)
 
 ---
 
-## Playbook · Códigos PLAY
+## Objetivo
 
-El MCM usa **códigos internos de playbook** para que el equipo comercial hable el mismo idioma — sin decir «lee el capítulo 7».
+Definir el **proceso oficial** para realizar demostraciones comerciales de Maintix — asegurando un mensaje **consistente**, **centrado en el cliente** y alineado con la propuesta de valor del producto.
+
+---
+
+## 1 · Filosofía
+
+Una demo exitosa responde **tres preguntas**:
+
+| # | Pregunta |
+|---|----------|
+| 1 | ¿Cuál es el **problema** del cliente? |
+| 2 | ¿Cómo lo **resuelve Maintix**? |
+| 3 | ¿Qué **cambia** después de implementarlo? |
+
+**Nunca** comienza mostrando el menú.
+
+Comienza **entendiendo el negocio**.
+
+**Frase del capítulo:**
+
+> *«Así es exactamente como trabajamos hoy… y esto nos ayudaría a hacerlo mejor.»*
+
+Ese es el resultado que buscamos — no «qué bonito se ve el sistema».
+
+---
+
+## 2 · Estructura oficial
 
 ```
-MCM-07-DEMO
-│
-├── PLAY-001 · Preparación
-├── PLAY-002 · Apertura
-├── PLAY-003 · Operación
-├── PLAY-004 · KPIs
-└── PLAY-005 · Cierre
+Introducción
+      │
+      ▼
+Descubrir dolor
+      │
+      ▼
+Historia del sector
+      │
+      ▼
+Mostrar el módulo principal
+      │
+      ▼
+Explicar expansión futura
+      │
+      ▼
+Próximos pasos
 ```
 
-| Código | Fase | Tiempo | Uso en el equipo |
-|--------|------|--------|------------------|
-| **PLAY-001** | Preparación | Antes | «Completa PLAY-001 antes de la reunión.» |
-| **PLAY-002** | Apertura | 3 min | «Conecta con PLAY-002 — historia del sector.» |
-| **PLAY-003** | Operación | 10–15 min | «Revisa PLAY-003 antes de hacer la demo.» |
-| **PLAY-004** | KPIs | 3 min | «Cierra operación con PLAY-004 en el dashboard.» |
-| **PLAY-005** | Cierre | 5 min | «No salgas sin PLAY-005 — plan y trial.» |
+| Fase | Código PLAY | Contenido |
+|------|-------------|-----------|
+| Antes de reunión | **PLAY-001** | Preparación · ICP · sector · módulo |
+| Introducción + dolor | **PLAY-002** | Preguntas · historia del sector |
+| Demo principal | **PLAY-003** | Flujo punta a punta · un módulo |
+| Indicadores | **PLAY-004** | Dashboard · KPI del sector |
+| Cierre | **PLAY-005** | Plan · trial · siguiente paso |
 
-Códigos oficiales: [NOMENCLATURE.md](../NOMENCLATURE.md#playbook--códigos-play)
-
----
-
-## La metodología · Cinco fases
-
-```
-PLAY-001             PLAY-002    PLAY-003       PLAY-004       PLAY-005
-Preparación          Apertura    Operación      KPIs           Cierre
-(antes de reunir)    3 min       10–15 min      3 min          5 min
-     │                  │            │             │             │
-  ICP·Sector         Problema     Flujos MUX    Dashboard     Plan·Trial
-  Módulo·DMU      Transformación   del sector    decisiones    Siguientes pasos
-```
-
-| Código | Fase | Tiempo | Objetivo | Si solo haces una cosa… |
-|--------|------|--------|----------|-------------------------|
-| **PLAY-001** | Preparación | Antes | Llegar con guion listo | Completar la ficha de demo |
-| **PLAY-002** | Apertura | 3 min | Conectar con el dolor real | Repetir la **historia del sector** (MCM-05) |
-| **PLAY-003** | Operación | 10–15 min | Mostrar el flujo que importa | Un solo recorrido de punta a punta |
-| **PLAY-004** | KPIs | 3 min | Traducir operación en decisiones | Abrir el dashboard del perfil decisor |
-| **PLAY-005** | Cierre | 5 min | Plan + trial + compromiso | Acordar **quién** activa el trial y **cuándo** |
+Códigos: [NOMENCLATURE.md](../NOMENCLATURE.md#playbook--códigos-play)
 
 ---
 
-## PLAY-001 · Preparación
+## 3 · Tiempo recomendado
 
-**Antes de la reunión**, completa esta ficha. Sin preparación, la demo se convierte en tour genérico.
+| Bloque | Tiempo |
+|--------|--------|
+| Presentación | 5 min |
+| Descubrimiento | 10 min |
+| Demo principal | 20 min |
+| Preguntas | 15 min |
+| Próximos pasos | 10 min |
 
-### Checklist de preparación
+**Duración recomendada total:** **45–60 minutos**
 
-| Campo | Fuente MCM | Qué anotar |
-|-------|------------|------------|
-| **ICP Score** | MCM-03 | Banda A/B/C/D · puntos clave |
-| **Urgencia** | MCM-03 | Alta / Media / Baja |
-| **Champion** | MCM-03 | Nombre · Strength 🟢🟡🔴 |
-| **Sector** | MCM-05 | Manufactura · Comercio · Agro… |
-| **Módulo de entrada** | MCM-05 · ICP | Maintenance · Inventory · Mixto |
-| **Historia de demo** | MCM-05 | Copiar la historia del sector — es tu apertura |
-| **Perfiles MUX** | MUX · MCM-05 | Quién opera · quién decide |
-| **DMU en sala** | MCM-04 | Roles presentes · decisor · bloqueador |
-| **Plan sugerido** | MCM-06 | Start / Grow / Scale / Enterprise |
-| **Resultado esperado** | MCM-06 | Qué consigue el cliente con ese plan |
-
-### Reglas de preparación
-
-1. **Band D** → no demo individual de 20 min; material self-service o descalificar con respeto.
-2. **Un módulo de entrada** → no mezclar Maintenance e Inventory en la misma demo salvo operación mixta explícita.
-3. **Leer la historia de demo del sector** en voz alta una vez antes de entrar — debe sonar natural, no leída.
-4. **Invitar al DMU correcto** — si solo viene TI y el decisor es el dueño, reprogramar.
-
-### Ficha imprimible
-
-```
-Prospecto: _______________________  Fecha: __________
-ICP: ___ pts · Banda ___ · Urgencia: ___
-Champion: _____________ · Strength: 🟢 🟡 🔴
-
-Sector: _______________________
-Módulo de entrada: [ ] Maintenance  [ ] Inventory  [ ] Mixto
-Historia de demo (1 frase): _________________________________
-
-En la sala:
-[ ] Gerente  [ ] Mantenimiento  [ ] Bodega  [ ] Admin  [ ] TI  [ ] Finanzas
-Decisor económico: _______________
-Bloqueador probable: _____________
-
-Plan sugerido: Start / Grow / Scale / Enterprise
-Resultado esperado: _______________________________________
-```
+| Variante | Cuándo |
+|----------|--------|
+| **45 min** | Prospecto con urgencia · banda ICP A |
+| **60 min** | DMU completo · operación mixta · Finanzas en sala |
+| **20 min** *(solo PLAY-003)* | Segunda reunión · ya hubo descubrimiento — no sustituye la demo oficial |
 
 ---
 
-## PLAY-002 · Apertura (3 minutos)
+## 4 · Descubrir el dolor
 
-**Objetivo:** que el prospecto diga mentalmente *«sí, eso es lo que nos pasa»* antes de ver una sola pantalla.
+**Antes de compartir pantalla**, preguntar:
 
-### Estructura
+- ¿Cómo gestionan hoy la operación?
+- ¿Cuál es el **mayor problema**?
+- ¿Qué sucede cuando falla un equipo?
+- ¿Cómo controlan inventario?
+- ¿Qué información tardan más en encontrar?
 
-| Minuto | Acción | Ejemplo |
-|--------|--------|---------|
-| 0:00 | Saludo · confirmar tiempo | «Tenemos unos 20 minutos — ¿les parece si empezamos?» |
-| 0:30 | **Problema** del sector | Historia MCM-05 — sin mencionar Maintix aún |
-| 1:30 | **Transformación esperada** | Bloque MCM-02 — qué cambia en su operación |
-| 2:30 | Puente a la demo | «Les muestro cómo se ve eso en la plataforma — con un caso como el suyo.» |
+**El objetivo no es vender. Es entender.**
 
-### Frases de apertura por puerta
+Anotar respuestas en CRM — alimentan PLAY-003 y el plan sugerido (MCM-04).
 
-**Maintenance:**  
-*«Antes de abrir el sistema: ¿les pasa que cuando una máquina se detiene, nadie tiene el historial completo en un solo lugar? Eso es lo que resolvemos primero.»*
+| Señal en respuestas | Puerta probable |
+|---------------------|-----------------|
+| Paradas · OT · activos | **Mantenimiento** |
+| Stock · ventas · cartera | **Inventario** |
+| Ambos con igual peso | Dolor más crítico hoy |
 
-**Inventory:**  
-*«Antes de la demo: ¿les pasa que ventas y bodega no ven el mismo stock al mismo tiempo? Eso es el dolor que atacamos el día uno.»*
-
-### Qué no hacer en la apertura
-
-- No abrir con precios ni planes.
-- No listar módulos ni features.
-- No pedir permiso para «mostrar todo el sistema».
+→ Calificación: [appendix/icp-score.md](appendix/icp-score.md)
 
 ---
 
-## PLAY-003 · Operación (10–15 minutos)
+## 5 · Elegir la puerta de entrada
 
-**Objetivo:** un solo flujo de punta a punta — el que el prospecto **usará el lunes por la mañana**.
+| Dolor principal | Demo |
+|-----------------|------|
+| Equipos | **Mantenimiento** |
+| Inventario | **Inventario** |
+| Ambos | Comenzar por el **más crítico** |
 
-**Regla de oro:** si no lo usarían en la primera semana, **no lo muestras**.
+**Regla:** nunca mostrar **ambos módulos completos** en los primeros minutos.
 
-### Flujo · Maintix Maintenance
+Si el prospecto tiene operación mixta, mencionar expansión al cierre (§9) — no mezclar flujos en PLAY-003.
 
-| Paso | Pantalla / acción | Perfil MUX | Tiempo |
-|------|-------------------|------------|--------|
-| 1 | Activos — abrir el activo del caso | Laura / Gerente | 1 min |
-| 2 | Crear OT correctiva (o ver preventivo) | Carlos | 3 min |
-| 3 | Asignar técnico · registrar trabajo | Carlos | 2 min |
-| 4 | Cerrar OT · evidencia / tiempos | Carlos | 2 min |
-| 5 | *(Opcional Grow)* consumo de repuesto → inventario | Roberto | 2 min |
-
-**Historia guion:** *«Línea 3 parada. Abrimos el activo, creamos la OT, Carlos la cierra con evidencia — el gerente ya no depende del audio de WhatsApp.»*
-
-### Flujo · Maintix Inventory
-
-| Paso | Pantalla / acción | Perfil MUX | Tiempo |
-|------|-------------------|------------|--------|
-| 1 | Productos — stock actual del SKU del caso | Roberto | 1 min |
-| 2 | Nueva venta / cotización con stock real | Valentina | 4 min |
-| 3 | Confirmar · impacto en inventario | Valentina | 2 min |
-| 4 | Movimiento de bodega si aplica | Roberto | 2 min |
-| 5 | *(Opcional)* cartera o compra pendiente | Roberto / Gerente | 2 min |
-
-**Historia guion:** *«Cliente pide 200 unidades. Valentina cotiza con stock real — si no hay, lo sabe en el mostrador, no después del viaje a bodega.»*
-
-### Adaptar según quién está en la sala
-
-| En la sala | Énfasis en operación | Ver MCM-04 |
-|------------|----------------------|------------|
-| **Gerente** | Menos clics · más resultado visible | Resumir pasos · nombrar impacto |
-| **Técnico / Bodega** | Formularios cortos · velocidad | Mostrar el flujo completo sin saltar |
-| **TI** | SaaS · roles · sin instalación | Mencionar arquitectura solo si preguntan |
-| **Finanzas** | Trazabilidad · menos pérdida | Costo de no tener el dato |
-
-Si hay **varios roles**, alterna narrador: *«Carlos, esto es lo que verías el lunes»* → *«Laura, esto es lo que verías tú en el dashboard.»*
-
-### Sectores · Atajos
-
-Usa la **historia de demo** de [MCM-05-SECT](05-sectores.md) como hilo conductor — no inventes un caso nuevo en la reunión.
-
-| Sector | Flujo prioritario | MUX |
-|--------|-------------------|-----|
-| Manufactura | OT + activo + downtime | Laura + Carlos |
-| Comercio | Venta + stock real | Valentina + Roberto |
-| Agro | Stock multialmacén | Roberto + Laura |
-| Servicios | OT + historial cliente | Carlos + Laura |
-| Distribución | Venta + bodega sincronizada | Valentina + Roberto |
-| Operación mixta | OT que consume repuesto | Laura + Carlos + Roberto |
+→ [MCM-05-MODULES §7](05-catalogo-modulos.md#7--cómo-presentar-los-módulos)
 
 ---
 
-## PLAY-004 · KPIs (3 minutos)
+## 6 · Historia (PLAY)
 
-**Objetivo:** pasar de «hicimos una tarea» a «ahora puedo **decidir**».
+Toda demo debe apoyarse en una **historia** — conecta mejor que una lista de funciones.
 
-### Estructura
+Copiar o adaptar desde [MCM-03-MARKETS](03-sectores-mercados.md); no inventar un caso nuevo en la reunión.
 
-1. Abrir el **dashboard** del perfil decisor (normalmente Laura / Gerente).
-2. Señalar **1–2 KPIs** del sector (prioridad 1️⃣ y 2️⃣ de MCM-05).
-3. Conectar con la transformación MCM-02: *«Antes esto tardaba horas o no existía.»*
-4. Una frase de cierre del acto: *«Esto es lo que cambia cuando la operación deja de estar en Excel.»*
+### Ejemplo · Industria / Mantenimiento
 
-### KPIs por puerta (referencia rápida)
+1. Una máquina se detiene.
+2. Se registra la **incidencia**.
+3. Se genera una **OT**.
+4. El técnico la ejecuta.
+5. Se consumen **repuestos**.
+6. La gerencia ve el **KPI**.
 
-| Maintenance | Inventory |
-|-------------|-----------|
-| OTs abiertas / cerradas | Ventas del período |
-| Disponibilidad / downtime | Stock bajo mínimo |
-| Preventivos vencidos | Productos más vendidos |
+### Ejemplo · Comercio / Inventario
 
-**No recorrer todos los reportes.** Un dashboard, dos números, una decisión.
+1. Llega **mercancía**.
+2. Se actualiza **inventario**.
+3. Se **vende**.
+4. El stock disminuye.
+5. Se genera una **alerta**.
+6. **Compras** repone.
 
----
+**En PLAY-002:** contar la historia en 60–90 segundos **antes** de abrir Maintix.
 
-## PLAY-005 · Cierre (5 minutos)
-
-**Objetivo:** plan recomendado · trial 15 días · siguiente paso concreto con nombre y fecha.
-
-### Estructura del cierre
-
-| Minuto | Tema | Contenido |
-|--------|------|-----------|
-| 0:00 | **Plan recomendado** | Perfil ideal + resultado esperado (MCM-06) |
-| 1:30 | **Qué no cambia** | Misma plataforma · MUX · MDL — no es versión recortada |
-| 2:30 | **Trial 15 días** | Sin compromiso · empiezan con su módulo de entrada |
-| 3:30 | **Pilar de crecimiento** | Ver bloque abajo |
-| 4:30 | **Siguiente paso** | Quién activa · cuándo · quién más debe verlo |
-
-### Recomendar plan (no precio primero)
-
-| Señal en la demo | Plan | Resultado esperado |
-|------------------|------|-------------------|
-| Primer sistema · sale de Excel | **Start** | Digitalizado en &lt; 1 semana |
-| Ya tiene algo digital · pide 2º módulo | **Grow** | Unificar en una plataforma |
-| Menciona 2+ sedes | **Scale** | Control multisede |
-| TI + compliance + SLA en la sala | **Enterprise** | Plataforma central |
-
-### Script · Trial 15 días
-
-*«Lo siguiente natural no es firmar un contrato hoy. Es probar Maintix 15 días con su operación real — un módulo, sus usuarios, sus datos. Si en dos semanas no ven el valor, no hay compromiso. Si lo ven, hablamos del plan que corresponde a su etapa.»*
-
-### Pilar de marca · Cierre acto 3
-
-Este es el momento de la frase de crecimiento — **después** de haber mostrado valor, no antes:
-
-> **La transformación comienza con un módulo. El crecimiento ocurre dentro de una sola plataforma.**
-
-*«Hoy vimos [Maintenance/Inventory]. Cuando su operación crezca, activan más capacidad en el mismo sistema — sin migrar ni empezar de cero.»*
-
-Ver [materials/pilar-crecimiento.md](../materials/pilar-crecimiento.md)
-
-### Siguientes pasos · Siempre concretos
-
-| Mal | Bien |
-|-----|------|
-| «Les envío información» | «María activa el trial el martes — ¿quién más debería estar en el onboarding?» |
-| «Piénsenlo y me avisan» | «Agendamos 30 min de revisión el viernes con el gerente» |
-| «Cualquier duda, escríbanme» | «Carlos crea la primera OT real el día 1 del trial — les acompaño en la llamada» |
+→ Historias extendidas: [appendix/sectores-detalle.md](appendix/sectores-detalle.md)
 
 ---
 
-## Exit Criteria · ¿Cuándo fue exitosa la demo?
+## 7 · Qué mostrar
 
-No midas la demo por sensaciones. Mídela por **evidencias**.
+Mostrar **únicamente** lo necesario para explicar el flujo de la historia.
 
-**Regla:** la demo termina **exitosamente** cuando ocurre **al menos una** de estas acciones:
+### Mantenimiento
 
-| ☐ | Acción de salida | Evidencia en CRM |
-|---|------------------|------------------|
-| ☐ | **Solicita trial** | Trial activado o fecha de activación |
-| ☐ | **Agenda segunda reunión** | Invitación enviada · fecha en calendario |
-| ☐ | **Identifica champion** | Nombre + rol + Strength 🟢🟡🔴 |
-| ☐ | **Define fecha de implementación** | Fecha objetivo go-live |
-| ☐ | **Confirma presupuesto** | Rango o plan discutido con Finanzas |
-| ☐ | **Invita otro decisor** | Nombre del decisor · reunión agendada |
-| ☐ | **Solicita propuesta** | Propuesta formal en pipeline |
-| ☐ | **Solicita integración** | Requerimiento TI documentado |
+| Pantalla / flujo | Propósito en demo |
+|------------------|-------------------|
+| **Dashboard** | Vista gerencial · KPIs del sector |
+| **Activos** | Estado · criticidad · historial |
+| **Preventivos** | Anticipación vs reactivo |
+| **Orden de trabajo** | Ciclo completo · técnico · cierre |
+| **Historial** | Trazabilidad · evidencia |
 
-### Si ningún criterio se cumple
+→ [MRG-02 · Mantenimiento](/mrg/chapters/02-maintenance.md)
 
-La demo **no fue exitosa** — aunque «haya ido bien». Acciones:
+### Inventario
 
-1. Registrar en **Debrief** qué faltó.
-2. Definir follow-up con fecha (no «les escribo»).
-3. Revisar si el ICP o el DMU estaban mal calificados (MCM-03 · MCM-04).
+| Pantalla / flujo | Propósito en demo |
+|------------------|-------------------|
+| **Productos** | Catálogo · stock visible |
+| **Compras** | Entrada · proveedor |
+| **Ventas** | POS · descuento de stock |
+| **Stock** | Alertas · mínimos |
+| **Dashboard** | Rotación · quiebres · cartera |
 
-**Métrica de equipo:** % de demos con ≥1 exit criterion / total demos realizadas.
+→ [MRG-03 · Inventario](/mrg/chapters/03-inventario.md)
 
----
-
-## Debrief · Después del cierre
-
-**Cuándo:** dentro de las **24 horas** posteriores a la reunión — antes de la siguiente demo.
-
-**Quién:** quien ejecutó PLAY-001 a PLAY-005. **5 minutos** en CRM o nota compartida.
-
-Alimenta el aprendizaje del equipo y mejora la próxima PLAY-003.
-
-### Ficha de debrief
-
-```
-Prospecto: _______________________  Fecha demo: __________
-Ejecutó: _______________  Exit criteria cumplidos: _______________
-
-¿Qué funcionó?
-_______________________________________________________________
-
-¿Qué objeciones aparecieron?
-_______________________________________________________________
-
-¿Qué llamó más la atención?
-_______________________________________________________________
-
-¿Qué módulo despertó interés?
-[ ] Maintenance  [ ] Inventory  [ ] Ambos  [ ] Roadmap futuro
-
-¿Qué debemos mostrar la próxima vez?
-_______________________________________________________________
-
-Siguiente acción acordada: ______________________________________
-Fecha follow-up: __________
-```
-
-### Uso en el equipo
-
-| Pregunta del debrief | Alimenta |
-|----------------------|----------|
-| ¿Qué funcionó? | PLAY-002 y PLAY-003 — guiones por sector |
-| ¿Qué objeciones? | MCM-08-OBJ — fichas OBJ |
-| ¿Qué llamó atención? | MUX · MDL — qué resaltar en producto |
-| ¿Qué módulo? | Pipeline · expansión modular |
-| ¿Qué mostrar después? | PLAY-001 de la **siguiente** reunión |
+**Perfiles MUX:** invitar al operador y al decisor correctos — ver [MUX](/mux/) y DMU en [appendix/buyer-personas-dmu.md](appendix/buyer-personas-dmu.md).
 
 ---
 
-## Errores que rompen la metodología
+## 8 · Qué NO mostrar
 
-| Error | Por qué falla | Corrección |
-|-------|---------------|------------|
-| Demo genérica sin ICP | Prospecto no se ve reflejado | PLAY-001 obligatorio |
-| Más de 2 flujos en 15 min | Saturación · no recuerdan nada | Un flujo en PLAY-003 |
-| Dashboard al inicio | Aún no hay contexto emocional | PLAY-004 **después** de PLAY-003 |
-| Precio antes del valor | Conversación transactional | PLAY-005 · trial primero |
-| Ignorar al bloqueador | Proyecto muere después | PLAY-001 · DMU |
-| Saltarse el cierre | No hay compromiso | PLAY-005 siempre |
-| «Fue bien» sin exit criteria | Falsa sensación de éxito | Debrief + follow-up con fecha |
+Evitar en demo comercial:
 
----
+| ❌ No mostrar | Por qué |
+|--------------|---------|
+| Configuración avanzada | Distrae · no es el dolor del día 1 |
+| Pantallas administrativas Mantis | Confunde tenant vs operador |
+| Funciones **roadmap** | Honestidad comercial — MCM-05 §5 |
+| Errores técnicos · bugs | Escalar post-demo |
+| SQL · Flask · API · código | Audiencia incorrecta |
 
-## Banda ICP · Variante de demo
-
-| Banda | Formato | Duración |
-|-------|---------|----------|
-| **A** | Demo personalizada + trial día 1 | 20–25 min + onboarding |
-| **B** | Metodología completa estándar | 20 min |
-| **C** | Demo grupal o video + Q&A | 15 min + material |
-| **D** | No demo 1:1 | Email · folleto · descarte amable |
+Eso pertenece a **MPA**, **MAG** y **MSD** — ofrecer sesión técnica aparte si TI lo pide (OBJ-010).
 
 ---
 
-## Conexión con la suite
+## 9 · Cierre
 
-| Código | Qué aporta a la demo |
-|--------|----------------------|
-| **MCM-02-VALUE** | Lenguaje de transformación · apertura y KPIs |
-| **MCM-03-ICP** | Prioridad · banda · puerta de entrada |
-| **MCM-04-DMU** | Quién está en la sala · adaptar énfasis |
-| **MCM-05-SECT** | Historia de demo · KPIs · MUX por sector |
-| **MCM-06-PLAN** | Plan recomendado · resultado esperado · cierre |
-| **MUX** | Perfiles · pantallas · leyes de UX en operación |
-| **MDL** | Coherencia visual — la demo también es marca |
-| **MBB** | Origen dual · credibilidad en apertura |
+Toda demo debe terminar con **tres ideas**:
 
----
+| # | Mensaje |
+|---|---------|
+| ✔ | **Hoy** solucionamos este problema. |
+| ✔ | **Mañana** puedes activar más módulos. |
+| ✔ | **Nunca** tendrás que migrar de plataforma. |
 
-## Reflexión · Sprint 5
+**PLAY-005 · incluir siempre:**
 
-Cuando empezamos a hablar de Maintix, la conversación era sobre un sistema de mantenimiento e inventario.
+- Plan sugerido (**Start** / **Grow**) — [MCM-04-PLANS](04-planes-saas.md)
+- Trial **15 días** · quién lo activa · cuándo
+- **Siguiente reunión** con fecha — no «te escribo»
 
-Hoy, después de estos sprints, hay algo distinto:
+**Slogan MCM-01** *(opcional en cierre emocional):*
 
-- Una **plataforma** con identidad clara  
-- Una **filosofía de diseño** (MDL)  
-- Una **experiencia de usuario** definida (MUX)  
-- Un **modelo comercial** coherente (MCM)
-
-Eso diferencia un buen producto de una empresa que puede escalar. Y lo más valioso: esa base se construye **antes** de salir masivamente al mercado — lo que hará mucho más sencillo mantener la coherencia a medida que Maintix crezca.
-
-**La demo es el momento donde todo eso se hace visible en 20 minutos.**
+> *«No necesitas otro software. Necesitas recuperar el control de tu operación.»*
 
 ---
 
-> **Frase del capítulo:** No demuestras software. Demuestras **cómo cambia la operación** — con un guion que cualquiera puede repetir.
+## 10 · Después de la demo
 
-**Próximo capítulo:** MCM-09-CASE · Casos de éxito (Sprint 5.9)
+Registrar en **CRM** (debrief ≤ 24 h):
+
+| Campo | Fuente |
+|-------|--------|
+| **Sector** | MCM-03 |
+| **Módulo de entrada** | MCM-05 · PLAY-003 |
+| **ICP** | Banda · score |
+| **OMI** | Madurez operativa *(apéndice ICP)* |
+| **Objeciones** | OBJ-001…010 · [MCM-09-OBJECTIONS](09-manejo-objeciones.md) |
+| **Champion** | Nombre · strength 🟢🟡🔴 |
+| **Siguiente reunión** | Fecha · objetivo · asistentes |
+
+**La demo termina cuando existe un siguiente paso claro** — trial activado, segunda reunión agendada o descalificación documentada.
+
+Handoff a onboarding si cierra: [MCM-06-ONBOARD](06-onboarding-implementacion.md)
 
 ---
 
-*MCM-07-DEMO · Maintix Commercial Manual · 2026*
+## 11 · Relación documental
+
+| Documento | Uso en demo |
+|-----------|-------------|
+| **MCM-01-INTRO** | Mensaje comercial · slogan |
+| **MCM-02-VALUE** | Transformación antes/después |
+| **MCM-03-MARKETS** | Adaptación por sector · historias |
+| **MCM-04-PLANS** | Recomendación del plan |
+| **MCM-05-MODULES** | Expansión modular · qué no prometer |
+| **MCM-06-ONBOARD** | Próximo paso post-cierre |
+| **MRG** | Respaldo funcional si preguntan «¿cómo funciona X?» |
+| **MUX** | Personas y recorridos por rol |
+
+---
+
+## Exit Criteria
+
+Este capítulo se considera **implementado** cuando:
+
+- [x] Flujo oficial de demo definido
+- [x] Adaptación por sector documentada
+- [x] Guía de tiempos incluida
+- [x] Historias PLAY incorporadas
+- [x] Relación con CRM y onboarding establecida
+
+---
+
+## Filosofía del capítulo
+
+La mejor demo **no** es la que muestra más funcionalidades.
+
+Es la que consigue que el cliente diga:
+
+> *«Así es exactamente como trabajamos hoy… y esto nos ayudaría a hacerlo mejor.»*
+
+---
+
+## Estado · Sprint 11
+
+| Aspecto | Valor |
+|---------|-------|
+| **Playbook PLAY** | ✅ Definido |
+| **Checklist detallado** | [appendix/demo-play-detalle.md](appendix/demo-play-detalle.md) *(Sprint 5)* |
+| **Capítulos restantes Sprint 11** | MCM-08-FAQ · MCM-09-OBJECTIONS · MCM-10-PARTNERS |
+
+---
+
+**Próximo capítulo:** [MCM-09-OBJECTIONS · Objeciones](09-manejo-objeciones.md)
+
+---
+
+## Apéndice · Códigos PLAY (referencia rápida)
+
+### PLAY-001 · Preparación
+
+**Antes de la reunión** — completar:
+
+- [ ] ICP · banda · urgencia · champion
+- [ ] Sector · historia · módulo de entrada
+- [ ] DMU esperado en sala
+- [ ] Plan sugerido (Start/Grow)
+- [ ] Entorno demo estable · datos coherentes con sector
+
+### PLAY-002 · Apertura · 3 minutos
+
+1. Agradecer · confirmar tiempo (45–60 min).
+2. **Descubrir dolor** (§4) — mínimo 3 preguntas.
+3. Contar **historia del sector** (§6) — sin abrir menú aún.
+4. Confirmar módulo de entrada.
+
+### PLAY-003 · Operación · 10–15 minutos
+
+Un solo flujo **punta a punta** según §7 — siguiendo la historia, no el menú lateral.
+
+### PLAY-004 · KPIs · 3 minutos
+
+Abrir **dashboard** del perfil decisor (MUX · Laura/gerente). Señalar 1–2 KPIs prioritarios del sector (MCM-03).
+
+### PLAY-005 · Cierre · 5 minutos
+
+Tres ideas (§9) · plan · trial 15 días · **fecha** de siguiente paso.
+
+→ Playbook extendido Sprint 5: [appendix/demo-play-detalle.md](appendix/demo-play-detalle.md)
+
+---
+
+*MCM-07-DEMO · Maintix Commercial Manual · Sprint 11 · 2026*

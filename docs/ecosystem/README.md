@@ -1,32 +1,28 @@
-# Ecosistema Maintix · Documentation Suite v1.0
+# Ecosistema Maintix · Documentation Suite
 
-**Release interno:** [RELEASE-v1.0.md](../RELEASE-v1.0.md) · Tag: `docs-v1.0`  
-**Índice visual:** [/docs/](http://127.0.0.1:5000/docs/)
+**Índice:** [/docs/](http://127.0.0.1:5000/docs/)
 
 ```
-MAINTIX DOCS · Suite v1.0
+MAINTIX DOCS · Sprint 6
 ├── 01 Brand Book (MBB)     ✅ v2.0 · Congelado
 ├── 02 MDL                  ✅ v1.0 · Congelado
 ├── 03 MUX                  ✅ v1.2 · Congelado
-├── 04 MCM                  ✅ v1.0 · Congelado
-├── 05 MRL                  🟡 v0.1
-├── 06 MAG                  📋
-├── 07 API                  📋
-├── 08 Architecture         🟡
-├── 09 Roadmap              📋
-└── README
+├── 04 MCM                  ✅ v1.0.0 · Sprint 11 finalizado
+├── 05 MPA                  ✅ v1.0 · Sprint 6
+├── 06 MRL                  🟡 v0.1
+├── 07 MAG                  ✅ v1.0.12 · Sprint 8
+├── 08 MSD                  ✅ v1.0.0 · Sprint 9
+├── 11 MRG                  ✅ v1.0.0 · Sprint 10 completo
+├── 08 SDK (paquetes)       📋 docs/sdk/
+├── 09 Developer Docs       🟡
+└── 10 Release Notes        🟡
 ```
 
-Política de versionado: [VERSIONING.md](../VERSIONING.md)
-
-## Filosofía MUX
-
-Las **5 UX Laws** son obligatorias antes de merge. Ver [README.md](../README.md).
-
-## Tres pilares
+## Pilares
 
 | Pilar | Docs |
 |-------|------|
 | Comunicación | MBB · MCM |
 | Experiencia | MUX · MRL |
-| Tecnología | MDL · MAG · API · Architecture |
+| Plataforma | **MPA** |
+| Ingeniería | MDL · MAG · SDK · Developer |

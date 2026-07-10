@@ -1,27 +1,54 @@
 # MCM · Nomenclatura de documentos
 
-Códigos oficiales para búsqueda y mantenimiento del manual comercial.
+Códigos oficiales · **MCM v1.0.0** · Sprint 11 finalizado
 
 | Código | Capítulo | Archivo |
 |--------|----------|---------|
-| **MCM-01-POS** | Posicionamiento | [chapters/01-posicionamiento.md](chapters/01-posicionamiento.md) |
+| **MCM-01-INTRO** | Introducción comercial | [chapters/01-intro-filosofia-comercial.md](chapters/01-intro-filosofia-comercial.md) |
 | **MCM-02-VALUE** | Propuesta de valor | [chapters/02-propuesta-de-valor.md](chapters/02-propuesta-de-valor.md) |
-| **MCM-03-ICP** | Cliente ideal e ICP Score | [chapters/03-icp-score.md](chapters/03-icp-score.md) |
-| **MCM-04-DMU** | Buyer Personas y DMU | [chapters/04-buyer-personas-dmu.md](chapters/04-buyer-personas-dmu.md) |
-| **MCM-05-SECT** | Sectores | [chapters/05-sectores.md](chapters/05-sectores.md) |
-| **MCM-06-PLAN** | Planes comerciales | [chapters/06-planes-comerciales.md](chapters/06-planes-comerciales.md) |
-| **MCM-07-DEMO** | La demo comercial | [chapters/07-demo-comercial.md](chapters/07-demo-comercial.md) |
-| **MCM-08-OBJ** | Objeciones | [chapters/08-objeciones.md](chapters/08-objeciones.md) |
-| **MCM-09-CASE** | Casos de éxito | [chapters/09-casos-exito.md](chapters/09-casos-exito.md) |
-| **MCM-10-GTM** | Go To Market | [chapters/10-gtm.md](chapters/10-gtm.md) |
+| **MCM-03-MARKETS** | Mercados | [chapters/03-sectores-mercados.md](chapters/03-sectores-mercados.md) |
+| **MCM-04-PLANS** | Planes SaaS | [chapters/04-planes-saas.md](chapters/04-planes-saas.md) |
+| **MCM-05-MODULES** | Catálogo de módulos | [chapters/05-catalogo-modulos.md](chapters/05-catalogo-modulos.md) |
+| **MCM-06-ONBOARD** | Onboarding | [chapters/06-onboarding-implementacion.md](chapters/06-onboarding-implementacion.md) |
+| **MCM-07-DEMO** | Demo comercial | [chapters/07-demo-comercial.md](chapters/07-demo-comercial.md) |
+| **MCM-08-FAQ** | FAQ | [chapters/08-faq.md](chapters/08-faq.md) |
+| **MCM-09-OBJECTIONS** | Objeciones | [chapters/09-manejo-objeciones.md](chapters/09-manejo-objeciones.md) |
+| **MCM-10-PARTNERS** | Partners y canales | [chapters/10-partners-canales.md](chapters/10-partners-canales.md) |
 
-Formato: `MCM-{NN}-{SLUG}` · Sprint 5.{N} · **Sprint 5 completo**
+Formato: `MCM-{NN}-{SLUG}` · Sprint 11 · **v1.0.0**
+
+---
+
+## Appendix
+
+| Contenido | Archivo |
+|-----------|---------|
+| ICP Score | [chapters/appendix/icp-score.md](chapters/appendix/icp-score.md) |
+| Buyer Personas y DMU | [chapters/appendix/buyer-personas-dmu.md](chapters/appendix/buyer-personas-dmu.md) |
+| Casos de éxito (MTX-CASE) | [chapters/appendix/casos-exito.md](chapters/appendix/casos-exito.md) |
+| Go To Market | [chapters/appendix/gtm.md](chapters/appendix/gtm.md) |
+| Sectores detalle | [chapters/appendix/sectores-detalle.md](chapters/appendix/sectores-detalle.md) |
+| Demo PLAY detalle | [chapters/appendix/demo-play-detalle.md](chapters/appendix/demo-play-detalle.md) |
+| Buenas prácticas | [chapters/appendix/buenas-practicas-comerciales.md](chapters/appendix/buenas-practicas-comerciales.md) |
+
+---
+
+## Legacy Sprint 5 (supersedido)
+
+| Código legacy | Supersedido por |
+|---------------|-----------------|
+| MCM-01-POS | MCM-01-INTRO |
+| MCM-05-SECT | MCM-03-MARKETS |
+| MCM-06-PLAN | MCM-04-PLANS |
+| MCM-08-OBJ | MCM-09-OBJECTIONS |
+| MCM-10-GTM | MCM-10-PARTNERS + appendix/gtm |
+| MCM-10-BEST | MCM-10-PARTNERS + appendix |
 
 ---
 
 ## Playbook · Códigos PLAY
 
-Códigos internos del **playbook de demo** (MCM-07-DEMO). Permiten referenciar fases sin citar capítulos completos.
+Códigos internos del **playbook de demo** (MCM-07-DEMO).
 
 ```
 MCM-07-DEMO
@@ -36,20 +63,18 @@ MCM-07-DEMO
 | Código | Fase | Tiempo | Capítulo |
 |--------|------|--------|----------|
 | **PLAY-001** | Preparación | Antes de reunión | [07-demo-comercial.md](chapters/07-demo-comercial.md#play-001--preparación) |
-| **PLAY-002** | Apertura | 3 min | [07-demo-comercial.md](chapters/07-demo-comercial.md#play-002--apertura-3-minutos) |
-| **PLAY-003** | Operación | 10–15 min | [07-demo-comercial.md](chapters/07-demo-comercial.md#play-003--operación-1015-minutos) |
-| **PLAY-004** | KPIs | 3 min | [07-demo-comercial.md](chapters/07-demo-comercial.md#play-004--kpis-3-minutos) |
-| **PLAY-005** | Cierre | 5 min | [07-demo-comercial.md](chapters/07-demo-comercial.md#play-005--cierre-5-minutos) |
+| **PLAY-002** | Apertura | 3 min | [07-demo-comercial.md](chapters/07-demo-comercial.md#play-002--apertura--3-minutos) |
+| **PLAY-003** | Operación | 10–15 min | [07-demo-comercial.md](chapters/07-demo-comercial.md#play-003--operación--1015-minutos) |
+| **PLAY-004** | KPIs | 3 min | [07-demo-comercial.md](chapters/07-demo-comercial.md#play-004--kpis--3-minutos) |
+| **PLAY-005** | Cierre | 5 min | [07-demo-comercial.md](chapters/07-demo-comercial.md#play-005--cierre--5-minutos) |
 
 Formato: `PLAY-{NNN}` · pertenece a **MCM-07-DEMO**
-
-**Ejemplo de uso:** *«Revisa PLAY-003 antes de hacer la demo.»* en lugar de *«Lee el capítulo 7.»*
 
 ---
 
 ## Objeciones · Códigos OBJ
 
-Códigos de **fichas de objeción** (MCM-08-OBJ).
+Códigos de **fichas de objeción** (MCM-09-OBJECTIONS).
 
 | Código | Objeción | Riesgo | Mejor responde | Momento |
 |--------|----------|--------|----------------|---------|
@@ -64,36 +89,21 @@ Códigos de **fichas de objeción** (MCM-08-OBJ).
 | **OBJ-009** | No es prioridad | 🟡 | Comercial | Calificación |
 | **OBJ-010** | ¿Integran con ERP? | 🟢 | Preventa / TI | Post-demo |
 
-Formato: `OBJ-{NNN}` · pertenece a **MCM-08-OBJ**
-
-**Ejemplo de uso:** *«En el debrief salió OBJ-004 — revisa la ficha antes del follow-up.»*
+Formato: `OBJ-{NNN}` · pertenece a **MCM-09-OBJECTIONS**
 
 ---
 
 ## Casos · Códigos MTX-CASE
 
-Códigos de **casos de transformación** (MCM-09-CASE). Hoy: narrativas genéricas por sector. Mañana: mismos códigos con cliente real.
+Códigos de **casos de transformación** (appendix casos).
 
-| Código | Sector | Evidencia | Empleados ref. | País ref. |
-|--------|--------|-----------|----------------|-----------|
-| **MTX-CASE-001** | Manufactura | D | 40–80 | Colombia |
-| **MTX-CASE-002** | Comercio | D | 20–50 | LatAm |
-| **MTX-CASE-003** | Agropecuaria | D | 30–70 | LatAm |
-| **MTX-CASE-004** | Servicios | D | 25–60 | LatAm |
-| **MTX-CASE-005** | Distribución | D | 40–100 | LatAm |
-| **MTX-CASE-006** | Operación mixta | D | 50–120 | LatAm |
+| Código | Sector | Evidencia |
+|--------|--------|-----------|
+| **MTX-CASE-001** | Manufactura | D |
+| **MTX-CASE-002** | Comercio | D |
+| **MTX-CASE-003** | Agropecuaria | D |
+| **MTX-CASE-004** | Servicios | D |
+| **MTX-CASE-005** | Distribución | D |
+| **MTX-CASE-006** | Operación mixta | D |
 
-### Nivel de evidencia (por caso)
-
-| Nivel | Estado |
-|-------|--------|
-| **A** | Cliente documentado + métricas + cita |
-| **B** | Cliente documentado sin cifras públicas |
-| **C** | Caso validado internamente |
-| **D** | Caso genérico |
-
-Campos adicionales por caso: **fecha publicación** · **cross references** (OBJ · MCM · PLAY · Landing · Folleto).
-
-Formato: `MTX-CASE-{NNN}` · pertenece a **MCM-09-CASE**
-
-**Ejemplo de uso:** *«Usa MTX-CASE-002 en OBJ-001 para comercio.»*
+Formato: `MTX-CASE-{NNN}`

@@ -1,5 +1,7 @@
 # MCM-01-POS · Posicionamiento
 
+> ⚠️ **Legacy Sprint 5** — Supersedido por [MCM-01-INTRO · Filosofía comercial](01-intro-filosofia-comercial.md) (Sprint 11).
+
 **Código:** MCM-01-POS · Sprint 5.1  
 **Frase de marca:** Toda la operación. Una sola plataforma.
 
