@@ -1,20 +1,86 @@
 # Maintix Documentation Suite v1.0
 
-Ecosistema documental de Maintix. Cada proyecto es **independiente** y puede crecer sin límite.
+**Índice maestro** del ecosistema documental de Maintix.
 
 **Frase:** Toda la operación. Una sola plataforma.
 
-Nomenclatura oficial: [NOMENCLATURE.md](NOMENCLATURE.md)
+```powershell
+python run.py
+```
+
+→ **http://127.0.0.1:5000/docs/** (índice visual)  
+→ Este archivo: `docs/README.md`
+
+Nomenclatura: [NOMENCLATURE.md](NOMENCLATURE.md) · Resumen: [ecosystem/README.md](ecosystem/README.md)  
+Release: [RELEASE-v1.0.md](RELEASE-v1.0.md) · Versionado: [VERSIONING.md](VERSIONING.md) · Tag: `docs-v1.0`
 
 ---
 
-## Filosofía de desarrollo
+## Release interno · Suite v1.0
 
-Cada nueva funcionalidad desarrollada para Maintix deberá cumplir las **cinco UX Laws** (MUX) antes de ser considerada lista para producción.
+**Primera edición oficial congelada** — julio 2026.
 
-**Si una funcionalidad incumple una sola ley, deberá rediseñarse antes del merge.**
+| Manual | Versión | Estado |
+|--------|---------|--------|
+| Brand Book (MBB) | v2.0 | ✔ Congelado |
+| MDL | v1.0 | ✔ Congelado |
+| MUX | v1.2 | ✔ Congelado |
+| MCM | v1.0 | ✔ Congelado |
 
-Las leyes no son decorativas — son **cultura de desarrollo obligatoria**:
+A partir de aquí, cambios importantes → **nueva versión** (v1.1, v2.1…), no edición silenciosa.
+
+---
+
+## MAINTIX DOCS · Árbol maestro
+
+```
+MAINTIX DOCS
+│
+├── 01 Brand Book       (MBB)   → docs/brandbook/     /brandbook/
+├── 02 MDL                        → docs/mdl/           /mdl/
+├── 03 MUX                        → docs/mux/           /mux/
+├── 04 MCM                        → docs/mcm/           /mcm/
+├── 05 MRL                        → docs/mrl/
+├── 06 MAG                        → docs/mag/
+├── 07 API                        → docs/api/
+├── 08 Architecture               → docs/architecture/
+├── 09 Roadmap                    → docs/roadmap/
+└── README                        → docs/README.md (este archivo)
+```
+
+Cada proyecto es **independiente** y crece sin romper los demás.
+
+---
+
+## Suite · Estado y enlaces
+
+| # | Código | Nombre | Versión | URL / ruta |
+|---|--------|--------|---------|------------|
+| **01** | **MBB** | Maintix Brand Book | v2.0 ✔ | [/brandbook/](http://127.0.0.1:5000/brandbook/) |
+| **02** | **MDL** | Maintix Design Language | v1.0 ✔ | [/mdl/](http://127.0.0.1:5000/mdl/) |
+| **03** | **MUX** | Maintix User Experience Guide | v1.2 ✔ | [/mux/](http://127.0.0.1:5000/mux/) |
+| **04** | **MCM** | Maintix Commercial Manual | v1.0 ✔ | [/mcm/](http://127.0.0.1:5000/mcm/) |
+| **05** | **MRL** | Maintix Report Language | v0.1 | [mrl/README.md](mrl/README.md) |
+| **06** | **MAG** | Maintix API Guide | Planificado | [mag/README.md](mag/README.md) |
+| **07** | **API** | Referencia técnica API | Planificado | [api/README.md](api/README.md) |
+| **08** | **Architecture** | Arquitectura y decisiones | En curso | [architecture/README.md](architecture/README.md) |
+| **09** | **Roadmap** | Roadmap de producto | Planificado | [roadmap/README.md](roadmap/README.md) |
+
+---
+
+## Tres pilares
+
+| Pilar | Documentación | Rol |
+|-------|---------------|-----|
+| **Comunicación** | MBB · MCM | Marca, identidad, ventas, GTM |
+| **Experiencia** | MUX · MRL | Usuario, leyes UX, PDFs |
+| **Tecnología** | MDL · MAG · API · Architecture | UI, integraciones, ingeniería |
+
+---
+
+## Filosofía de desarrollo (MUX)
+
+Las **5 UX Laws** son obligatorias antes de merge a producción:
 
 1. Nunca pantalla vacía  
 2. Toda acción con retroalimentación  
@@ -22,66 +88,61 @@ Las leyes no son decorativas — son **cultura de desarrollo obligatoria**:
 4. Siempre explicar el siguiente paso  
 5. Acción principal evidente  
 
-Detalle: [mux/laws.md](mux/laws.md) · Matriz: [mux/decision-matrix.md](mux/decision-matrix.md) · Copy: [mux/copy.md](mux/copy.md)
+→ [mux/laws.md](mux/laws.md) · [mux/decision-matrix.md](mux/decision-matrix.md)
 
 ---
 
-## Suite completa
+## 04 · MCM · Capítulos (Sprint 5 completo)
 
-```
-Maintix Docs
-│
-├── MBB   Maintix Brand Book       → docs/brandbook/   /brandbook/
-├── MDL   Maintix Design Language  → docs/mdl/         /mdl/
-├── MUX   Maintix User Experience  → docs/mux/         /mux/
-├── MRL   Maintix Report Language  → docs/mrl/
-├── MCM   Maintix Commercial Manual→ docs/mcm/         Sprint 5
-├── MAG   Maintix API Guide        → docs/mag/
-├── MADR  Architecture Decisions   → docs/madr/
-├── Handbook · Deployment · Security · Roadmap
-```
+| Capítulo | Código |
+|----------|--------|
+| Posicionamiento | MCM-01-POS |
+| Propuesta de valor | MCM-02-VALUE |
+| ICP Score | MCM-03-ICP |
+| Buyer Personas y DMU | MCM-04-DMU |
+| Sectores | MCM-05-SECT |
+| Planes comerciales | MCM-06-PLAN |
+| Demo comercial | MCM-07-DEMO · PLAY-001–005 |
+| Objeciones | MCM-08-OBJ · OBJ-001–010 |
+| Casos de éxito | MCM-09-CASE · MTX-CASE-001–006 |
+| Go To Market | MCM-10-GTM |
 
-## Estado
+→ [mcm/README.md](mcm/README.md) · [mcm/NOMENCLATURE.md](mcm/NOMENCLATURE.md)
 
-| Código | Nombre completo | Versión | URL |
-|--------|-----------------|---------|-----|
-| **MBB** | Maintix Brand Book | v2.0 | [/brandbook/](http://127.0.0.1:5000/brandbook/) |
-| **MDL** | Maintix Design Language | v1.0 | [/mdl/](http://127.0.0.1:5000/mdl/) |
-| **MUX** | Maintix User Experience Guide | v1.2 | [/mux/](http://127.0.0.1:5000/mux/) |
-| **MRL** | Maintix Report Language | v0.1 | `docs/mrl/` |
-| **MCM** | Maintix Commercial Manual | Sprint 5 | `docs/mcm/` |
-| **MAG** | Maintix API Guide | Planificado | `docs/mag/` |
-| **MADR** | Maintix Architecture Decision Records | Planificado | `docs/madr/` |
+---
 
-## MUX · Capítulos clave
+## 08 · Architecture · Documentos relacionados
 
-| ID | Documento |
-|----|-----------|
-| MTX-UX-LAW | [laws.md](mux/laws.md) — cultura de desarrollo |
-| MTX-UX-DEC | [decision-matrix.md](mux/decision-matrix.md) |
-| MTX-UX-COPY | [copy.md](mux/copy.md) |
-| MTX-UX-MEASURE | [measure.md](mux/measure.md) — TTFAV &lt; 3m · TTCOT &lt; 2m · TTFFI &lt; 15s |
-| MTX-UX-RESEARCH | [research.md](mux/research.md) |
+| Documento | Ruta |
+|-----------|------|
+| Architecture Decision Records | [madr/README.md](madr/README.md) |
+| Developer Handbook | [handbook/README.md](handbook/README.md) |
+| Arquitectura por sectores | [arquitectura-sectores.md](arquitectura-sectores.md) |
+| Deployment | [deployment/README.md](deployment/README.md) |
+| Security | [security/README.md](security/README.md) |
 
-## Tres pilares del producto
+---
 
-| Pilar | Documentación |
-|-------|---------------|
-| **Tecnología** | MDL, MAG, Handbook, MADR |
-| **Experiencia** | MUX, MRL |
-| **Comunicación comercial** | MBB, MCM |
-
-## Código producto
+## Código producto (MDL)
 
 | Archivo | Rol |
 |---------|-----|
 | `static/css/mdl-tokens.css` | Tokens `--mdl-*` |
 | `static/css/mdl.css` | Componentes `mtx-*` |
 
-```powershell
-python run.py
-```
+---
 
-- MBB: http://127.0.0.1:5000/brandbook/
-- MDL: http://127.0.0.1:5000/mdl/
-- MUX: http://127.0.0.1:5000/mux/
+## Mapa rápido · ¿Qué leo primero?
+
+| Rol | Empieza por |
+|-----|-------------|
+| **Diseño / UI** | MDL → MUX Laws |
+| **Producto** | MUX → MCM-02 |
+| **Ventas** | MCM → MBB historia |
+| **Desarrollo** | MUX Laws → MDL → Architecture |
+| **Integraciones** | MAG → API (cuando exista) |
+| **Nuevo en el equipo** | **Este README** → [/docs/](http://127.0.0.1:5000/docs/) |
+
+---
+
+*Maintix Documentation Suite · 2026 · Pre-Sprint 6*

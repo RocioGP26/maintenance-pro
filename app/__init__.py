@@ -202,6 +202,8 @@ def create_app(config_name: str | None = None):
     from app.brand_book_routes import brand_book_bp, _legacy_bp
     from app.mdl_routes import mdl_bp
     from app.mux_routes import mux_bp, _legacy_ux_bp
+    from app.mcm_routes import mcm_bp
+    from app.docs_routes import docs_bp
 
     app.register_blueprint(health_bp)
     app.register_blueprint(routes.bp)
@@ -210,6 +212,8 @@ def create_app(config_name: str | None = None):
     app.register_blueprint(mdl_bp)
     app.register_blueprint(mux_bp)
     app.register_blueprint(_legacy_ux_bp)
+    app.register_blueprint(mcm_bp)
+    app.register_blueprint(docs_bp)
     app.register_blueprint(onboarding_bp)
     app.register_blueprint(inv_comercial_bp)
     app.register_blueprint(tenancy_api_bp)

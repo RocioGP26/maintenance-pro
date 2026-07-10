@@ -148,42 +148,6 @@ body {
   min-width: 0;
 }
 
-/* ── Freeze banner (Documentation Suite v1.0) ── */
-.bb-freeze-banner {
-  background: linear-gradient(90deg, #042c53 0%, #185fa5 100%);
-  color: rgba(255, 255, 255, 0.92);
-  font-size: 0.78rem;
-  letter-spacing: 0.02em;
-  padding: 0.55rem 1.25rem;
-  text-align: center;
-}
-
-.bb-freeze-banner a {
-  color: #90cdf4;
-  text-decoration: none;
-}
-
-.bb-freeze-banner a:hover { text-decoration: underline; }
-
-.bb-freeze-banner strong {
-  color: #fff;
-  font-weight: 600;
-}
-
-.bb-freeze-badge {
-  background: #c6f6d5;
-  border-radius: 4px;
-  color: #22543d;
-  display: inline-block;
-  font-size: 0.62rem;
-  font-weight: 700;
-  letter-spacing: 0.05em;
-  margin-left: 0.35rem;
-  padding: 0.12rem 0.4rem;
-  text-transform: uppercase;
-  vertical-align: middle;
-}
-
 /* ── Pages ── */
 .bb-page {
   background: var(--bb-blanco);

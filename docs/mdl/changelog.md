@@ -1,5 +1,13 @@
 # MDL Changelog
 
+## [1.0.0] — Frozen · Documentation Suite v1.0
+
+### Status
+- ✔ **Congelado** — Maintix Design Language primera edición oficial
+- Tag suite: `docs-v1.0`
+
+---
+
 ## [1.0.0] — 2026-07-09
 
 ### Added

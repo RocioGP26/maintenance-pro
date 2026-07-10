@@ -1,40 +1,58 @@
 # MCM · Maintix Commercial Manual
 
-**Sprint 5** — Cómo vender Maintix.
+**Código:** MCM · v1.0  
+**Estado:** ✔ **Congelado** · Sprint 5 completo · tag `docs-v1.0`  
+**Frase:** Toda la operación. Una sola plataforma.
 
-## Por qué MCM
+El tercer pilar: **cómo vender y comunicar** Maintix.
 
-Ya documentamos:
+## Ver manual
 
-- ✅ Qué es Maintix (Brand Book)
-- ✅ Cómo construirlo (MDL)
-- ✅ Cómo se usa (MUX)
+```powershell
+python run.py
+```
 
-Falta documentar **cómo comunicarlo y venderlo** — el tercer pilar.
+→ http://127.0.0.1:5000/mcm/
 
-> Excelente tecnología + excelente UX + **excelente comunicación comercial** = empresa que escala a cientos o miles de clientes.
+## Plan por capítulos
 
-## Contenido planificado (Sprint 5)
+Códigos oficiales: [NOMENCLATURE.md](NOMENCLATURE.md)
 
-| Capítulo | Tema |
-|----------|------|
-| 01 | Propuesta de valor por sector |
-| 02 | ICP y calificación de leads |
-| 03 | Demo script (por perfil MUX) |
-| 04 | Objeciones y respuestas |
-| 05 | Pricing y packaging |
-| 06 | Trial → conversión |
-| 07 | Casos de éxito (storytelling) |
-| 08 | Sales enablement (deck, one-pager) |
-| 09 | Partner / canal |
-| 10 | Métricas comerciales |
+| Sprint | Código | Capítulo | Estado |
+|--------|--------|----------|--------|
+| 5.1 | **MCM-01-POS** | [Posicionamiento](chapters/01-posicionamiento.md) | ✅ Entregado |
+| 5.2 | **MCM-02-VALUE** | [Propuesta de valor](chapters/02-propuesta-de-valor.md) | ✅ Entregado |
+| 5.3 | **MCM-03-ICP** | [Cliente ideal e ICP Score](chapters/03-icp-score.md) | ✅ Entregado |
+| 5.4 | **MCM-04-DMU** | [Buyer Personas y DMU](chapters/04-buyer-personas-dmu.md) | ✅ Entregado |
+| 5.5 | **MCM-05-SECT** | [Sectores](chapters/05-sectores.md) | ✅ Entregado |
+| 5.6 | **MCM-06-PLAN** | [Planes comerciales](chapters/06-planes-comerciales.md) | ✅ Entregado |
+| 5.7 | **MCM-07-DEMO** | [La demo comercial](chapters/07-demo-comercial.md) | ✅ Entregado |
+| 5.8 | **MCM-08-OBJ** | [Objeciones](chapters/08-objeciones.md) | ✅ Entregado |
+| 5.9 | **MCM-09-CASE** | [Casos de éxito](chapters/09-casos-exito.md) | ✅ Entregado |
+| 5.10 | **MCM-10-GTM** | [Go To Market](chapters/10-gtm.md) | ✅ Entregado |
 
-## Relación con MUX
+**Sprint 5 · MCM completo** — v1.0
 
-Cada demo debe seguir el **journey del perfil** (Laura, Carlos, Valentina…) — no feature dump.
+## Decisiones estratégicas
 
-## Estado
+Ver [strategy.md](strategy.md):
 
-📋 **Sprint 5 · Pendiente**
+- SaaS **mensual**
+- Trial **15 días**
+- Mercado **Latinoamérica**
+- Dos entradas: **Maintenance** · **Inventory**
+- Misma plataforma, módulos activables
 
-Frase de marca en todo material: **Toda la operación. Una sola plataforma.**
+## Relación con la suite
+
+| Doc | Rol |
+|-----|-----|
+| MBB | Historia y marca (origen dual en cap. historia) |
+| MUX | Personas y demo por perfil |
+| MDL | Producto visual |
+| MCM-07 | PLAY-001…005 · Exit Criteria · Debrief |
+| MCM-08 | OBJ-001…010 · fichas por objeción |
+| MCM-09 | MTX-CASE-001…006 · transformación por sector |
+| MCM-10 | GTM · embudo · KPIs · ciclo crecimiento |
+
+Un capítulo a la vez — misma calidad que MBB.

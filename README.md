@@ -135,14 +135,23 @@ requirements.txt
 
 ## Documentación · Maintix Documentation Suite
 
-| Código | Proyecto | URL local |
-|--------|----------|-----------|
-| **MBB** | Maintix Brand Book | http://127.0.0.1:5000/brandbook/ |
-| **MDL** | Maintix Design Language | http://127.0.0.1:5000/mdl/ |
-| **MUX** | Maintix User Experience Guide | http://127.0.0.1:5000/mux/ |
-| **MRL** | Maintix Report Language | `docs/mrl/` |
+**Índice maestro:** http://127.0.0.1:5000/docs/  
+**Release:** [docs/RELEASE-v1.0.md](docs/RELEASE-v1.0.md) · Tag: `docs-v1.0`
 
-Índice completo: [docs/README.md](docs/README.md) · Nomenclatura: [docs/NOMENCLATURE.md](docs/NOMENCLATURE.md)
+| # | Código | Proyecto | URL local |
+|---|--------|----------|-----------|
+| — | — | **Maintix Docs** (índice) | http://127.0.0.1:5000/docs/ |
+| 01 | **MBB** | Maintix Brand Book | http://127.0.0.1:5000/brandbook/ |
+| 02 | **MDL** | Maintix Design Language | http://127.0.0.1:5000/mdl/ |
+| 03 | **MUX** | Maintix User Experience Guide | http://127.0.0.1:5000/mux/ |
+| 04 | **MCM** | Maintix Commercial Manual | http://127.0.0.1:5000/mcm/ |
+| 05 | **MRL** | Maintix Report Language | `docs/mrl/` |
+| 06 | **MAG** | Maintix API Guide | `docs/mag/` |
+| 07 | **API** | Referencia técnica | `docs/api/` |
+| 08 | **—** | Architecture | `docs/architecture/` |
+| 09 | **—** | Roadmap | `docs/roadmap/` |
+
+Índice: [docs/README.md](docs/README.md) · Nomenclatura: [docs/NOMENCLATURE.md](docs/NOMENCLATURE.md)
 
 ### Técnica
 

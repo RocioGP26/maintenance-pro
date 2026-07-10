@@ -1,5 +1,13 @@
 # MUX Changelog
 
+## [1.2.0] — Frozen · Documentation Suite v1.0
+
+### Status
+- ✔ **Congelado** — Maintix User Experience Guide primera edición oficial
+- Tag suite: `docs-v1.0`
+
+---
+
 ## [1.2.0] — 2026-07-09
 
 ### Added

@@ -3,6 +3,7 @@
 Proyecto documental **independiente** del Brand Book.
 
 **Versión:** 1.0  
+**Estado:** ✔ **Congelado** · Documentation Suite v1.0 · tag `docs-v1.0`  
 **Frase:** Toda la operación. Una sola plataforma.
 
 ## Qué es el MDL

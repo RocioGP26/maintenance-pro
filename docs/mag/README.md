@@ -1,7 +1,11 @@
 # MAG · Maintix API Guide
 
-📋 Planificado · `docs/mag/README.md`
+**Suite docs 06** — guía para integradores.
 
-Estilo REST, autenticación, versionado, errores, rate limits.
+📋 Planificado · Estilo REST, autenticación, versionado, errores, rate limits.
 
-Ver [Documentation Suite](../README.md).
+| Relacionado | Ruta |
+|-------------|------|
+| Referencia técnica (07) | [../api/README.md](../api/README.md) |
+| Architecture | [../architecture/README.md](../architecture/README.md) |
+| Índice maestro | [../README.md](../README.md) · [/docs/](http://127.0.0.1:5000/docs/) |
