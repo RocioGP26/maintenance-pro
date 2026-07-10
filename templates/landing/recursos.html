@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title>Recursos — Maintix</title>
+  <meta name="description" content="Casos MTX-CASE, guías comerciales y documentación para evaluar Maintix.">
+  {% from "_cdn_assets.html" import google_fonts_inter_extra_bold, bootstrap_icons_css %}
+  {{ google_fonts_inter_extra_bold() }}
+  {{ bootstrap_icons_css() }}
+  <link href="{{ url_for('static', filename='css/landing.css') }}" rel="stylesheet">
+</head>
+<body class="landing-body">
+  {% include "landing/_nav.html" %}
+
+  <main class="landing-public-page">
+    <section class="landing-section landing-section--soft">
+      <div class="container-xl landing-public-page-head">
+        <p class="landing-eyebrow">MKT-09 · Recursos</p>
+        <h1 class="landing-section-title">Recursos para evaluar Maintix</h1>
+        <p class="landing-section-sub mx-auto text-center">{{ recursos_intro }}</p>
+      </div>
+    </section>
+
+    <section class="landing-section">
+      <div class="container-xl">
+        <h2 id="casos" class="landing-section-title mb-2">Casos de transformación (MTX-CASE)</h2>
+        <p class="landing-section-sub mb-4">
+          Historias por sector — nivel D, alineadas con MKT-03. No son pruebas cuantitativas.
+        </p>
+        <div class="landing-recursos-cases">
+          {% for caso in mtx_cases %}
+          <article class="landing-recursos-case">
+            <span class="landing-recursos-case-code">{{ caso.codigo }}</span>
+            <h3>{{ caso.titulo }}</h3>
+            <p class="landing-recursos-case-meta">
+              {{ caso.sector }} · Entrada: {{ caso.modulo }}
+            </p>
+            <a href="{{ caso.href }}" target="_blank" rel="noopener" class="landing-recursos-case-link">
+              Leer caso <i class="bi bi-arrow-up-right"></i>
+            </a>
+          </article>
+          {% endfor %}
+        </div>
+        <p class="text-center mt-3 mb-0">
+          <a href="/mkt/mtx-case/README.md" target="_blank" rel="noopener" class="small">
+            Ver índice completo MTX-CASE
+          </a>
+        </p>
+      </div>
+    </section>
+
+    <section class="landing-section landing-section--soft">
+      <div class="container-xl">
+        <h2 class="landing-section-title text-center mb-4">Documentación oficial</h2>
+        <div class="landing-recursos-links">
+          {% for link in recursos_links %}
+          <a href="{{ link.href }}" target="_blank" rel="noopener" class="landing-recursos-link-card">
+            <span class="landing-feature-icon"><i class="bi {{ link.icon }}"></i></span>
+            <strong>{{ link.titulo }}</strong>
+            <span class="small text-muted">{{ link.desc }}</span>
+          </a>
+          {% endfor %}
+        </div>
+      </div>
+    </section>
+
+    <section class="landing-section">
+      <div class="container-xl text-center landing-recursos-blog">
+        <span class="landing-badge landing-badge--roadmap">Próximamente</span>
+        <h2 class="h4 fw-semibold mt-2">Blog y artículos</h2>
+        <p class="text-muted small mx-auto mb-0" style="max-width: 28rem;">
+          Publicaciones sobre operación, mantenimiento e inventario — roadmap v2 del sitio (MKT-09).
+        </p>
+      </div>
+    </section>
+
+    <section class="landing-cta-band">
+      <div class="container-xl text-center">
+        <h2>¿Listo para probar?</h2>
+        <p>Comienza hoy. Prueba Maintix durante {{ trial_dias }} días sin compromiso.</p>
+        <div class="landing-hero-ctas justify-content-center">
+          <a href="{{ url_for('onboarding.wizard') }}" class="landing-btn landing-btn-light">
+            <i class="bi bi-rocket-takeoff"></i> {{ cta_final }}
+          </a>
+          <a href="{{ url_for('main.demo') }}" class="landing-btn landing-btn-outline landing-btn-outline-light">
+            {{ cta_demo }}
+          </a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  {% include "landing/_footer.html" %}
+</body>
+</html>

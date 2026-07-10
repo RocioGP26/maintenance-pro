@@ -17,6 +17,10 @@ _PUBLIC_PREFIXES = (
 )
 _PUBLIC_EXACT = {
     "main.index",
+    "main.faq",
+    "main.demo",
+    "main.contacto",
+    "main.recursos",
     "main.login",
     "main.logout",
     "main.cuenta_suspendida",

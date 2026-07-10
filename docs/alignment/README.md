@@ -1,7 +1,7 @@
 # Sprint 14 · Alineación Documental del Producto
 
 **Código:** ALIGN · **Sprint 14** · Documentation Alignment  
-**Estado:** ✅ Fases 1–8 cerradas · **Sprint 14 ALIGN completo**  
+**Estado:** ✅ Fase 1 cerrada · 🚀 **Fase 2 Public Experience** → [public/README.md](public/README.md)  
 **Frase:** Toda la operación. Una sola plataforma.
 
 > La suite documental (MPA · MRG · MCM · MKT · MDO) define **cómo debe ser Maintix**.  
@@ -70,6 +70,8 @@ Ciclo fijo en cada fase:
 
 | Archivo | Rol |
 |---------|-----|
+| [SPRINT14-REPORT.md](SPRINT14-REPORT.md) | **Cierre Fase 1** · métricas · roadmap |
+| [public/README.md](public/README.md) | **Fase 2** · Public Experience Alignment 🚀 |
 | [checklist.md](checklist.md) | Lista de control maestra |
 | [status-matrix.md](status-matrix.md) | Matriz MRG ↔ código ↔ estado |
 | [modules/](modules/) | Auditorías · [API MAG](modules/02-api-audit.md) |

@@ -1,0 +1,42 @@
+<footer class="landing-footer">
+  <div class="container-xl landing-footer-grid">
+    <div class="landing-footer-brand">
+      <strong>{{ app_name }}</strong>
+      <p class="landing-footer-slogan">{{ brand_slogan }}</p>
+    </div>
+    <div class="landing-footer-col">
+      <span class="landing-footer-heading">Producto</span>
+      <a href="{{ url_for('main.index') }}#modulos">Maintix Maintenance</a>
+      <a href="{{ url_for('main.index') }}#modulos">Maintix Inventory</a>
+      <a href="{{ url_for('main.index') }}#precios">Planes</a>
+      <a href="{{ url_for('onboarding.wizard') }}">Prueba gratuita</a>
+    </div>
+    <div class="landing-footer-col">
+      <span class="landing-footer-heading">Documentación</span>
+      <a href="/docs/" target="_blank" rel="noopener">Maintix Docs</a>
+      <a href="/mcm/" target="_blank" rel="noopener">MCM · Comercial</a>
+      <a href="/mkt/" target="_blank" rel="noopener">MKT · Marketing</a>
+      <a href="/mrg/" target="_blank" rel="noopener">MRG · Funcional</a>
+      <a href="/mag/" target="_blank" rel="noopener">MAG · API</a>
+    </div>
+    <div class="landing-footer-col">
+      <span class="landing-footer-heading">Empresa</span>
+      <a href="{{ url_for('main.contacto') }}">Contacto</a>
+      <a href="{{ url_for('main.faq') }}">FAQ</a>
+      <a href="{{ url_for('main.demo') }}">Demo</a>
+      <a href="{{ url_for('main.recursos') }}">Recursos</a>
+      <a href="mailto:{{ contact_email }}">{{ contact_email }}</a>
+      <a href="{{ url_for('platform.login') }}" class="landing-footer-link-muted" title="Superadministración SaaS">
+        Acceso plataforma
+      </a>
+    </div>
+  </div>
+  <div class="container-xl landing-footer-bottom">
+    <span>© {{ now_year }} {{ app_name }} · Bogotá, Colombia</span>
+    <nav class="landing-footer-legal" aria-label="Enlaces legales">
+      <a href="/docs/" target="_blank" rel="noopener">Documentación</a>
+      <a href="{{ url_for('main.contacto') }}">Contacto</a>
+      <span class="landing-footer-muted">Privacidad · próximamente</span>
+    </nav>
+  </div>
+</footer>

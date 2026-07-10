@@ -1,0 +1,31 @@
+<header class="landing-nav-wrap">
+  <nav class="landing-nav container-xl" aria-label="Navegación principal">
+    <a href="{{ url_for('main.index') }}" class="landing-brand">
+      <span class="landing-brand-logo-panel">
+        <img src="{{ url_for('static', filename=app_logo_path) }}" alt="{{ app_name }}" class="landing-brand-logo">
+      </span>
+    </a>
+    <div class="landing-nav-links d-none d-md-flex">
+      <a href="{{ url_for('main.index') }}#modulos">Producto</a>
+      <a href="{{ url_for('main.index') }}#sectores">Soluciones</a>
+      <a href="{{ url_for('main.index') }}#precios">Planes</a>
+      <a href="{{ url_for('main.recursos') }}">Recursos</a>
+      <a href="{{ url_for('main.recursos') }}#casos">Casos</a>
+      <a href="{{ url_for('main.demo') }}">Demo</a>
+    </div>
+    <div class="landing-nav-actions">
+      {% if session.get('platform_admin') %}
+      <a href="{{ url_for('platform.empresas') }}" class="landing-btn landing-btn-primary">
+        <i class="bi bi-shield-lock"></i> Panel plataforma
+      </a>
+      {% else %}
+      <a href="{{ url_for('main.login') }}" class="landing-btn landing-btn-ghost">
+        <i class="bi bi-box-arrow-in-right"></i> Iniciar sesión
+      </a>
+      <a href="{{ url_for('onboarding.wizard') }}" class="landing-btn landing-btn-outline">
+        <i class="bi bi-rocket-takeoff"></i> {{ cta_trial }}
+      </a>
+      {% endif %}
+    </div>
+  </nav>
+</header>

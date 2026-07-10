@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Solicitar demostración — Maintix</title>
+  <meta name="description" content="Agenda una demostración de Maintix. Sesión guiada MCM-07: descubrimiento, un flujo operativo y KPIs de tu sector. Prueba gratuita de {{ trial_dias }} días disponible.">
+  {% from "_cdn_assets.html" import google_fonts_inter_extra_bold, bootstrap_icons_css %}
+  {{ google_fonts_inter_extra_bold() }}
+  {{ bootstrap_icons_css() }}
+  <link href="{{ url_for('static', filename='css/landing.css') }}" rel="stylesheet">
+</head>
+<body class="landing-body">
+  {% include "landing/_nav.html" %}
+
+  <main class="landing-public-page">
+    <section class="landing-section landing-section--soft">
+      <div class="container-xl landing-public-page-head">
+        <p class="landing-eyebrow">MCM-07 · Demo comercial</p>
+        <h1 class="landing-section-title">{{ cta_demo }}</h1>
+        <p class="landing-section-sub mx-auto text-center">{{ demo_intro }}</p>
+      </div>
+    </section>
+
+    <section class="landing-section">
+      <div class="container-xl">
+        <h2 class="landing-section-title text-center mb-4">Cómo es la sesión</h2>
+        <div class="landing-demo-plays">
+          {% for play in demo_plays %}
+          <article class="landing-demo-play">
+            <span class="landing-demo-play-id">{{ play.id }}</span>
+            <h3>{{ play.title }}</h3>
+            <p class="landing-demo-play-phase">{{ play.phase }}</p>
+            <p class="landing-demo-play-summary">{{ play.summary }}</p>
+          </article>
+          {% endfor %}
+        </div>
+      </div>
+    </section>
+
+    <section class="landing-section landing-section--soft">
+      <div class="container-xl">
+        <h2 class="landing-section-title text-center mb-4">Demo, prueba o contacto</h2>
+        <div class="landing-demo-compare">
+          <article class="landing-demo-compare-card landing-demo-compare-card--featured">
+            <h3>Demostración guiada</h3>
+            <p>Sesión de 45–60 min con un especialista. Ideal si quieres ver un flujo real antes de registrarte.</p>
+            <a href="#demo-form" class="landing-btn landing-btn-primary landing-btn-sm">
+              <i class="bi bi-calendar-check"></i> {{ cta_demo }}
+            </a>
+          </article>
+          <article class="landing-demo-compare-card">
+            <h3>Prueba gratuita</h3>
+            <p>{{ trial_dias }} días self-service · configura tu empresa en minutos · sin tarjeta.</p>
+            <a href="{{ url_for('onboarding.wizard') }}" class="landing-btn landing-btn-outline landing-btn-sm">
+              <i class="bi bi-rocket-takeoff"></i> {{ cta_trial }}
+            </a>
+          </article>
+          <article class="landing-demo-compare-card">
+            <h3>Contacto general</h3>
+            <p>Preguntas comerciales, alianzas o soporte previo al registro.</p>
+            <a href="{{ url_for('main.contacto') }}" class="landing-btn landing-btn-ghost landing-btn-sm">
+              <i class="bi bi-envelope"></i> Contacto
+            </a>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="demo-form" class="landing-section">
+      <div class="container-xl landing-demo-form-wrap">
+        {% if demo_sent %}
+        <div class="landing-demo-success">
+          <span class="landing-demo-success-icon" aria-hidden="true"><i class="bi bi-check-circle-fill"></i></span>
+          <h2>Solicitud recibida</h2>
+          <p>
+            Gracias. Te contactaremos en un plazo de 24 horas laborables para coordinar la demostración.
+            Mientras tanto, puedes comenzar tu prueba gratuita de {{ trial_dias }} días.
+          </p>
+          <div class="landing-hero-ctas justify-content-center">
+            <a href="{{ url_for('onboarding.wizard') }}" class="landing-btn landing-btn-primary">
+              <i class="bi bi-rocket-takeoff"></i> {{ cta_final }}
+            </a>
+            <a href="{{ url_for('main.faq') }}" class="landing-btn landing-btn-outline">Ver FAQ</a>
+          </div>
+        </div>
+        {% else %}
+        <div class="landing-demo-form-card">
+          <h2 class="h4 fw-semibold mb-2">Cuéntanos sobre tu operación</h2>
+          <p class="text-muted small mb-4">
+            Con estos datos preparamos PLAY-001 antes de la reunión. No compartimos tu información con terceros.
+          </p>
+          {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+              {% for cat, msg in messages %}
+                <div class="alert alert-{{ cat }} py-2 small">{{ msg }}</div>
+              {% endfor %}
+            {% endif %}
+          {% endwith %}
+          <form method="post" class="landing-demo-form">
+            {% include "_csrf.html" %}
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label class="form-label" for="demoNombre">Nombre completo *</label>
+                <input type="text" id="demoNombre" name="nombre" class="form-control" required autocomplete="name">
+              </div>
+              <div class="col-md-6">
+                <label class="form-label" for="demoEmail">Correo *</label>
+                <input type="email" id="demoEmail" name="email" class="form-control" required autocomplete="email">
+              </div>
+              <div class="col-md-6">
+                <label class="form-label" for="demoEmpresa">Empresa *</label>
+                <input type="text" id="demoEmpresa" name="empresa" class="form-control" required autocomplete="organization">
+              </div>
+              <div class="col-md-6">
+                <label class="form-label" for="demoSector">Sector</label>
+                <select id="demoSector" name="sector" class="form-select">
+                  <option value="">— Seleccionar —</option>
+                  {% for s_key, s_label in sectores %}
+                  <option value="{{ s_key }}">{{ s_label }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div class="col-12">
+                <label class="form-label" for="demoMensaje">¿Qué te gustaría ver en la demo?</label>
+                <textarea id="demoMensaje" name="mensaje" class="form-control" rows="3"
+                          placeholder="Ej. control de OT en planta, inventario de tienda, multisede…"></textarea>
+              </div>
+            </div>
+            <button type="submit" class="landing-btn landing-btn-primary mt-4">
+              <i class="bi bi-send"></i> Enviar solicitud
+            </button>
+          </form>
+        </div>
+        {% endif %}
+      </div>
+    </section>
+  </main>
+
+  {% include "landing/_footer.html" %}
+</body>
+</html>

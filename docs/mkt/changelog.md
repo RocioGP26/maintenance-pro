@@ -1,5 +1,17 @@
 # MKT Changelog
 
+## [1.0.1] — 2026-07-10 · Sprint 14 · Sitio público alineado (ALIGN-PUB)
+
+### Changed
+- Copy público landing · nav · footer según **MKT-05 §5–§6**
+- CTAs unificados: trial · demo · contacto
+- Páginas `/faq` · `/demo` · `/contacto` · `/recursos` enlazadas desde nav/footer
+
+### Notes
+- Implementación en producto · reporte [SPRINT14-PHASE2-REPORT.md](../alignment/SPRINT14-PHASE2-REPORT.md)
+
+---
+
 ## [1.0.0] — 2026-07-10 · Sprint 12 finalizado · MKT completo
 
 ### Added

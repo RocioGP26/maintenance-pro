@@ -1,27 +1,27 @@
 /**
- * Punto de entrada para CTAs conversacionales de la landing.
- * Hoy redirige al onboarding; mañana puede abrir un widget de ventas.
+ * CTAs conversacionales de la landing pública Maintix (MKT-05).
  */
 function sendPrompt(message, options) {
   var opts = options || {};
   var text = (message || "").trim();
+  var contactEmail = "contacto@maintix.com";
 
   try {
-    sessionStorage.setItem("mantis_sales_prompt", text);
+    sessionStorage.setItem("maintix_sales_prompt", text);
   } catch (e) {
     /* ignore */
   }
 
   window.dispatchEvent(
-    new CustomEvent("mantis:sales-prompt", {
+    new CustomEvent("maintix:sales-prompt", {
       detail: { message: text, source: opts.source || "landing" },
     })
   );
 
   if (opts.action === "contact") {
-    var subject = encodeURIComponent("Contacto Mantis — Enterprise");
-    var body = encodeURIComponent(text || "Hola, me interesa el plan Enterprise de Mantis.");
-    window.location.href = "mailto:hola@mantis.app?subject=" + subject + "&body=" + body;
+    var subject = encodeURIComponent("Demostración Maintix");
+    var body = encodeURIComponent(text || "Hola, me gustaría solicitar una demostración de Maintix.");
+    window.location.href = "mailto:" + contactEmail + "?subject=" + subject + "&body=" + body;
     return;
   }
 

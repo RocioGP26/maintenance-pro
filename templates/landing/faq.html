@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Preguntas frecuentes — Maintix</title>
+  <meta name="description" content="Respuestas oficiales sobre Maintix: producto, planes, implementación, API e integraciones. Fuente MCM-08.">
+  {% from "_cdn_assets.html" import google_fonts_inter_extra_bold, bootstrap_icons_css %}
+  {{ google_fonts_inter_extra_bold() }}
+  {{ bootstrap_icons_css() }}
+  <link href="{{ url_for('static', filename='css/landing.css') }}" rel="stylesheet">
+</head>
+<body class="landing-body">
+  {% include "landing/_nav.html" %}
+
+  <main class="landing-public-page">
+    <section class="landing-section landing-section--soft">
+      <div class="container-xl landing-public-page-head">
+        <p class="landing-eyebrow">MCM-08 · FAQ oficial</p>
+        <h1 class="landing-section-title">Preguntas frecuentes</h1>
+        <p class="landing-section-sub mx-auto text-center">
+          Respuestas alineadas con la documentación comercial y funcional de Maintix.
+          Si no encuentras tu caso, <a href="{{ url_for('main.contacto') }}">contáctanos</a>.
+        </p>
+      </div>
+    </section>
+
+    <section class="landing-section">
+      <div class="container-xl landing-faq-layout">
+        <nav class="landing-faq-nav d-none d-lg-block" aria-label="Secciones FAQ">
+          {% for sec in faq_sections %}
+          <a href="#faq-{{ sec.id }}">{{ sec.title }}</a>
+          {% endfor %}
+        </nav>
+        <div class="landing-faq-content">
+          {% for sec in faq_sections %}
+          <section id="faq-{{ sec.id }}" class="landing-faq-group">
+            <h2>{{ sec.title }}</h2>
+            <div class="landing-faq-list">
+              {% for item in sec.entries %}
+              <details class="landing-faq-item">
+                <summary>{{ item.q }}</summary>
+                <p>{{ item.a }}</p>
+              </details>
+              {% endfor %}
+            </div>
+          </section>
+          {% endfor %}
+        </div>
+      </div>
+    </section>
+
+    <section class="landing-cta-band">
+      <div class="container-xl text-center">
+        <h2>¿Listo para probar?</h2>
+        <p>Comienza hoy. Prueba Maintix durante {{ trial_dias }} días sin compromiso.</p>
+        <button type="button" class="landing-btn landing-btn-light"
+                data-send-prompt="Quiero comenzar mi prueba gratuita en Maintix"
+                data-prompt-url="{{ url_for('onboarding.wizard') }}">
+          <i class="bi bi-rocket-takeoff"></i> {{ cta_final }}
+        </button>
+      </div>
+    </section>
+  </main>
+
+  {% include "landing/_footer.html" %}
+  <script src="{{ url_for('static', filename='js/landing.js') }}"></script>
+</body>
+</html>

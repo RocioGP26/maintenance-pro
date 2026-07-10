@@ -170,4 +170,4 @@ Leyenda: ☐ pendiente · 🟡 en progreso · ✅ alineado · ➖ N/A
 
 ---
 
-→ [README Sprint 14](README.md) · [Matriz de estado](status-matrix.md)
+→ [README Sprint 14](README.md) · [Matriz de estado](status-matrix.md) · **[Reporte final](SPRINT14-REPORT.md)** · [Fase 2 Public](public/README.md)

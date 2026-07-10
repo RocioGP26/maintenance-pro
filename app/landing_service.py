@@ -1,4 +1,4 @@
-"""Contenido dinámico de la landing pública de Mantis."""
+"""Contenido dinámico de la landing pública de Maintix (MKT-05 · MCM)."""
 
 from __future__ import annotations
 
@@ -7,84 +7,165 @@ from typing import Any
 from sqlalchemy import func
 
 from app import db
+from app.branding import APP_TAGLINE, PUBLIC_CONTACT_EMAIL
 from app.models import Empresa, Machine, User
-from app.modules import MODULO_INVENTARIO, MODULO_MANTENIMIENTO, MODULO_META
+from app.modules import MODULO_INVENTARIO, MODULO_MANTENIMIENTO
 from app.platform_config_service import (
     listar_planes_catalogo,
     plan_a_meta,
-    sectores_para_filtro,
     trial_dias,
 )
 
-SECTOR_ICONS: dict[str, str] = {
-    "comercio": "bi-shop",
-    "logistica": "bi-truck",
-    "manufactura": "bi-building-gear",
-    "salud": "bi-heart-pulse",
-    "mineria": "bi-minecart-loaded",
-    "alimentos": "bi-apple",
-    "construccion": "bi-bricks",
-    "educacion": "bi-mortarboard",
-    "industrial": "bi-gear-wide-connected",
+# CTAs oficiales (MKT-05 · unificados en todo el sitio público)
+CTA_DEMO = "Solicitar demostración"
+CTA_FINAL = "Comenzar prueba gratuita"
+CTA_ENTERPRISE = "Solicitar demostración"
+
+PROBLEMA_LANDING: dict[str, Any] = {
+    "title": "Tu operación no debería depender de Excel.",
+    "situaciones": (
+        {"icon": "bi-table", "text": "Hojas duplicadas y versiones distintas del mismo dato"},
+        {"icon": "bi-chat-dots", "text": "WhatsApp como sistema operativo"},
+        {"icon": "bi-journal-text", "text": "OT en papel sin historial por activo"},
+        {"icon": "bi-box-seam", "text": "Diferencias de inventario entre bodega y ventas"},
+        {"icon": "bi-diagram-2", "text": "Información dispersa en áreas que no se hablan"},
+    ),
+    "quote": (
+        "Cuando cada área tiene una versión distinta de la información, "
+        "las decisiones llegan tarde."
+    ),
 }
 
-FEATURES_LANDING: tuple[dict[str, str], ...] = (
+SECTORES_LANDING_MCM: tuple[dict[str, str], ...] = (
     {
-        "icon": "bi-sliders",
-        "title": "Campos personalizados",
-        "text": "Adapta los formularios a tu sector: placas para flota, lotes para alimentos, certificaciones para industrial.",
+        "clave": "industria",
+        "etiqueta": "Industria",
+        "icon": "bi-building-gear",
+        "entrada": "Mantenimiento",
+        "dolor": (
+            "Equipos detenidos sin aviso, OT en papel o WhatsApp, "
+            "historial inexistente por máquina."
+        ),
+        "mensaje": "La planta deja de depender de la memoria del técnico.",
     },
     {
-        "icon": "bi-clipboard-check",
-        "title": "Órdenes de trabajo",
-        "text": "Preventivo, correctivo y emergencias. Asigna a técnicos internos o proveedores externos sin fricción.",
-    },
-    {
+        "clave": "comercio",
+        "etiqueta": "Comercio",
         "icon": "bi-shop",
-        "title": "Gestión de proveedores",
-        "text": "Controla contratistas de servicio e insumos, con historial completo de costos y desempeño.",
+        "entrada": "Inventario",
+        "dolor": (
+            "Diferencias de stock entre Excels, ventas sin confirmar existencias "
+            "y cartera manual."
+        ),
+        "mensaje": "Deja de vender a ciegas.",
     },
     {
-        "icon": "bi-bar-chart-line",
-        "title": "Reportes en tiempo real",
-        "text": "MTBF, MTTR, cumplimiento preventivo y disponibilidad de planta calculados automáticamente.",
+        "clave": "agro",
+        "etiqueta": "Agroindustria",
+        "icon": "bi-tree",
+        "entrada": "Inventario o Mantenimiento",
+        "dolor": (
+            "Insumos, bodegas y maquinaria en temporadas — "
+            "información repartida en varios archivos."
+        ),
+        "mensaje": "Un registro para bodega y campo — no tres Excels por temporada.",
     },
     {
-        "icon": "bi-shield-check",
-        "title": "Datos aislados por empresa",
-        "text": "Tu información nunca se mezcla con la de otras empresas. Seguridad de nivel empresarial desde el día uno.",
+        "clave": "talleres",
+        "etiqueta": "Talleres",
+        "icon": "bi-wrench-adjustable",
+        "entrada": "Mantenimiento",
+        "dolor": (
+            "Vehículos y equipos sin historial unificado, "
+            "repuestos y tiempos difíciles de rastrear."
+        ),
+        "mensaje": "Respondes al cliente con historial completo, no con cuadernos.",
     },
     {
-        "icon": "bi-box-seam",
-        "title": "Repuestos técnicos",
-        "text": "Inventario de insumos de mantenimiento vinculado a órdenes de trabajo, con alertas de stock crítico.",
-    },
-    {
-        "icon": "bi-cart3",
-        "title": "Inventario comercial",
-        "text": "Catálogo, entradas de mercancía, punto de venta, clientes, ventas a crédito y reporte Excel de bajo stock.",
+        "clave": "distribucion",
+        "etiqueta": "Distribución",
+        "icon": "bi-truck",
+        "entrada": "Inventario",
+        "dolor": (
+            "Múltiples bodegas, alto volumen de SKUs y ventas "
+            "que prometen stock inexistente."
+        ),
+        "mensaje": "El vendedor y bodega ven el mismo número — en el momento de la venta.",
     },
 )
 
-MODULOS_LANDING_ITEMS: tuple[tuple[str, tuple[str, ...]], ...] = (
-    (
-        MODULO_MANTENIMIENTO,
-        (
-            "Activos, sedes y órdenes de trabajo",
-            "Preventivo, correctivo y calendario",
-            "Repuestos técnicos y proveedores de servicio",
-            "MTBF, MTTR y reportes de planta",
+FEATURES_LANDING: tuple[dict[str, str], ...] = (
+    {
+        "icon": "bi-diagram-3",
+        "title": "Control",
+        "text": "Toda la información operativa en un solo lugar — sin Excel disperso.",
+    },
+    {
+        "icon": "bi-clock-history",
+        "title": "Trazabilidad",
+        "text": "Historial completo de activos, inventario, compras y ventas.",
+    },
+    {
+        "icon": "bi-lightning",
+        "title": "Productividad",
+        "text": "Menos tiempo buscando datos; más tiempo ejecutando.",
+    },
+    {
+        "icon": "bi-layers",
+        "title": "Escalabilidad",
+        "text": "Activa nuevos módulos sin migrar de plataforma.",
+    },
+    {
+        "icon": "bi-bar-chart-line",
+        "title": "Visibilidad",
+        "text": "Dashboards e indicadores para decidir con datos reales.",
+    },
+    {
+        "icon": "bi-shield-check",
+        "title": "Datos aislados",
+        "text": "Multi-tenant: la información de tu empresa nunca se mezcla.",
+    },
+)
+
+MODULOS_PRODUCCION: tuple[dict[str, Any], ...] = (
+    {
+        "clave": MODULO_MANTENIMIENTO,
+        "label": "Maintix Maintenance",
+        "badge": "En producción",
+        "badge_class": "landing-badge--live",
+        "descripcion": (
+            "Activos, órdenes de trabajo, preventivos, repuestos técnicos "
+            "e indicadores de planta."
         ),
-    ),
-    (
-        MODULO_INVENTARIO,
-        (
-            "Catálogo de productos con imágenes",
-            "Entradas de mercancía y proveedores comerciales",
-            "Ventas al contado o a crédito con abonos",
-            "Dashboard de ventas y alertas de bajo stock",
+        "icon": "bi-wrench-adjustable",
+        "bullets": (
+            "Activos y órdenes de trabajo",
+            "Incidencias y calendario preventivo",
+            "Repuestos técnicos e indicadores",
         ),
-    ),
+    },
+    {
+        "clave": MODULO_INVENTARIO,
+        "label": "Maintix Inventory",
+        "badge": "En producción",
+        "badge_class": "landing-badge--live",
+        "descripcion": (
+            "Catálogo, compras, ventas, clientes, stock y cartera "
+            "en un flujo comercial integrado."
+        ),
+        "icon": "bi-cart3",
+        "bullets": (
+            "Productos y alertas de bajo stock",
+            "Compras, ventas y cuentas por pagar",
+            "Dashboard comercial",
+        ),
+    },
+)
+
+MODULOS_ROADMAP: tuple[dict[str, str], ...] = (
+    {"label": "CRM", "icon": "bi-people"},
+    {"label": "Purchasing", "icon": "bi-bag-check"},
+    {"label": "Analytics", "icon": "bi-graph-up-arrow"},
 )
 
 MIN_EMPRESAS_STATS = 8
@@ -111,7 +192,7 @@ def formato_precio_landing(valor: float | int | None, moneda: str = "COP") -> st
 
 def _limite_texto(valor: int | None, singular: str, plural: str) -> str:
     if valor is None or valor >= 999:
-        return f"{plural.capitalize()} ilimitados"
+        return f"{plural.capitalize()} ampliados"
     return f"Hasta {valor} {plural if valor != 1 else singular}"
 
 
@@ -133,16 +214,18 @@ def planes_landing() -> list[dict[str, Any]]:
     items: list[dict[str, Any]] = []
     for plan in listar_planes_catalogo(solo_visibles=True):
         meta = plan_a_meta(plan)
+        is_enterprise = plan.clave == "enterprise"
+        short = meta.get("short_label", plan.clave)
         items.append(
             {
                 **meta,
                 "precio_label": formato_precio_landing(meta.get("precio_mensual")),
                 "features": _plan_features_pricing(meta),
-                "cta": "Hablar con ventas" if plan.clave == "enterprise" else "Empezar gratis",
+                "cta": CTA_ENTERPRISE if is_enterprise else CTA_FINAL,
                 "cta_prompt": (
-                    "Quiero información sobre el plan Enterprise de Mantis"
-                    if plan.clave == "enterprise"
-                    else f"Quiero empezar con el plan {meta.get('short_label', plan.clave)} de Mantis"
+                    f"Quiero información sobre el plan Enterprise de Maintix"
+                    if is_enterprise
+                    else f"Quiero probar Maintix con el plan {short}"
                 ),
             }
         )
@@ -150,22 +233,25 @@ def planes_landing() -> list[dict[str, Any]]:
 
 
 def sectores_landing() -> list[dict[str, str]]:
-    rows = []
-    for clave, etiqueta in sectores_para_filtro():
-        rows.append(
-            {
-                "clave": clave,
-                "etiqueta": etiqueta,
-                "icon": SECTOR_ICONS.get(clave, "bi-building"),
-            }
-        )
-    return rows
+    return list(SECTORES_LANDING_MCM)
+
+
+def public_page_context() -> dict[str, Any]:
+    """Contexto compartido nav/footer en páginas públicas."""
+    dias = trial_dias()
+    return {
+        "trial_dias": dias,
+        "brand_slogan": APP_TAGLINE,
+        "contact_email": PUBLIC_CONTACT_EMAIL,
+        "cta_trial": f"Probar gratis {dias} días",
+        "cta_demo": CTA_DEMO,
+        "cta_final": CTA_FINAL,
+    }
 
 
 def estadisticas_confianza() -> dict[str, Any]:
     empresas = db.session.query(func.count(Empresa.id)).scalar() or 0
     activos = db.session.query(func.count(Machine.id)).scalar() or 0
-    usuarios = db.session.query(func.count(User.id)).filter(User.empresa_id.isnot(None)).scalar() or 0
     dias = trial_dias()
 
     if empresas >= MIN_EMPRESAS_STATS or activos >= MIN_ACTIVOS_STATS:
@@ -174,7 +260,7 @@ def estadisticas_confianza() -> dict[str, Any]:
             "filas": [
                 {"valor": f"{empresas}+", "etiqueta": "Empresas activas"},
                 {"valor": f"{activos:,}".replace(",", "."), "etiqueta": "Activos gestionados"},
-                {"valor": "99.9%", "etiqueta": "Uptime garantizado"},
+                {"valor": "SaaS", "etiqueta": "Plataforma modular"},
                 {"valor": f"{dias} días", "etiqueta": "Prueba gratuita"},
             ],
         }
@@ -183,41 +269,27 @@ def estadisticas_confianza() -> dict[str, Any]:
         "modo": "honesto",
         "filas": [
             {"valor": "Multi-tenant", "etiqueta": "Datos aislados por empresa"},
-            {"valor": "Multi-sector", "etiqueta": "Cualquier industria"},
+            {"valor": "Modular", "etiqueta": "Maintenance e Inventory"},
             {"valor": f"{dias} días", "etiqueta": "Prueba sin tarjeta"},
-            {"valor": "Modular", "etiqueta": "Mantenimiento e inventario"},
+            {"valor": "Colombia", "etiqueta": "Operación regional"},
         ],
     }
 
 
-def modulos_landing() -> list[dict[str, Any]]:
-    items: list[dict[str, Any]] = []
-    for clave, bullets in MODULOS_LANDING_ITEMS:
-        meta = MODULO_META[clave]
-        items.append(
-            {
-                "clave": clave,
-                "label": meta["label"],
-                "descripcion": meta["descripcion"],
-                "icon": meta["icon"],
-                "bullets": list(bullets),
-            }
-        )
-    return items
-
-
 def landing_context() -> dict[str, Any]:
-    dias = trial_dias()
-    return {
-        "trial_dias": dias,
-        "estadisticas": estadisticas_confianza(),
-        "features": FEATURES_LANDING,
-        "modulos": modulos_landing(),
-        "sectores": sectores_landing(),
-        "planes": planes_landing(),
-        "mockups": [
+    ctx = public_page_context()
+    ctx.update(
+        {
+            "estadisticas": estadisticas_confianza(),
+            "problema": PROBLEMA_LANDING,
+            "features": FEATURES_LANDING,
+            "modulos_produccion": MODULOS_PRODUCCION,
+            "modulos_roadmap": MODULOS_ROADMAP,
+            "sectores": sectores_landing(),
+            "planes": planes_landing(),
+            "mockups": [
             {
-                "modulo": "Inventario comercial",
+                "modulo": "Maintix Inventory",
                 "icon": "bi-cart3",
                 "empresa": "El Surtidor SAS",
                 "kpis": [
@@ -238,22 +310,16 @@ def landing_context() -> dict[str, Any]:
                         "estado": "Bajo stock",
                         "tone": "warning",
                     },
-                    {
-                        "nombre": "Refrigerante 500ml",
-                        "codigo": "REF-003",
-                        "estado": "Bajo stock",
-                        "tone": "warning",
-                    },
                 ],
             },
             {
-                "modulo": "Mantenimiento",
+                "modulo": "Maintix Maintenance",
                 "icon": "bi-wrench-adjustable",
                 "empresa": "Logistic SA",
                 "kpis": [
-                    {"label": "Disponibilidad", "valor": "99.9%", "tone": "success"},
                     {"label": "OT abiertas", "valor": "4", "tone": "neutral"},
-                    {"label": "MTBF", "valor": "119d", "tone": "neutral"},
+                    {"label": "Preventivos", "valor": "12", "tone": "success"},
+                    {"label": "Disponibilidad", "valor": "Alta", "tone": "success"},
                 ],
                 "filas": [
                     {
@@ -268,13 +334,9 @@ def landing_context() -> dict[str, Any]:
                         "estado": "Mantenimiento",
                         "tone": "warning",
                     },
-                    {
-                        "nombre": "Motor línea 1",
-                        "codigo": "MT5-001",
-                        "estado": "Operativo",
-                        "tone": "success",
-                    },
                 ],
             },
         ],
-    }
+        }
+    )
+    return ctx

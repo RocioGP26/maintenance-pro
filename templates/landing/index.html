@@ -3,46 +3,15 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>{{ app_name }} — Mantenimiento e inventario comercial</title>
-  <meta name="description" content="CMMS para plantas y tiendas: activos, órdenes de trabajo, inventario comercial, ventas y stock. Elige los módulos que necesites. Prueba gratis {{ trial_dias }} días.">
+  <title>Maintix | Plataforma SaaS para controlar la operación empresarial</title>
+  <meta name="description" content="Maintix ayuda a empresas en crecimiento a organizar, controlar y hacer crecer su operación mediante una plataforma SaaS modular para mantenimiento e inventario. Prueba gratis {{ trial_dias }} días.">
   {% from "_cdn_assets.html" import google_fonts_inter_extra_bold, bootstrap_icons_css %}
   {{ google_fonts_inter_extra_bold() }}
   {{ bootstrap_icons_css() }}
   <link href="{{ url_for('static', filename='css/landing.css') }}" rel="stylesheet">
 </head>
 <body class="landing-body">
-  <header class="landing-nav-wrap">
-    <nav class="landing-nav container-xl">
-      <a href="{{ url_for('main.index') }}" class="landing-brand">
-        <span class="landing-brand-logo-panel">
-          <img src="{{ url_for('static', filename=app_logo_path) }}" alt="{{ app_name }} CMMS" class="landing-brand-logo">
-        </span>
-      </a>
-      <div class="landing-nav-links d-none d-md-flex">
-        <a href="#modulos">Módulos</a>
-        <a href="#caracteristicas">Características</a>
-        <a href="#sectores">Sectores</a>
-        <a href="#precios">Precios</a>
-        <a href="#contacto">Contacto</a>
-      </div>
-      <div class="landing-nav-actions">
-        {% if session.get('platform_admin') %}
-        <a href="{{ url_for('platform.empresas') }}" class="landing-btn landing-btn-primary">
-          <i class="bi bi-shield-lock"></i> Panel plataforma
-        </a>
-        {% else %}
-        <a href="{{ url_for('main.login') }}" class="landing-btn landing-btn-ghost">
-          <i class="bi bi-building"></i> Ir a mi empresa
-        </a>
-        <button type="button" class="landing-btn landing-btn-outline"
-                data-send-prompt="Quiero probar Mantis gratis"
-                data-prompt-url="{{ url_for('onboarding.wizard') }}">
-          Probar gratis
-        </button>
-        {% endif %}
-      </div>
-    </nav>
-  </header>
+  {% include "landing/_nav.html" %}
 
   <main>
     <section class="landing-hero">
@@ -51,25 +20,20 @@
           <span class="landing-pill">
             <i class="bi bi-stars"></i> {{ trial_dias }} días gratis · sin tarjeta
           </span>
-          <h1>Mantenimiento industrial e <span class="landing-accent">inventario comercial</span> en una sola plataforma</h1>
+          <h1>Organiza, controla y haz crecer tu operación desde un solo lugar.</h1>
           <p class="landing-lead">
-            Activa solo lo que necesitas: CMMS para activos y órdenes de trabajo, inventario comercial
-            para productos, ventas y clientes — o ambos módulos juntos. Campos personalizados para
-            logística, manufactura, comercio o industrial.
+            {{ app_name }} es una plataforma SaaS modular para empresas que ya crecieron más allá de Excel.
+            Mantenimiento, inventario — o ambos — con un solo inicio de sesión.
           </p>
           <div class="landing-hero-ctas">
-            <button type="button" class="landing-btn landing-btn-primary"
-                    data-send-prompt="Quiero empezar gratis con Mantis"
-                    data-prompt-url="{{ url_for('onboarding.wizard') }}">
-              <i class="bi bi-rocket-takeoff"></i> Empieza gratis
-            </button>
-            <button type="button" class="landing-btn landing-btn-outline"
-                    data-send-prompt="Quiero ver una demo de Mantis"
-                    data-prompt-action="contact">
-              Ver demo
-            </button>
+            <a href="{{ url_for('onboarding.wizard') }}" class="landing-btn landing-btn-primary">
+              <i class="bi bi-rocket-takeoff"></i> {{ cta_trial }}
+            </a>
+            <a href="{{ url_for('main.demo') }}" class="landing-btn landing-btn-outline">
+              {{ cta_demo }}
+            </a>
           </div>
-          <p class="landing-hero-note">Sin tarjeta de crédito · cancela cuando quieras</p>
+          <p class="landing-hero-note">Comienza hoy. Prueba Maintix durante {{ trial_dias }} días sin compromiso.</p>
         </div>
 
         <div class="landing-hero-mockups" aria-hidden="true">
@@ -109,14 +73,19 @@
       </div>
     </section>
 
-    <section class="landing-stats">
-      <div class="container-xl landing-stats-grid">
-        {% for item in estadisticas.filas %}
-        <div class="landing-stat">
-          <div class="landing-stat-value">{{ item.valor }}</div>
-          <div class="landing-stat-label">{{ item.etiqueta }}</div>
-        </div>
-        {% endfor %}
+    <section id="problema" class="landing-section landing-section--soft">
+      <div class="container-xl">
+        <p class="landing-eyebrow text-center">El problema</p>
+        <h2 class="landing-section-title text-center">{{ problema.title }}</h2>
+        <ul class="landing-problema-list">
+          {% for item in problema.situaciones %}
+          <li class="landing-problema-item">
+            <span class="landing-problema-icon" aria-hidden="true"><i class="bi {{ item.icon }}"></i></span>
+            <span>{{ item.text }}</span>
+          </li>
+          {% endfor %}
+        </ul>
+        <blockquote class="landing-problema-quote">{{ problema.quote }}</blockquote>
       </div>
     </section>
 
@@ -131,18 +100,20 @@
 
     <section id="modulos" class="landing-section landing-section--soft">
       <div class="container-xl">
-        <p class="landing-eyebrow">Módulos</p>
-        <h2 class="landing-section-title">Elige mantenimiento, inventario o ambos</h2>
+        <p class="landing-eyebrow">Producto · Módulos</p>
+        <h2 class="landing-section-title">Una sola plataforma para toda la operación</h2>
         <p class="landing-section-sub text-center mx-auto">
-          Al registrarte seleccionas los módulos que usarás. El menú y el dashboard se adaptan a tu operación:
-          una tienda puede usar solo inventario; una planta, solo mantenimiento; o combinar ambos.
+          Empieza con un módulo. Activa más cuando tu operación crezca — sin migrar de software.
         </p>
         <div class="landing-modules-grid">
-          {% for m in modulos %}
+          {% for m in modulos_produccion %}
           <article class="landing-module-card">
             <div class="landing-module-card-head">
               <span class="landing-feature-icon"><i class="bi {{ m.icon }}"></i></span>
-              <h3>{{ m.label }}</h3>
+              <div>
+                <span class="landing-badge {{ m.badge_class }}">{{ m.badge }}</span>
+                <h3>{{ m.label }}</h3>
+              </div>
             </div>
             <p class="landing-module-desc">{{ m.descripcion }}</p>
             <ul class="landing-module-list">
@@ -153,16 +124,25 @@
           </article>
           {% endfor %}
         </div>
+        <div class="landing-roadmap mt-4">
+          <p class="landing-eyebrow text-center mb-2">Próximamente</p>
+          <div class="landing-sectors justify-content-center">
+            {% for m in modulos_roadmap %}
+            <span class="landing-sector-pill landing-sector-pill--roadmap">
+              <i class="bi {{ m.icon }}"></i> {{ m.label }}
+            </span>
+            {% endfor %}
+          </div>
+        </div>
       </div>
     </section>
 
     <section id="caracteristicas" class="landing-section">
       <div class="container-xl">
-        <p class="landing-eyebrow">Características</p>
-        <h2 class="landing-section-title">Todo lo que necesitas, en un solo lugar</h2>
+        <p class="landing-eyebrow">Beneficios</p>
+        <h2 class="landing-section-title">Resultados, no solo funciones</h2>
         <p class="landing-section-sub">
-          Diseñado para equipos de mantenimiento y negocios comerciales que necesitan visibilidad total
-          sin complicarse con configuraciones técnicas.
+          {{ app_name }} centraliza la operación para que decidas a tiempo.
         </p>
         <div class="landing-features-grid">
           {% for f in features %}
@@ -177,12 +157,26 @@
     </section>
 
     <section id="sectores" class="landing-section landing-section--soft">
-      <div class="container-xl text-center">
-        <p class="landing-eyebrow">Sectores</p>
-        <h2 class="landing-section-title">Funciona en cualquier industria</h2>
-        <div class="landing-sectors">
+      <div class="container-xl">
+        <p class="landing-eyebrow text-center">Sectores</p>
+        <h2 class="landing-section-title text-center">El sector adapta el discurso, no el producto</h2>
+        <p class="landing-section-sub text-center mx-auto">
+          Maintix no es un software vertical. Es una plataforma modular cuyo lenguaje
+          se ajusta a tu operación — industria, comercio, agro, talleres o distribución.
+        </p>
+        <div class="landing-sectors-grid">
           {% for s in sectores %}
-          <span class="landing-sector-pill"><i class="bi {{ s.icon }}"></i> {{ s.etiqueta }}</span>
+          <article class="landing-sector-card">
+            <div class="landing-sector-card-head">
+              <span class="landing-feature-icon"><i class="bi {{ s.icon }}"></i></span>
+              <div>
+                <h3>{{ s.etiqueta }}</h3>
+                <span class="landing-sector-entrada">Entrada: {{ s.entrada }}</span>
+              </div>
+            </div>
+            <p class="landing-sector-dolor">{{ s.dolor }}</p>
+            <blockquote class="landing-sector-quote">«{{ s.mensaje }}»</blockquote>
+          </article>
           {% endfor %}
         </div>
       </div>
@@ -190,16 +184,17 @@
 
     <section id="precios" class="landing-section">
       <div class="container-xl">
-        <p class="landing-eyebrow">Precios</p>
-        <h2 class="landing-section-title">Un plan para cada etapa</h2>
+        <p class="landing-eyebrow">Planes</p>
+        <h2 class="landing-section-title">Crece con tu operación</h2>
         <p class="landing-section-sub text-center mx-auto">
-          Empieza gratis {{ trial_dias }} días. Cambia de plan cuando lo necesites, sin contratos forzosos.
+          Start → Grow → Scale → Enterprise. Misma plataforma en cada etapa.
+          Prueba {{ trial_dias }} días sin tarjeta.
         </p>
         <div class="landing-pricing-grid">
           {% for plan in planes %}
           <article class="landing-price-card {% if plan.destacado %}landing-price-card--featured{% endif %}">
             {% if plan.destacado %}
-            <span class="landing-price-badge">Más popular</span>
+            <span class="landing-price-badge">Recomendado</span>
             {% endif %}
             <h3>{{ plan.short_label }}</h3>
             <div class="landing-price-amount">
@@ -210,41 +205,47 @@
               <li><i class="bi bi-check2"></i> {{ line }}</li>
               {% endfor %}
             </ul>
-            <button type="button"
-                    class="landing-btn {% if plan.destacado %}landing-btn-primary{% else %}landing-btn-outline{% endif %} w-100"
-                    data-send-prompt="{{ plan.cta_prompt }}"
-                    data-prompt-url="{{ url_for('onboarding.wizard') }}"
-                    data-prompt-action="{{ 'contact' if plan.key == 'enterprise' else 'start' }}">
+            <a href="{{ url_for('main.demo') if plan.key == 'enterprise' else url_for('onboarding.wizard') }}"
+               class="landing-btn {% if plan.destacado %}landing-btn-primary{% else %}landing-btn-outline{% endif %} w-100">
               {{ plan.cta }}
-            </button>
+            </a>
           </article>
           {% endfor %}
         </div>
       </div>
     </section>
 
+    <section class="landing-stats">
+      <div class="container-xl landing-stats-grid">
+        {% for item in estadisticas.filas %}
+        <div class="landing-stat">
+          <div class="landing-stat-value">{{ item.valor }}</div>
+          <div class="landing-stat-label">{{ item.etiqueta }}</div>
+        </div>
+        {% endfor %}
+      </div>
+    </section>
+
     <section id="contacto" class="landing-cta-band">
       <div class="container-xl text-center">
-        <h2>Empieza a controlar tu operación hoy</h2>
-        <p>{{ trial_dias }} días gratis · sin tarjeta · elige mantenimiento, inventario comercial o ambos</p>
-        <button type="button" class="landing-btn landing-btn-light"
-                data-send-prompt="Quiero crear mi cuenta gratis en Mantis"
-                data-prompt-url="{{ url_for('onboarding.wizard') }}">
-          <i class="bi bi-rocket-takeoff"></i> Crear mi cuenta gratis
-        </button>
+        <h2>Recupera el control de tu operación.</h2>
+        <p>Comienza hoy. Prueba Maintix durante {{ trial_dias }} días sin compromiso.</p>
+        <div class="landing-hero-ctas justify-content-center">
+          <a href="{{ url_for('onboarding.wizard') }}" class="landing-btn landing-btn-light">
+            <i class="bi bi-rocket-takeoff"></i> {{ cta_final }}
+          </a>
+          <a href="{{ url_for('main.demo') }}" class="landing-btn landing-btn-outline landing-btn-outline-light">
+            {{ cta_demo }}
+          </a>
+          <a href="{{ url_for('main.contacto') }}" class="landing-btn landing-btn-ghost landing-btn-outline-light">
+            Contactar ventas
+          </a>
+        </div>
       </div>
     </section>
   </main>
 
-  <footer class="landing-footer">
-    <div class="container-xl landing-footer-inner">
-      <span>© {{ now_year }} {{ app_name }} · Mantenimiento e inventario comercial</span>
-      <a href="{{ url_for('platform.login') }}" class="landing-footer-link" title="Superadministración SaaS">
-        <i class="bi bi-shield-lock"></i> Acceso plataforma
-      </a>
-      <span>Bogotá, Colombia</span>
-    </div>
-  </footer>
+  {% include "landing/_footer.html" %}
 
   <script src="{{ url_for('static', filename='js/landing.js') }}"></script>
 </body>

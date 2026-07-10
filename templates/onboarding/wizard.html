@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Configurar cuenta — {{ app_name }}</title>
+  <title>Prueba Maintix — {{ trial_dias }} días gratis</title>
   {% from "_cdn_assets.html" import google_fonts_inter, bootstrap_css, bootstrap_icons_css, bootstrap_js %}
   {{ google_fonts_inter() }}
   {{ bootstrap_css() }}
@@ -14,14 +14,16 @@
   <header class="onboarding-header">
     <div class="onboarding-header-inner">
       <div class="brand-logo-panel brand-logo-panel--onboarding mx-auto">
-        <img src="{{ url_for('static', filename=app_logo_path) }}" alt="{{ app_name }} CMMS" class="onboarding-logo"
+        <img src="{{ url_for('static', filename=app_logo_path) }}" alt="{{ app_name }}" class="onboarding-logo"
              onerror="this.closest('.brand-logo-panel').classList.add('d-none'); document.getElementById('onb-logo-fallback').classList.remove('d-none');">
       </div>
       <div id="onb-logo-fallback" class="onboarding-hero-fallback d-none">
         <span class="onboarding-hero-fallback-mark"><i class="bi bi-gear-fill"></i></span>
         <span class="d-block fw-bold">{{ app_name }}</span>
       </div>
-      <p class="onboarding-hero-tagline">Configura tu empresa en pocos minutos</p>
+      <p class="onboarding-hero-tagline">
+        Prueba {{ app_name }} {{ trial_dias }} días · un módulo primero · valor en días, no meses
+      </p>
 
       <ol class="onboarding-stepper" aria-label="Pasos de configuración">
         {% for key, label in steps %}
@@ -48,11 +50,19 @@
             {% endif %}
           {% endwith %}
 
+          <div class="alert alert-info border-0 py-2 small mb-4 onboarding-trial-banner" role="note">
+            <i class="bi bi-info-circle me-1"></i>
+            El trial no es «probar features»: es sentir la transformación en tu operación.
+            Plan Start recomienda <strong>un módulo</strong> la primera semana (MCM-06).
+          </div>
+
           <form method="post" class="onboarding-form">
             {% include "_csrf.html" %}
             {% if step == 1 %}
-            <h2 class="h5 fw-semibold mb-4">Paso 1 — Tu empresa</h2>
-
+            <h2 class="h5 fw-semibold mb-3">Paso 1 — Tu empresa</h2>
+            <p class="text-muted small mb-4">
+              Datos base para crear tu tenant. El sector define plantillas y datos de ejemplo (MCM-06).
+            </p>
             <section class="onboarding-form-section">
               <h3 class="onboarding-section-title">Datos legales</h3>
               <div class="row g-3">
@@ -172,6 +182,9 @@
 
             {% elif step == 2 %}
             <h2 class="h5 fw-semibold mb-3">Paso 2 — Usuario administrador</h2>
+            <p class="text-muted small mb-4">
+              Tu champion interno: quien configura usuarios, sedes y empuja la adopción en la primera semana.
+            </p>
             <div class="row g-3">
               <div class="col-md-6">
                 <label class="form-label">Nombre completo</label>
@@ -202,8 +215,10 @@
             </div>
 
             {% elif step == 3 %}
-            <h2 class="h5 fw-semibold mb-3">Paso 3 — Sede principal</h2>
-            <p class="text-muted small">Se creará la sede principal de tu empresa. Si activas Mantenimiento, incluirá categorías de equipos y datos de ejemplo.</p>
+            <h2 class="h5 fw-semibold mb-3">Paso 3 — Sede y datos de ejemplo</h2>
+            <p class="text-muted small mb-3">
+              Se crea tu sede principal con datos de ejemplo para que operes el primer flujo en días, no meses.
+            </p>
             <div class="mb-3">
               <label class="form-label">Nombre de la sede</label>
               <input type="text" name="sede_nombre" class="form-control" placeholder="Sede principal"
@@ -211,32 +226,32 @@
             </div>
             <ul class="list-unstyled small text-muted mb-0">
               <li><i class="bi bi-check2 text-success"></i> Ubicación operativa de tu negocio</li>
-              <li><i class="bi bi-check2 text-success"></i> Con Mantenimiento: categorías, estados y OT de ejemplo</li>
-              <li><i class="bi bi-check2 text-success"></i> Con Inventario: catálogo y proveedor comercial de ejemplo</li>
+              <li><i class="bi bi-check2 text-success"></i> Con Maintix Maintenance: categorías, estados y OT de ejemplo</li>
+              <li><i class="bi bi-check2 text-success"></i> Con Maintix Inventory: catálogo y proveedor comercial de ejemplo</li>
             </ul>
 
             {% elif step == 4 %}
-            <h2 class="h5 fw-semibold mb-3">Paso 4 — Plan de servicio</h2>
+            <h2 class="h5 fw-semibold mb-3">Paso 4 — Módulos y plan</h2>
 
             <section class="onboarding-form-section mb-4">
-              <h3 class="onboarding-section-title">¿Qué módulos necesitas?</h3>
+              <h3 class="onboarding-section-title">Módulo de entrada</h3>
               <p class="text-muted small mb-3">
-                El menú lateral y el dashboard se adaptan a tu elección.
-                <strong>El Surtidor SAS</strong> activaría solo Inventario; una planta industrial, solo Mantenimiento.
+                El menú y el dashboard se adaptan a tu elección. En plan Start, comienza con
+                <strong>un módulo</strong> — victoria operativa en 3–7 días (MCM-06).
               </p>
               <div class="onboarding-modules-grid mb-0">
                 <label class="onboarding-module-card onboarding-module-card--preset">
                   <input type="radio" name="modulos_preset" value="mantenimiento" class="onboarding-module-radio"
                          {% if modulos_preset == 'mantenimiento' %}checked{% endif %}>
                   <span class="onboarding-module-icon"><i class="bi bi-wrench-adjustable"></i></span>
-                  <strong class="d-block">Mantenimiento</strong>
+                  <strong class="d-block">Maintix Maintenance</strong>
                   <span class="small text-muted">Activos, OT, repuestos técnicos, MTBF y cumplimiento preventivo.</span>
                 </label>
                 <label class="onboarding-module-card onboarding-module-card--preset">
                   <input type="radio" name="modulos_preset" value="inventario" class="onboarding-module-radio"
                          {% if modulos_preset == 'inventario' %}checked{% endif %}>
                   <span class="onboarding-module-icon"><i class="bi bi-cart3"></i></span>
-                  <strong class="d-block">Inventario</strong>
+                  <strong class="d-block">Maintix Inventory</strong>
                   <span class="small text-muted">Productos, compras, ventas y proveedores comerciales para tiendas.</span>
                 </label>
                 <label class="onboarding-module-card onboarding-module-card--preset">
@@ -252,7 +267,8 @@
             <section class="onboarding-form-section">
               <h3 class="onboarding-section-title">Plan comercial</h3>
             <p class="text-muted small mb-3">
-              Elige cómo quieres empezar. Los precios y límites se leen de la configuración actual de Mantis.
+              Comienza con la prueba gratuita de {{ trial_dias }} días o elige un plan de pago.
+              Los precios siguen el catálogo oficial Maintix (MCM-04).
             </p>
             {% if sales_prompt %}
             <div class="alert alert-light border small py-2 mb-3">
@@ -308,7 +324,7 @@
               <a href="{{ url_for('main.login') }}" class="btn btn-outline-secondary">Ya tengo cuenta</a>
               {% endif %}
               <button type="submit" name="action" value="next" class="btn btn-primary">
-                {% if step == total_steps %}Finalizar configuración{% else %}Continuar{% endif %}
+                {% if step == total_steps %}{{ cta_final }}{% else %}Continuar{% endif %}
               </button>
             </div>
           </form>
@@ -316,6 +332,11 @@
       </div>
     </div>
   </main>
+  <footer class="onboarding-footer text-center small text-muted py-3">
+    <a href="{{ url_for('main.index') }}">Inicio</a>
+    · <a href="{{ url_for('main.demo') }}">Solicitar demo</a>
+    · <a href="{{ url_for('main.faq') }}">FAQ</a>
+  </footer>
   {{ bootstrap_js() }}
   {% if step == 1 %}
   <script>

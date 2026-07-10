@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Contacto — Maintix</title>
+  <meta name="description" content="Contacta al equipo comercial de Maintix. Ventas, alianzas y consultas generales. Demostración guiada y prueba gratuita disponibles.">
+  {% from "_cdn_assets.html" import google_fonts_inter_extra_bold, bootstrap_icons_css %}
+  {{ google_fonts_inter_extra_bold() }}
+  {{ bootstrap_icons_css() }}
+  <link href="{{ url_for('static', filename='css/landing.css') }}" rel="stylesheet">
+</head>
+<body class="landing-body">
+  {% include "landing/_nav.html" %}
+
+  <main class="landing-public-page">
+    <section class="landing-section landing-section--soft">
+      <div class="container-xl landing-public-page-head">
+        <p class="landing-eyebrow">MKT-05 · Contacto</p>
+        <h1 class="landing-section-title">Hablemos de tu operación</h1>
+        <p class="landing-section-sub mx-auto text-center">{{ contact_intro }}</p>
+      </div>
+    </section>
+
+    <section class="landing-section landing-section--soft">
+      <div class="container-xl">
+        <div class="landing-demo-compare">
+          <article class="landing-demo-compare-card">
+            <h3>Demostración guiada</h3>
+            <p>Sesión de 45–60 min con flujo operativo de tu sector (MCM-07).</p>
+            <a href="{{ url_for('main.demo') }}" class="landing-btn landing-btn-outline landing-btn-sm">
+              <i class="bi bi-calendar-check"></i> {{ cta_demo }}
+            </a>
+          </article>
+          <article class="landing-demo-compare-card landing-demo-compare-card--featured">
+            <h3>Contacto general</h3>
+            <p>Ventas, alianzas o consultas antes de registrarte.</p>
+            <a href="#contacto-form" class="landing-btn landing-btn-primary landing-btn-sm">
+              <i class="bi bi-envelope"></i> Escribir al equipo
+            </a>
+          </article>
+          <article class="landing-demo-compare-card">
+            <h3>Prueba gratuita</h3>
+            <p>{{ trial_dias }} días self-service · sin tarjeta.</p>
+            <a href="{{ url_for('onboarding.wizard') }}" class="landing-btn landing-btn-ghost landing-btn-sm">
+              <i class="bi bi-rocket-takeoff"></i> {{ cta_trial }}
+            </a>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="contacto-form" class="landing-section">
+      <div class="container-xl landing-demo-form-wrap">
+        {% if contact_sent %}
+        <div class="landing-demo-success">
+          <span class="landing-demo-success-icon" aria-hidden="true"><i class="bi bi-check-circle-fill"></i></span>
+          <h2>Mensaje enviado</h2>
+          <p>{{ contact_success_msg }}</p>
+          <p class="small text-muted mb-0">
+            También puedes escribir directamente a
+            <a href="mailto:{{ contact_email }}">{{ contact_email }}</a>.
+          </p>
+          <div class="landing-hero-ctas justify-content-center mt-4">
+            <a href="{{ url_for('onboarding.wizard') }}" class="landing-btn landing-btn-primary">
+              <i class="bi bi-rocket-takeoff"></i> {{ cta_final }}
+            </a>
+            <a href="{{ url_for('main.faq') }}" class="landing-btn landing-btn-outline">Ver FAQ</a>
+          </div>
+        </div>
+        {% else %}
+        <div class="landing-demo-form-card">
+          <h2 class="h4 fw-semibold mb-2">Envíanos un mensaje</h2>
+          <p class="text-muted small mb-4">
+            Respondemos en 24 horas laborables. Para ver el producto en vivo, usa
+            <a href="{{ url_for('main.demo') }}">Solicitar demostración</a>.
+          </p>
+          {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+              {% for cat, msg in messages %}
+                <div class="alert alert-{{ cat }} py-2 small">{{ msg }}</div>
+              {% endfor %}
+            {% endif %}
+          {% endwith %}
+          <form method="post" class="landing-demo-form">
+            {% include "_csrf.html" %}
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label class="form-label" for="contactoNombre">Nombre *</label>
+                <input type="text" id="contactoNombre" name="nombre" class="form-control" required autocomplete="name">
+              </div>
+              <div class="col-md-6">
+                <label class="form-label" for="contactoEmail">Correo *</label>
+                <input type="email" id="contactoEmail" name="email" class="form-control" required autocomplete="email">
+              </div>
+              <div class="col-12">
+                <label class="form-label" for="contactoAsunto">Asunto</label>
+                <select id="contactoAsunto" name="asunto" class="form-select">
+                  {% for key, label in contact_topics %}
+                  <option value="{{ key }}">{{ label }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div class="col-12">
+                <label class="form-label" for="contactoMensaje">Mensaje *</label>
+                <textarea id="contactoMensaje" name="mensaje" class="form-control" rows="4" required
+                          placeholder="Cuéntanos qué necesitas…"></textarea>
+              </div>
+            </div>
+            <button type="submit" class="landing-btn landing-btn-primary mt-4">
+              <i class="bi bi-send"></i> Enviar mensaje
+            </button>
+          </form>
+        </div>
+        {% endif %}
+      </div>
+    </section>
+  </main>
+
+  {% include "landing/_footer.html" %}
+</body>
+</html>

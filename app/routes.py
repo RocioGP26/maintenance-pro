@@ -232,7 +232,7 @@ def _validar_technician_id_tenant(tech_id: Optional[int], label: str = "técnico
 @bp.before_request
 def _require_login():
     ep = request.endpoint or ""
-    if ep.startswith("onboarding.") or ep in ("main.login", "main.index"):
+    if ep.startswith("onboarding.") or ep in ("main.login", "main.index", "main.faq", "main.demo", "main.contacto", "main.recursos"):
         return
     if not current_user.is_authenticated:
         return redirect(url_for("main.login", next=request.url))
@@ -244,7 +244,7 @@ def _require_login():
 def _enforce_role_permissions():
     """Aplica permisos por rol en rutas de escritura y formularios."""
     ep = request.endpoint or ""
-    if ep.startswith("onboarding.") or ep in ("main.login", "main.index"):
+    if ep.startswith("onboarding.") or ep in ("main.login", "main.index", "main.faq", "main.demo", "main.contacto", "main.recursos"):
         return
     if not current_user.is_authenticated:
         return
@@ -363,8 +363,8 @@ def logout():
 def cuenta_suspendida():
     motivo = request.args.get("motivo", "suspendida")
     mensajes = {
-        "suspendida": "Esta cuenta está suspendida. Contacta a soporte de Mantis para reactivarla.",
-        "mora": "Hay pagos pendientes. Regulariza la facturación para continuar usando Mantis.",
+        "suspendida": "Esta cuenta está suspendida. Contacta a soporte de Maintix para reactivarla.",
+        "mora": "Hay pagos pendientes. Regulariza la facturación para continuar usando Maintix.",
     }
     return render_template(
         "cuenta_suspendida.html",
@@ -1277,6 +1277,113 @@ def index():
     ctx = landing_context()
     ctx["now_year"] = date.today().year
     return render_template("landing/index.html", **ctx)
+
+
+@bp.route("/faq")
+def faq():
+    """FAQ público — contenido MCM-08-FAQ."""
+    from app.landing_service import public_page_context
+    from app.public_faq import FAQ_SECTIONS
+
+    ctx = public_page_context()
+    ctx["now_year"] = date.today().year
+    ctx["faq_sections"] = FAQ_SECTIONS
+    return render_template("landing/faq.html", **ctx)
+
+
+@bp.route("/demo", methods=["GET", "POST"])
+def demo():
+    """Demo comercial pública — flujo MCM-07."""
+    import logging
+
+    from app.landing_service import public_page_context
+    from app.platform_config_service import sectores_para_registro
+    from app.public_demo import DEMO_INTRO, DEMO_PLAYS
+
+    logger = logging.getLogger(__name__)
+    ctx = public_page_context()
+    ctx["now_year"] = date.today().year
+    ctx["demo_intro"] = DEMO_INTRO
+    ctx["demo_plays"] = DEMO_PLAYS
+    ctx["sectores"] = sectores_para_registro()
+    ctx["demo_sent"] = request.args.get("sent") == "1"
+
+    if request.method == "POST":
+        nombre = (request.form.get("nombre") or "").strip()
+        email = (request.form.get("email") or "").strip()
+        empresa = (request.form.get("empresa") or "").strip()
+        sector = (request.form.get("sector") or "").strip()
+        mensaje = (request.form.get("mensaje") or "").strip()
+        if not nombre or not email or not empresa:
+            flash("Completa nombre, correo y empresa.", "warning")
+        elif "@" not in email:
+            flash("Ingresa un correo válido.", "warning")
+        else:
+            logger.info(
+                "Solicitud demo Maintix: %s <%s> empresa=%s sector=%s mensaje=%s",
+                nombre,
+                email,
+                empresa,
+                sector or "—",
+                (mensaje[:120] + "…") if len(mensaje) > 120 else (mensaje or "—"),
+            )
+            return redirect(url_for("main.demo", sent=1))
+
+    return render_template("landing/demo.html", **ctx)
+
+
+@bp.route("/contacto", methods=["GET", "POST"])
+def contacto():
+    """Contacto comercial general — MKT-05."""
+    import logging
+
+    from app.branding import PUBLIC_CONTACT_EMAIL
+    from app.landing_service import public_page_context
+    from app.public_contact import CONTACT_INTRO, CONTACT_SUCCESS, CONTACT_TOPICS
+
+    logger = logging.getLogger(__name__)
+    ctx = public_page_context()
+    ctx["now_year"] = date.today().year
+    ctx["contact_intro"] = CONTACT_INTRO
+    ctx["contact_topics"] = CONTACT_TOPICS
+    ctx["contact_success_msg"] = CONTACT_SUCCESS
+    ctx["contact_email"] = PUBLIC_CONTACT_EMAIL
+    ctx["contact_sent"] = request.args.get("sent") == "1"
+
+    if request.method == "POST":
+        nombre = (request.form.get("nombre") or "").strip()
+        email = (request.form.get("email") or "").strip()
+        asunto = (request.form.get("asunto") or "").strip()
+        mensaje = (request.form.get("mensaje") or "").strip()
+        if not nombre or not email or not mensaje:
+            flash("Completa nombre, correo y mensaje.", "warning")
+        elif "@" not in email:
+            flash("Ingresa un correo válido.", "warning")
+        else:
+            logger.info(
+                "Contacto Maintix: %s <%s> asunto=%s mensaje=%s",
+                nombre,
+                email,
+                asunto or "—",
+                (mensaje[:160] + "…") if len(mensaje) > 160 else mensaje,
+            )
+            return redirect(url_for("main.contacto", sent=1))
+
+    return render_template("landing/contacto.html", **ctx)
+
+
+@bp.route("/recursos")
+def recursos():
+    """Recursos y casos — stub MKT-09."""
+    from app.landing_service import public_page_context
+    from app.public_recursos import MTX_CASES, RECURSOS_INTRO, RECURSOS_LINKS
+
+    ctx = public_page_context()
+    ctx["now_year"] = date.today().year
+    ctx["recursos_intro"] = RECURSOS_INTRO
+    ctx["mtx_cases"] = MTX_CASES
+    ctx["recursos_links"] = RECURSOS_LINKS
+    return render_template("landing/recursos.html", **ctx)
 
 
 @bp.route("/dashboard")

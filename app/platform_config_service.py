@@ -19,7 +19,7 @@ from app.models import (
 from app.sector_templates import SECTOR_CHOICES, SECTOR_LABELS
 
 REGLAS_DEFAULT: dict[str, str] = {
-    "trial_dias": "14",
+    "trial_dias": "15",
     "dias_gracia_mora": "5",
     "dias_periodo_pago": "30",
     "plan_tras_trial": PlanTipo.BASICO.value,
@@ -29,9 +29,9 @@ REGLAS_DEFAULT: dict[str, str] = {
 PLANES_SEED: list[dict[str, Any]] = [
     {
         "clave": PlanTipo.BASICO.value,
-        "label": "Plan Starter",
-        "short_label": "Starter",
-        "descripcion": "Para equipos pequeños que empiezan con CMMS",
+        "label": "Plan Start",
+        "short_label": "Start",
+        "descripcion": "Digitaliza tu operación en menos de una semana",
         "precio_mensual": 280_000,
         "precio_anual": 2_800_000,
         "max_usuarios": 5,
@@ -42,17 +42,38 @@ PLANES_SEED: list[dict[str, Any]] = [
         "destacado": False,
         "orden": 10,
         "caracteristicas": [
-            {"text": "Órdenes de trabajo", "included": True},
-            {"text": "Dashboard básico", "included": True},
-            {"text": "Proveedores", "included": False},
-            {"text": "Campos personalizados", "included": False},
+            {"text": "1 módulo a elegir", "included": True},
+            {"text": "Órdenes de trabajo o inventario", "included": True},
+            {"text": "Dashboard operativo", "included": True},
+            {"text": "Onboarding self-service", "included": True},
+        ],
+    },
+    {
+        "clave": "grow",
+        "label": "Plan Grow",
+        "short_label": "Grow",
+        "descripcion": "Unifica mantenimiento e inventario en una sola plataforma",
+        "precio_mensual": 420_000,
+        "precio_anual": 4_200_000,
+        "max_usuarios": 10,
+        "max_activos": 50,
+        "storage_mb": 1000,
+        "soporte": "Email",
+        "visible_registro": True,
+        "destacado": True,
+        "orden": 20,
+        "caracteristicas": [
+            {"text": "Hasta 2 módulos", "included": True},
+            {"text": "Usuarios y sedes ampliados", "included": True},
+            {"text": "Reportes e indicadores", "included": True},
+            {"text": "Onboarding guiado", "included": True},
         ],
     },
     {
         "clave": PlanTipo.PROFESIONAL.value,
-        "label": "Plan Pro",
-        "short_label": "Pro",
-        "descripcion": "El más elegido por empresas en crecimiento",
+        "label": "Plan Scale",
+        "short_label": "Scale",
+        "descripcion": "Control multisede y mayor volumen operativo",
         "precio_mensual": 580_000,
         "precio_anual": 5_800_000,
         "max_usuarios": 20,
@@ -60,20 +81,20 @@ PLANES_SEED: list[dict[str, Any]] = [
         "storage_mb": 2000,
         "soporte": "Chat",
         "visible_registro": True,
-        "destacado": True,
-        "orden": 20,
+        "destacado": False,
+        "orden": 30,
         "caracteristicas": [
-            {"text": "Órdenes de trabajo", "included": True},
-            {"text": "Dashboard básico", "included": True},
-            {"text": "Proveedores", "included": True},
+            {"text": "Módulos combinados", "included": True},
+            {"text": "Multisede", "included": True},
             {"text": "Campos personalizados", "included": True},
+            {"text": "Integraciones vía API", "included": True},
         ],
     },
     {
         "clave": PlanTipo.ENTERPRISE.value,
         "label": "Plan Enterprise",
         "short_label": "Enterprise",
-        "descripcion": "Para operaciones a escala con requisitos avanzados",
+        "descripcion": "Gobernanza, soporte dedicado y operación a escala",
         "precio_mensual": 1_450_000,
         "precio_anual": 14_500_000,
         "max_usuarios": 999,
@@ -82,12 +103,12 @@ PLANES_SEED: list[dict[str, Any]] = [
         "soporte": "Dedicado",
         "visible_registro": True,
         "destacado": False,
-        "orden": 30,
+        "orden": 40,
         "caracteristicas": [
-            {"text": "Todo lo de Pro", "included": True},
-            {"text": "API / Integraciones", "included": True},
-            {"text": "Esquema de BD dedicado", "included": True},
-            {"text": "SLA garantizado", "included": True},
+            {"text": "Capacidad ampliada", "included": True},
+            {"text": "API e integraciones", "included": True},
+            {"text": "SLA y soporte prioritario", "included": True},
+            {"text": "Acompañamiento comercial", "included": True},
         ],
     },
 ]
@@ -130,6 +151,33 @@ def ensure_platform_config() -> None:
             )
     db.session.commit()
     sincronizar_sectores_catalogo()
+    sincronizar_catalogo_planes_mcm()
+
+
+def sincronizar_catalogo_planes_mcm() -> None:
+    """Alinea catálogo con MCM-04 (Start · Grow · Scale · Enterprise)."""
+    for data in PLANES_SEED:
+        plan = CatalogoPlan.query.filter_by(clave=data["clave"]).first()
+        if not plan:
+            plan = CatalogoPlan(clave=data["clave"])
+            db.session.add(plan)
+        plan.label = data["label"]
+        plan.short_label = data["short_label"]
+        plan.descripcion = data.get("descripcion", "")
+        plan.precio_mensual = float(data.get("precio_mensual", 0))
+        plan.precio_anual = data.get("precio_anual")
+        plan.max_usuarios = data.get("max_usuarios")
+        plan.max_activos = data.get("max_activos")
+        plan.storage_mb = data.get("storage_mb")
+        plan.soporte = data.get("soporte", "Email")
+        plan.visible_registro = bool(data.get("visible_registro", True))
+        plan.destacado = bool(data.get("destacado", False))
+        plan.orden = int(data.get("orden", 0))
+        plan.set_caracteristicas(data.get("caracteristicas", []))
+    reg = ReglaPlataforma.query.filter_by(clave="trial_dias").first()
+    if reg is not None and (reg.valor or "").strip() == "14":
+        reg.valor = "15"
+    db.session.commit()
 
 
 def sincronizar_sectores_catalogo() -> None:
@@ -165,7 +213,7 @@ def get_regla_int(clave: str, default: int = 0) -> int:
 
 
 def trial_dias() -> int:
-    return get_regla_int("trial_dias", 14)
+    return get_regla_int("trial_dias", 15)
 
 
 def dias_gracia_mora() -> int:

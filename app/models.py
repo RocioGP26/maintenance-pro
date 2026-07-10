@@ -23,25 +23,25 @@ class PlanTipo(str, Enum):
 
 PLAN_CATALOG = {
     PlanTipo.TRIAL.value: {
-        "label": "Prueba gratuita 14 días",
+        "label": "Prueba gratuita 15 días",
         "short_label": "Trial",
         "descripcion": "Ideal para evaluar la plataforma",
         "max_activos": 100,
-        "dias": 14,
+        "dias": 15,
         "precio_mensual": 0,
     },
     PlanTipo.BASICO.value: {
-        "label": "Plan Básico",
-        "short_label": "Starter",
-        "descripcion": "Hasta 100 activos",
+        "label": "Plan Start",
+        "short_label": "Start",
+        "descripcion": "Digitaliza tu operación en menos de una semana",
         "max_activos": 100,
         "dias": None,
         "precio_mensual": 490_000,
     },
     PlanTipo.PROFESIONAL.value: {
-        "label": "Plan Profesional",
-        "short_label": "Pro",
-        "descripcion": "Hasta 1.000 activos",
+        "label": "Plan Scale",
+        "short_label": "Scale",
+        "descripcion": "Control multisede y mayor volumen",
         "max_activos": 1000,
         "dias": None,
         "precio_mensual": 1_290_000,

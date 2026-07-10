@@ -31,6 +31,7 @@ from app.money import normalizar_moneda
 from app.modules import MODULO_META, normalizar_modulos
 from app.sector_templates import normalizar_sector
 from app.branding import APP_NAME
+from app.landing_service import public_page_context
 from app.onboarding_service import completar_onboarding
 from app.onboarding_session import clear_onboarding_password, pop_onboarding_password, store_onboarding_password
 from app.password_policy import validar_password
@@ -39,10 +40,10 @@ from app.user_service import normalizar_username
 onboarding_bp = Blueprint("onboarding", __name__)
 
 STEPS = (
-    ("empresa", "Tu empresa"),
+    ("empresa", "Empresa"),
     ("admin", "Administrador"),
-    ("sede", "Sede principal"),
-    ("plan", "Plan de servicio"),
+    ("sede", "Sede y datos"),
+    ("plan", "Módulos y plan"),
 )
 
 
@@ -219,7 +220,11 @@ def wizard():
             login_user(user)
             session["show_welcome"] = True
             session["show_tour"] = True
-            flash(f"¡Bienvenido a {APP_NAME}, {user.etiqueta()}!", "success")
+            flash(
+                f"¡Bienvenido a {APP_NAME}, {user.etiqueta()}! "
+                f"Tu prueba gratuita de {public_page_context()['trial_dias']} días comenzó.",
+                "success",
+            )
             from app.modules import MODULO_INVENTARIO, MODULO_MANTENIMIENTO
 
             mods = data.get("modulos") or []
@@ -239,6 +244,7 @@ def wizard():
         pais_preset_ctx = ""
 
     step = int(session.get("onboarding_step", 1))
+    pub = public_page_context()
     return render_template(
         "onboarding/wizard.html",
         step=step,
@@ -260,6 +266,9 @@ def wizard():
         monedas_pais=monedas_para_pais(pais_preset_ctx or "colombia"),
         nota_moneda_venezuela=NOTA_MONEDA_VENEZUELA,
         modo_moneda_ve=(data.get("empresa") or {}).get("modo_moneda_ve", "una"),
+        trial_dias=pub["trial_dias"],
+        cta_final=pub["cta_final"],
+        brand_slogan=pub["brand_slogan"],
     )
 
 
