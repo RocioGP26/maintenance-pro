@@ -14,6 +14,12 @@ MODULO_INVENTARIO = "inventario"
 
 MODULOS_VALIDOS = frozenset({MODULO_MANTENIMIENTO, MODULO_INVENTARIO})
 
+# Claves expuestas en JWT / MAG (`maintenance`, `inventory`)
+MODULO_MAG_KEYS: dict[str, str] = {
+    MODULO_MANTENIMIENTO: "maintenance",
+    MODULO_INVENTARIO: "inventory",
+}
+
 MODULO_META = {
     MODULO_MANTENIMIENTO: {
         "label": "Mantenimiento",
@@ -75,6 +81,11 @@ def modulos_activos_de(empresa: "Empresa | None") -> list[str]:
     if empresa is None:
         return [MODULO_MANTENIMIENTO]
     return normalizar_modulos(getattr(empresa, "modulos_activos_json", None))
+
+
+def modulos_mag_de(empresa: "Empresa | None") -> list[str]:
+    """Módulos activos en nomenclatura MAG (`maintenance`, `inventory`)."""
+    return [MODULO_MAG_KEYS.get(m, m) for m in modulos_activos_de(empresa)]
 
 
 def empresa_tiene_modulo(empresa: "Empresa | None", modulo: str) -> bool:

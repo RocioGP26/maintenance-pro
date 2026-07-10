@@ -14,11 +14,37 @@ Documentar el alcance funcional del módulo CRM de Maintix, describiendo el **es
 
 Actualmente Maintix dispone del **maestro de clientes** utilizado por Inventory y Sales. El CRM ampliará esta información para administrar todo el ciclo comercial.
 
-**Estado:** 📋 **Módulo CRM en roadmap** · 🟡 **Maestro de clientes operativo en Inventory**
+**Estado:** 🟡 **Maestro de clientes operativo** · **Sprint 14 ALIGN:** ✅ Cerrado (2026-07-10) · Módulo CRM completo 📋 **Roadmap**
+
+| Estado | Significado |
+|--------|-------------|
+| ✅ Producción | Maestro clientes alineado |
+| 🟡 Parcial | Pre-CRM · sin pipeline |
+| 📋 Roadmap | CRM completo documentado |
+
+→ Auditoría Sprint 14: [ALIGN · Fase 5](../../alignment/modules/06-crm-audit.md)
+
+### Matriz de implementación (Sprint 14)
+
+| Sección | Tema | Estado |
+|---------|------|--------|
+| §1 | Alcance | 📋 doc |
+| §2 | Estado actual vs objetivo | ✅ |
+| §3 | Entidades | 🟡 |
+| §4 | Pipeline | 📋 |
+| §5 | Clientes y cuentas | ✅ |
+| §6 | Actividades | 📋 |
+| §7 | Integración Sales | ✅ |
+| §8 | Integración Inventory | ✅ |
+| §9 | Indicadores CRM | 📋 |
+| §10 | Evolución prevista | ✅ doc |
+| API | MAG `/api/v1/crm/*` | 📋 |
+
+**Gaps abiertos (📋):** pipeline · oportunidades · contactos · actividades · ficha historial · API.
 
 ---
 
-## 1 · Alcance
+## 1 · Alcance · 📋
 
 | Incluye (objetivo) | No incluye |
 |--------------------|------------|
@@ -31,7 +57,7 @@ Actualmente Maintix dispone del **maestro de clientes** utilizado por Inventory 
 
 ---
 
-## 2 · Estado actual vs objetivo
+## 2 · Estado actual vs objetivo · ✅
 
 | Capacidad | Hoy | CRM objetivo |
 |-----------|-----|--------------|
@@ -58,7 +84,7 @@ Actualmente Maintix dispone del **maestro de clientes** utilizado por Inventory 
 
 ---
 
-## 3 · Entidades principales
+## 3 · Entidades principales · 🟡
 
 | Entidad | Descripción |
 |---------|-------------|
@@ -71,7 +97,7 @@ Actualmente Maintix dispone del **maestro de clientes** utilizado por Inventory 
 
 ---
 
-## 4 · Pipeline comercial
+## 4 · Pipeline comercial · 📋
 
 El proceso comercial seguirá una secuencia **configurable**:
 
@@ -104,7 +130,7 @@ Cada empresa podrá **adaptar las etapas** a su proceso comercial.
 
 ---
 
-## 5 · Clientes y cuentas
+## 5 · Clientes y cuentas · ✅
 
 El cliente será el **eje central** del CRM.
 
@@ -120,11 +146,11 @@ Cada cuenta podrá almacenar:
 
 Una cuenta podrá tener **múltiples contactos**.
 
-> **Hoy:** ficha única por `InvCliente` · historial vía ventas vinculadas · sin oportunidades ni actividades.
+> **Hoy:** ficha única por `InvCliente` · historial vía ventas vinculadas · sin oportunidades ni actividades · nav bajo **Ventas → Clientes**.
 
 ---
 
-## 6 · Actividades comerciales
+## 6 · Actividades comerciales · 📋
 
 El CRM permitirá registrar todas las **interacciones** con el cliente.
 
@@ -148,7 +174,7 @@ Cada actividad tendrá:
 
 ---
 
-## 7 · Integración con Sales
+## 7 · Integración con Sales · ✅
 
 El CRM será la **etapa previa** al proceso de venta:
 
@@ -174,7 +200,7 @@ Las oportunidades **ganadas** podrán convertirse directamente en ventas.
 
 ---
 
-## 8 · Integración con Inventory
+## 8 · Integración con Inventory · ✅
 
 El CRM **no administra productos**, pero utiliza el catálogo comercial para:
 
@@ -189,7 +215,7 @@ El CRM **no administra productos**, pero utiliza el catálogo comercial para:
 
 ---
 
-## 9 · Indicadores comerciales
+## 9 · Indicadores comerciales · 📋
 
 | KPI | Descripción |
 |-----|-------------|
@@ -208,7 +234,7 @@ Estos indicadores alimentarán el **Dashboard Comercial**.
 
 ---
 
-## 10 · Evolución prevista
+## 10 · Evolución prevista · ✅
 
 | Funcionalidad | Estado |
 |---------------|--------|
@@ -286,6 +312,7 @@ Este capítulo se considera **implementado (documentación)** cuando:
 - [x] Estado actual vs objetivo definido
 - [x] Pipeline · entidades · integraciones descritas
 - [x] Indicadores y evolución prevista documentados
+- [x] Alineación maestro clientes vs MRG (Sprint 14 · Fase 5)
 - [ ] Existe un módulo CRM funcional en producto
 - [ ] Cuentas y contactos múltiples operativos
 - [ ] Pipeline configurable implementado
@@ -306,11 +333,11 @@ El CRM no consiste únicamente en almacenar clientes. Su objetivo es convertir l
 
 | Aspecto | Valor |
 |---------|-------|
-| **Módulo** | 📋 Roadmap |
-| **Estado actual** | 🟡 Maestro de clientes en Inventory |
-| **Integración futura** | Sales · Inventory · Reportes |
-| **MRG** | v0.1.0 |
-| **Siguiente capítulo** | MRG-07-ADMIN · Administración |
+| **Módulo CRM** | 📋 Roadmap |
+| **Maestro clientes** | ✅ Operativo |
+| **Sprint 14 ALIGN** | ✅ Cerrado 2026-07-10 |
+| **MRG capítulo** | v1.0.1 |
+| **Próximo paso** | Fase 6 · MRG-07 Admin ([ALIGN](../../alignment/)) |
 
 ---
 

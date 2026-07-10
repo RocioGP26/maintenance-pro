@@ -138,7 +138,7 @@
               <div class="col-12">
                 <label class="form-label" for="displayResponsableActivo">Responsable</label>
                 <input type="text" id="displayResponsableActivo" class="form-control" readonly value="">
-                <div class="form-text small">Dato del activo al seleccionar el equipo. Si el activo no lo tiene, queda vacío.</div>
+                <div class="form-text small">Dato del activo al seleccionarlo. Si el activo no lo tiene, queda vacío.</div>
               </div>
               {% endif %}
             </div>
@@ -153,7 +153,7 @@
                        placeholder="{% if not order or order.tipo == 'preventivo' %}Ej. Lubricación general{% else %}Descripción breve de la orden{% endif %}"
                        value="{{ order.titulo if order else '' }}">
                 <div class="form-text small {% if not order or order.tipo != 'preventivo' %}d-none{% endif %}" id="hintActividadPreventiva">
-                  Una misma actividad no puede repetirse en el mismo equipo mientras exista una OT preventiva abierta.
+                  Una misma actividad no puede repetirse en el mismo activo mientras exista una OT preventiva abierta.
                 </div>
               </div>
               <div class="col-md-6">
@@ -255,25 +255,25 @@
             </div>
 
             <div class="col-12 d-none" id="seccionParoMaquina">
-              <label class="form-label">¿Requirió parar la máquina?</label>
+              <label class="form-label">¿Requirió parar el activo?</label>
               <div class="border rounded p-3 bg-light">
                 {% set paro = order.maquina_requirio_paro %}
                 <div class="form-check">
                   <input class="form-check-input" type="radio" name="maquina_requirio_paro" value="1" id="paroMaquinaSi"
                          {% if paro %}checked{% endif %}>
                   <label class="form-check-label" for="paroMaquinaSi">
-                    Sí, la máquina estuvo parada
+                    Sí, el activo estuvo parado
                   </label>
                 </div>
                 <div class="form-check">
                   <input class="form-check-input" type="radio" name="maquina_requirio_paro" value="0" id="paroMaquinaNo"
                          {% if not paro %}checked{% endif %}>
                   <label class="form-check-label" for="paroMaquinaNo">
-                    No, no se requirió parar la máquina
+                    No, no se requirió parar el activo
                   </label>
                 </div>
                 <p class="form-text small mb-0 mt-2">
-                  Solo las OT correctivas con paro de máquina cuentan para el indicador MTTR del dashboard.
+                  Solo las OT correctivas con paro del activo cuentan para el indicador MTTR del dashboard.
                 </p>
               </div>
             </div>
@@ -483,7 +483,7 @@
     abierta: { label: 'Abierta', cls: 'badge-wo-estado badge-wo-abierta' },
     en_proceso: { label: 'En proceso', cls: 'badge-wo-estado badge-wo-en-proceso' },
     vencida: { label: 'Vencida', cls: 'badge-wo-estado badge-wo-vencida' },
-    completado: { label: 'Completado', cls: 'badge-wo-estado badge-wo-completado' },
+    completado: { label: 'Completada', cls: 'badge-wo-estado badge-wo-completado' },
     cerrada: { label: 'Cerrada', cls: 'badge-wo-estado badge-wo-cerrada' }
   };
 

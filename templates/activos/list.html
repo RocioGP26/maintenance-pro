@@ -3,7 +3,7 @@
 {% block page_title %}Activos{% endblock %}
 
 {% block header_toolbar %}
-<span class="activos-header-count badge rounded-pill text-bg-light border" id="activosHeaderCount">{{ activos_kpis.total }} equipos</span>
+<span class="activos-header-count badge rounded-pill text-bg-light border" id="activosHeaderCount">{{ activos_kpis.total }} activos</span>
 {% if perm.crear %}
 <a href="{{ url_for('main.activos_new') }}" class="btn btn-outline-primary btn-sm">
   <i class="bi bi-plus-lg"></i> Nuevo activo
@@ -177,7 +177,7 @@
           </tr>
           {% else %}
           <tr class="activos-empty-row">
-            <td colspan="8" class="text-center text-muted py-4">No hay equipos registrados.</td>
+            <td colspan="8" class="text-center text-muted py-4">No hay activos registrados.</td>
           </tr>
           {% endfor %}
         </tbody>

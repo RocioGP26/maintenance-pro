@@ -23,14 +23,14 @@ Documentación funcional oficial de Maintix para clientes, implementadores, cons
 | # | Código | Título | Estado |
 |---|--------|--------|--------|
 | 01 | MRG-01-INTRO | [Filosofía de Maintix](chapters/01-intro-filosofia.md) | ✅ |
-| 02 | MRG-02-MAINT | [Mantenimiento](chapters/02-maintenance.md) | ✅ |
-| 03 | MRG-03-INV | [Inventario](chapters/03-inventario.md) | ✅ |
-| 04 | MRG-04-PUR | [Compras](chapters/04-compras.md) | ✅ |
-| 05 | MRG-05-SALES | [Ventas](chapters/05-ventas.md) | ✅ |
-| 06 | MRG-06-CRM | [CRM](chapters/06-crm.md) | ✅ |
-| 07 | MRG-07-ADMIN | [Administración](chapters/07-administracion.md) | ✅ |
-| 08 | MRG-08-REPORTS | [Indicadores y reportes](chapters/08-reportes.md) | ✅ |
-| 09 | MRG-09-WORKFLOWS | [Flujos de trabajo](chapters/09-workflows.md) | ✅ |
+| 02 | MRG-02-MAINT | [Mantenimiento](chapters/02-maintenance.md) | 🟡 v1.0.2 · ALIGN ✅ |
+| 03 | MRG-03-INV | [Inventario](chapters/03-inventario.md) | ✅ v1.0.1 · ALIGN ✅ |
+| 04 | MRG-04-PUR | [Compras](chapters/04-compras.md) | 🟡 v1.0.1 · ALIGN ✅ |
+| 05 | MRG-05-SALES | [Ventas](chapters/05-ventas.md) | 🟡 v1.0.1 · ALIGN ✅ |
+| 06 | MRG-06-CRM | [CRM](chapters/06-crm.md) | 🟡 v1.0.1 · ALIGN ✅ |
+| 07 | MRG-07-ADMIN | [Administración](chapters/07-administracion.md) | ✅ v1.0.1 · ALIGN ✅ |
+| 08 | MRG-08-REPORTS | [Indicadores y reportes](chapters/08-reportes.md) | 🟡 v1.0.1 · ALIGN ✅ |
+| 09 | MRG-09-WORKFLOWS | [Flujos de trabajo](chapters/09-workflows.md) | 🟡 v1.0.1 · ALIGN ✅ |
 | 10 | MRG-10-BEST | [Buenas prácticas](chapters/10-buenas-practicas.md) | ✅ |
 
 ## Relacionado

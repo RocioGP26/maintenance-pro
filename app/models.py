@@ -80,7 +80,7 @@ WORK_ORDER_STATUS_META = {
         "color": "#16a34a",
     },
     "completado": {
-        "label": "Completado",
+        "label": "Completada",
         "badge_class": "badge-wo-estado badge-wo-completado",
         "color": "#0d9488",
     },

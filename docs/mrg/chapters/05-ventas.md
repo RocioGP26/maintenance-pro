@@ -14,11 +14,37 @@ Documentar el funcionamiento funcional del proceso de ventas de Maintix, incluye
 
 Actualmente las ventas forman parte del módulo **Inventory** y evolucionarán hacia un módulo independiente altamente integrado.
 
-**Estado:** 🟡 **Operativo dentro de Inventory** · Sales Pro 📋 **Roadmap**
+**Estado:** 🟡 **Operativo dentro de Inventory** · **Sprint 14 ALIGN:** ✅ Cerrado (2026-07-10) · Sales Pro 📋 **Roadmap**
+
+| Estado | Significado |
+|--------|-------------|
+| ✅ Producción | Implementado y alineado con subflujo documentado |
+| 🟡 Parcial | Núcleo OK · Sales Pro / API en roadmap |
+| 📋 Roadmap | Documentado · no implementado |
+
+→ Auditoría Sprint 14: [ALIGN · Fase 4](../../alignment/modules/05-ventas-audit.md)
+
+### Matriz de implementación (Sprint 14)
+
+| Sección | Tema | Estado |
+|---------|------|--------|
+| §1 | Alcance | 🟡 |
+| §2 | Entidades | ✅ |
+| §3 | Flujo de venta | ✅ |
+| §4 | POS | ✅ |
+| §5 | Estados venta / cobro | 🟡 |
+| §6 | Ventas a crédito · cartera | ✅ |
+| §7 | Clientes | ✅ |
+| §8 | Relación Inventory | ✅ |
+| §9 | Sales Pro | 📋 |
+| §10 | Indicadores | 🟡 |
+| API | MAG `/api/v1/sales/*` | 📋 |
+
+**Gaps abiertos (📋):** borrador/anulación · CxC dedicada · Sales Pro · API.
 
 ---
 
-## 1 · Alcance
+## 1 · Alcance · 🟡
 
 | Incluye | No incluye (hoy) |
 |---------|------------------|
@@ -31,7 +57,7 @@ Actualmente las ventas forman parte del módulo **Inventory** y evolucionarán h
 
 ---
 
-## 2 · Entidades principales
+## 2 · Entidades principales · ✅
 
 | Entidad | Descripción |
 |---------|-------------|
@@ -55,7 +81,7 @@ Actualmente las ventas forman parte del módulo **Inventory** y evolucionarán h
 
 ---
 
-## 3 · Flujo de venta
+## 3 · Flujo de venta · ✅
 
 ```
 Cliente
@@ -85,7 +111,7 @@ Todo el proceso queda registrado para **auditoría**.
 
 ---
 
-## 4 · Punto de venta (POS)
+## 4 · Punto de venta (POS) · ✅
 
 El POS permite realizar ventas de forma rápida.
 
@@ -103,7 +129,7 @@ El POS permite realizar ventas de forma rápida.
 
 ---
 
-## 5 · Estados de una venta
+## 5 · Estados de una venta · 🟡
 
 ### Modelo funcional (Sales)
 
@@ -127,7 +153,7 @@ El POS permite realizar ventas de forma rápida.
 
 ---
 
-## 6 · Ventas a crédito
+## 6 · Ventas a crédito · ✅
 
 Cuando la forma de pago es **crédito**, Maintix registra automáticamente la obligación pendiente.
 
@@ -141,11 +167,27 @@ Cada venta puede tener:
 | Fecha de vencimiento | Plazo acordado con el cliente |
 | Observaciones | Notas en venta o en cada cobro |
 
-Los **abonos** reducen el saldo hasta completar el pago. El listado de ventas permite filtrar **cobros pendientes** (cartera ligera, sin módulo CxC dedicado).
+Los **abonos** reducen el saldo hasta completar el pago.
+
+### Cartera por cobrar (cartera ligera) · ✅
+
+Sin módulo **CxC** dedicado — equivalente operativo a CxP en Compras (MRG-04):
+
+| Función | Ruta / comportamiento |
+|---------|----------------------|
+| Listado ventas | `/comercial/ventas` |
+| Filtro por cobrar | `?cobro=pendiente` |
+| Abonos | Detalle venta · `InvVentaCobro` |
+| Nav | Submenú **Ventas** → Por cobrar |
+| KPI | Ventas del día en dashboard |
+
+**Estados de cobro:** Pagada · Pendiente · Abono parcial.
+
+**Hoy en producto:** filas warning en listado · abono desde detalle · crédito exige cliente.
 
 ---
 
-## 7 · Clientes
+## 7 · Clientes · ✅
 
 El maestro de clientes constituye la **base comercial** del tenant.
 
@@ -164,7 +206,7 @@ Este catálogo evolucionará posteriormente hacia **CRM** — pipeline, contacto
 
 ---
 
-## 8 · Relación con Inventory
+## 8 · Relación con Inventory · ✅
 
 Cada venta genera automáticamente:
 
@@ -189,7 +231,7 @@ Stock actualizado · KPIs comerciales
 
 ---
 
-## 9 · Evolución Sales Pro
+## 9 · Evolución Sales Pro · 📋
 
 Sales Pro ampliará significativamente las capacidades actuales:
 
@@ -209,7 +251,7 @@ Sales Pro ampliará significativamente las capacidades actuales:
 
 ---
 
-## 10 · Indicadores
+## 10 · Indicadores · 🟡
 
 | KPI | Descripción |
 |-----|-------------|
@@ -288,6 +330,7 @@ Este capítulo se considera **implementado** cuando:
 - [x] Descuento automático de inventario documentado
 - [x] Indicadores comerciales definidos
 - [x] Evolución hacia Sales Pro documentada
+- [x] Alineación UI/copy/menús vs producto (Sprint 14 · Fase 4)
 - [ ] Validación con operación comercial real
 - [ ] Alineación MAG Sales v1
 
@@ -305,11 +348,11 @@ Vender no consiste únicamente en registrar una salida de inventario. Cada venta
 
 | Aspecto | Valor |
 |---------|-------|
-| **Módulo** | 🟡 Operativo dentro de Inventory |
+| **Módulo Sales** | 🟡 Parcial · operativo |
 | **Sales Pro** | 📋 Roadmap |
-| **Integración** | Inventory · Clientes · Reportes |
-| **MRG** | v0.1.0 |
-| **Siguiente capítulo** | MRG-06-CRM · CRM |
+| **Sprint 14 ALIGN** | ✅ Cerrado 2026-07-10 |
+| **MRG capítulo** | v1.0.1 |
+| **Próximo paso** | Fase 5 · MRG-06 CRM ([ALIGN](../../alignment/)) |
 
 ---
 

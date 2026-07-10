@@ -243,7 +243,7 @@ def build_plant_kpi_cards(
             _fmt_hours(mttr),
             f"Correctivos con paro ({mes_label})",
             "neutral",
-            "Promedio de horas en OT correctivas cerradas donde la máquina estuvo parada",
+            "Promedio de horas en OT correctivas cerradas donde el activo estuvo parado",
         ),
     ]
     return cards

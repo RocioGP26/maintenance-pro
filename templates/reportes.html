@@ -1,13 +1,32 @@
 {% extends "base.html" %}
 {% block title %}Reportes — {{ app_name }}{% endblock %}
-{% block page_title %}Reportes / Analítica{% endblock %}
+{% block page_title %}Reportes{% endblock %}
+
+{% block header_toolbar %}
+<a href="{{ url_for('main.dashboard') }}" class="btn btn-outline-secondary btn-sm">
+  <i class="bi bi-house-door"></i> Dashboard
+</a>
+{% if mod_inventario|default(false) %}
+<a href="{{ url_for('inv_comercial.dashboard_inventario') }}" class="btn btn-outline-primary btn-sm">
+  <i class="bi bi-graph-up-arrow"></i> KPIs comerciales
+</a>
+{% endif %}
+{% endblock %}
 
 {% block content %}
+<p class="text-muted small mb-3">
+  Indicadores de <strong>mantenimiento</strong> (MRG-08 §4) — activos, órdenes de trabajo y repuestos técnicos.
+  Datos del tenant actual, sin filtro de período.
+  {% if mod_inventario|default(false) %}
+  Los KPIs comerciales están en <a href="{{ url_for('inv_comercial.dashboard_inventario') }}">Dashboard inventario</a>.
+  {% endif %}
+</p>
+
 <div class="row g-4 mb-4">
   <div class="col-md-4">
     <div class="card card-dashboard h-100">
       <div class="card-body">
-        <h6 class="text-muted text-uppercase small">Equipos registrados</h6>
+        <h6 class="text-muted text-uppercase small">Activos registrados</h6>
         <p class="display-6 fw-bold text-primary mb-0">{{ total_m }}</p>
       </div>
     </div>
@@ -15,22 +34,26 @@
   <div class="col-md-4">
     <div class="card card-dashboard h-100">
       <div class="card-body">
-        <h6 class="text-muted text-uppercase small">Referencias bajo mínimo</h6>
-        <p class="display-6 fw-bold {% if bajo_minimo %}text-warning{% else %}text-success{% endif %} mb-0">{{ bajo_minimo }}</p>
+        <h6 class="text-muted text-uppercase small">Repuestos bajo mínimo</h6>
+        <p class="display-6 fw-bold {% if bajo_minimo %}text-danger{% else %}text-success{% endif %} mb-0">{{ bajo_minimo }}</p>
+        {% if bajo_minimo %}
+        <a href="{{ url_for('main.inventario_list') }}" class="small">Ver inventario técnico →</a>
+        {% endif %}
       </div>
     </div>
   </div>
   <div class="col-md-4">
     <div class="card card-dashboard h-100">
       <div class="card-body">
-        <h6 class="text-muted text-uppercase small">Resumen</h6>
-        <p class="small mb-0 text-muted">Distribución de activos por estado y órdenes por tipo y estado (todas las fechas).</p>
+        <h6 class="text-muted text-uppercase small">Exportaciones</h6>
+        <p class="small mb-2 text-muted">Exportación Excel de OT y activos — próximamente.</p>
+        <span class="badge text-bg-secondary">Próximamente</span>
       </div>
     </div>
   </div>
 </div>
 
-<div class="row g-4">
+<div class="row g-4 mb-4">
   <div class="col-lg-4">
     <div class="card card-dashboard h-100">
       <div class="card-body">
@@ -44,7 +67,7 @@
   <div class="col-lg-4">
     <div class="card card-dashboard h-100">
       <div class="card-body">
-        <h5 class="card-title fw-semibold mb-3">Órdenes por tipo</h5>
+        <h5 class="card-title fw-semibold mb-3">OT por tipo</h5>
         <div class="chart-box">
           <canvas id="chartTipo"></canvas>
         </div>
@@ -54,7 +77,7 @@
   <div class="col-lg-4">
     <div class="card card-dashboard h-100">
       <div class="card-body">
-        <h5 class="card-title fw-semibold mb-3">Órdenes por estado</h5>
+        <h5 class="card-title fw-semibold mb-3">OT por estado</h5>
         <div class="chart-box">
           <canvas id="chartWoEstado"></canvas>
         </div>
@@ -62,6 +85,39 @@
     </div>
   </div>
 </div>
+
+{% if bajo_minimo_items %}
+<div class="card card-dashboard">
+  <div class="card-body">
+    <h5 class="card-title fw-semibold mb-3">Repuestos bajo stock mínimo</h5>
+    <div class="table-responsive">
+      <table class="table table-sm table-hover mb-0">
+        <thead class="table-light">
+          <tr>
+            <th>SKU</th>
+            <th>Repuesto</th>
+            <th class="text-end">Stock</th>
+            <th class="text-end">Mínimo</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for p in bajo_minimo_items %}
+          <tr>
+            <td class="font-monospace small">{{ p.sku }}</td>
+            <td>{{ p.nombre }}</td>
+            <td class="text-end text-danger fw-semibold">{{ p.cantidad }}</td>
+            <td class="text-end text-muted">{{ p.stock_minimo }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% if bajo_minimo > bajo_minimo_items|length %}
+    <p class="small text-muted mb-0 mt-2">Mostrando {{ bajo_minimo_items|length }} de {{ bajo_minimo }} referencias.</p>
+    {% endif %}
+  </div>
+</div>
+{% endif %}
 {% endblock %}
 
 {% block scripts %}

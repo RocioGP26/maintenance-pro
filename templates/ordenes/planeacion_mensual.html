@@ -109,7 +109,7 @@
       <i class="bi bi-lock-fill"></i> Guardar
     </button>
     <button type="submit" name="accion" value="cargar_anterior" class="btn btn-warning btn-sm text-dark py-0"
-            onclick="return confirm('¿Cargar horas del mes anterior en equipos sin meta guardada?');">
+            onclick="return confirm('¿Cargar horas del mes anterior en activos sin meta guardada?');">
       <i class="bi bi-lightning-fill"></i> Mes anterior
     </button>
   </div>
@@ -118,7 +118,7 @@
     <div class="planeacion-table-head d-flex flex-wrap justify-content-between align-items-center gap-1">
       <span class="fw-semibold text-white">{{ mes_label }} {{ anio }}</span>
       <span class="small text-white-50">
-        {{ total_equipos }} eq. ·
+        {{ total_equipos }} activos ·
         <span class="text-success-emphasis">{{ total_configurados }}</span> ok ·
         <span class="text-warning">{{ total_pendientes }}</span> pend.
       </span>
@@ -223,7 +223,7 @@
     var alguna = document.querySelector('.fila-sel:checked');
     if (!alguna) {
       ev.preventDefault();
-      alert('Selecciona al menos un equipo para guardar la meta.');
+      alert('Selecciona al menos un activo para guardar la meta.');
       return;
     }
     document.querySelectorAll('.fila-sel:checked').forEach(function (cb) {

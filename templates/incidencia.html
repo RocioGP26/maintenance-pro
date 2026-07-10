@@ -101,7 +101,7 @@
                      value="{{ f.titulo }}">
             </div>
             <div class="col-md-6">
-              <label class="form-label" for="equipoIncidencia">Equipo relacionado</label>
+              <label class="form-label" for="equipoIncidencia">Activo relacionado</label>
               <select name="machine_id" id="equipoIncidencia" class="form-select">
                 <option value="">— No especificado —</option>
                 {% for m in machines %}
@@ -123,7 +123,7 @@
             <div class="col-12">
               <label class="form-label" for="descripcionIncidencia">Descripción detallada *</label>
               <textarea name="descripcion" id="descripcionIncidencia" class="form-control" rows="4" required
-                        placeholder="Hora aproximada, síntomas observados, ¿el equipo está detenido?">{{ f.descripcion }}</textarea>
+                        placeholder="Hora aproximada, síntomas observados, ¿el activo está detenido?">{{ f.descripcion }}</textarea>
             </div>
             <div class="col-md-6">
               <label class="form-label" for="fechaEvento">Fecha aproximada del evento</label>
@@ -156,7 +156,7 @@
             <input class="form-check-input" type="checkbox" name="equipo_detenido" value="1" id="equipoDetenido"
                    {% if f.equipo_detenido %}checked{% endif %}>
             <label class="form-check-label" for="equipoDetenido">
-              El equipo está detenido o fuera de servicio actualmente
+              El activo está detenido o fuera de servicio actualmente
             </label>
           </div>
         </div>
@@ -186,7 +186,7 @@
         <div class="fw-semibold mb-2"><i class="bi bi-lightbulb me-1"></i> ¿Qué incluir?</div>
         <ul class="mb-0 ps-3">
           <li>Hora y lugar del evento</li>
-          <li>Si el equipo está detenido</li>
+          <li>Si el activo está detenido</li>
           <li>Síntomas observados</li>
           <li>Fotos del daño o anomalía</li>
         </ul>
@@ -218,10 +218,10 @@
         <div class="card-body py-3">
           <h6 class="fw-semibold mb-3">¿Qué pasa después?</h6>
           <ol class="small mb-0 ps-3 inc-flujo-list">
-            <li class="mb-2">Reporte enviado al equipo de mantenimiento</li>
-            <li class="mb-2">Revisión y clasificación de la incidencia</li>
-            <li class="mb-2">Creación de OT correctiva si aplica</li>
-            <li>Notificación de cierre al reportante</li>
+            <li class="mb-2">El solicitante envía el reporte</li>
+            <li class="mb-2">Supervisión revisa y clasifica</li>
+            <li class="mb-2">Se crea OT correctiva si aplica</li>
+            <li>Resolución documentada y cierre</li>
           </ol>
         </div>
       </div>

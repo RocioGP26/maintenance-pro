@@ -14,11 +14,38 @@ Documentar el funcionamiento funcional del módulo **Purchasing**, responsable d
 
 Actualmente **parte del proceso se realiza desde el módulo Inventory**. En futuras versiones evolucionará hacia un módulo independiente completamente integrado con inventario, cuentas por pagar y analítica.
 
-**Estado:** 📋 **Módulo Purchasing en roadmap** · 🟡 **Subflujo operativo en Inventory** (compras comerciales + CxP)
+**Estado:** 🟡 **Subflujo operativo en Inventory** · **Sprint 14 ALIGN:** ✅ Cerrado (2026-07-10)
+
+| Estado | Significado |
+|--------|-------------|
+| ✅ Producción | Implementado y alineado con subflujo documentado |
+| 🟡 Parcial | Subflujo OK · modelo Purchasing completo en roadmap |
+| 📋 Roadmap | Documentado · no implementado |
+
+→ Auditoría Sprint 14: [ALIGN · Fase 3](../../alignment/modules/04-compras-audit.md)
+
+### Matriz de implementación (Sprint 14)
+
+| Sección | Tema | Estado |
+|---------|------|--------|
+| §1 | Alcance | 🟡 |
+| §2 | Entidades | 🟡 |
+| §3 | Flujo de compra | 🟡 |
+| §4 | Proveedores | ✅ |
+| §5 | Órdenes de compra | 🟡 |
+| §5 · CxP | Cuentas por pagar | ✅ |
+| §6 | Recepción | 🟡 |
+| §7 | Relación Inventory | ✅ |
+| §8 | Relación Maintenance | ✅ |
+| §9 | Indicadores | 🟡 |
+| §10–§12 | Integración · casos · buenas prácticas | ✅ doc |
+| API | MAG `/api/v1/purchasing/*` | 📋 |
+
+**Gaps abiertos (📋):** solicitudes · OC formal · recepción parcial · Purchasing standalone · API.
 
 ---
 
-## 1 · Alcance
+## 1 · Alcance · 🟡
 
 | Incluye | No incluye (hoy) |
 |---------|------------------|
@@ -33,7 +60,7 @@ Actualmente **parte del proceso se realiza desde el módulo Inventory**. En futu
 
 ---
 
-## 2 · Entidades principales
+## 2 · Entidades principales · 🟡
 
 | Entidad | Descripción |
 |---------|-------------|
@@ -58,7 +85,7 @@ Actualmente **parte del proceso se realiza desde el módulo Inventory**. En futu
 
 ---
 
-## 3 · Flujo de compra
+## 3 · Flujo de compra · 🟡
 
 El proceso completo sigue una secuencia estándar:
 
@@ -107,7 +134,7 @@ Registrar compra (líneas + IVA + totales)
 
 ---
 
-## 4 · Proveedores
+## 4 · Proveedores · ✅
 
 Cada proveedor dispone de información comercial propia:
 
@@ -126,7 +153,7 @@ Un mismo proveedor puede abastecer **múltiples productos**.
 
 ---
 
-## 5 · Órdenes de compra
+## 5 · Órdenes de compra · 🟡
 
 Una orden de compra representa el **compromiso formal de adquisición**.
 
@@ -162,9 +189,26 @@ Una orden de compra representa el **compromiso formal de adquisición**.
 
 > **Hoy:** al registrar la compra el stock se actualiza en el mismo acto (recepción **completa** implícita). Estados de OC formal y recepción parcial — roadmap.
 
+### Cuentas por pagar (CxP) · ✅
+
+Pantalla operativa para **obligaciones con proveedores** derivadas de compras a crédito — no es un módulo aparte, sino la vista de tesorería sobre `InvCompra` con saldo pendiente.
+
+| Función | Ruta / comportamiento |
+|---------|----------------------|
+| Listado CxP | `/comercial/cuentas-por-pagar` |
+| KPIs | Saldo total · por vencer (7 d.) · vencidas |
+| Filtros | Por proveedor · alerta vencimiento |
+| Registrar pago | Modal · parcial o total · `InvCompraPago` |
+| Enlace compra | Desde factura → detalle de entrada |
+| Nav | Submenú bajo **Compras** → Cuentas por pagar |
+
+**Estados de pago:** Pendiente · Abono parcial · Pagada · alerta **Vencida** (fecha límite superada).
+
+**Hoy en producto:** alertas en dashboard inventario · campana header · filtros en listado de compras · pagos AJAX desde CxP y detalle de compra.
+
 ---
 
-## 6 · Recepción de mercancía
+## 6 · Recepción de mercancía · 🟡
 
 Cuando llega una compra, Maintix registra la recepción.
 
@@ -185,7 +229,7 @@ La recepción:
 
 ---
 
-## 7 · Relación con Inventory
+## 7 · Relación con Inventory · ✅
 
 Purchasing alimenta directamente el inventario comercial:
 
@@ -211,7 +255,7 @@ Toda compra genera **movimientos positivos** de inventario.
 
 ---
 
-## 8 · Relación con Maintenance
+## 8 · Relación con Maintenance · ✅
 
 Actualmente existen **dos tipos de adquisiciones**:
 
@@ -226,7 +270,7 @@ En la hoja de ruta ambas utilizarán el mismo módulo **Purchasing**, diferenci�
 
 ---
 
-## 9 · Indicadores
+## 9 · Indicadores · 🟡
 
 | KPI | Descripción |
 |-----|-------------|
@@ -332,6 +376,7 @@ Este capítulo se considera **implementado** cuando:
 - [x] Actualización de inventario documentada
 - [x] Indicadores funcionales establecidos
 - [x] Relación con Maintenance e Inventory documentada
+- [x] Alineación UI/copy/menús vs producto (Sprint 14 · Fase 3)
 - [ ] Validación con operación comercial real
 - [ ] Alineación MAG Purchasing v1
 
@@ -349,11 +394,11 @@ Comprar no consiste únicamente en adquirir productos. Significa garantizar que 
 
 | Aspecto | Valor |
 |---------|-------|
-| **Módulo** | 📋 Roadmap (Purchasing) |
-| **Integración actual** | 🟡 Parcial (desde Inventory) |
-| **Relación** | Inventory · Maintenance |
-| **MRG** | v0.1.0 |
-| **Siguiente capítulo** | MRG-05-SALES · Ventas |
+| **Módulo Purchasing** | 📋 Roadmap |
+| **Subflujo Inventory** | 🟡 Parcial · operativo |
+| **Sprint 14 ALIGN** | ✅ Cerrado 2026-07-10 |
+| **MRG capítulo** | v1.0.2 |
+| **Próximo paso** | Fase 4 · MRG-05 Ventas ([ALIGN](../../alignment/)) |
 
 ---
 

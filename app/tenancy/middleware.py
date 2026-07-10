@@ -22,6 +22,7 @@ _PUBLIC_EXACT = {
     "main.cuenta_suspendida",
     "main.salir_impersonacion",
     "tenancy_api.login",
+    "tenancy_api.login_v1",
     "admin.crear_empresa",
 }
 

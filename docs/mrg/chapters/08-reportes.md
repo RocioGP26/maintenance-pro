@@ -1,6 +1,6 @@
 # MRG-08-REPORTS · Indicadores y reportes
 
-**Código:** MRG-08-REPORTS · Sprint 10.8 · **Entregado**
+**Código:** MRG-08-REPORTS · Sprint 10.8 · **Entregado** · **v1.0.1** · Sprint 14 ALIGN ✅
 
 > Maintix ofrece **dashboards operativos**, reportes web por módulo y **exportaciones** (Excel, estándar PDF vía MRL) para decisiones basadas en datos del tenant.
 
@@ -12,11 +12,34 @@
 
 Documentar indicadores, dashboards y exportaciones disponibles — y su relación con [MRL](/mrl/) y los procesos de [MRG-09 · Workflows](09-workflows.md).
 
-**Estado:** 🟡 **KPIs web + Excel en producción** · PDF estandarizado según MRL (evolución)
+**Estado:** 🟡 **KPIs web + Excel en producción** · **Sprint 14 ALIGN:** ✅ Cerrado (2026-07-10)
+
+| Estado | Significado |
+|--------|-------------|
+| ✅ Producción | Implementado y alineado |
+| 🟡 Parcial | Gaps export/tendencias documentados |
+| 📋 Roadmap | BI · PDF · API |
+
+→ Auditoría Sprint 14: [ALIGN · Fase 7](../../alignment/modules/08-reportes-audit.md) · Mant.: [02-reports-audit.md](../../alignment/modules/02-reports-audit.md)
+
+### Matriz de implementación (Sprint 14)
+
+| Sección | Tema | Estado |
+|---------|------|--------|
+| §1 | Filosofía | ✅ |
+| §2 | Dashboard Mantenimiento | ✅ |
+| §3 | Dashboard Inventario | ✅ |
+| §4 | Reportes web | 🟡 |
+| §5 | Exportaciones | 🟡 |
+| §6 | KPIs comerciales | 🟡 |
+| §7 | KPIs transversales | 📋 |
+| §8–§9 | Integración · evolución | ✅ doc |
+
+**Gaps abiertos (📋):** export OT/activos · PDF MRL · tendencias · BI.
 
 ---
 
-## 1 · Filosofía de reportes
+## 1 · Filosofía de reportes · ✅
 
 | Principio | Descripción |
 |-----------|-------------|
@@ -29,7 +52,7 @@ Los indicadores derivan de los **flujos operativos** — OT, compras, ventas —
 
 ---
 
-## 2 · Dashboard Mantenimiento
+## 2 · Dashboard Mantenimiento · ✅
 
 Cuando el tenant tiene módulo `mantenimiento`:
 
@@ -59,7 +82,7 @@ Dashboard Mantenimiento
 
 ---
 
-## 3 · Dashboard Inventario
+## 3 · Dashboard Inventario · ✅
 
 Cuando el tenant tiene módulo `inventario`:
 
@@ -84,7 +107,7 @@ Dashboard Comercial
 
 ---
 
-## 4 · Reportes web (Mantenimiento)
+## 4 · Reportes web (Mantenimiento) · 🟡
 
 Página `/reportes` con gráficos:
 
@@ -95,7 +118,7 @@ Página `/reportes` con gráficos:
 
 ---
 
-## 5 · Exportaciones
+## 5 · Exportaciones · 🟡
 
 | Tipo | Módulo | Formato | Estado |
 |------|--------|---------|--------|
@@ -109,7 +132,7 @@ Página `/reportes` con gráficos:
 
 ---
 
-## 6 · Indicadores comerciales
+## 6 · Indicadores comerciales · 🟡
 
 | KPI | Descripción |
 |-----|-------------|
@@ -123,7 +146,7 @@ Página `/reportes` con gráficos:
 
 ---
 
-## 7 · KPIs transversales
+## 7 · KPIs transversales · 📋
 
 | KPI | Origen |
 |-----|--------|
@@ -178,6 +201,7 @@ Indicadores / Dashboard
 - [x] Dashboards Mantenimiento e Inventario documentados
 - [x] Exportaciones y KPIs definidos
 - [x] Relación MRL y MRG-09 establecida
+- [x] Alineación nav Indicadores vs producto (Sprint 14 · Fase 7)
 - [ ] PDF operativos en producto
 - [ ] BI / Analytics módulo dedicado
 
@@ -193,9 +217,10 @@ Los reportes no son un anexo: son la **consecuencia medible** de operar bien en 
 
 | Aspecto | Valor |
 |---------|-------|
-| **Reportes** | 🟡 KPIs web + Excel |
-| **MRG** | v1.0.0 |
-| **Siguiente capítulo** | MRG-09 · Workflows |
+| **Reportes** | 🟡 KPIs web + Excel inv |
+| **Sprint 14 ALIGN** | ✅ Cerrado 2026-07-10 |
+| **MRG capítulo** | v1.0.1 |
+| **Próximo paso** | MRG-09 · Flujos ([ALIGN](../../alignment/modules/09-workflows-audit.md)) |
 
 ---
 

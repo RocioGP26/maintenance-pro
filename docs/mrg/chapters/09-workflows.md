@@ -1,6 +1,6 @@
 # MRG-09-WORKFLOWS · Flujos de trabajo
 
-**Código:** MRG-09-WORKFLOWS · Sprint 10.9 · **Entregado**
+**Código:** MRG-09-WORKFLOWS · Sprint 10.9 · **Entregado** · **v1.0.1** · Sprint 14 ALIGN ✅
 
 > Maintix no se limita a registrar información. **Organiza la operación** mediante procesos completos, donde cada acción genera el siguiente paso del flujo de trabajo.
 
@@ -14,11 +14,38 @@ Documentar los principales **procesos funcionales de extremo a extremo** de Main
 
 Este capítulo conecta **Mantenimiento**, **Inventario**, **Compras**, **Ventas** y **Administración** bajo una misma visión operativa.
 
-**Estado:** 🟡 **Parcial** — Mantenimiento e Inventario en producción
+**Estado:** 🟡 **Parcial** — Mantenimiento e Inventario en producción · **Sprint 14 ALIGN:** ✅ Cerrado (2026-07-10)
+
+| Estado | Significado |
+|--------|-------------|
+| ✅ Producción | Flujo implementado y verificado |
+| 🟡 Parcial | Existe con limitaciones documentadas |
+| 📋 Roadmap | Proceso planificado · no en producto |
+
+→ Auditoría Sprint 14: [ALIGN · Fase 8](../../alignment/modules/09-workflows-audit.md)
+
+### Matriz de implementación (Sprint 14)
+
+| Sección | Tema | Estado |
+|---------|------|--------|
+| §1 | Filosofía | ✅ |
+| §2 | Flujo mantenimiento | 🟡 |
+| §3 | Incidencias | ✅ |
+| §4 | Abastecimiento | 🟡 |
+| §5 | Ventas | ✅ |
+| §6 | Ciclo comercial | ✅ |
+| §7 | Onboarding | ✅ |
+| §8 | IAM | ✅ |
+| §9 | Integración módulos | 🟡 |
+| §10 | Procesos futuros | ✅ doc |
+| §11 | Trazabilidad | 🟡 |
+| §12 | Automatización | 🟡 |
+
+**Gaps abiertos (📋):** Purchasing formal · CRM pipeline · repuestos OT preventiva · kardex UI · webhooks.
 
 ---
 
-## 1 · Filosofía
+## 1 · Filosofía · ✅
 
 Maintix está diseñado para trabajar mediante **procesos**.
 
@@ -49,7 +76,9 @@ El objetivo es **reducir trabajo manual** y mantener **trazabilidad completa**.
 
 ---
 
-## 2 · Flujo Mantenimiento
+## 2 · Flujo Mantenimiento · 🟡
+
+> **Hoy en producto:** OT preventivas anuales y planeación mensual; consumo de repuestos al cerrar OT **correctiva** (`/inventario` técnico).
 
 ```
 Activo registrado
@@ -82,7 +111,9 @@ Cada **Orden de Trabajo** incrementa automáticamente el **historial del activo*
 
 ---
 
-## 3 · Flujo de incidencias
+## 3 · Flujo de incidencias · ✅
+
+> **Hoy en producto:** `POST /incidencias/<id>/crear-ot` vincula incidencia y OT; `POST /incidencias/<id>/resolver` cierra sin OT.
 
 ```
 Usuario detecta problema
@@ -106,7 +137,7 @@ Proceso Mantenimiento
 
 ---
 
-## 4 · Flujo de abastecimiento
+## 4 · Flujo de abastecimiento · 🟡
 
 ```
 Producto bajo stock
@@ -132,7 +163,7 @@ En versiones futuras este flujo será gestionado por el módulo **Purchasing** (
 
 ---
 
-## 5 · Flujo de ventas
+## 5 · Flujo de ventas · ✅
 
 ```
 Cliente
@@ -160,7 +191,7 @@ El inventario **siempre refleja las ventas confirmadas** — no se vende por enc
 
 ---
 
-## 6 · Flujo completo comercial
+## 6 · Flujo completo comercial · ✅
 
 ```
 Proveedor
@@ -185,7 +216,7 @@ Este flujo representa el **ciclo básico** de abastecimiento y comercialización
 
 ---
 
-## 7 · Flujo de incorporación (Onboarding)
+## 7 · Flujo de incorporación (Onboarding) · ✅
 
 ```
 Registro
@@ -212,7 +243,7 @@ Durante el **período de prueba** Maintix puede cargar información inicial seg�
 
 ---
 
-## 8 · Flujo administrativo
+## 8 · Flujo administrativo · ✅
 
 ```
 Crear usuario
@@ -233,7 +264,7 @@ Los **permisos** determinan qué procesos puede ejecutar cada usuario — Mainte
 
 ---
 
-## 9 · Integración entre módulos
+## 9 · Integración entre módulos · 🟡
 
 | Origen | Destino | Resultado |
 |--------|---------|-----------|
@@ -253,14 +284,14 @@ Los **permisos** determinan qué procesos puede ejecutar cada usuario — Mainte
 
 ---
 
-## 10 · Procesos futuros
+## 10 · Procesos futuros · ✅ doc
 
 Los siguientes flujos se incorporarán en versiones posteriores:
 
 | Flujo | Estado |
 |-------|--------|
 | CRM → Cotización → Venta | 📋 |
-| Compras → Cuentas por pagar (avanzado) | 🟡 Parcial (CxP hoy) |
+| Compras → Cuentas por pagar (avanzado) | 🟡 CxP · pagos parciales hoy |
 | Ventas → Facturación electrónica | 📋 |
 | Inventario → Producción | 📋 |
 | BI → Dashboards ejecutivos | 📋 |
@@ -271,7 +302,7 @@ Los siguientes flujos se incorporarán en versiones posteriores:
 
 ---
 
-## 11 · Trazabilidad
+## 11 · Trazabilidad · 🟡
 
 Cada proceso conserva su **historial**:
 
@@ -289,7 +320,7 @@ La trazabilidad permite conocer **quién** realizó cada acción y **cuándo** o
 
 ---
 
-## 12 · Automatización
+## 12 · Automatización · 🟡
 
 Maintix automatiza diversas tareas operativas:
 
@@ -331,6 +362,7 @@ Este capítulo se considera **implementado** cuando:
 - [x] Flujos Mantenimiento e Inventario documentados
 - [x] Procesos comerciales documentados
 - [x] Procesos planificados del roadmap identificados
+- [x] Flujos core verificados contra código (Sprint 14 · Fase 8)
 - [ ] Diagramas operativos validados con implementadores
 - [ ] Flujos CRM y Purchasing completos en producto
 
@@ -350,11 +382,11 @@ Los módulos son importantes, pero el **verdadero valor** de Maintix aparece cua
 
 | Aspecto | Valor |
 |---------|-------|
-| **MRG** | v0.1.0 |
-| **Workflow funcional** | 🟡 Parcial (Mantenimiento + Inventario) |
-| **MRG** | v1.0.0 |
-| **Roadmap** | Compras · CRM · Finanzas |
-| **Siguiente capítulo** | MRG-10 · Buenas prácticas |
+| **Workflow funcional** | 🟡 Mantenimiento + Inventario + flujos comerciales |
+| **Sprint 14 ALIGN** | ✅ Cerrado 2026-07-10 |
+| **MRG capítulo** | v1.0.1 |
+| **Roadmap** | CRM · Purchasing formal · Finanzas |
+| **Próximo paso** | MRG-10 · Buenas prácticas · cierre Sprint 14 |
 
 ---
 

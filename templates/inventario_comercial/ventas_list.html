@@ -1,12 +1,19 @@
 {% extends "base.html" %}
 
 {% block title %}Ventas — {{ app_name }}{% endblock %}
-{% block page_title %}Ventas / punto de venta{% endblock %}
+{% block page_title %}Ventas{% endblock %}
 
 {% block content %}
+{% if cobro_filtro == 'pendiente' %}
+<div class="alert alert-warning py-2 small mb-3">
+  Ventas a crédito con saldo pendiente — cartera por cobrar (sin módulo CxC dedicado).
+  <a href="{{ url_for('inv_comercial.ventas_list') }}" class="alert-link">Ver todas las ventas</a>
+</div>
+{% else %}
 <div class="alert alert-light border small mb-3">
   Registra ventas al contado o a crédito. En crédito el stock baja igual; el saldo se cobra después con abonos.
 </div>
+{% endif %}
 
 <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
   <div class="btn-group btn-group-sm" role="group">

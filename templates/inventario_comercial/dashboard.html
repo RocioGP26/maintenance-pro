@@ -172,13 +172,16 @@
 <div class="row g-3">
   <div class="col-lg-6">
     <div class="card border-0 shadow-sm h-100">
-      <div class="card-header bg-white fw-semibold d-flex justify-content-between align-items-center">
+      <div class="card-header bg-white fw-semibold d-flex justify-content-between align-items-center flex-wrap gap-2">
         <span>Productos con bajo stock</span>
-        {% if kpis.bajo_stock_count %}
-        <a href="{{ url_for('inv_comercial.productos_export_bajo_stock') }}" class="btn btn-sm btn-outline-success">
-          <i class="bi bi-file-earmark-excel"></i> Descargar Excel
-        </a>
-        {% endif %}
+        <div class="d-flex gap-2">
+          {% if kpis.bajo_stock_count %}
+          <a href="{{ url_for('inv_comercial.productos_list', alerta='bajo') }}" class="btn btn-sm btn-outline-primary">Ver todos</a>
+          <a href="{{ url_for('inv_comercial.productos_export_bajo_stock') }}" class="btn btn-sm btn-outline-success">
+            <i class="bi bi-file-earmark-excel"></i> Descargar Excel
+          </a>
+          {% endif %}
+        </div>
       </div>
       <div class="card-body p-0">
         {% if kpis.bajo_stock %}

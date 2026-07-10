@@ -4,6 +4,11 @@
 {% block page_title %}Cuentas por pagar{% endblock %}
 
 {% block content %}
+<p class="text-muted small mb-3">
+  Obligaciones pendientes con proveedores comerciales — facturas a crédito registradas en
+  <a href="{{ url_for('inv_comercial.compras_list') }}">Compras</a>.
+  Registra abonos o liquidaciones aquí; el stock ya se actualizó al registrar la entrada.
+</p>
 <div class="row g-3 mb-4">
   <div class="col-md-4">
     <div class="card card-dashboard h-100">

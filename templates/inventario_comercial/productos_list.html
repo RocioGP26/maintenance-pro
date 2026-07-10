@@ -15,6 +15,10 @@
     <input type="hidden" name="estado" value="{{ estado }}">
     <input type="search" name="q" class="form-control" style="min-width:200px" placeholder="Buscar por nombre o referencia…" value="{{ q }}">
     <button type="submit" class="btn btn-outline-secondary">Buscar</button>
+    <a href="{{ url_for('inv_comercial.productos_list', alerta='bajo', estado='activo', q=q or none) }}"
+       class="btn {% if alerta == 'bajo' %}btn-warning{% else %}btn-outline-warning{% endif %}">
+      Bajo stock
+    </a>
     <div class="btn-group btn-group-sm" role="group" aria-label="Filtrar por estado">
       <a href="{{ url_for('inv_comercial.productos_list', estado='activo', q=q or none) }}"
          class="btn {% if estado == 'activo' %}btn-primary{% else %}btn-outline-primary{% endif %}">Activos</a>

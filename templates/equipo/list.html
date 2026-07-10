@@ -1,10 +1,10 @@
 {% extends "base.html" %}
 {% block title %}Equipo de trabajo — {{ app_name }}{% endblock %}
-{% block page_title %}Equipo de trabajo{% endblock %}
+{% block page_title %}Usuarios y roles{% endblock %}
 
 {% block content %}
 <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
-  <p class="text-muted small mb-0">Usuarios con acceso a {{ empresa_actual.razon_social if empresa_actual else 'tu empresa' }}. Solo ves miembros de tu organización.</p>
+  <p class="text-muted small mb-0">Gestión de usuarios del tenant — roles, sedes y acceso (MRG-07 · IAM).</p>
   <a href="{{ url_for('main.equipo_new') }}" class="btn btn-primary btn-sm">
     <i class="bi bi-person-plus"></i> Invitar usuario
   </a>

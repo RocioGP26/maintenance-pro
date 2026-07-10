@@ -291,7 +291,7 @@
     </div>
     {% if perm.crear %}
     <a href="{{ url_for('main.ordenes_new') }}" class="btn btn-primary btn-sm">
-      <i class="bi bi-plus-lg"></i> Nueva
+      <i class="bi bi-plus-lg"></i> Nueva OT
     </a>
     {% endif %}
   </div>
@@ -311,9 +311,9 @@
                value="{{ filtros.numero }}" placeholder="OT-26-0001">
       </div>
       <div class="col-6 col-md-2">
-        <label class="form-label" for="f-equipo">Equipo</label>
+        <label class="form-label" for="f-equipo">Activo</label>
         <input type="text" id="f-equipo" name="equipo" class="form-control form-control-sm"
-               value="{{ filtros.equipo }}" placeholder="Código o nombre">
+               value="{{ filtros.equipo }}" placeholder="Código o nombre del activo">
       </div>
       <div class="col-6 col-md-2">
         <label class="form-label" for="f-ubicacion">Área / ubicación</label>

@@ -1,6 +1,6 @@
 {% extends "base.html" %}
-{% block title %}Tipos de máquina — {{ app_name }}{% endblock %}
-{% block page_title %}Tipos de máquina{% endblock %}
+{% block title %}Tipos de activo — {{ app_name }}{% endblock %}
+{% block page_title %}Tipos de activo{% endblock %}
 
 {% block content %}
 <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-2">
@@ -24,7 +24,7 @@
           <th>Tipo</th>
           <th class="col-prefijo">Pref.</th>
           <th>Sector</th>
-          <th class="text-center col-equipos" title="Equipos registrados">Eq.</th>
+          <th class="text-center col-equipos" title="Activos registrados">Act.</th>
           <th class="text-center col-estado">Estado</th>
           <th class="col-acciones"></th>
         </tr>
@@ -44,8 +44,8 @@
           </td>
           <td class="text-center text-muted">{{ n_equipos if n_equipos else '—' }}</td>
           <td class="text-center">
-            {% if t.activo %}<span class="badge badge-tipos-list text-bg-success">On</span>
-            {% else %}<span class="badge badge-tipos-list text-bg-secondary">Off</span>{% endif %}
+            {% if t.activo %}<span class="badge badge-tipos-list text-bg-success">Activo</span>
+            {% else %}<span class="badge badge-tipos-list text-bg-secondary">Inactivo</span>{% endif %}
           </td>
           <td class="text-end text-nowrap col-acciones">
             <div class="d-inline-flex gap-1 acciones-tipos-list">

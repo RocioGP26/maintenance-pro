@@ -27,10 +27,12 @@ from app.permissions import (
     UserRole,
     can_assign_role,
     can_create,
+    can_create_work_order,
     can_delete,
     can_edit,
     can_manage_config,
     can_manage_equipo,
+    can_manage_incidents,
     normalize_rol,
     roles_for_select,
     role_help_map,
@@ -698,7 +700,7 @@ def _cumplimiento_preventivo_dashboard(
     pendientes = max(0, total - n_ok)
     status_labels = {
         WorkOrderStatus.CERRADA.value: "Cerrada",
-        WorkOrderStatus.COMPLETADO.value: "Completado",
+        WorkOrderStatus.COMPLETADO.value: "Completada",
         "cerrado": "Cerrado",
     }
     items = []
@@ -909,7 +911,7 @@ _KPI_UI = {
         "neutral",
         "bi-stopwatch",
         "T. reparación",
-        "Promedio de horas en correctivos cerrados donde la máquina estuvo parada",
+        "Promedio de horas en correctivos cerrados donde el activo estuvo parado",
     ),
     "mtbf": ("neutral", "bi-arrow-repeat", "T. entre fallas", "Tiempo medio entre fallas"),
     "disponibilidad_global": (
@@ -965,6 +967,39 @@ def _build_kpi_cards(kpis: dict, empresa_id: Optional[int], sector: str) -> List
             }
         )
     return cards
+
+
+def _dashboard_resumen_operativo(
+    start: date,
+    end: date,
+    sector: Optional[str],
+    machine_ids: Optional[list[int]],
+    operativos: int,
+) -> dict:
+    """Indicadores MRG-02 §10 / MRG-08 §2 para la fila resumen del dashboard."""
+    q = _filter_work_orders_empresa(WorkOrder.query)
+    if sector:
+        q = q.filter(_wo_for_sector(sector))
+    q = _wo_apply_machine_ids(q, machine_ids)
+
+    open_statuses = list(WORK_ORDER_PENDING_STATUSES)
+    ordenes_abiertas = q.filter(WorkOrder.status.in_(open_statuses)).count()
+    ordenes_vencidas = q.filter(WorkOrder.status == WorkOrderStatus.VENCIDA.value).count()
+    preventivos_mes = (
+        _wo_in_period_query(start, end, sector, machine_ids)
+        .filter(func.lower(WorkOrder.tipo) == WorkOrderType.PREVENTIVO.value)
+        .count()
+    )
+    sp_q = _filter_empresa(SparePart.query, SparePart)
+    repuestos_bajo_minimo = sp_q.filter(SparePart.cantidad < SparePart.stock_minimo).count()
+
+    return {
+        "activos_operativos": operativos,
+        "ordenes_abiertas": ordenes_abiertas,
+        "ordenes_vencidas": ordenes_vencidas,
+        "preventivos_mes": preventivos_mes,
+        "repuestos_bajo_minimo": repuestos_bajo_minimo,
+    }
 
 
 def _parse_form_date(raw: str) -> Optional[date]:
@@ -1402,6 +1437,51 @@ def dashboard():
         ensure_empresa_sector_setup(empresa)
     eid = empresa.id if empresa else None
     kpi_cards = _build_kpi_cards(kpis, eid, sector)
+    dash_resumen = _dashboard_resumen_operativo(
+        start, end, sector, machine_ids, op
+    )
+    dash_resumen_items = [
+        {
+            "key": "operativos",
+            "label": "Activos operativos",
+            "value": dash_resumen["activos_operativos"],
+            "href": url_for("main.activos_list"),
+            "style": "success",
+        },
+        {
+            "key": "abiertas",
+            "label": "OT abiertas",
+            "value": dash_resumen["ordenes_abiertas"],
+            "href": url_for("main.ordenes_list", status=WorkOrderStatus.ABIERTA.value),
+            "style": "warning" if dash_resumen["ordenes_abiertas"] else "neutral",
+        },
+        {
+            "key": "vencidas",
+            "label": "OT vencidas",
+            "value": dash_resumen["ordenes_vencidas"],
+            "href": url_for("main.ordenes_list", status=WorkOrderStatus.VENCIDA.value),
+            "style": "danger" if dash_resumen["ordenes_vencidas"] else "neutral",
+        },
+        {
+            "key": "preventivos",
+            "label": "Preventivos del mes",
+            "value": dash_resumen["preventivos_mes"],
+            "href": url_for(
+                "main.ordenes_list",
+                tipo=WorkOrderType.PREVENTIVO.value,
+                mes=str(ref.month),
+                anio=str(ref.year),
+            ),
+            "style": "primary",
+        },
+        {
+            "key": "repuestos",
+            "label": "Repuestos bajo mínimo",
+            "value": dash_resumen["repuestos_bajo_minimo"],
+            "href": url_for("main.reportes"),
+            "style": "danger" if dash_resumen["repuestos_bajo_minimo"] else "success",
+        },
+    ]
     return render_template(
         "dashboard.html",
         periodo=period,
@@ -1450,6 +1530,8 @@ def dashboard():
         workload_total=workload_total,
         workload_empty=workload_empty,
         ot_en_periodo=ot_en_periodo,
+        dash_resumen=dash_resumen,
+        dash_resumen_items=dash_resumen_items,
     )
 
 
@@ -1582,7 +1664,7 @@ def activos_api_sugerir_codigo():
 def activos_new():
     tipos = _machine_types_activos()
     if not tipos:
-        flash("Primero debes crear al menos un tipo de máquina en Activos → Tipos de máquina.", "warning")
+        flash("Primero debes crear al menos un tipo de activo en Activos → Tipos de activo.", "warning")
         return redirect(url_for("main.activos_tipo_list"))
 
     if request.method == "POST":
@@ -1595,7 +1677,7 @@ def activos_new():
         else:
             codigo = request.form.get("codigo", "").strip()
         if not mt_id:
-            flash("Selecciona un tipo de máquina válido.", "danger")
+            flash("Selecciona un tipo de activo válido.", "danger")
         elif not nombre:
             flash("El nombre es obligatorio.", "danger")
         elif not codigo:
@@ -1661,7 +1743,7 @@ def activos_edit(id):
     ).first_or_404()
     tipos = _machine_types_para_formulario(m)
     if not tipos:
-        flash("No hay tipos de máquina activos.", "warning")
+        flash("No hay tipos de activo activos.", "warning")
         return redirect(url_for("main.activos_tipo_list"))
 
     if request.method == "POST":
@@ -1675,7 +1757,7 @@ def activos_edit(id):
         elif not m.codigo or not m.nombre:
             flash("Código y nombre son obligatorios.", "danger")
         elif not mt_id:
-            flash("Selecciona un tipo de máquina válido.", "danger")
+            flash("Selecciona un tipo de activo válido.", "danger")
         else:
             eid = _current_empresa_id()
             sector = normalizar_sector(current_user.empresa.sector if current_user.empresa else None)
@@ -1699,6 +1781,18 @@ def activos_edit(id):
         codigo_sugerido=Machine.sugerir_codigo_siguiente(
             (m.machine_type.prefijo if m.machine_type else "EQ").upper()
         ),
+    )
+    ctx["activo_historial_ot"] = (
+        WorkOrder.query.filter_by(machine_id=m.id)
+        .order_by(WorkOrder.created_at.desc())
+        .limit(10)
+        .all()
+    )
+    ctx["activo_historial_incidencias"] = (
+        Incident.query.filter_by(machine_id=m.id)
+        .order_by(Incident.reportado_en.desc())
+        .limit(5)
+        .all()
     )
     return render_template("activos/form.html", **ctx)
 
@@ -1738,7 +1832,7 @@ def activos_delete(id):
     return redirect(url_for("main.activos_list"))
 
 
-# --- Tipos de máquina (catálogo) ---
+# --- Tipos de activo (catálogo) ---
 @bp.route("/activos/tipos")
 def activos_tipo_list():
     sector = _sector_industrial_empresa()
@@ -1785,7 +1879,7 @@ def activos_tipo_new():
             )
             try:
                 db.session.commit()
-                flash("Tipo de máquina creado.", "success")
+                flash("Tipo de activo creado.", "success")
                 return redirect(url_for("main.activos_tipo_list"))
             except Exception:
                 db.session.rollback()
@@ -4150,6 +4244,12 @@ def reportes():
         .all()
     )
     bajo_minimo = sp_q.filter(SparePart.cantidad < SparePart.stock_minimo).count()
+    bajo_minimo_items = (
+        sp_q.filter(SparePart.cantidad < SparePart.stock_minimo)
+        .order_by(SparePart.nombre)
+        .limit(10)
+        .all()
+    )
     return render_template(
         "reportes.html",
         total_m=total_m,
@@ -4157,7 +4257,8 @@ def reportes():
         wo_by_type=wo_by_type,
         wo_by_status=wo_by_status,
         bajo_minimo=bajo_minimo,
-        chart_estado_labels=[r[0] for r in by_status],
+        bajo_minimo_items=bajo_minimo_items,
+        chart_estado_labels=[machine_status_meta(r[0])["label"] for r in by_status],
         chart_estado_data=[r[1] for r in by_status],
         chart_tipo_labels=[wo_tipo_meta(r[0])["label"] for r in wo_by_type],
         chart_tipo_data=[r[1] for r in wo_by_type],
@@ -4474,14 +4575,14 @@ def incidencias_detail(id):
     return render_template(
         "incidencias/detail.html",
         inc=inc,
-        puede_gestionar=can_edit(current_user) and not _usuario_solo_mis_incidencias(),
-        puede_crear_ot=can_create(current_user) and not _usuario_solo_mis_incidencias(),
+        puede_gestionar=can_manage_incidents(current_user),
+        puede_crear_ot=can_create_work_order(current_user),
     )
 
 
 @bp.route("/incidencias/<int:id>/resolver", methods=["POST"])
 def incidencias_resolver(id):
-    if not can_edit(current_user) or _usuario_solo_mis_incidencias():
+    if not can_manage_incidents(current_user):
         flash("No tienes permiso para resolver incidencias.", "warning")
         return redirect(url_for("main.incidencias_list"))
     inc = _get_incident_or_404(id)
@@ -4499,7 +4600,7 @@ def incidencias_resolver(id):
 
 @bp.route("/incidencias/<int:id>/crear-ot", methods=["POST"])
 def incidencias_crear_ot(id):
-    if not can_create(current_user) or _usuario_solo_mis_incidencias():
+    if not can_create_work_order(current_user):
         flash("No tienes permiso para crear órdenes de trabajo.", "warning")
         return redirect(url_for("main.incidencias_list"))
     inc = _get_incident_or_404(id)

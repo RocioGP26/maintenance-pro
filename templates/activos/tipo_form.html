@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% block title %}{% if tipo %}Editar tipo{% else %}Nuevo tipo{% endif %} — {{ app_name }}{% endblock %}
-{% block page_title %}{% if tipo %}Editar tipo de máquina{% else %}Nuevo tipo de máquina{% endif %}{% endblock %}
+{% block page_title %}{% if tipo %}Editar tipo de activo{% else %}Nuevo tipo de activo{% endif %}{% endblock %}
 
 {% block content %}
 <div class="row justify-content-center">
@@ -14,7 +14,7 @@
             <input type="text" name="nombre" class="form-control" required
                    value="{{ tipo.nombre if tipo else '' }}"
                    placeholder="Ej. Bomba de agua">
-            <div class="form-text">Es lo que verá el usuario al elegir el tipo de un equipo.</div>
+            <div class="form-text">Es lo que verá el usuario al elegir el tipo de un activo.</div>
           </div>
           <div class="mb-3">
             <label class="form-label">Prefijo de código</label>
@@ -40,7 +40,7 @@
               </option>
               {% endfor %}
             </select>
-            <div class="form-text">Define qué categorías del dashboard incluyen equipos de este tipo.</div>
+            <div class="form-text">Define qué categorías del dashboard incluyen activos de este tipo.</div>
             {% endif %}
           </div>
           <div class="mb-3">
@@ -51,7 +51,7 @@
           <div class="mb-3">
             <div class="form-check form-switch">
               <input class="form-check-input" type="checkbox" name="activo" value="1" id="activo" {% if tipo.activo %}checked{% endif %}>
-              <label class="form-check-label" for="activo">Tipo activo (visible al registrar equipos)</label>
+              <label class="form-check-label" for="activo">Tipo activo (visible al registrar activos)</label>
             </div>
           </div>
           <div class="mb-3">

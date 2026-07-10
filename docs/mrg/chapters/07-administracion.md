@@ -12,11 +12,37 @@
 
 Documentar el funcionamiento administrativo de Maintix, diferenciando claramente la **administración del inquilino** de la **administración de la plataforma SaaS**.
 
-**Estado:** ✅ **Núcleo operativo en producción**
+**Estado:** ✅ **Núcleo operativo en producción** · **Sprint 14 ALIGN:** ✅ Cerrado (2026-07-10)
+
+| Estado | Significado |
+|--------|-------------|
+| ✅ Producción | Implementado y alineado |
+| 🟡 Parcial | Gaps documentados |
+| 📋 Roadmap | No implementado |
+
+→ Auditoría Sprint 14: [ALIGN · Fase 6](../../alignment/modules/07-admin-audit.md) · Permisos: [07-permissions-matrix.md](../../alignment/modules/07-permissions-matrix.md)
+
+### Matriz de implementación (Sprint 14)
+
+| Sección | Tema | Estado |
+|---------|------|--------|
+| §1 | Alcance | ✅ |
+| §2 | Dos niveles admin | ✅ |
+| §3 | Usuarios y roles | ✅ |
+| §4 | Gestión usuarios | 🟡 |
+| §5 | Empresas (tenants) | ✅ |
+| §6 | Sedes | 🟡 |
+| §7 | Configuración tenant | ✅ |
+| §8 | Onboarding | ✅ |
+| §9 | Mantis | ✅ |
+| §10 | Seguridad | ✅ |
+| API | MAG admin | 🟡 |
+
+**Gaps abiertos (📋):** invitación email E2E · multisede completa · API admin.
 
 ---
 
-## 1 · Alcance
+## 1 · Alcance · ✅
 
 | Incluye | No incluye |
 |---------|------------|
@@ -29,7 +55,7 @@ Documentar el funcionamiento administrativo de Maintix, diferenciando claramente
 
 ---
 
-## 2 · Dos niveles de administración
+## 2 · Dos niveles de administración · ✅
 
 Maintix distingue claramente **dos ámbitos administrativos**:
 
@@ -44,7 +70,7 @@ Los administradores de una empresa **nunca pueden acceder** a información de ot
 
 ---
 
-## 3 · Usuarios y roles
+## 3 · Usuarios y roles · ✅
 
 Cada empresa administra **sus propios usuarios**.
 
@@ -72,9 +98,11 @@ Cuando un tenant únicamente dispone del módulo **Inventario**, el rol Técnico
 
 → [MRG-02 · Mantenimiento · Roles](02-maintenance.md) · [MRG-05 · Ventas](05-ventas.md)
 
+→ Matriz IAM Sprint 14: [07-permissions-matrix.md](../../alignment/modules/07-permissions-matrix.md)
+
 ---
 
-## 4 · Gestión de usuarios
+## 4 · Gestión de usuarios · 🟡
 
 El administrador puede realizar las siguientes operaciones:
 
@@ -88,11 +116,11 @@ El administrador puede realizar las siguientes operaciones:
 
 Toda acción queda registrada para **auditoría** (`TenantActivityLog`).
 
-> **Hoy:** gestión de equipo en `/equipo` · un usuario activo por empresa por sesión.
+> **Hoy:** gestión en `/equipo` · nav **Administración → Usuarios y roles** · un usuario activo por empresa por sesión.
 
 ---
 
-## 5 · Empresas (Tenants)
+## 5 · Empresas (Tenants) · ✅
 
 Cada empresa representa un **inquilino completamente aislado**.
 
@@ -114,7 +142,7 @@ Toda la información pertenece **exclusivamente al tenant**.
 
 ---
 
-## 6 · Sedes
+## 6 · Sedes · 🟡
 
 Una empresa puede operar desde **múltiples ubicaciones**.
 
@@ -132,7 +160,7 @@ La operación **multisede** se reflejará progresivamente en los módulos funcio
 
 ---
 
-## 7 · Configuración del tenant
+## 7 · Configuración del tenant · ✅
 
 Cada empresa puede personalizar su entorno:
 
@@ -147,7 +175,7 @@ Cada empresa puede personalizar su entorno:
 
 ---
 
-## 8 · Onboarding
+## 8 · Onboarding · ✅
 
 El proceso estándar de incorporación es:
 
@@ -179,7 +207,7 @@ El contenido inicial depende del **sector** seleccionado (manufactura → Manten
 
 ---
 
-## 9 · Plataforma Mantis
+## 9 · Plataforma Mantis · ✅
 
 La plataforma administrativa de Maintix dispone de capacidades **exclusivas**:
 
@@ -200,7 +228,7 @@ Estas funciones **no están disponibles** para los clientes finales.
 
 ---
 
-## 10 · Seguridad administrativa
+## 10 · Seguridad administrativa · ✅
 
 Toda operación administrativa se encuentra protegida mediante:
 
@@ -216,7 +244,7 @@ Las acciones críticas quedan registradas con **usuario, fecha y empresa**.
 
 ---
 
-## 11 · Integración con otros módulos
+## 11 · Integración con otros módulos · ✅
 
 ```
 Administración
@@ -233,7 +261,7 @@ La administración constituye el **punto de control** de toda la plataforma — 
 
 ---
 
-## 12 · Buenas prácticas
+## 12 · Buenas prácticas · ✅
 
 | # | Recomendación |
 |---|---------------|
@@ -268,6 +296,7 @@ Este capítulo se considera **implementado** cuando:
 - [x] Sedes y configuración documentadas
 - [x] Proceso de onboarding descrito
 - [x] Seguridad administrativa documentada
+- [x] Alineación nav IAM vs producto (Sprint 14 · Fase 6)
 - [ ] Multisede completa en todos los módulos
 - [ ] Invitación por email automatizada end-to-end
 
@@ -285,11 +314,10 @@ La administración no consiste únicamente en crear usuarios. Es el mecanismo me
 
 | Aspecto | Valor |
 |---------|-------|
-| **Módulo** | ✅ Producción |
-| **Núcleo** | Operativo |
-| **Integración** | Todos los módulos |
-| **MRG** | v1.0.0 |
-| **Siguiente capítulo** | MRG-08-REPORTS · Indicadores y reportes |
+| **Módulo Admin/IAM** | ✅ Producción |
+| **Sprint 14 ALIGN** | ✅ Cerrado 2026-07-10 |
+| **MRG capítulo** | v1.0.1 |
+| **Próximo paso** | Fase 7 · MRG-08 Reportes ([ALIGN](../../alignment/)) |
 
 ---
 

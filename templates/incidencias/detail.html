@@ -17,7 +17,7 @@
                 {{ inc.estado_label }}
               </span>
               {% if inc.equipo_detenido %}
-              <span class="badge bg-danger-subtle text-danger border border-danger-subtle">Equipo detenido</span>
+              <span class="badge bg-danger-subtle text-danger border border-danger-subtle">Activo detenido</span>
               {% endif %}
             </div>
           </div>
@@ -36,7 +36,7 @@
             <div><strong>Lugar:</strong> {{ inc.ubicacion or '—' }}</div>
           </div>
           <div class="col-md-6">
-            <div class="text-muted text-uppercase fw-semibold mb-1" style="font-size:0.65rem;letter-spacing:.06em;">Equipo</div>
+            <div class="text-muted text-uppercase fw-semibold mb-1" style="font-size:0.65rem;letter-spacing:.06em;">Activo</div>
             <div>
               {% if inc.machine %}
               {{ inc.machine.codigo }} — {{ inc.machine.nombre }}
@@ -125,8 +125,9 @@
           <div class="text-muted text-uppercase fw-semibold mb-1" style="font-size:0.65rem;letter-spacing:.06em;">Flujo</div>
           <ol class="ps-3 mb-0">
             <li class="mb-1{% if inc.reportado_en %} text-success{% endif %}">Reporte enviado</li>
+            <li class="mb-1{% if inc.work_order_id or inc.resuelto %} text-success{% endif %}">Revisión por supervisión</li>
             <li class="mb-1{% if inc.work_order_id %} text-success{% endif %}">OT creada (si aplica)</li>
-            <li class="{% if inc.resuelto %} text-success{% endif %}">Incidencia resuelta</li>
+            <li class="{% if inc.resuelto %} text-success{% endif %}">Resolución documentada</li>
           </ol>
         </div>
       </div>
@@ -145,7 +146,7 @@
       {% if puede_crear_ot and not inc.resuelto and not inc.work_order_id %}
       <form method="post" action="{{ url_for('main.incidencias_crear_ot', id=inc.id) }}">
         {% include "_csrf.html" %}
-        <button type="submit" class="btn btn-primary w-100" {% if not inc.machine_id %}disabled title="Sin equipo relacionado"{% endif %}>
+        <button type="submit" class="btn btn-primary w-100" {% if not inc.machine_id %}disabled title="Sin activo relacionado"{% endif %}>
           <i class="bi bi-wrench"></i> Crear OT
         </button>
       </form>
@@ -167,7 +168,7 @@
       {% if puede_crear_ot and not inc.resuelto and not inc.work_order_id %}
       <form method="post" action="{{ url_for('main.incidencias_crear_ot', id=inc.id) }}" class="d-inline">
         {% include "_csrf.html" %}
-        <button type="submit" class="btn btn-primary" {% if not inc.machine_id %}disabled title="Sin equipo relacionado"{% endif %}>
+        <button type="submit" class="btn btn-primary" {% if not inc.machine_id %}disabled title="Sin activo relacionado"{% endif %}>
           <i class="bi bi-wrench"></i> Crear OT
         </button>
       </form>

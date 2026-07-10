@@ -4,7 +4,7 @@
 
 {% block body_class %}theme-dashboard-dark{% endblock %}
 
-{% block page_title %}Dashboard{% endblock %}
+{% block page_title %}Dashboard · Mantenimiento{% endblock %}
 
 {% macro dash_filtros_hidden() %}
     <input type="hidden" name="periodo" value="{{ periodo }}">
@@ -93,12 +93,12 @@
             {{ dash_period_toolbar() }}
           </div>
           <div class="dash-toolbar-divider" aria-hidden="true"></div>
-          <form method="get" action="{{ url_for('main.dashboard') }}" class="dash-asset-filtros-form dash-toolbar-unified-filtros" aria-label="Filtrar por equipo y ubicación">
+          <form method="get" action="{{ url_for('main.dashboard') }}" class="dash-asset-filtros-form dash-toolbar-unified-filtros" aria-label="Filtrar por activo y ubicación">
             {{ dash_filtros_hidden() }}
             <span class="dash-asset-filtros-label"><i class="bi bi-funnel me-1" aria-hidden="true"></i>Filtrar</span>
-            <label class="visually-hidden" for="dash-equipo">Equipo</label>
+            <label class="visually-hidden" for="dash-equipo">Activo</label>
             <input type="text" id="dash-equipo" name="equipo" class="form-control form-control-sm"
-                   value="{{ dash_filtros.equipo }}" placeholder="Código o nombre" title="Código o nombre del equipo">
+                   value="{{ dash_filtros.equipo }}" placeholder="Código o nombre" title="Código o nombre del activo">
             <label class="visually-hidden" for="dash-ubicacion">Ubicación</label>
             <input type="text" id="dash-ubicacion" name="ubicacion" class="form-control form-control-sm"
                    value="{{ dash_filtros.ubicacion }}" placeholder="Área / ubicación" title="Área o ubicación del activo">
@@ -110,7 +110,7 @@
         </div>
         {% if hay_filtros_activo %}
         <p class="dash-filtros-activos small text-muted mb-0 mt-2">
-          Vista filtrada{% if dash_filtros.equipo %} · equipo «{{ dash_filtros.equipo }}»{% endif %}{% if dash_filtros.ubicacion %} · ubicación «{{ dash_filtros.ubicacion }}»{% endif %}
+          Vista filtrada{% if dash_filtros.equipo %} · activo «{{ dash_filtros.equipo }}»{% endif %}{% if dash_filtros.ubicacion %} · ubicación «{{ dash_filtros.ubicacion }}»{% endif %}
         </p>
         {% endif %}
       </div>
@@ -230,6 +230,17 @@
         </div>
       </div>
     </div>
+  </div>
+  {% endfor %}
+</div>
+
+<div class="row g-2 mb-3 dash-mrg-resumen" aria-label="Resumen operativo">
+  {% for item in dash_resumen_items %}
+  <div class="col-6 col-md-4 col-xl">
+    <a href="{{ item.href }}" class="dash-resumen-card dash-resumen-card--{{ item.style }}">
+      <span class="dash-resumen-label">{{ item.label }}</span>
+      <span class="dash-resumen-value">{{ item.value }}</span>
+    </a>
   </div>
   {% endfor %}
 </div>
@@ -473,7 +484,7 @@
 
             <span class="dash-card-head-icon" aria-hidden="true"><i class="bi bi-exclamation-triangle"></i></span>
 
-            <h5 class="card-title mb-0">Top 5 equipos críticos</h5>
+            <h5 class="card-title mb-0">Top 5 activos críticos</h5>
 
           </div>
 
@@ -503,7 +514,7 @@
 
         {% else %}
 
-          <p class="critico-equipos-empty mb-0">No hay equipos críticos registrados</p>
+          <p class="critico-equipos-empty mb-0">No hay activos críticos registrados</p>
 
         {% endif %}
 
@@ -574,6 +585,42 @@
 
 
 {% block head_extra %}
+<style>
+  .dash-resumen-card {
+    background: #fff;
+    border: 1px solid var(--dash-card-border, #e5e7eb);
+    border-radius: 0.65rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    height: 100%;
+    padding: 0.65rem 0.85rem;
+    text-decoration: none;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  }
+  .dash-resumen-card:hover {
+    border-color: #cbd5e1;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06);
+    text-decoration: none;
+  }
+  .dash-resumen-label {
+    color: #6b7280;
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+  }
+  .dash-resumen-value {
+    color: #111827;
+    font-size: 1.35rem;
+    font-weight: 700;
+    line-height: 1.1;
+  }
+  .dash-resumen-card--danger .dash-resumen-value { color: #b91c1c; }
+  .dash-resumen-card--warning .dash-resumen-value { color: #b45309; }
+  .dash-resumen-card--success .dash-resumen-value { color: #15803d; }
+  .dash-resumen-card--primary .dash-resumen-value { color: #1d4ed8; }
+</style>
 {% from "_cdn_assets.html" import driver_css %}
 {% if show_tour %}
 {{ driver_css() }}
@@ -611,9 +658,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
       { element: '#tour-kpis', popover: { title: 'Indicadores', description: 'Vista rápida del estado de tu operación.' } },
 
-      { element: '#tour-nav-activos', popover: { title: 'Activos', description: 'Registra equipos, motores, vehículos y más.' } },
+      { element: '#tour-nav-activos', popover: { title: 'Activos', description: 'Registra activos, motores, vehículos y más.' } },
 
-      { element: '#tour-nav-ordenes', popover: { title: 'Programador', description: 'Planeación mensual, listado y gestión de órdenes de trabajo.' } },
+      { element: '#tour-nav-ordenes', popover: { title: 'Órdenes de trabajo', description: 'Planeación mensual, listado y gestión de OT.' } },
 
       { element: '#tour-nav-calendario', popover: { title: 'Calendario', description: 'Planifica trabajos por fecha programada.' } },
 

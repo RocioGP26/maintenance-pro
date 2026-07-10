@@ -10,6 +10,7 @@ MAINTIX DOCS · Sprint 13
 ├── 04 MCM                  ✅ v1.0.0 · Sprint 11 finalizado
 ├── 12 MKT                  ✅ v1.0.0 · Sprint 12 finalizado
 ├── 13 MDO                  ✅ v1.0.0 · Sprint 13 finalizado
+├── 14 ALIGN                ✅ Fases 1–8 · MRG-02–09 alineados
 ├── 05 MPA                  ✅ v1.0 · Sprint 6
 ├── 06 MRL                  🟡 v0.1
 ├── 07 MAG                  ✅ v1.0.12 · Sprint 8

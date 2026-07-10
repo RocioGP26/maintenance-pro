@@ -60,7 +60,7 @@
                 <textarea name="descripcion" class="form-control" rows="2">{{ machine.descripcion if machine else '' }}</textarea>
               </div>
               <div class="col-md-6">
-                <label class="form-label" for="machine_type_id">Categoría *</label>
+                <label class="form-label" for="machine_type_id">Tipo de activo *</label>
                 <select name="machine_type_id" id="machine_type_id" class="form-select" required>
                   {% for mt in machine_types %}
                   <option value="{{ mt.id }}"
@@ -323,6 +323,77 @@
             <div class="campo-dinamico" data-campo-id="{{ campo.id }}" data-categorias="{{ campo.categorias_aplicables()|tojson }}"></div>
             {% endfor %}
           </div>
+
+          {% if machine %}
+          <fieldset class="mb-4 form-activo-seccion">
+            <legend class="h6 fw-semibold mb-3"><i class="bi bi-clock-history me-1"></i> Historial del activo</legend>
+
+            <h6 class="small fw-semibold text-muted text-uppercase mb-2">Órdenes de trabajo</h6>
+            {% if activo_historial_ot %}
+            <div class="table-responsive border rounded mb-2">
+              <table class="table table-sm table-hover mb-0">
+                <thead class="table-light">
+                  <tr>
+                    <th>OT</th>
+                    <th>Tipo</th>
+                    <th>Estado</th>
+                    <th>Fecha</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for wo in activo_historial_ot %}
+                  <tr>
+                    <td class="font-monospace small">{{ wo.numero or ('#' ~ wo.id) }}</td>
+                    <td>{{ wo_tipo_meta(wo.tipo).label }}</td>
+                    <td><span class="{{ wo_status_meta(wo.status).badge_class }}">{{ wo_status_meta(wo.status).label }}</span></td>
+                    <td class="text-muted small">{{ wo.fecha_programada.strftime('%d/%m/%Y') if wo.fecha_programada else (wo.created_at.strftime('%d/%m/%Y') if wo.created_at else '—') }}</td>
+                    <td class="text-end">
+                      <a href="{{ url_for('main.ordenes_edit', id=wo.id) }}" class="btn btn-outline-secondary btn-sm py-0 px-2">Ver OT</a>
+                    </td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+            <a href="{{ url_for('main.ordenes_list', equipo=machine.codigo) }}" class="btn btn-outline-primary btn-sm mb-3">Ver todas las OT</a>
+            {% else %}
+            <p class="text-muted small mb-3">Sin órdenes de trabajo registradas.</p>
+            {% endif %}
+
+            <h6 class="small fw-semibold text-muted text-uppercase mb-2">Incidencias</h6>
+            {% if activo_historial_incidencias %}
+            <div class="table-responsive border rounded mb-2">
+              <table class="table table-sm table-hover mb-0">
+                <thead class="table-light">
+                  <tr>
+                    <th>Reporte</th>
+                    <th>Prioridad</th>
+                    <th>Estado</th>
+                    <th>Fecha</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for inc in activo_historial_incidencias %}
+                  <tr>
+                    <td class="small">{{ inc.numero or ('#' ~ inc.id) }} — {{ inc.titulo|truncate(40) }}</td>
+                    <td><span class="badge {{ inc.prioridad_meta.badge_class }}">{{ inc.prioridad_meta.label }}</span></td>
+                    <td><span class="badge {% if inc.resuelto %}badge-inc-estado badge-inc-resuelta{% else %}badge-inc-estado badge-inc-pendiente{% endif %}">{{ inc.estado_label }}</span></td>
+                    <td class="text-muted small">{{ inc.reportado_en.strftime('%d/%m/%Y') if inc.reportado_en else '—' }}</td>
+                    <td class="text-end">
+                      <a href="{{ url_for('main.incidencias_detail', id=inc.id) }}" class="btn btn-outline-secondary btn-sm py-0 px-2">Ver</a>
+                    </td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+            {% else %}
+            <p class="text-muted small mb-0">Sin incidencias registradas para este activo.</p>
+            {% endif %}
+          </fieldset>
+          {% endif %}
 
           <div class="d-flex gap-2">
             <button type="submit" class="btn btn-primary">Guardar</button>

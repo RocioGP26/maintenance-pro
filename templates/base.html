@@ -55,10 +55,10 @@
           <div class="collapse {% if menu_activos_abierto %}show{% endif %}" id="submenuActivos"
                data-sidebar-group="activos" data-sidebar-in-section="{{ '1' if menu_activos_abierto else '0' }}">
             <a class="nav-link nav-link-sub {% if es_submenu_equipos %}active{% endif %}" href="{{ url_for('main.activos_list') }}">
-              <i class="bi bi-cpu me-2"></i> Equipos
+              <i class="bi bi-cpu me-2"></i> Listado de activos
             </a>
             <a class="nav-link nav-link-sub {% if es_submenu_tipos %}active{% endif %}" href="{{ url_for('main.activos_tipo_list') }}">
-              <i class="bi bi-tags me-2"></i> Tipos de máquina
+              <i class="bi bi-tags me-2"></i> Tipos de activo
             </a>
           </div>
         </div>
@@ -71,7 +71,7 @@
              aria-expanded="{{ 'true' if menu_ordenes_abierto else 'false' }}"
              aria-controls="submenuOrdenes">
             <span class="d-flex align-items-center justify-content-between w-100">
-              <span><i class="bi bi-calendar2-week me-2"></i> Programador</span>
+              <span><i class="bi bi-calendar2-week me-2"></i> Órdenes de trabajo</span>
               <i class="bi bi-chevron-down small sidebar-chevron"></i>
             </span>
           </button>
@@ -86,10 +86,10 @@
           </div>
         </div>
         <a id="tour-nav-calendario" class="nav-link {% if request.endpoint == 'main.calendario' %}active{% endif %}" href="{{ url_for('main.calendario') }}">
-          <i class="bi bi-calendar3 me-2"></i> Calendario Maestro
+          <i class="bi bi-calendar3 me-2"></i> Calendario
         </a>
         <a class="nav-link {% if request.endpoint and request.endpoint.startswith('main.inventario') %}active{% endif %}" href="{{ url_for('main.inventario_list') }}">
-          <i class="bi bi-box-seam me-2"></i> Inventario de Repuestos
+          <i class="bi bi-box-seam me-2"></i> Repuestos técnicos
         </a>
         <a id="tour-nav-proveedores" class="nav-link {% if request.endpoint and request.endpoint.startswith('main.proveedores') %}active{% endif %}" href="{{ url_for('main.proveedores_list') }}">
           <i class="bi bi-shop me-2"></i> Proveedores de servicio
@@ -97,51 +97,131 @@
         <a class="nav-link {% if request.endpoint and (request.endpoint.startswith('main.incidencias') or request.endpoint == 'main.incidencia') %}active{% endif %}" href="{{ url_for('main.incidencias_list') }}">
           <i class="bi bi-exclamation-triangle me-2"></i> Incidencias
         </a>
+        {% if mod_inv %}
+        {% set es_submenu_rep_mant = ep == 'main.reportes' %}
+        {% set es_submenu_rep_com = ep == 'inv_comercial.dashboard_inventario' %}
+        {% set menu_indicadores_abierto = es_submenu_rep_mant or es_submenu_rep_com %}
+        <div class="sidebar-nav-group">
+          <button type="button" class="nav-link sidebar-nav-toggle w-100 text-start {% if menu_indicadores_abierto %}active-parent{% endif %}"
+             data-bs-toggle="collapse" data-bs-target="#submenuIndicadores"
+             aria-expanded="{{ 'true' if menu_indicadores_abierto else 'false' }}"
+             aria-controls="submenuIndicadores">
+            <span class="d-flex align-items-center justify-content-between w-100">
+              <span><i class="bi bi-bar-chart-line me-2"></i> Indicadores</span>
+              <i class="bi bi-chevron-down small sidebar-chevron"></i>
+            </span>
+          </button>
+          <div class="collapse {% if menu_indicadores_abierto %}show{% endif %}" id="submenuIndicadores"
+               data-sidebar-group="indicadores" data-sidebar-in-section="{{ '1' if menu_indicadores_abierto else '0' }}">
+            <a class="nav-link nav-link-sub {% if es_submenu_rep_mant %}active{% endif %}" href="{{ url_for('main.reportes') }}">
+              <i class="bi bi-wrench-adjustable me-2"></i> Mantenimiento
+            </a>
+            <a class="nav-link nav-link-sub {% if es_submenu_rep_com %}active{% endif %}" href="{{ url_for('inv_comercial.dashboard_inventario') }}">
+              <i class="bi bi-graph-up-arrow me-2"></i> Inventario comercial
+            </a>
+          </div>
+        </div>
+        {% else %}
         <a class="nav-link {% if request.endpoint == 'main.reportes' %}active{% endif %}" href="{{ url_for('main.reportes') }}">
-          <i class="bi bi-bar-chart-line me-2"></i> Reportes / Analítica
+          <i class="bi bi-bar-chart-line me-2"></i> Reportes
         </a>
+        {% endif %}
         {% endif %}
         {% if mod_inv %}
         <p class="sidebar-module-label px-3 small text-uppercase text-white-50 mb-1 mt-2">Inventario comercial</p>
-        {% if mod_mant %}
-        <a class="nav-link {% if ep == 'inv_comercial.dashboard_inventario' %}active{% endif %}" href="{{ url_for('inv_comercial.dashboard_inventario') }}">
-          <i class="bi bi-graph-up-arrow me-2"></i> Resumen ventas
-        </a>
-        {% endif %}
         <a class="nav-link {% if ep == 'inv_comercial.productos_list' %}active{% endif %}" href="{{ url_for('inv_comercial.productos_list') }}">
           <i class="bi bi-box2-heart me-2"></i> Productos
         </a>
-        <a class="nav-link {% if ep == 'inv_comercial.compras_list' or ep == 'inv_comercial.compras_nueva' or ep == 'inv_comercial.compras_detalle' or ep == 'inv_comercial.compras_editar' %}active{% endif %}" href="{{ url_for('inv_comercial.compras_list') }}">
-          <i class="bi bi-bag-plus me-2"></i> Entradas / Compras
-        </a>
-        <a class="nav-link {% if ep == 'inv_comercial.cxp_list' %}active{% endif %}" href="{{ url_for('inv_comercial.cxp_list') }}">
-          <i class="bi bi-wallet2 me-2"></i> Cuentas por pagar
-        </a>
-        <a class="nav-link {% if ep in ['inv_comercial.ventas_list', 'inv_comercial.ventas_nueva', 'inv_comercial.ventas_detalle'] %}active{% endif %}" href="{{ url_for('inv_comercial.ventas_list') }}">
-          <i class="bi bi-cash-register me-2"></i> Ventas / POS
-        </a>
-        <a class="nav-link {% if ep and ep.startswith('inv_comercial.clientes') %}active{% endif %}" href="{{ url_for('inv_comercial.clientes_list') }}">
-          <i class="bi bi-people me-2"></i> Clientes
-        </a>
+        {% set es_submenu_compras_lista = ep in ['inv_comercial.compras_list', 'inv_comercial.compras_nueva', 'inv_comercial.compras_detalle', 'inv_comercial.compras_editar'] %}
+        {% set es_submenu_cxp = ep == 'inv_comercial.cxp_list' %}
+        {% set menu_compras_abierto = es_submenu_compras_lista or es_submenu_cxp %}
+        <div class="sidebar-nav-group">
+          <button type="button" class="nav-link sidebar-nav-toggle w-100 text-start {% if menu_compras_abierto %}active-parent{% endif %}"
+             data-bs-toggle="collapse" data-bs-target="#submenuCompras"
+             aria-expanded="{{ 'true' if menu_compras_abierto else 'false' }}"
+             aria-controls="submenuCompras">
+            <span class="d-flex align-items-center justify-content-between w-100">
+              <span><i class="bi bi-bag-plus me-2"></i> Compras</span>
+              <i class="bi bi-chevron-down small sidebar-chevron"></i>
+            </span>
+          </button>
+          <div class="collapse {% if menu_compras_abierto %}show{% endif %}" id="submenuCompras"
+               data-sidebar-group="compras" data-sidebar-in-section="{{ '1' if menu_compras_abierto else '0' }}">
+            <a class="nav-link nav-link-sub {% if es_submenu_compras_lista %}active{% endif %}" href="{{ url_for('inv_comercial.compras_list') }}">
+              <i class="bi bi-list-ul me-2"></i> Listado de compras
+            </a>
+            <a class="nav-link nav-link-sub {% if es_submenu_cxp %}active{% endif %}" href="{{ url_for('inv_comercial.cxp_list') }}">
+              <i class="bi bi-wallet2 me-2"></i> Cuentas por pagar
+            </a>
+          </div>
+        </div>
+        {% set es_submenu_ventas_ops = ep in ['inv_comercial.ventas_list', 'inv_comercial.ventas_nueva', 'inv_comercial.ventas_detalle'] %}
+        {% set es_submenu_por_cobrar = ep == 'inv_comercial.ventas_list' and request.args.get('cobro') == 'pendiente' %}
+        {% set es_submenu_ventas_lista = es_submenu_ventas_ops and not es_submenu_por_cobrar %}
+        {% set es_submenu_clientes = ep and ep.startswith('inv_comercial.clientes') %}
+        {% set menu_ventas_abierto = es_submenu_ventas_ops or es_submenu_clientes %}
+        <div class="sidebar-nav-group">
+          <button type="button" class="nav-link sidebar-nav-toggle w-100 text-start {% if menu_ventas_abierto %}active-parent{% endif %}"
+             data-bs-toggle="collapse" data-bs-target="#submenuVentas"
+             aria-expanded="{{ 'true' if menu_ventas_abierto else 'false' }}"
+             aria-controls="submenuVentas">
+            <span class="d-flex align-items-center justify-content-between w-100">
+              <span><i class="bi bi-cash-register me-2"></i> Ventas</span>
+              <i class="bi bi-chevron-down small sidebar-chevron"></i>
+            </span>
+          </button>
+          <div class="collapse {% if menu_ventas_abierto %}show{% endif %}" id="submenuVentas"
+               data-sidebar-group="ventas" data-sidebar-in-section="{{ '1' if menu_ventas_abierto else '0' }}">
+            <a class="nav-link nav-link-sub {% if es_submenu_ventas_lista %}active{% endif %}" href="{{ url_for('inv_comercial.ventas_list') }}">
+              <i class="bi bi-list-ul me-2"></i> Listado de ventas
+            </a>
+            <a class="nav-link nav-link-sub {% if es_submenu_por_cobrar %}active{% endif %}" href="{{ url_for('inv_comercial.ventas_list', cobro='pendiente') }}">
+              <i class="bi bi-credit-card me-2"></i> Por cobrar
+            </a>
+            <a class="nav-link nav-link-sub {% if es_submenu_clientes %}active{% endif %}" href="{{ url_for('inv_comercial.clientes_list') }}">
+              <i class="bi bi-people me-2"></i> Clientes
+            </a>
+          </div>
+        </div>
         <a class="nav-link {% if ep == 'inv_comercial.proveedores_list' or ep and ep.startswith('inv_comercial.proveedores') %}active{% endif %}" href="{{ url_for('inv_comercial.proveedores_list') }}">
           <i class="bi bi-truck me-2"></i> Proveedores comerciales
         </a>
         {% endif %}
-        {% if empresa_actual and perm.equipo %}
+        {% if empresa_actual and (perm.equipo or perm.config) %}
+        {% set es_submenu_usuarios = ep and (ep.startswith('main.equipo') or ep == 'main.mi_perfil') %}
+        {% set es_submenu_config_empresa = ep == 'main.configuracion_empresa' %}
+        {% set es_submenu_campos = ep and ep.startswith('main.configuracion_campos') %}
+        {% set menu_admin_abierto = es_submenu_usuarios or es_submenu_config_empresa or es_submenu_campos %}
         <p class="sidebar-module-label px-3 small text-uppercase text-white-50 mb-1 mt-2">Administración</p>
-        <a class="nav-link {% if request.endpoint and request.endpoint.startswith('main.equipo') %}active{% endif %}" href="{{ url_for('main.equipo_list') }}">
-          <i class="bi bi-person-workspace me-2"></i> Equipo de trabajo
-        </a>
-        {% endif %}
-        {% if empresa_actual and perm.config %}
-        <a class="nav-link {% if request.endpoint == 'main.configuracion_empresa' %}active{% endif %}"
-           href="{{ url_for('main.configuracion_empresa') }}">
-          <i class="bi bi-building-gear me-2"></i> Configuración empresa
-        </a>
-        <a class="nav-link {% if request.endpoint and request.endpoint.startswith('main.configuracion_campos') %}active{% endif %}"
-           href="{{ url_for('main.configuracion_campos_list') }}">
-          <i class="bi bi-ui-checks-grid me-2"></i> Campos personalizados
-        </a>
+        <div class="sidebar-nav-group">
+          <button type="button" class="nav-link sidebar-nav-toggle w-100 text-start {% if menu_admin_abierto %}active-parent{% endif %}"
+             data-bs-toggle="collapse" data-bs-target="#submenuAdmin"
+             aria-expanded="{{ 'true' if menu_admin_abierto else 'false' }}"
+             aria-controls="submenuAdmin">
+            <span class="d-flex align-items-center justify-content-between w-100">
+              <span><i class="bi bi-shield-lock me-2"></i> Administración</span>
+              <i class="bi bi-chevron-down small sidebar-chevron"></i>
+            </span>
+          </button>
+          <div class="collapse {% if menu_admin_abierto %}show{% endif %}" id="submenuAdmin"
+               data-sidebar-group="admin" data-sidebar-in-section="{{ '1' if menu_admin_abierto else '0' }}">
+            {% if perm.equipo %}
+            <a class="nav-link nav-link-sub {% if es_submenu_usuarios %}active{% endif %}" href="{{ url_for('main.equipo_list') }}">
+              <i class="bi bi-people me-2"></i> Usuarios y roles
+            </a>
+            {% endif %}
+            {% if perm.config %}
+            <a class="nav-link nav-link-sub {% if es_submenu_config_empresa %}active{% endif %}"
+               href="{{ url_for('main.configuracion_empresa') }}">
+              <i class="bi bi-building-gear me-2"></i> Configuración empresa
+            </a>
+            <a class="nav-link nav-link-sub {% if es_submenu_campos %}active{% endif %}"
+               href="{{ url_for('main.configuracion_campos_list') }}">
+              <i class="bi bi-ui-checks-grid me-2"></i> Campos personalizados
+            </a>
+            {% endif %}
+          </div>
+        </div>
         {% endif %}
       </nav>
       <div class="mt-auto sidebar-footer-actions">

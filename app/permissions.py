@@ -38,7 +38,14 @@ USER_ROLE_HELP = {
     UserRole.SUPERADMIN.value: "Crear, editar y eliminar en todo el sistema.",
     UserRole.ADMIN.value: "Editar y eliminar registros operativos.",
     UserRole.TECNICO.value: "Editar registros (sin crear ni eliminar).",
-    UserRole.USUARIO.value: "Solo consulta (lectura).",
+    UserRole.USUARIO.value: "Consulta operativa y reporte de incidencias.",
+}
+
+USER_ROLE_HELP_MANTENIMIENTO = {
+    **USER_ROLE_HELP,
+    UserRole.ADMIN.value: "Configura activos y OT; asigna técnicos; crea OT desde incidencias.",
+    UserRole.TECNICO.value: "Ejecuta OT, registra jornadas y repuestos; puede resolver incidencias.",
+    UserRole.USUARIO.value: "Consulta operativa y reporte de incidencias (rol Solicitante).",
 }
 
 USER_ROLE_HELP_INVENTARIO = {
@@ -123,10 +130,29 @@ def role_display_label(
     return labels.get(key, USER_ROLE_LABELS.get(key, rol or "—"))
 
 
+def can_report_incident(user) -> bool:
+    """Cualquier usuario autenticado puede reportar incidencias (MRG Solicitante)."""
+    return getattr(user, "is_authenticated", False)
+
+
+def can_manage_incidents(user) -> bool:
+    """Supervisor / técnico: revisar y resolver incidencias (no rol Usuario)."""
+    return can_edit(user) and not is_read_only(user)
+
+
+def can_create_work_order(user) -> bool:
+    """Supervisor / admin: crear OT (p. ej. desde incidencia)."""
+    return can_create(user)
+
+
 def role_help_map(modulos_activos: list[str] | None = None, *, empresa=None) -> dict[str, str]:
     mods = modulos_activos if modulos_activos is not None else _modulos_empresa(empresa)
     if usa_terminologia_inventario(mods):
         return USER_ROLE_HELP_INVENTARIO
+    from app.modules import MODULO_MANTENIMIENTO
+
+    if MODULO_MANTENIMIENTO in mods:
+        return USER_ROLE_HELP_MANTENIMIENTO
     return USER_ROLE_HELP
 
 
@@ -160,6 +186,9 @@ def permission_flags(user) -> dict:
         "config": can_manage_config(user),
         "equipo": can_manage_equipo(user),
         "solo_lectura": is_read_only(user),
+        "reportar_incidencia": can_report_incident(user),
+        "gestionar_incidencias": can_manage_incidents(user),
+        "crear_ot": can_create_work_order(user),
     }
 
 

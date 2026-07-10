@@ -10,11 +10,39 @@
 
 Documentar el funcionamiento funcional del módulo Mantenimiento: entidades, roles, estados, flujos, costos e indicadores — y su relación con otros módulos de Maintix.
 
-**Clave de módulo:** `mantenimiento` · **Estado producto:** 🟢 Producción
+**Clave de módulo:** `mantenimiento` · **Estado producto:** 🟡 Parcial · **Sprint 14 ALIGN:** ✅ Cerrado (2026-07-10)
+
+| Estado | Significado |
+|--------|-------------|
+| ✅ Producción | Implementado y alineado con este manual |
+| 🟡 Parcial | Implementado · gaps menores documentados |
+| 📋 Roadmap | Documentado · no implementado |
+| ❌ No implementado | Ausente en código |
+
+→ Auditoría Sprint 14: [ALIGN · Fase 1](../../alignment/modules/02-maintenance-audit.md)
+
+### Matriz de implementación (post Sprint 14)
+
+| Sección | Tema | Estado |
+|---------|------|--------|
+| §1 | Alcance | ✅ |
+| §2 | Roles y permisos | ✅ |
+| §3 | Entidades | ✅ |
+| §4 | Activos | 🟡 |
+| §5 | Historial del activo | 🟡 |
+| §6 | Órdenes de trabajo | 🟡 |
+| §7 | Mantenimiento preventivo | ✅ |
+| §8 | Inventario técnico (repuestos) | ✅ |
+| §9 | Incidencias | 🟡 |
+| §10 | Dashboard | ✅ |
+| §11 | Indicadores / reportes | 🟡 |
+| API | MAG `/api/v1/maintenance/*` | 🟡 |
+
+**Gaps abiertos (📋):** jerarquía activo padre/hijo · baja formal de activo · estado OT «En espera» · export Excel OT/activos · CRUD API assets/OT · evidencia fotográfica incidencias.
 
 ---
 
-## 1 · Alcance del módulo
+## 1 · Alcance del módulo · ✅
 
 | Incluye | No incluye (hoy) |
 |---------|------------------|
@@ -27,7 +55,7 @@ Documentar el funcionamiento funcional del módulo Mantenimiento: entidades, rol
 
 ---
 
-## 2 · Roles del módulo
+## 2 · Roles del módulo · ✅
 
 Quién participa en la operación de Mantenimiento — base para permisos en [MRG-07 · Administración](07-administracion.md):
 
@@ -51,7 +79,7 @@ Quién participa en la operación de Mantenimiento — base para permisos en [MR
 
 ---
 
-## 3 · Entidades principales
+## 3 · Entidades principales · ✅
 
 | Entidad | Descripción funcional |
 |---------|----------------------|
@@ -69,7 +97,7 @@ Quién participa en la operación de Mantenimiento — base para permisos en [MR
 
 ---
 
-## 4 · Activos
+## 4 · Activos · 🟡
 
 ### Estados operativos
 
@@ -109,7 +137,7 @@ Retiro / Baja
 | **Historial** | Acumulación de OT, costos e intervenciones |
 | **Retiro / Baja** | Fin de vida útil — desactivación o baja lógica del activo |
 
-> **Hoy en producto:** estados operativos en ficha de activo; **retiro/baja** como práctica operativa (política del tenant) — formalización de baja definitiva en roadmap.
+> **Hoy en producto:** estados operativos en ficha de activo; **retiro/baja** como práctica operativa (política del tenant) — formalización de baja definitiva en 📋 roadmap. **Jerarquía padre/hijo:** modelo en BD · UI en 📋 roadmap.
 
 ### Criticidad y activos críticos
 
@@ -134,7 +162,7 @@ Los activos pueden organizarse **padre/hijo** (línea → subequipo) para report
 
 ---
 
-## 5 · Historial del activo
+## 5 · Historial del activo · 🟡
 
 Cada activo mantiene un **historial único** que registra:
 
@@ -147,11 +175,13 @@ Cada activo mantiene un **historial único** que registra:
 
 Este historial constituye la **trazabilidad operativa** del activo — funcionalidad central de cualquier CMMS y base para indicadores como MTBF y costo por equipo.
 
+> **Hoy en producto:** ficha de activo muestra últimas OT e incidencias vinculadas. Costos agregados por activo y cambios de ubicación en 📋 roadmap.
+
 → Workflow completo en [MRG-09 · Workflows](09-workflows.md)
 
 ---
 
-## 6 · Órdenes de trabajo
+## 6 · Órdenes de trabajo · 🟡
 
 ### Tipos
 
@@ -223,7 +253,7 @@ Los costos por activo se agregan en el **historial** y conectan Maintenance con 
 
 ---
 
-## 7 · Mantenimiento preventivo
+## 7 · Mantenimiento preventivo · ✅
 
 | Concepto | Función |
 |----------|---------|
@@ -236,7 +266,7 @@ El sistema **genera y programa OT preventivas** a partir de planes activos y sin
 
 ---
 
-## 8 · Inventario técnico (repuestos)
+## 8 · Inventario técnico (repuestos) · ✅
 
 Distinto del **inventario comercial** (MRG-03):
 
@@ -250,7 +280,7 @@ Distinto del **inventario comercial** (MRG-03):
 
 ---
 
-## 9 · Incidencias
+## 9 · Incidencias · 🟡
 
 Flujo:
 
@@ -261,9 +291,11 @@ Flujo:
 
 La prioridad de la incidencia puede interactuar con la **criticidad del activo** para ordenar la respuesta.
 
+> **Hoy en producto:** reporte · listado · resolución · crear OT desde incidencia. Asignación explícita a supervisor y evidencia fotográfica en 📋 roadmap.
+
 ---
 
-## 10 · Dashboard Mantenimiento
+## 10 · Dashboard Mantenimiento · ✅
 
 Vista conceptual del panel operativo del módulo — conecta con [MRG-08 · Reportes](08-reportes.md):
 
@@ -280,7 +312,7 @@ Dashboard Mantenimiento
 
 | Bloque | Qué responde |
 |--------|--------------|
-| **Activos operativos** | Cuántos equipos están en servicio vs mantenimiento/falla |
+| **Activos operativos** | Cuántos activos están en servicio vs mantenimiento/falla |
 | **OT abiertas** | Carga de trabajo pendiente |
 | **OT vencidas** | OT fuera de fecha programada |
 | **Preventivos del mes** | Mantenimientos planificados en el período |
@@ -291,7 +323,7 @@ El dashboard de planta amplía con KPIs avanzados: disponibilidad, MTBF, MTTR y 
 
 ---
 
-## 11 · Indicadores (Mantenimiento)
+## 11 · Indicadores (Mantenimiento) · 🟡
 
 | KPI | Descripción |
 |-----|-------------|
@@ -314,22 +346,25 @@ El dashboard de planta amplía con KPIs avanzados: disponibilidad, MTBF, MTTR y 
 | MRG-08 | Dashboard · KPIs · exportaciones |
 | MRG-09 | Workflow activo → OT → repuesto → costo → KPI |
 | MRG-01 | Modularidad · Mantenimiento en producción |
-| MAG | Contrato `/api/v1/maintenance/*` (objetivo) |
+| MAG | Contrato `/api/v1/maintenance/*` · 🟡 GET assets/work-orders |
 | MUX | Persona PER-003 Técnico · journeys operativos |
 
 ---
 
 ## Exit Criteria
 
-Este capítulo se considera **completo** cuando:
+Este capítulo se considera **alineado (Sprint 14)** cuando:
 
 - [x] Alcance y roles del módulo documentados
 - [x] Ciclo de vida del activo y OT descritos
 - [x] Historial · costos · criticidad · dashboard conceptuales
+- [x] Alineación UI/copy/menús vs producto (Sprint 14 · Fase 1)
+- [x] Matriz de permisos MRG §2 ↔ plataforma
+- [x] API MAG v1 lectura (`assets` · `work-orders`)
 - [ ] Validación con implementadores y soporte
-- [ ] Alineación total con MAG recursos Maintenance
+- [ ] CRUD API Maintenance · exportaciones Excel OT/activos
 
-**Cobertura documental:** parcial — núcleo funcional entregado; refinamiento continuo en Sprint 10.
+**Cobertura documental:** ✅ entregada · **Implementación:** 🟡 Parcial (gaps en matriz §4–§6 · API).
 
 ---
 
@@ -337,11 +372,12 @@ Este capítulo se considera **completo** cuando:
 
 | Aspecto | Valor |
 |---------|-------|
-| **Módulo** | 🟢 Producción |
-| **Cobertura documental** | Parcial |
-| **API** | MAG v1 (objetivo) |
-| **MRG** | v0.1.0 |
-| **Próximo capítulo** | MRG-03 · Inventario |
+| **Módulo producto** | 🟡 Parcial |
+| **Sprint 14 ALIGN** | ✅ Cerrado 2026-07-10 |
+| **Cobertura documental** | ✅ v1.0.2 |
+| **API MAG** | 🟡 GET v1 · CRUD 📋 |
+| **MRG capítulo** | v1.0.2 |
+| **Próximo paso** | Fase 2 · MRG-03 Inventario ([ALIGN](../../alignment/)) |
 
 ---
 
