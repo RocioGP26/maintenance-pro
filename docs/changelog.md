@@ -1,5 +1,30 @@
 # Changelog · Maintix Documentation Suite
 
+## [1.14.0] — 2026-07-10 · MDO v1.0.0 · Sprint 13 finalizado
+
+### Added
+- **MDO v1.0.0** — Maintix Documentation Operations completo (10 capítulos)
+- **MDO-08** · Portal Documental · **MDO-09** · Búsqueda · **MDO-10** · Cierre y gobernanza
+
+### Changed
+- MDO v0.7.0 → **v1.0.0**
+
+### Status
+- ✅ Sprint 13 finalizado · MDO v1.0.0
+
+---
+
+## [1.13.0] — 2026-07-10 · MDO · Sprint 13 en curso
+
+### Added
+- **MDO v0.1.0** — Maintix Documentation Operations · infraestructura `/mdo/`
+- **MDO-01** – **MDO-07** · capítulos fundacionales
+
+### Status
+- 🚧 Sprint 13 en curso (histórico)
+
+---
+
 ## [1.12.0] — 2026-07-10 · MKT v1.0.0 · Sprint 12 finalizado
 
 ### Added

@@ -1,0 +1,106 @@
+/**
+ * MDO Docs — Maintix Documentation Operations
+ */
+
+.mdo-doc-code {
+  background: rgba(49, 130, 206, 0.12);
+  border-radius: 6px;
+  color: #2B6CB0;
+  display: inline-block;
+  font-family: ui-monospace, monospace;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  margin-bottom: 0.5rem;
+  padding: 0.2rem 0.55rem;
+}
+
+.mdo-doc-table {
+  border-collapse: collapse;
+  font-size: 0.88rem;
+  margin: 1rem auto;
+  width: 100%;
+}
+
+.mdo-doc-table th,
+.mdo-doc-table td {
+  border: 1px solid var(--bb-borde);
+  padding: 0.45rem 0.65rem;
+  text-align: left;
+}
+
+.mdo-doc-table thead th {
+  background: var(--bb-fondo);
+  font-weight: 600;
+}
+
+.mdo-chapter-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 2rem;
+}
+
+.mdo-chapter-nav a {
+  background: var(--bb-fondo);
+  border: 1px solid var(--bb-borde);
+  border-radius: 8px;
+  color: var(--bb-acento);
+  font-size: 0.82rem;
+  padding: 0.4rem 0.75rem;
+  text-decoration: none;
+}
+
+.mdo-principle-box {
+  background: rgba(49, 130, 206, 0.06);
+  border-left: 4px solid #3182CE;
+  border-radius: 0 12px 12px 0;
+  margin: 1rem 0;
+  padding: 1rem 1.25rem;
+}
+
+.mdo-audience-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  margin: 1.5rem 0;
+}
+
+.mdo-audience-card {
+  background: #fff;
+  border: 1px solid var(--bb-borde);
+  border-radius: 12px;
+  border-top: 3px solid #3182CE;
+  padding: 1rem 1.15rem;
+}
+
+.mdo-audience-card h4 {
+  color: var(--bb-primario);
+  font-size: 0.95rem;
+  margin: 0 0 0.35rem;
+}
+
+.mdo-audience-card p {
+  color: var(--bb-secundario);
+  font-size: 0.85rem;
+  margin: 0;
+}
+
+.mdo-tree {
+  background: rgba(0, 0, 0, 0.04);
+  border-radius: 8px;
+  font-family: ui-monospace, monospace;
+  font-size: 0.82rem;
+  line-height: 1.5;
+  margin: 1rem 0;
+  padding: 1rem 1.25rem;
+  white-space: pre;
+}
+
+.bb-nav a.is-planned {
+  opacity: 0.55;
+}
+
+.bb-nav a.is-done {
+  color: #68d391;
+}

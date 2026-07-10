@@ -3,12 +3,13 @@
 **Índice:** [/docs/](http://127.0.0.1:5000/docs/)
 
 ```
-MAINTIX DOCS · Sprint 12
+MAINTIX DOCS · Sprint 13
 ├── 01 Brand Book (MBB)     ✅ v2.0 · Congelado
 ├── 02 MDL                  ✅ v1.0 · Congelado
 ├── 03 MUX                  ✅ v1.2 · Congelado
 ├── 04 MCM                  ✅ v1.0.0 · Sprint 11 finalizado
 ├── 12 MKT                  ✅ v1.0.0 · Sprint 12 finalizado
+├── 13 MDO                  ✅ v1.0.0 · Sprint 13 finalizado
 ├── 05 MPA                  ✅ v1.0 · Sprint 6
 ├── 06 MRL                  🟡 v0.1
 ├── 07 MAG                  ✅ v1.0.12 · Sprint 8
@@ -25,5 +26,6 @@ MAINTIX DOCS · Sprint 12
 |-------|------|
 | Comunicación | MBB · MCM · **MKT** |
 | Experiencia | MUX · MRL |
+| Documentación | **MDO** |
 | Plataforma | **MPA** |
 | Ingeniería | MDL · MAG · SDK · Developer |

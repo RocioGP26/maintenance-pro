@@ -209,6 +209,7 @@ def create_app(config_name: str | None = None):
     from app.msd_routes import msd_bp
     from app.mrg_routes import mrg_bp
     from app.mkt_routes import mkt_bp
+    from app.mdo_routes import mdo_bp
     from app.openapi_routes import openapi_bp
     from app.docs_routes import docs_bp
 
@@ -226,6 +227,7 @@ def create_app(config_name: str | None = None):
     app.register_blueprint(msd_bp)
     app.register_blueprint(mrg_bp)
     app.register_blueprint(mkt_bp)
+    app.register_blueprint(mdo_bp)
     app.register_blueprint(openapi_bp)
     app.register_blueprint(docs_bp)
     app.register_blueprint(onboarding_bp)

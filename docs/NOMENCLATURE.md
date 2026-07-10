@@ -12,6 +12,7 @@ Versiones: [VERSIONS.md](VERSIONS.md) · Cross-refs: [CROSS-REFERENCES.md](CROSS
 | **03** | **MUX** | Maintix User Experience Guide | `docs/mux/` | `/mux/` |
 | **04** | **MCM** | Maintix Commercial Manual | `docs/mcm/` | `/mcm/` |
 | **12** | **MKT** | Sales Enablement & Marketing Assets | `docs/mkt/` | `/mkt/` |
+| **13** | **MDO** | Maintix Documentation Operations | `docs/mdo/` | `/mdo/` |
 | **05** | **MPA** | Maintix Platform Architecture | `docs/mpa/` | `/mpa/` |
 | **06** | **MRL** | Maintix Report Language | `docs/mrl/` | — |
 | **07** | **MAG** | Maintix API Guide | `docs/mag/` | — |
