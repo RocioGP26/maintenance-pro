@@ -51,7 +51,7 @@ Lo que **no comparten** es una forma única de presentarla. MRL v1.0.1 (Sprint 7
 | **15.0** | MRL-S15.0 | Documentación completa (README, arquitectura, estándares, roadmap, charter) | ✅ |
 | **15.1** | MRL-S15.1 | Foundation — `colors`, `typography`, `metadata`, `styles`, smoke test | ✅ |
 | **15.2** | MRL-S15.2 | Excel Engine — `BaseExcelExporter`, tablas, header, footer, logo | ✅ |
-| **15.3** | MRL-S15.3 | PDF Engine — ReportLab: header, footer, tabla, KPI, numeración, watermark | 📋 |
+| **15.3** | MRL-S15.3 | PDF Engine — ReportLab: header, footer, tabla, KPI, numeración, watermark | ✅ |
 | **15.4** | MRL-S15.4 | Primer documento oficial — **DOC-001** Orden de Trabajo | 📋 |
 | **15.5** | MRL-S15.5 | Integración — reemplazar exports ad hoc (OT, activos, inventario, compras, ventas) | 📋 |
 
@@ -215,9 +215,9 @@ Sprint 15.1+ = transición 📋 → 🚧 por sub-sprint.
 
 ## Próximo paso
 
-**Sprint 15.1 · Foundation** — crear `app/mrl/` con constantes corporativas, metadata y smoke test.  
-No iniciar motores Excel/PDF hasta cerrar 15.1 con tests verdes.
+**Sprint 15.4 · Primer documento oficial** — implementar DOC-001 Orden de Trabajo
+sobre `BasePdfExporter`, sin introducir estilos fuera del motor MRL.
 
 ---
 
-*Sprint 15 · MRL Foundation — Report & Document Engine · Maintix · 2026-07-10 · Sprint 15.0–15.1 ✅ · 15.2+ pendiente*
+*Sprint 15 · MRL Foundation — Report & Document Engine · Maintix · 2026-07-11 · Sprint 15.0–15.3 ✅ · 15.4–15.5 pendiente*

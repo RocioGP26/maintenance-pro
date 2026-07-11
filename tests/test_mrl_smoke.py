@@ -20,6 +20,7 @@ class TestMRLSmoke(unittest.TestCase):
         self.assertIs(mrl.typography, typography)
         self.assertIs(mrl.MRLStyle, MRLStyle)
         self.assertIs(mrl.ExcelExporter, mrl.BaseExcelExporter)
+        self.assertIs(mrl.PdfExporter, mrl.BasePdfExporter)
 
     def test_colors_official_tokens(self) -> None:
         self.assertEqual(colors.PRIMARY, "#042C53")

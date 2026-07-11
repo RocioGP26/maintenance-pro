@@ -1,5 +1,18 @@
 # MRL Changelog
 
+## [1.1.3] — 2026-07-11 · Sprint 15.3 · PDF Engine
+
+### Added
+- **`app/mrl/pdf/`** — motor PDF MRL sobre ReportLab.
+- `BasePdfExporter` / `PdfExporter` con header, footer, tablas y KPI cards.
+- Numeración automática, propiedades corporativas y watermark opcional.
+- `tests/test_mrl_pdf.py` — generación PDF válida y desacoplamiento del negocio.
+
+### Status
+- ✅ Sprint 15.3 cerrado · 15.4 DOC-001 pendiente.
+
+---
+
 ## [1.1.2] — 2026-07-10 · Sprint 15.2 · Excel Engine
 
 ### Added

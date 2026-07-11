@@ -11,6 +11,7 @@ from app.mrl import typography
 from app.mrl.constants import MRL_VERSION
 from app.mrl.excel.exporter import BaseExcelExporter, ExcelExporter
 from app.mrl.metadata import MRLDocumentMeta, build_sample_metadata
+from app.mrl.pdf.exporter import BasePdfExporter, PdfExporter
 from app.mrl.styles import MRLStyle
 
 __all__ = [
@@ -19,6 +20,8 @@ __all__ = [
     "MRLStyle",
     "BaseExcelExporter",
     "ExcelExporter",
+    "BasePdfExporter",
+    "PdfExporter",
     "build_sample_metadata",
     "colors",
     "constants",
