@@ -1547,6 +1547,46 @@ class PurOrdenEvento(db.Model):
     actor = db.relationship("User")
 
 
+class PurRecepcion(db.Model):
+    """Recepción inmutable de una orden de compra · Sprint 16.3."""
+
+    __tablename__ = "pur_recepciones"
+    __table_args__ = (
+        db.UniqueConstraint("empresa_id", "numero", name="uq_pur_recepcion_empresa_numero"),
+        db.UniqueConstraint("empresa_id", "idempotency_key", name="uq_pur_recepcion_empresa_idempotency"),
+    )
+
+    id = db.Column(db.Integer, primary_key=True)
+    empresa_id = db.Column(db.Integer, db.ForeignKey("empresas.id"), nullable=False, index=True)
+    numero = db.Column(db.String(32), nullable=False, index=True)
+    orden_id = db.Column(db.Integer, db.ForeignKey("pur_ordenes.id"), nullable=False, index=True)
+    estado = db.Column(db.String(16), nullable=False, default="confirmada", index=True)
+    recibido_por_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
+    fecha = db.Column(db.Date, nullable=False)
+    idempotency_key = db.Column(db.String(64), nullable=False)
+    documento_proveedor = db.Column(db.String(64), nullable=False, default="")
+    observaciones = db.Column(db.Text, nullable=False, default="")
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+
+    orden = db.relationship("PurOrdenCompra", backref=db.backref("recepciones", order_by="PurRecepcion.created_at"))
+    recibido_por = db.relationship("User")
+    lineas = db.relationship("PurRecepcionLinea", back_populates="recepcion", cascade="all, delete-orphan", order_by="PurRecepcionLinea.id")
+
+
+class PurRecepcionLinea(db.Model):
+    __tablename__ = "pur_recepcion_lineas"
+
+    id = db.Column(db.Integer, primary_key=True)
+    recepcion_id = db.Column(db.Integer, db.ForeignKey("pur_recepciones.id", ondelete="CASCADE"), nullable=False, index=True)
+    orden_linea_id = db.Column(db.Integer, db.ForeignKey("pur_orden_lineas.id"), nullable=False, index=True)
+    cantidad_recibida = db.Column(db.Float, nullable=False, default=0.0)
+    cantidad_rechazada = db.Column(db.Float, nullable=False, default=0.0)
+    motivo_rechazo = db.Column(db.String(255), nullable=False, default="")
+
+    recepcion = db.relationship("PurRecepcion", back_populates="lineas")
+    orden_linea = db.relationship("PurOrdenLinea", backref="lineas_recepcion")
+
+
 class InvVenta(db.Model):
     __tablename__ = "inv_ventas"
 

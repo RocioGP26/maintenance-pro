@@ -1,5 +1,18 @@
 # Changelog · Maintix Documentation Suite
 
+## [1.16.3] — 2026-07-11 · Sprint 16.3 · Recepciones
+
+### Added
+- Recepciones totales, parciales y rechazadas con trazabilidad por línea.
+- Confirmación idempotente y control de sobre-recepción.
+- Actualización de stock únicamente por cantidades aceptadas.
+- Estados OC `parcial` y `recibida`; recepciones confirmadas son inmutables.
+
+### Status
+- ✅ Sprint 16.3 finalizado · CxP permanece para Sprint 16.4.
+
+---
+
 ## [1.16.2] — 2026-07-11 · Sprint 16.2 · Órdenes de compra
 
 ### Added

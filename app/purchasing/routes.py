@@ -2,18 +2,19 @@
 
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import date, datetime
+from uuid import uuid4
 
 from flask import Blueprint, flash, redirect, render_template, request, send_file, url_for
 from flask_login import current_user, login_required
 from sqlalchemy.orm import joinedload
 
 from app import db
-from app.models import InvProducto, InvProveedor, PurOrdenCompra, PurSolicitud
+from app.models import InvProducto, InvProveedor, PurOrdenCompra, PurRecepcion, PurSolicitud
 from app.module_guard import require_module
 from app.modules import MODULO_INVENTARIO
-from app.permissions import can_approve_purchase_request
-from app.purchasing.service import PRIORIDADES, crear_orden_desde_solicitud, guardar_solicitud, transicionar, transicionar_orden
+from app.permissions import can_approve_purchase_request, can_receive_purchasing
+from app.purchasing.service import PRIORIDADES, crear_orden_desde_solicitud, guardar_solicitud, registrar_recepcion, transicionar, transicionar_orden
 
 purchasing_bp = Blueprint("purchasing", __name__, url_prefix="/purchasing")
 
@@ -138,7 +139,7 @@ def _orden_query():
 
 
 def _orden_or_404(id):
-    return _orden_query().options(joinedload(PurOrdenCompra.lineas), joinedload(PurOrdenCompra.proveedor), joinedload(PurOrdenCompra.solicitud), joinedload(PurOrdenCompra.eventos)).filter_by(id=id).first_or_404()
+    return _orden_query().options(joinedload(PurOrdenCompra.lineas), joinedload(PurOrdenCompra.proveedor), joinedload(PurOrdenCompra.solicitud), joinedload(PurOrdenCompra.eventos), joinedload(PurOrdenCompra.recepciones).joinedload(PurRecepcion.lineas)).filter_by(id=id).first_or_404()
 
 
 @purchasing_bp.route("/ordenes")
@@ -203,3 +204,25 @@ def ordenes_pdf(id):
     from app.purchasing.mrl_exports import export_orden_compra_pdf
     content, name = export_orden_compra_pdf(current_user.empresa, _orden_or_404(id), usuario=current_user)
     return send_file(BytesIO(content), mimetype="application/pdf", as_attachment=True, download_name=name)
+
+
+@purchasing_bp.route("/ordenes/<int:id>/recibir", methods=["GET", "POST"])
+@login_required
+@require_module(MODULO_INVENTARIO)
+def recepciones_new(id):
+    orden = _orden_or_404(id)
+    if not can_receive_purchasing(current_user):
+        flash("No tienes permiso para registrar recepciones.", "danger")
+        return redirect(url_for("purchasing.ordenes_detail", id=id))
+    if request.method == "POST":
+        try:
+            line_ids = request.form.getlist("linea_id"); accepted = request.form.getlist("cantidad_recibida"); rejected = request.form.getlist("cantidad_rechazada"); reasons = request.form.getlist("motivo_rechazo")
+            quantities = {int(line_id): (accepted[i] if i < len(accepted) else 0, rejected[i] if i < len(rejected) else 0, reasons[i] if i < len(reasons) else "") for i, line_id in enumerate(line_ids)}
+            datos = dict(request.form); datos["fecha"] = _fecha(request.form.get("fecha")) or date.today()
+            receipt = registrar_recepcion(_empresa_id(), current_user.id, orden, datos, quantities)
+            db.session.commit(); flash(f"Recepción {receipt.numero} registrada. El stock fue actualizado.", "success")
+            return redirect(url_for("purchasing.ordenes_detail", id=id))
+        except ValueError as exc:
+            db.session.rollback(); flash(str(exc), "danger")
+    received = {line.id: sum(float(r.cantidad_recibida or 0) for r in line.lineas_recepcion) for line in orden.lineas}
+    return render_template("purchasing/recepcion_form.html", orden=orden, recibido=received, idempotency_key=str(uuid4()), hoy=date.today())

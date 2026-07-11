@@ -8,7 +8,7 @@ from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
 from sqlalchemy import func
 
 from app import db
-from app.models import InvProducto, InvProveedor, PurEvento, PurOrdenCompra, PurOrdenEvento, PurOrdenLinea, PurSolicitud, PurSolicitudLinea
+from app.models import InvProducto, InvProveedor, PurEvento, PurOrdenCompra, PurOrdenEvento, PurOrdenLinea, PurRecepcion, PurRecepcionLinea, PurSolicitud, PurSolicitudLinea
 
 ESTADOS = ("borrador", "enviada", "aprobada", "rechazada", "cancelada", "convertida")
 PRIORIDADES = (("baja", "Baja"), ("media", "Media"), ("alta", "Alta"), ("critica", "Crítica"))
@@ -150,3 +150,63 @@ def transicionar_orden(orden, actor_id: int, nuevo: str):
     if nuevo == "enviada": orden.enviada_en = now
     _orden_evento(orden, actor_id, nuevo, anterior, nuevo)
     return orden
+
+
+def siguiente_numero_recepcion(empresa_id: int) -> str:
+    year = datetime.now(timezone.utc).year
+    prefix = f"RC-{year}-"
+    last = db.session.query(func.max(PurRecepcion.numero)).filter(PurRecepcion.empresa_id == empresa_id, PurRecepcion.numero.like(f"{prefix}%")).scalar()
+    seq = int(last.rsplit("-", 1)[-1]) + 1 if last else 1
+    return f"{prefix}{seq:04d}"
+
+
+def _recibido_acumulado(linea) -> Decimal:
+    return sum((Decimal(str(r.cantidad_recibida or 0)) for r in linea.lineas_recepcion), Decimal("0"))
+
+
+def registrar_recepcion(empresa_id: int, actor_id: int, orden, datos, cantidades: dict[int, tuple]):
+    """Confirma una recepción en una sola transacción; no crea CxP."""
+    from app.inventario_comercial.stock_service import aplicar_entrada_confirmada
+
+    if orden.empresa_id != empresa_id or orden.estado not in ("enviada", "parcial"):
+        raise ValueError("Solo una OC enviada o parcial puede recibirse.")
+    key = (datos.get("idempotency_key") or "").strip()
+    if not key:
+        raise ValueError("Falta la clave de idempotencia.")
+    existing = PurRecepcion.query.filter_by(empresa_id=empresa_id, idempotency_key=key).first()
+    if existing:
+        if existing.orden_id != orden.id:
+            raise ValueError("La clave de idempotencia pertenece a otra orden.")
+        return existing
+    total_ok = Decimal("0"); total_rejected = Decimal("0"); projected_received = {}; parsed = []
+    for line in orden.lineas:
+        accepted_raw, rejected_raw, reason = cantidades.get(line.id, (0, 0, ""))
+        accepted = _decimal(accepted_raw, "Cantidad recibida")
+        rejected = _decimal(rejected_raw, "Cantidad rechazada")
+        received_before = _recibido_acumulado(line)
+        remaining = Decimal(str(line.cantidad_ordenada)) - received_before
+        if accepted > remaining:
+            raise ValueError(f"La recepción de {line.descripcion_snapshot} supera el saldo ordenado ({remaining:g}).")
+        if rejected > Decimal(str(line.cantidad_ordenada)):
+            raise ValueError(f"El rechazo de {line.descripcion_snapshot} supera la cantidad ordenada.")
+        if rejected > 0 and not (reason or "").strip():
+            raise ValueError("Cada cantidad rechazada requiere un motivo.")
+        if accepted == 0 and rejected == 0:
+            continue
+        parsed.append((line, accepted, rejected, (reason or "").strip()))
+        projected_received[line.id] = received_before + accepted
+        total_ok += accepted; total_rejected += rejected
+    if total_ok == 0 and total_rejected == 0:
+        raise ValueError("Registra al menos una cantidad recibida o rechazada.")
+    recepcion = PurRecepcion(empresa_id=empresa_id, numero=siguiente_numero_recepcion(empresa_id), orden=orden, recibido_por_id=actor_id, fecha=datos.get("fecha"), idempotency_key=key, documento_proveedor=(datos.get("documento_proveedor") or "").strip(), observaciones=(datos.get("observaciones") or "").strip())
+    db.session.add(recepcion)
+    for line, accepted, rejected, reason in parsed:
+        recepcion.lineas.append(PurRecepcionLinea(orden_linea=line, cantidad_recibida=float(accepted), cantidad_rechazada=float(rejected), motivo_rechazo=reason))
+        if accepted > 0 and line.producto:
+            aplicar_entrada_confirmada(line.producto, float(accepted))
+    recepcion.estado = "rechazada" if total_ok == 0 else "confirmada"
+    completa = all(projected_received.get(line.id, _recibido_acumulado(line)) >= Decimal(str(line.cantidad_ordenada)) for line in orden.lineas)
+    anterior = orden.estado
+    orden.estado = "recibida" if completa else "parcial"
+    _orden_evento(orden, actor_id, "recepcion_confirmada" if total_ok else "recepcion_rechazada", anterior, orden.estado, recepcion.numero)
+    return recepcion
