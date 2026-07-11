@@ -1413,6 +1413,66 @@ class InvCompraLinea(db.Model):
     producto = db.relationship("InvProducto", backref="lineas_compra")
 
 
+class PurSolicitud(db.Model):
+    """Solicitud interna de compra · Sprint 16.1."""
+
+    __tablename__ = "pur_solicitudes"
+    __table_args__ = (
+        db.UniqueConstraint("empresa_id", "numero", name="uq_pur_solicitud_empresa_numero"),
+    )
+
+    id = db.Column(db.Integer, primary_key=True)
+    empresa_id = db.Column(db.Integer, db.ForeignKey("empresas.id"), nullable=False, index=True)
+    numero = db.Column(db.String(32), nullable=False, index=True)
+    solicitante_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False, index=True)
+    estado = db.Column(db.String(16), nullable=False, default="borrador", index=True)
+    prioridad = db.Column(db.String(16), nullable=False, default="media")
+    justificacion = db.Column(db.Text, nullable=False, default="")
+    requerida_para = db.Column(db.Date, nullable=True)
+    aprobador_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=True)
+    decision_en = db.Column(db.DateTime, nullable=True)
+    motivo_decision = db.Column(db.Text, nullable=False, default="")
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+
+    solicitante = db.relationship("User", foreign_keys=[solicitante_id])
+    aprobador = db.relationship("User", foreign_keys=[aprobador_id])
+    lineas = db.relationship("PurSolicitudLinea", back_populates="solicitud", cascade="all, delete-orphan", order_by="PurSolicitudLinea.id")
+    eventos = db.relationship("PurEvento", back_populates="solicitud", cascade="all, delete-orphan", order_by="PurEvento.created_at")
+
+
+class PurSolicitudLinea(db.Model):
+    __tablename__ = "pur_solicitud_lineas"
+
+    id = db.Column(db.Integer, primary_key=True)
+    solicitud_id = db.Column(db.Integer, db.ForeignKey("pur_solicitudes.id", ondelete="CASCADE"), nullable=False, index=True)
+    producto_id = db.Column(db.Integer, db.ForeignKey("inv_productos.id"), nullable=True, index=True)
+    descripcion_libre = db.Column(db.String(255), nullable=False, default="")
+    cantidad = db.Column(db.Float, nullable=False)
+    unidad = db.Column(db.String(32), nullable=False, default="pza")
+    costo_estimado = db.Column(db.Float, nullable=True)
+
+    solicitud = db.relationship("PurSolicitud", back_populates="lineas")
+    producto = db.relationship("InvProducto")
+
+
+class PurEvento(db.Model):
+    __tablename__ = "pur_eventos"
+
+    id = db.Column(db.Integer, primary_key=True)
+    empresa_id = db.Column(db.Integer, db.ForeignKey("empresas.id"), nullable=False, index=True)
+    solicitud_id = db.Column(db.Integer, db.ForeignKey("pur_solicitudes.id", ondelete="CASCADE"), nullable=False, index=True)
+    evento = db.Column(db.String(32), nullable=False)
+    actor_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
+    estado_anterior = db.Column(db.String(16), nullable=True)
+    estado_nuevo = db.Column(db.String(16), nullable=False)
+    detalle = db.Column(db.Text, nullable=False, default="")
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+
+    solicitud = db.relationship("PurSolicitud", back_populates="eventos")
+    actor = db.relationship("User")
+
+
 class InvVenta(db.Model):
     __tablename__ = "inv_ventas"
 

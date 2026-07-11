@@ -145,6 +145,18 @@ def can_create_work_order(user) -> bool:
     return can_create(user)
 
 
+def can_create_purchase_request(user) -> bool:
+    return bool(getattr(user, "is_authenticated", False))
+
+
+def can_approve_purchase_request(user) -> bool:
+    return _rol(user) in (UserRole.SUPERADMIN.value, UserRole.ADMIN.value)
+
+
+def can_receive_purchasing(user) -> bool:
+    return can_edit(user) and not is_read_only(user)
+
+
 def role_help_map(modulos_activos: list[str] | None = None, *, empresa=None) -> dict[str, str]:
     mods = modulos_activos if modulos_activos is not None else _modulos_empresa(empresa)
     if usa_terminologia_inventario(mods):

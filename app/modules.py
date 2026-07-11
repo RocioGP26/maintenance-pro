@@ -53,6 +53,7 @@ _ENDPOINT_PREFIX_MODULO: tuple[tuple[str, str], ...] = (
     ("main.reportes", MODULO_MANTENIMIENTO),
     ("main.configuracion_campos", MODULO_MANTENIMIENTO),
     ("inv_comercial.", MODULO_INVENTARIO),
+    ("purchasing.", MODULO_INVENTARIO),
 )
 
 

@@ -1,5 +1,17 @@
 # Changelog · Maintix Documentation Suite
 
+## [1.16.1] — 2026-07-11 · Sprint 16.1 · Solicitudes
+
+### Added
+- Solicitudes de compra tenant-safe con líneas de catálogo o descripción libre.
+- Ciclo borrador → enviada → aprobada/rechazada y auditoría `PurEvento`.
+- Permisos específicos, navegación y migración aditiva `pur_*`.
+
+### Status
+- ✅ Sprint 16.1 finalizado · sin OC, recepciones, stock ni CxP nuevas.
+
+---
+
 ## [1.16.0] — 2026-07-11 · Sprint 16.0 · Purchasing Design
 
 ### Added

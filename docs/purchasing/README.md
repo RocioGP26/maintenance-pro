@@ -1,6 +1,6 @@
 # Sprint 16 · Maintix Purchasing
 
-**Estado:** Sprint 16.0 · diseño y contrato ✅  
+**Estado:** Sprint 16.0–16.1 ✅
 **Módulo:** `purchasing` · **Prefijo técnico:** `Pur` · **MRG:** MRG-04-PUR
 
 Purchasing formaliza el proceso que hoy comienza directamente en `InvCompra`: necesidad interna → aprobación → orden de compra → recepción → cuenta por pagar.
@@ -20,7 +20,7 @@ Purchasing formaliza el proceso que hoy comienza directamente en `InvCompra`: ne
 | Sprint | Entrega | Estado |
 |---|---|---|
 | 16.0 | Diseño, contrato y matriz de migración | ✅ |
-| 16.1 | Solicitudes y aprobación simple | 📋 |
+| 16.1 | Solicitudes y aprobación simple | ✅ |
 | 16.2 | Órdenes de compra y DOC-006 PDF | 📋 |
 | 16.3 | Recepciones totales, parciales y rechazo | 📋 |
 | 16.4 | CxP, indicadores y Excel MRL | 📋 |
