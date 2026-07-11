@@ -116,33 +116,14 @@ body {
   z-index: 1000;
   display: flex;
   flex-direction: column;
-}
-
-.sidebar-brand,
-.sidebar-footer-actions {
-  flex-shrink: 0;
-}
-
-.sidebar > .nav {
-  min-height: 0;
   overflow-x: hidden;
   overflow-y: auto;
-  overscroll-behavior: contain;
-  scrollbar-color: rgba(255, 255, 255, 0.28) transparent;
-  scrollbar-width: thin;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 
-.sidebar > .nav::-webkit-scrollbar {
-  width: 0.4rem;
-}
-
-.sidebar > .nav::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.28);
-  border-radius: 999px;
-}
-
-.sidebar > .nav::-webkit-scrollbar-track {
-  background: transparent;
+.sidebar::-webkit-scrollbar {
+  display: none;
 }
 
 .sidebar-brand {
@@ -1952,13 +1933,10 @@ a.header-user-name:hover {
 @media (max-width: 991.98px) {
   .sidebar {
     height: auto;
+    overflow: visible;
     position: relative;
     width: 100%;
     min-height: auto;
-  }
-  .sidebar > .nav {
-    max-height: none;
-    overflow: visible;
   }
   .main-wrap {
     margin-left: 0;
