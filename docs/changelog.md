@@ -1,5 +1,22 @@
 # Changelog · Maintix Documentation Suite
 
+## [1.15.0] — 2026-07-10 · Sprint 15.0 · MRL Foundation (documentación)
+
+### Added
+- **Sprint 15 · MRL Foundation — Report & Document Engine**
+- MRL v1.1.0 docs: `SPRINT15-REPORT.md`, `architecture.md`, `standards.md`, `roadmap.md`, `templates/`
+- Charter sub-sprints 15.0–15.5 · Definition of Done · sprints desbloqueados 16–20
+
+### Changed
+- MRL README — sección Sprint 15 e índice implementación
+- MRL strategy.md — enlace a arquitectura Sprint 15
+- MRL-10-ROAD cap. 10 — sección v1.1 implementación
+
+### Status
+- ✅ Sprint 15.0 documentación formalizada · código 15.1+ pendiente
+
+---
+
 ## [1.14.0] — 2026-07-10 · MDO v1.0.0 · Sprint 13 finalizado
 
 ### Added

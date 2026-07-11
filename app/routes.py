@@ -8,7 +8,7 @@ from typing import Any, List, Optional, Tuple
 
 from flask import Blueprint, abort, current_app, flash, jsonify, redirect, render_template, request, session, url_for
 from werkzeug.utils import secure_filename
-from flask_login import current_user, login_user, logout_user
+from flask_login import current_user, login_required, login_user, logout_user
 from sqlalchemy import and_, false, func, or_
 
 from app import db, limiter
@@ -1726,6 +1726,29 @@ def activos_list():
         activos_items=items,
         activos_kpis=kpis,
         machine_types=tipos,
+    )
+
+
+@bp.route("/activos/export")
+@login_required
+def activos_export():
+    from io import BytesIO
+
+    from flask import send_file
+
+    from app.maintenance.mrl_exports import export_activos_excel
+
+    machines = _filter_empresa(Machine.query.order_by(Machine.codigo)).all()
+    empresa = current_user.empresa
+    if not empresa:
+        flash("No hay empresa asociada a tu sesión.", "danger")
+        return redirect(url_for("main.activos_list"))
+    contenido, nombre = export_activos_excel(empresa, machines, usuario=current_user)
+    return send_file(
+        BytesIO(contenido),
+        mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        as_attachment=True,
+        download_name=nombre,
     )
 
 
