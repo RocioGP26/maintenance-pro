@@ -1680,9 +1680,20 @@ class Incident(db.Model):
     cargo_reportante = db.Column(db.String(120), default="")
     telefono_contacto = db.Column(db.String(40), default="")
     area = db.Column(db.String(120), default="")
+    area_responsable = db.Column(db.String(120), default="", nullable=False)
     ubicacion = db.Column(db.String(200), default="")
     tipo = db.Column(db.String(32), default="")
     prioridad = db.Column(db.String(32), default="media")
+    prioridad_confirmada = db.Column(db.String(32), default="")
+    estado = db.Column(db.String(32), default="reportado", nullable=False, index=True)
+    responsable_area_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=True)
+    tecnico_asignado_id = db.Column(db.Integer, db.ForeignKey("technicians.id"), nullable=True)
+    recibido_en = db.Column(db.DateTime, nullable=True)
+    asignado_en = db.Column(db.DateTime, nullable=True)
+    iniciado_en = db.Column(db.DateTime, nullable=True)
+    diagnosticado_en = db.Column(db.DateTime, nullable=True)
+    cerrado_en = db.Column(db.DateTime, nullable=True)
+    motivo_cierre = db.Column(db.Text, default="")
     equipo_detenido = db.Column(db.Boolean, default=False, nullable=False)
     fecha_evento = db.Column(db.Date, nullable=True)
     hora_evento = db.Column(db.String(5), default="")
@@ -1699,6 +1710,8 @@ class Incident(db.Model):
     empresa = db.relationship("Empresa", backref="incidents")
     usuario = db.relationship("User", foreign_keys=[user_id], backref="incidentes_reportados")
     resuelto_por = db.relationship("User", foreign_keys=[resuelto_por_id])
+    responsable_area = db.relationship("User", foreign_keys=[responsable_area_id])
+    tecnico_asignado = db.relationship("Technician", foreign_keys=[tecnico_asignado_id])
     work_order = db.relationship("WorkOrder", backref=db.backref("incidencia_origen", uselist=False))
 
     @property
@@ -1715,11 +1728,66 @@ class Incident(db.Model):
 
     @property
     def estado_label(self) -> str:
-        return "Resuelta" if self.resuelto else "Pendiente"
+        return INCIDENT_ESTADO_LABELS.get(self.estado or "", self.estado or "—")
 
     @property
     def estado_slug(self) -> str:
-        return "resuelta" if self.resuelto else "pendiente"
+        return self.estado or "reportado"
+
+
+class IncidentEstado(str, Enum):
+    REPORTADO = "reportado"
+    RECIBIDO = "recibido"
+    ASIGNADO = "asignado"
+    EN_ATENCION = "en_atencion"
+    DIAGNOSTICADO = "diagnosticado"
+    SOLUCIONADO_VISITA = "solucionado_visita"
+    PENDIENTE_OT = "pendiente_ot"
+    PENDIENTE_REEMPLAZO = "pendiente_reemplazo"
+    PENDIENTE_USUARIO = "pendiente_usuario"
+    REASIGNADO = "reasignado"
+    RESUELTO = "resuelto"
+    CERRADO = "cerrado"
+    CANCELADO = "cancelado"
+
+
+INCIDENT_ESTADO_LABELS = {
+    "reportado": "Reportado", "recibido": "Recibido", "asignado": "Asignado",
+    "en_atencion": "En atención", "diagnosticado": "Diagnosticado",
+    "solucionado_visita": "Solucionado en visita", "pendiente_ot": "Pendiente de OT",
+    "pendiente_reemplazo": "Pendiente de reemplazo", "pendiente_usuario": "Pendiente de usuario/acceso",
+    "reasignado": "Reasignado", "resuelto": "Resuelto", "cerrado": "Cerrado", "cancelado": "Cancelado",
+}
+
+
+class IncidentDiagnosis(db.Model):
+    __tablename__ = "incident_diagnoses"
+    id = db.Column(db.Integer, primary_key=True)
+    incident_id = db.Column(db.Integer, db.ForeignKey("incidents.id", ondelete="CASCADE"), nullable=False, index=True)
+    technician_id = db.Column(db.Integer, db.ForeignKey("technicians.id"), nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    hallazgo = db.Column(db.Text, nullable=False)
+    causa = db.Column(db.Text, default="")
+    pruebas = db.Column(db.Text, default="")
+    recomendacion = db.Column(db.Text, default="")
+    resultado = db.Column(db.String(32), nullable=False)
+    evidencia = db.Column(db.Text, default="")
+    incident = db.relationship("Incident", backref=db.backref("diagnosticos", lazy="dynamic", order_by="IncidentDiagnosis.created_at"))
+    technician = db.relationship("Technician")
+
+
+class IncidentHistory(db.Model):
+    __tablename__ = "incident_history"
+    id = db.Column(db.Integer, primary_key=True)
+    incident_id = db.Column(db.Integer, db.ForeignKey("incidents.id", ondelete="CASCADE"), nullable=False, index=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=True)
+    accion = db.Column(db.String(80), nullable=False)
+    estado_anterior = db.Column(db.String(32), default="")
+    estado_nuevo = db.Column(db.String(32), default="")
+    comentario = db.Column(db.Text, default="")
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    incident = db.relationship("Incident", backref=db.backref("historial", lazy="dynamic", order_by="IncidentHistory.created_at"))
+    user = db.relationship("User")
 
 
 class IncidentPrioridad(str, Enum):
@@ -1761,6 +1829,7 @@ INCIDENT_TIPO_LABELS = dict(INCIDENT_TIPOS)
 INCIDENT_AREAS_BASE = (
     "Producción",
     "Mantenimiento",
+    "TIC / Sistemas",
     "Calidad",
     "Logística",
     "Administración",

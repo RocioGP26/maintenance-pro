@@ -33,6 +33,7 @@
           <div class="col-md-6">
             <div class="text-muted text-uppercase fw-semibold mb-1" style="font-size:0.65rem;letter-spacing:.06em;">Ubicación</div>
             <div><strong>Área:</strong> {{ inc.area or '—' }}</div>
+            <div><strong>Área responsable:</strong> {{ inc.area_responsable or '—' }}</div>
             <div><strong>Lugar:</strong> {{ inc.ubicacion or '—' }}</div>
           </div>
           <div class="col-md-6">
@@ -79,7 +80,7 @@
         {% endif %}
       </div>
     </div>
-    {% elif puede_gestionar %}
+    {% elif false %}
     <div class="card card-dashboard mb-3">
       <div class="card-body">
         <h6 class="fw-semibold mb-2">Marcar como resuelta</h6>
@@ -97,6 +98,33 @@
       </div>
     </div>
     {% endif %}
+
+    {% if puede_gestionar and inc.estado not in ('cerrado','cancelado') %}
+    <div class="card card-dashboard mb-3"><div class="card-body">
+      <h6 class="fw-semibold">Siguiente acción operativa</h6>
+      {% if inc.estado in ('reportado','reasignado') %}
+      <form method="post" action="{{ url_for('main.incidencias_accion', id=inc.id) }}">{% include '_csrf.html' %}<input type="hidden" name="accion" value="recibir"><textarea name="comentario" class="form-control mb-2" placeholder="Clasificación u observación inicial"></textarea><button class="btn btn-primary">Recibir incidente</button></form>
+      {% elif inc.estado == 'recibido' %}
+      <form method="post" action="{{ url_for('main.incidencias_accion', id=inc.id) }}">{% include '_csrf.html' %}<input type="hidden" name="accion" value="asignar"><select name="tecnico_id" class="form-select mb-2" required><option value="">Seleccionar técnico…</option>{% for t in tecnicos %}<option value="{{ t.id }}">{{ t.nombre }}</option>{% endfor %}</select><button class="btn btn-primary">Asignar técnico</button></form>
+      {% elif inc.estado == 'asignado' %}
+      <form method="post" action="{{ url_for('main.incidencias_accion', id=inc.id) }}">{% include '_csrf.html' %}<input type="hidden" name="accion" value="iniciar"><button class="btn btn-primary">Iniciar atención</button></form>
+      {% elif inc.estado in ('en_atencion','diagnosticado') %}
+      <form method="post" action="{{ url_for('main.incidencias_accion', id=inc.id) }}">{% include '_csrf.html' %}<input type="hidden" name="accion" value="diagnosticar">
+        <textarea name="hallazgo" class="form-control mb-2" required placeholder="Hallazgo técnico *"></textarea><textarea name="causa" class="form-control mb-2" placeholder="Causa probable"></textarea><textarea name="pruebas" class="form-control mb-2" placeholder="Pruebas realizadas"></textarea><textarea name="recomendacion" class="form-control mb-2" placeholder="Recomendación"></textarea>
+        <select name="resultado" class="form-select mb-2" required><option value="">Conclusión…</option><option value="solucionado">Solucionado en visita</option><option value="ot">Requiere OT correctiva</option><option value="reemplazo">Requiere reemplazo</option><option value="pendiente">Pendiente de información/acceso</option><option value="reasignar">No corresponde al área</option></select>
+        <select name="area_responsable" class="form-select mb-2"><option value="">Nueva área (si se reasigna)…</option>{% for a in areas %}<option value="{{ a }}">{{ a }}</option>{% endfor %}</select><button class="btn btn-primary">Registrar diagnóstico</button></form>
+      {% elif inc.estado in ('solucionado_visita','pendiente_ot','pendiente_reemplazo') %}
+      <form method="post" action="{{ url_for('main.incidencias_accion', id=inc.id) }}">{% include '_csrf.html' %}<input type="hidden" name="accion" value="resolver"><textarea name="comentario" class="form-control mb-2" required placeholder="Solución o decisión documentada"></textarea><button class="btn btn-success">Marcar resuelto</button></form>
+      {% endif %}
+    </div></div>
+    {% endif %}
+
+    {% if inc.estado == 'resuelto' and (inc.user_id == current_user.id or puede_gestionar) %}
+    <form method="post" action="{{ url_for('main.incidencias_accion', id=inc.id) }}" class="mb-3">{% include '_csrf.html' %}<input type="hidden" name="accion" value="validar"><button class="btn btn-success">Confirmar solución y cerrar</button></form>
+    {% endif %}
+
+    {% if inc.diagnosticos.count() %}<div class="card card-dashboard mb-3"><div class="card-body"><h6>Diagnósticos</h6>{% for d in inc.diagnosticos %}<div class="border-start ps-3 mb-3"><strong>{{ d.created_at|formato_fecha_hora }} · {{ d.resultado }}</strong><div>{{ d.hallazgo }}</div>{% if d.causa %}<small>Causa: {{ d.causa }}</small>{% endif %}</div>{% endfor %}</div></div>{% endif %}
+    <div class="card card-dashboard mb-3"><div class="card-body"><h6>Historial</h6>{% for h in inc.historial %}<div class="small border-bottom py-2"><strong>{{ h.created_at|formato_fecha_hora }}</strong> · {{ h.accion|replace('_',' ') }}{% if h.estado_nuevo %} → {{ estados_labels.get(h.estado_nuevo, h.estado_nuevo) }}{% endif %}{% if h.comentario %}<div class="text-muted">{{ h.comentario }}</div>{% endif %}</div>{% else %}<span class="text-muted small">Sin eventos históricos.</span>{% endfor %}</div></div>
   </div>
 
   <div class="col-lg-4">
@@ -143,7 +171,7 @@
       <a href="{{ url_for('main.incidencias_list') }}" class="btn btn-outline-secondary w-100">
         <i class="bi bi-arrow-left"></i> Volver al listado
       </a>
-      {% if puede_crear_ot and not inc.resuelto and not inc.work_order_id %}
+      {% if puede_crear_ot and inc.estado == 'diagnosticado' and not inc.work_order_id %}
       <form method="post" action="{{ url_for('main.incidencias_crear_ot', id=inc.id) }}">
         {% include "_csrf.html" %}
         <button type="submit" class="btn btn-primary w-100" {% if not inc.machine_id %}disabled title="Sin activo relacionado"{% endif %}>
@@ -165,7 +193,7 @@
       <a href="{{ url_for('main.incidencias_list') }}" class="btn btn-outline-secondary">
         <i class="bi bi-arrow-left"></i> Volver al listado
       </a>
-      {% if puede_crear_ot and not inc.resuelto and not inc.work_order_id %}
+      {% if puede_crear_ot and inc.estado == 'diagnosticado' and not inc.work_order_id %}
       <form method="post" action="{{ url_for('main.incidencias_crear_ot', id=inc.id) }}" class="d-inline">
         {% include "_csrf.html" %}
         <button type="submit" class="btn btn-primary" {% if not inc.machine_id %}disabled title="Sin activo relacionado"{% endif %}>

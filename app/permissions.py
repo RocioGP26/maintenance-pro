@@ -209,6 +209,7 @@ USUARIO_POST_ENDPOINTS = frozenset(
     {
         "main.logout",
         "main.incidencia",
+        "main.incidencias_accion",
     }
 )
 
