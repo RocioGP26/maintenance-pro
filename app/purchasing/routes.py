@@ -4,16 +4,16 @@ from __future__ import annotations
 
 from datetime import datetime
 
-from flask import Blueprint, flash, redirect, render_template, request, url_for
+from flask import Blueprint, flash, redirect, render_template, request, send_file, url_for
 from flask_login import current_user, login_required
 from sqlalchemy.orm import joinedload
 
 from app import db
-from app.models import InvProducto, PurSolicitud
+from app.models import InvProducto, InvProveedor, PurOrdenCompra, PurSolicitud
 from app.module_guard import require_module
 from app.modules import MODULO_INVENTARIO
 from app.permissions import can_approve_purchase_request
-from app.purchasing.service import PRIORIDADES, guardar_solicitud, transicionar
+from app.purchasing.service import PRIORIDADES, crear_orden_desde_solicitud, guardar_solicitud, transicionar, transicionar_orden
 
 purchasing_bp = Blueprint("purchasing", __name__, url_prefix="/purchasing")
 
@@ -132,3 +132,74 @@ def solicitudes_transition(id, accion):
         flash(str(exc), "danger")
     return redirect(url_for("purchasing.solicitudes_detail", id=id))
 
+
+def _orden_query():
+    return PurOrdenCompra.query.filter_by(empresa_id=_empresa_id())
+
+
+def _orden_or_404(id):
+    return _orden_query().options(joinedload(PurOrdenCompra.lineas), joinedload(PurOrdenCompra.proveedor), joinedload(PurOrdenCompra.solicitud), joinedload(PurOrdenCompra.eventos)).filter_by(id=id).first_or_404()
+
+
+@purchasing_bp.route("/ordenes")
+@login_required
+@require_module(MODULO_INVENTARIO)
+def ordenes_list():
+    items = _orden_query().options(joinedload(PurOrdenCompra.proveedor)).order_by(PurOrdenCompra.created_at.desc()).all()
+    return render_template("purchasing/ordenes_list.html", items=items)
+
+
+@purchasing_bp.route("/solicitudes/<int:id>/convertir", methods=["GET", "POST"])
+@login_required
+@require_module(MODULO_INVENTARIO)
+def ordenes_from_request(id):
+    if not can_approve_purchase_request(current_user):
+        flash("Solo un administrador puede crear órdenes de compra.", "danger")
+        return redirect(url_for("purchasing.solicitudes_detail", id=id))
+    solicitud = _get_or_404(id)
+    if request.method == "POST":
+        try:
+            datos = dict(request.form)
+            datos["entrega_prevista"] = _fecha(request.form.get("entrega_prevista"))
+            line_ids = request.form.getlist("linea_id"); prices = request.form.getlist("precio_unitario"); rates = request.form.getlist("tasa_iva")
+            pricing = {int(line_id): (prices[i] if i < len(prices) else "", rates[i] if i < len(rates) else "0") for i, line_id in enumerate(line_ids)}
+            orden = crear_orden_desde_solicitud(_empresa_id(), current_user.id, solicitud, datos, pricing)
+            db.session.commit(); flash(f"Orden {orden.numero} creada como borrador.", "success")
+            return redirect(url_for("purchasing.ordenes_detail", id=orden.id))
+        except ValueError as exc:
+            db.session.rollback(); flash(str(exc), "danger")
+    proveedores = InvProveedor.query.filter_by(empresa_id=_empresa_id(), activo=True).order_by(InvProveedor.nombre).all()
+    return render_template("purchasing/orden_form.html", solicitud=solicitud, proveedores=proveedores)
+
+
+@purchasing_bp.route("/ordenes/<int:id>")
+@login_required
+@require_module(MODULO_INVENTARIO)
+def ordenes_detail(id):
+    return render_template("purchasing/orden_detail.html", orden=_orden_or_404(id), puede_gestionar=can_approve_purchase_request(current_user))
+
+
+@purchasing_bp.route("/ordenes/<int:id>/<accion>", methods=["POST"])
+@login_required
+@require_module(MODULO_INVENTARIO)
+def ordenes_transition(id, accion):
+    if not can_approve_purchase_request(current_user):
+        flash("No tienes permiso para cambiar la OC.", "danger")
+        return redirect(url_for("purchasing.ordenes_detail", id=id))
+    orden = _orden_or_404(id); target = {"emitir": "emitida", "enviar": "enviada", "cancelar": "cancelada"}.get(accion)
+    try:
+        if not target: raise ValueError("Acción no válida.")
+        transicionar_orden(orden, current_user.id, target); db.session.commit(); flash(f"Orden {target}.", "success")
+    except ValueError as exc:
+        db.session.rollback(); flash(str(exc), "danger")
+    return redirect(url_for("purchasing.ordenes_detail", id=id))
+
+
+@purchasing_bp.route("/ordenes/<int:id>/pdf")
+@login_required
+@require_module(MODULO_INVENTARIO)
+def ordenes_pdf(id):
+    from io import BytesIO
+    from app.purchasing.mrl_exports import export_orden_compra_pdf
+    content, name = export_orden_compra_pdf(current_user.empresa, _orden_or_404(id), usuario=current_user)
+    return send_file(BytesIO(content), mimetype="application/pdf", as_attachment=True, download_name=name)

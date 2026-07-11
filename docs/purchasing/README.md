@@ -21,7 +21,7 @@ Purchasing formaliza el proceso que hoy comienza directamente en `InvCompra`: ne
 |---|---|---|
 | 16.0 | Diseño, contrato y matriz de migración | ✅ |
 | 16.1 | Solicitudes y aprobación simple | ✅ |
-| 16.2 | Órdenes de compra y DOC-006 PDF | 📋 |
+| 16.2 | Órdenes de compra y DOC-006 PDF | ✅ |
 | 16.3 | Recepciones totales, parciales y rechazo | 📋 |
 | 16.4 | CxP, indicadores y Excel MRL | 📋 |
 | 16.5 | Migración, alineación y cierre | 📋 |

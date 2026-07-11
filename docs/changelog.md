@@ -1,5 +1,18 @@
 # Changelog · Maintix Documentation Suite
 
+## [1.16.2] — 2026-07-11 · Sprint 16.2 · Órdenes de compra
+
+### Added
+- Conversión única de solicitud aprobada a orden de compra.
+- Proveedor, snapshots de línea, moneda, precios, IVA y totales server-side.
+- Estados borrador → emitida → enviada con auditoría.
+- DOC-006 PDF MRL; borradores identificados con watermark.
+
+### Status
+- ✅ Sprint 16.2 finalizado · recepción y stock permanecen fuera de alcance.
+
+---
+
 ## [1.16.1] — 2026-07-11 · Sprint 16.1 · Solicitudes
 
 ### Added

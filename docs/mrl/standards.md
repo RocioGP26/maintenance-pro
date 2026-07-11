@@ -28,7 +28,7 @@ Toda generación Excel pasa por `app.mrl.excel` (adaptador + `BaseExcelExporter`
 | DOC-003 | Inventario | PDF · Excel | MRL-TPL-003 |
 | DOC-004 | Factura | PDF | 📋 |
 | DOC-005 | Cotización | PDF | 📋 |
-| DOC-006 | Compra / entrada | PDF | 📋 |
+| DOC-006 | Orden de compra | PDF | ✅ Sprint 16.2 |
 | DOC-007 | Dashboard exportado | PDF | MRL-TPL-001 |
 | DOC-008 | Auditoría | PDF | 📋 |
 | DOC-009 | Reporte ejecutivo | PDF | MRL-TPL-001 |

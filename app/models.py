@@ -1473,6 +1473,80 @@ class PurEvento(db.Model):
     actor = db.relationship("User")
 
 
+class PurOrdenCompra(db.Model):
+    """Orden de compra formal · Sprint 16.2."""
+
+    __tablename__ = "pur_ordenes"
+    __table_args__ = (
+        db.UniqueConstraint("empresa_id", "numero", name="uq_pur_orden_empresa_numero"),
+        db.UniqueConstraint("solicitud_id", name="uq_pur_orden_solicitud"),
+    )
+
+    id = db.Column(db.Integer, primary_key=True)
+    empresa_id = db.Column(db.Integer, db.ForeignKey("empresas.id"), nullable=False, index=True)
+    numero = db.Column(db.String(32), nullable=False, index=True)
+    solicitud_id = db.Column(db.Integer, db.ForeignKey("pur_solicitudes.id"), nullable=False, index=True)
+    proveedor_id = db.Column(db.Integer, db.ForeignKey("inv_proveedores.id"), nullable=False, index=True)
+    creador_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
+    estado = db.Column(db.String(16), nullable=False, default="borrador", index=True)
+    moneda = db.Column(db.String(8), nullable=False, default="COP")
+    subtotal = db.Column(db.Float, nullable=False, default=0.0)
+    monto_iva = db.Column(db.Float, nullable=False, default=0.0)
+    total = db.Column(db.Float, nullable=False, default=0.0)
+    entrega_prevista = db.Column(db.Date, nullable=True)
+    direccion_entrega = db.Column(db.String(255), nullable=False, default="")
+    condiciones_pago = db.Column(db.String(255), nullable=False, default="")
+    notas = db.Column(db.Text, nullable=False, default="")
+    emitida_en = db.Column(db.DateTime, nullable=True)
+    enviada_en = db.Column(db.DateTime, nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+
+    solicitud = db.relationship("PurSolicitud", backref=db.backref("orden_compra", uselist=False))
+    proveedor = db.relationship("InvProveedor")
+    creador = db.relationship("User")
+    lineas = db.relationship("PurOrdenLinea", back_populates="orden", cascade="all, delete-orphan", order_by="PurOrdenLinea.id")
+    eventos = db.relationship("PurOrdenEvento", back_populates="orden", cascade="all, delete-orphan", order_by="PurOrdenEvento.created_at")
+
+
+class PurOrdenLinea(db.Model):
+    __tablename__ = "pur_orden_lineas"
+
+    id = db.Column(db.Integer, primary_key=True)
+    orden_id = db.Column(db.Integer, db.ForeignKey("pur_ordenes.id", ondelete="CASCADE"), nullable=False, index=True)
+    solicitud_linea_id = db.Column(db.Integer, db.ForeignKey("pur_solicitud_lineas.id"), nullable=False)
+    producto_id = db.Column(db.Integer, db.ForeignKey("inv_productos.id"), nullable=True)
+    descripcion_snapshot = db.Column(db.String(255), nullable=False)
+    unidad = db.Column(db.String(32), nullable=False)
+    cantidad_ordenada = db.Column(db.Float, nullable=False)
+    precio_unitario = db.Column(db.Float, nullable=False, default=0.0)
+    tasa_iva = db.Column(db.Float, nullable=False, default=0.0)
+    subtotal = db.Column(db.Float, nullable=False, default=0.0)
+    monto_iva = db.Column(db.Float, nullable=False, default=0.0)
+    total = db.Column(db.Float, nullable=False, default=0.0)
+
+    orden = db.relationship("PurOrdenCompra", back_populates="lineas")
+    solicitud_linea = db.relationship("PurSolicitudLinea")
+    producto = db.relationship("InvProducto")
+
+
+class PurOrdenEvento(db.Model):
+    __tablename__ = "pur_orden_eventos"
+
+    id = db.Column(db.Integer, primary_key=True)
+    empresa_id = db.Column(db.Integer, db.ForeignKey("empresas.id"), nullable=False, index=True)
+    orden_id = db.Column(db.Integer, db.ForeignKey("pur_ordenes.id", ondelete="CASCADE"), nullable=False, index=True)
+    evento = db.Column(db.String(32), nullable=False)
+    actor_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
+    estado_anterior = db.Column(db.String(16), nullable=True)
+    estado_nuevo = db.Column(db.String(16), nullable=False)
+    detalle = db.Column(db.Text, nullable=False, default="")
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+
+    orden = db.relationship("PurOrdenCompra", back_populates="eventos")
+    actor = db.relationship("User")
+
+
 class InvVenta(db.Model):
     __tablename__ = "inv_ventas"
 
