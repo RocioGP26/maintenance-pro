@@ -1,5 +1,31 @@
 # MRL Changelog
 
+## [1.2.0] — 2026-07-11 · Sprint 15.5 · Integración
+
+### Changed
+- Exportaciones de OT, activos y productos consolidadas en `BaseExcelExporter`.
+- Nuevas exportaciones MRL para compras y ventas, respetando filtros tenant.
+- `/reportes` publica las descargas operativas y retira «Próximamente».
+- La plantilla de importación de productos permanece fuera de MRL por diseño.
+
+### Status
+- ✅ Sprint 15 finalizado · MRL Foundation operativo de extremo a extremo.
+
+---
+
+## [1.1.4] — 2026-07-11 · Sprint 15.4 · DOC-001
+
+### Added
+- **DOC-001 Orden de Trabajo** como primer documento PDF oficial de Maintix.
+- Adaptador Maintenance con datos generales, KPI, ejecución, jornadas, repuestos y autorizaciones.
+- Ruta tenant-safe `GET /ordenes/<id>/pdf` y descarga desde la vista de la OT.
+- `tests/test_mrl_doc001.py` — generación independiente de Flask y desacoplamiento MRL.
+
+### Status
+- ✅ Sprint 15.4 cerrado · 15.5 Integración pendiente.
+
+---
+
 ## [1.1.3] — 2026-07-11 · Sprint 15.3 · PDF Engine
 
 ### Added

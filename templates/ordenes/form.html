@@ -382,6 +382,11 @@
             {% if not solo_lectura|default(false) %}
             <button type="submit" class="btn btn-primary">Guardar orden</button>
             {% endif %}
+            {% if order %}
+            <a href="{{ url_for('main.ordenes_pdf', id=order.id) }}" class="btn btn-outline-primary">
+              <i class="bi bi-file-earmark-pdf me-1"></i> Descargar PDF
+            </a>
+            {% endif %}
             <a href="{{ url_for('main.ordenes_list') }}" class="btn btn-outline-secondary">{% if solo_lectura|default(false) %}Volver{% else %}Cancelar{% endif %}</a>
           </div>
         </form>

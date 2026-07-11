@@ -11,7 +11,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import joinedload
 
 from app import db
-from app.inventario_comercial.exports import excel_productos_bajo_stock
+from app.inventario_comercial.exports import excel_compras_mrl, excel_productos_bajo_stock, excel_ventas_mrl
 from app.inventario_comercial.productos_excel import (
     excel_productos_catalogo,
     excel_productos_plantilla,
@@ -705,6 +705,32 @@ def compras_list():
     )
 
 
+@inv_comercial_bp.route("/compras/export")
+@login_required
+@require_module(MODULO_INVENTARIO)
+def compras_export():
+    from io import BytesIO
+    from flask_login import current_user
+
+    eid = _require_empresa_id()
+    alerta = (request.args.get("alerta") or "").strip().lower()
+    query = query_tenant(InvCompra).options(
+        joinedload(InvCompra.proveedor), joinedload(InvCompra.lineas)
+    )
+    items = filtro_compras_cxp_alerta(query, alerta, date.today()).order_by(
+        InvCompra.fecha.desc()
+    ).all()
+    content, name = excel_compras_mrl(
+        Empresa.query.get(eid), items, usuario=current_user
+    )
+    return send_file(
+        BytesIO(content),
+        mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        as_attachment=True,
+        download_name=name,
+    )
+
+
 @inv_comercial_bp.route("/api/productos/<int:id>/ultimo-costo")
 @login_required
 @require_module(MODULO_INVENTARIO)
@@ -875,6 +901,22 @@ def ventas_list():
         items=items,
         cobro_filtro=cobro,
     )
+
+
+@inv_comercial_bp.route("/ventas/export")
+@login_required
+@require_module(MODULO_INVENTARIO)
+def ventas_export():
+    from io import BytesIO
+    from flask_login import current_user
+    eid = _require_empresa_id()
+    cobro = (request.args.get("cobro") or "").strip().lower()
+    query = query_tenant(InvVenta)
+    if cobro == "pendiente":
+        query = query.filter(InvVenta.estado_cobro.in_(["pendiente", "parcial"]))
+    items = query.order_by(InvVenta.fecha.desc()).all()
+    content, name = excel_ventas_mrl(Empresa.query.get(eid), items, usuario=current_user)
+    return send_file(BytesIO(content), mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", as_attachment=True, download_name=name)
 
 
 @inv_comercial_bp.route("/ventas/nueva", methods=["GET", "POST"])

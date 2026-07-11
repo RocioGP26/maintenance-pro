@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from typing import Sequence
+from xml.sax.saxutils import escape
 
 from reportlab.lib import colors as rl_colors
 from reportlab.lib.enums import TA_CENTER, TA_LEFT
@@ -61,9 +62,9 @@ def build_table(
 ) -> Table:
     """Construye MRL-TBL-001 sin conocer modelos de negocio."""
     styles = paragraph_styles()
-    data = [[Paragraph(str(value), styles["table_header"]) for value in headers]]
+    data = [[Paragraph(escape(str(value)), styles["table_header"]) for value in headers]]
     data.extend(
-        [Paragraph("" if value is None else str(value), styles["table_cell"]) for value in row]
+        [Paragraph(escape("" if value is None else str(value)), styles["table_cell"]) for value in row]
         for row in rows
     )
     table = Table(data, colWidths=column_widths, repeatRows=1, hAlign="LEFT")
@@ -87,7 +88,7 @@ def build_kpi_row(items: Sequence[tuple[str, object]]) -> Table:
     """Construye una fila de tarjetas MRL-KPI-001."""
     styles = paragraph_styles()
     cells = [
-        [Paragraph(str(value), styles["kpi_value"]), Paragraph(label, styles["kpi_label"])]
+        [Paragraph(escape(str(value)), styles["kpi_value"]), Paragraph(escape(label), styles["kpi_label"])]
         for label, value in items
     ]
     table = Table([cells], hAlign="LEFT")

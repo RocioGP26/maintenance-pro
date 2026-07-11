@@ -294,6 +294,7 @@
       <i class="bi bi-plus-lg"></i> Nueva OT
     </a>
     {% endif %}
+    <a href="{{ url_for('main.ordenes_export', **filtros) }}" class="btn btn-outline-success btn-sm"><i class="bi bi-download"></i> Excel MRL</a>
   </div>
 </div>
 

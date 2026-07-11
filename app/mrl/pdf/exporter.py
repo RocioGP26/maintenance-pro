@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from io import BytesIO
 from typing import Sequence
+from xml.sax.saxutils import escape
 
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.units import mm
@@ -25,10 +26,10 @@ class BasePdfExporter:
         self._story: list[object] = []
 
     def add_title(self, text: str) -> None:
-        self._story.append(Paragraph(text, paragraph_styles()["title"]))
+        self._story.append(Paragraph(escape(text), paragraph_styles()["title"]))
 
     def add_paragraph(self, text: str) -> None:
-        self._story.append(Paragraph(text, paragraph_styles()["body"]))
+        self._story.append(Paragraph(escape(text), paragraph_styles()["body"]))
 
     def add_spacer(self, height_mm: float = 4) -> None:
         self._story.append(Spacer(1, height_mm * mm))

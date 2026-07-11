@@ -117,24 +117,10 @@ def excel_productos_catalogo(
     empresa_id: int,
     productos: list[InvProducto],
 ) -> tuple[bytes, str]:
+    from app.inventario_comercial.exports import excel_productos_catalogo_mrl
+
     empresa = Empresa.query.get(empresa_id)
-    headers = headers_producto_excel(empresa)
-    hoy = date.today()
-
-    wb = Workbook()
-    ws = wb.active
-    ws.title = "Productos"
-
-    for col_idx, titulo in enumerate(headers, start=1):
-        cell = ws.cell(row=1, column=col_idx, value=titulo)
-        cell.font = Font(bold=True)
-
-    for producto in productos:
-        ws.append(fila_producto_excel(producto, empresa))
-
-    _ajustar_columnas(ws, len(headers))
-    nombre = f"productos_catalogo_{hoy:%Y%m%d}.xlsx"
-    return _workbook_a_bytes(wb), nombre
+    return excel_productos_catalogo_mrl(empresa, productos)
 
 
 def excel_productos_plantilla(empresa_id: int) -> tuple[bytes, str]:

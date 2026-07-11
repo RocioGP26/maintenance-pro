@@ -2986,6 +2986,27 @@ def ordenes_list():
     )
 
 
+@bp.route("/ordenes/export")
+@login_required
+def ordenes_export():
+    from io import BytesIO
+    from flask import send_file
+    from app.maintenance.mrl_exports import export_ordenes_excel
+
+    empresa = current_user.empresa
+    if not empresa:
+        return redirect(url_for("main.ordenes_list"))
+    content, name = export_ordenes_excel(
+        empresa, _ordenes_list_query().all(), usuario=current_user
+    )
+    return send_file(
+        BytesIO(content),
+        mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        as_attachment=True,
+        download_name=name,
+    )
+
+
 @bp.route("/ordenes/nueva", methods=["GET", "POST"])
 def ordenes_new():
     from sqlalchemy.orm import joinedload
@@ -3255,6 +3276,38 @@ def ordenes_edit(id):
         prioridades=WORK_ORDER_PRIORITIES,
         solo_lectura=solo_lectura,
         **_orden_form_context(wo, technicians, machines),
+    )
+
+
+@bp.route("/ordenes/<int:id>/pdf")
+@login_required
+def ordenes_pdf(id):
+    from io import BytesIO
+
+    from flask import send_file
+    from sqlalchemy.orm import joinedload
+
+    from app.maintenance.mrl_exports import export_orden_trabajo_pdf
+
+    wo = _get_work_order_or_404(
+        id,
+        joinedload(WorkOrder.machine),
+        joinedload(WorkOrder.technician),
+        joinedload(WorkOrder.jornadas).joinedload(WorkOrderJornada.technician),
+        joinedload(WorkOrder.repuestos).joinedload(WorkOrderRepuesto.spare_part),
+        joinedload(WorkOrder.proveedor),
+        joinedload(WorkOrder.supervisor),
+    )
+    empresa = current_user.empresa
+    if not empresa:
+        flash("No hay empresa asociada a tu sesión.", "danger")
+        return redirect(url_for("main.ordenes_list"))
+    contenido, nombre = export_orden_trabajo_pdf(empresa, wo, usuario=current_user)
+    return send_file(
+        BytesIO(contenido),
+        mimetype="application/pdf",
+        as_attachment=True,
+        download_name=nombre,
     )
 
 

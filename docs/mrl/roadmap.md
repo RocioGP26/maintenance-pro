@@ -39,8 +39,8 @@ Sprint 16+ · Módulos reutilizan MRL sin rediseño
 - [x] Sprint 15.1 · `colors`, `typography`, `metadata`, `styles`, smoke test
 - [x] Sprint 15.2 · Excel Engine · `BaseExcelExporter`
 - [x] Sprint 15.3 · PDF Engine + ReportLab en requirements
-- [ ] Sprint 15.4 · DOC-001 OT PDF
-- [ ] Sprint 15.5 · Migrar exports inventario + maintenance
+- [x] Sprint 15.4 · DOC-001 OT PDF
+- [x] Sprint 15.5 · Migrar exports inventario + maintenance
 
 ---
 
