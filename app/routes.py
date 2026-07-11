@@ -5,11 +5,13 @@ import unicodedata
 from calendar import monthrange
 from datetime import date, datetime, timedelta
 from typing import Any, List, Optional, Tuple
+from uuid import UUID, uuid4
 
 from flask import Blueprint, abort, current_app, flash, jsonify, redirect, render_template, request, session, url_for
 from werkzeug.utils import secure_filename
 from flask_login import current_user, login_required, login_user, logout_user
 from sqlalchemy import and_, false, func, or_
+from sqlalchemy.exc import IntegrityError
 
 from app import db, limiter
 from app.url_utils import is_safe_redirect
@@ -4582,8 +4584,21 @@ def incidencia():
     form_data = _incidencia_form_defaults()
     ahora = datetime.now()
     preview_numero = _incidencia_preview_numero(eid)
+    idempotency_key = str(uuid4())
 
     if request.method == "POST":
+        submitted_key = (request.form.get("idempotency_key") or "").strip()
+        try:
+            idempotency_key = str(UUID(submitted_key))
+        except (ValueError, AttributeError):
+            flash("El formulario expiró. Recarga la página e intenta nuevamente.", "danger")
+            return redirect(url_for("main.incidencia"))
+
+        existing = Incident.query.filter_by(idempotency_key=idempotency_key).first()
+        if existing is not None:
+            flash(f"La incidencia {existing.numero} ya había sido registrada.", "info")
+            return redirect(url_for("main.incidencias_detail", id=existing.id))
+
         form_data, err = _incidencia_desde_form(request.form)
         if err:
             flash(err, "danger")
@@ -4606,11 +4621,13 @@ def incidencia():
                         prioridades_incidencia=INCIDENT_PRIORIDADES,
                         preview_numero=preview_numero,
                         ahora=ahora,
+                        idempotency_key=idempotency_key,
                     )
             fecha_ev = None
             if form_data["fecha_evento"]:
                 fecha_ev = datetime.strptime(form_data["fecha_evento"], "%Y-%m-%d").date()
             inc = Incident(
+                idempotency_key=idempotency_key,
                 titulo=form_data["titulo"],
                 descripcion=form_data["descripcion"],
                 machine_id=machine.id if machine else None,
@@ -4633,7 +4650,15 @@ def incidencia():
             numero = _asignar_numero_incidencia(inc)
             _registrar_historial(inc, "reportado", "", IncidentEstado.REPORTADO.value,
                                 f"Asignado al área {inc.area_responsable}")
-            db.session.commit()
+            try:
+                db.session.commit()
+            except IntegrityError:
+                db.session.rollback()
+                existing = Incident.query.filter_by(idempotency_key=idempotency_key).first()
+                if existing is None:
+                    raise
+                flash(f"La incidencia {existing.numero} ya había sido registrada.", "info")
+                return redirect(url_for("main.incidencias_detail", id=existing.id))
             flash(f"Incidencia {numero} registrada. El supervisor será notificado.", "success")
             return redirect(url_for("main.incidencias_detail", id=inc.id))
 
@@ -4646,6 +4671,7 @@ def incidencia():
         prioridades_incidencia=INCIDENT_PRIORIDADES,
         preview_numero=preview_numero,
         ahora=ahora,
+        idempotency_key=idempotency_key,
     )
 
 

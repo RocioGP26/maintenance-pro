@@ -1670,6 +1670,7 @@ class Incident(db.Model):
     __tablename__ = "incidents"
 
     id = db.Column(db.Integer, primary_key=True)
+    idempotency_key = db.Column(db.String(36), nullable=True, unique=True, index=True)
     numero = db.Column(db.String(32), nullable=True, index=True)
     titulo = db.Column(db.String(200), nullable=False)
     descripcion = db.Column(db.Text, default="")
@@ -2302,6 +2303,12 @@ def ensure_saas_schema():
         _add_column_if_missing("users", "bloqueado", "bloqueado BOOLEAN DEFAULT 0")
         _add_column_if_missing("users", "bloqueado_en", "bloqueado_en DATETIME")
         _add_column_if_missing("incidents", "empresa_id", "empresa_id INTEGER")
+        _add_column_if_missing("incidents", "idempotency_key", "idempotency_key VARCHAR(36)")
+        with db.engine.begin() as conn:
+            conn.execute(text(
+                "CREATE UNIQUE INDEX IF NOT EXISTS ix_incidents_idempotency_key "
+                "ON incidents (idempotency_key)"
+            ))
         _add_column_if_missing("incidents", "numero", "numero VARCHAR(32)")
         _add_column_if_missing("incidents", "user_id", "user_id INTEGER")
         _add_column_if_missing("incidents", "reportado_por", "reportado_por VARCHAR(200)")
