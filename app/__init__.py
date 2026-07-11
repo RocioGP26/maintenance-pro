@@ -100,7 +100,39 @@ def create_app(config_name: str | None = None):
     from app.money import formato_moneda
     from app.models import machine_status_meta, proveedor_tipo_meta, incident_prioridad_meta, wo_es_editable, wo_status_meta, wo_tipo_meta
     from app.alertas_service import resumen_alertas_campana
-    from app.permissions import permission_flags
+    from app.permissions import SOLICITANTE_ENDPOINTS, is_read_only, is_requester, permission_flags
+
+    @app.before_request
+    def _restrict_requester_scope():
+        """El solicitante solo entra al flujo de reporte y seguimiento propio."""
+        from flask import flash, redirect, request, url_for
+
+        if not current_user.is_authenticated or not is_requester(current_user):
+            return None
+        endpoint = request.endpoint or ""
+        if (
+            endpoint in SOLICITANTE_ENDPOINTS
+            or endpoint == "static"
+            or endpoint.startswith("onboarding.")
+            or endpoint.startswith("health.")
+        ):
+            return None
+        flash("Tu rol de solicitante solo permite reportar y consultar tus incidencias.", "warning")
+        return redirect(url_for("main.incidencias_list"))
+
+    @app.before_request
+    def _enforce_global_read_only():
+        """Bloquea escrituras del rol Usuario también fuera del blueprint principal."""
+        from flask import flash, redirect, request, url_for
+
+        if not current_user.is_authenticated or not is_read_only(current_user):
+            return None
+        if request.method in ("GET", "HEAD", "OPTIONS"):
+            return None
+        if request.endpoint in ("main.logout", "main.mi_perfil"):
+            return None
+        flash("Tu rol de usuario solo permite consultar información.", "warning")
+        return redirect(request.referrer or url_for("main.dashboard"))
 
     app.jinja_env.globals["wo_status_meta"] = wo_status_meta
     app.jinja_env.globals["machine_status_meta"] = machine_status_meta

@@ -33,6 +33,8 @@ from app.permissions import (
     can_manage_config,
     can_manage_equipo,
     can_manage_incidents,
+    can_report_incident,
+    is_requester,
     normalize_rol,
     roles_for_select,
     role_help_map,
@@ -249,6 +251,16 @@ def _enforce_role_permissions():
     if not current_user.is_authenticated:
         return
 
+    if is_requester(current_user) and ep not in (
+        "main.logout",
+        "main.incidencia",
+        "main.incidencias_list",
+        "main.incidencias_detail",
+        "main.mi_perfil",
+    ):
+        flash("Tu rol de solicitante solo permite reportar y consultar tus incidencias.", "warning")
+        return redirect(url_for("main.incidencias_list"))
+
     method = request.method
 
     if ep.startswith(CONFIG_ENDPOINT_PREFIX):
@@ -269,6 +281,13 @@ def _enforce_role_permissions():
         return
 
     if method != "POST":
+        return
+
+    if is_requester(current_user) and ep in (
+        "main.logout",
+        "main.incidencia",
+        "main.mi_perfil",
+    ):
         return
 
     if ep in USUARIO_POST_ENDPOINTS:
@@ -3683,19 +3702,17 @@ def equipo_new():
 
 @bp.route("/mi-perfil", methods=["GET", "POST"])
 def mi_perfil():
-    """El administrador puede editar su propia cuenta."""
-    if not _require_admin_equipo():
-        return redirect(url_for("main.dashboard"))
+    """Cada usuario autenticado puede actualizar su propia cuenta."""
     return equipo_edit(current_user.id)
 
 
 @bp.route("/equipo/<int:id>/editar", methods=["GET", "POST"])
 def equipo_edit(id):
-    if not _require_admin_equipo():
-        return redirect(url_for("main.dashboard"))
     eid = _current_empresa_id()
     usuario = User.query.filter_by(id=id, empresa_id=eid).first_or_404()
     es_self = usuario.id == current_user.id
+    if not es_self and not _require_admin_equipo():
+        return redirect(url_for("main.dashboard"))
     emp = Empresa.query.get(eid)
     sector = normalizar_sector(emp.sector if emp else None)
     roles = roles_for_select(current_user, empresa=emp)
@@ -4492,6 +4509,9 @@ def _incidencia_preview_numero(empresa_id: Optional[int]) -> str:
 
 @bp.route("/incidencia", methods=["GET", "POST"])
 def incidencia():
+    if not can_report_incident(current_user):
+        flash("Tu rol de usuario solo permite consultar incidencias.", "warning")
+        return redirect(url_for("main.incidencias_list"))
     eid = _current_empresa_id()
     machines = _filter_empresa(Machine.query.order_by(Machine.nombre), Machine).all()
     areas = _areas_incidencia_empresa(eid)
@@ -4576,7 +4596,7 @@ def _filter_incidents_empresa(q):
 
 def _incidents_scope_query():
     q = _filter_incidents_empresa(Incident.query)
-    if normalize_rol(current_user.rol) == UserRole.USUARIO.value:
+    if is_requester(current_user):
         q = q.filter(Incident.user_id == current_user.id)
     return q
 
@@ -4619,7 +4639,7 @@ def _incidentes_kpis(base_q) -> dict:
 
 
 def _usuario_solo_mis_incidencias() -> bool:
-    return normalize_rol(current_user.rol) == UserRole.USUARIO.value
+    return is_requester(current_user)
 
 
 @bp.route("/incidencias")

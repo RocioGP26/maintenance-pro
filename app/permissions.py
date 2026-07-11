@@ -11,21 +11,24 @@ from flask_login import AnonymousUserMixin
 class UserRole(str, Enum):
     SUPERADMIN = "superadmin"
     ADMIN = "admin"
+    SUPERVISOR = "supervisor"
     TECNICO = "tecnico"
     USUARIO = "usuario"
+    SOLICITANTE = "solicitante"
 
 
 # Rol legado → permisos de administrador
 _LEGACY_ROLE_MAP = {
-    "supervisor": UserRole.ADMIN.value,
     "admin": UserRole.ADMIN.value,
 }
 
 USER_ROLE_LABELS = {
     UserRole.SUPERADMIN.value: "Superadministrador",
     UserRole.ADMIN.value: "Administrador",
+    UserRole.SUPERVISOR.value: "Supervisor",
     UserRole.TECNICO.value: "Técnico",
-    UserRole.USUARIO.value: "Usuario",
+    UserRole.USUARIO.value: "Usuario — solo consulta",
+    UserRole.SOLICITANTE.value: "Solicitante / Reportante",
 }
 
 # Etiqueta del rol operativo (tecnico) en empresas con inventario comercial
@@ -37,15 +40,18 @@ USER_ROLE_LABELS_INVENTARIO = {
 USER_ROLE_HELP = {
     UserRole.SUPERADMIN.value: "Crear, editar y eliminar en todo el sistema.",
     UserRole.ADMIN.value: "Editar y eliminar registros operativos.",
+    UserRole.SUPERVISOR.value: "Coordinar, asignar y cambiar estados operativos.",
     UserRole.TECNICO.value: "Editar registros (sin crear ni eliminar).",
-    UserRole.USUARIO.value: "Consulta operativa y reporte de incidencias.",
+    UserRole.USUARIO.value: "Consulta general de los módulos autorizados, sin modificaciones.",
+    UserRole.SOLICITANTE.value: "Reportar incidencias y consultar únicamente sus propios reportes.",
 }
 
 USER_ROLE_HELP_MANTENIMIENTO = {
     **USER_ROLE_HELP,
     UserRole.ADMIN.value: "Configura activos y OT; asigna técnicos; crea OT desde incidencias.",
     UserRole.TECNICO.value: "Ejecuta OT, registra jornadas y repuestos; puede resolver incidencias.",
-    UserRole.USUARIO.value: "Consulta operativa y reporte de incidencias (rol Solicitante).",
+    UserRole.USUARIO.value: "Consulta general de mantenimiento, OT, incidencias e indicadores.",
+    UserRole.SOLICITANTE.value: "Reporta incidencias y hace seguimiento solo a las propias.",
 }
 
 USER_ROLE_HELP_INVENTARIO = {
@@ -68,13 +74,18 @@ def _rol(user) -> str:
 
 
 def can_create(user) -> bool:
-    return _rol(user) in (UserRole.SUPERADMIN.value, UserRole.ADMIN.value)
+    return _rol(user) in (
+        UserRole.SUPERADMIN.value,
+        UserRole.ADMIN.value,
+        UserRole.SUPERVISOR.value,
+    )
 
 
 def can_edit(user) -> bool:
     return _rol(user) in (
         UserRole.SUPERADMIN.value,
         UserRole.ADMIN.value,
+        UserRole.SUPERVISOR.value,
         UserRole.TECNICO.value,
     )
 
@@ -93,6 +104,10 @@ def can_manage_equipo(user) -> bool:
 
 def is_read_only(user) -> bool:
     return _rol(user) == UserRole.USUARIO.value
+
+
+def is_requester(user) -> bool:
+    return _rol(user) == UserRole.SOLICITANTE.value
 
 
 def _modulos_empresa(empresa) -> list[str]:
@@ -131,8 +146,8 @@ def role_display_label(
 
 
 def can_report_incident(user) -> bool:
-    """Cualquier usuario autenticado puede reportar incidencias (MRG Solicitante)."""
-    return getattr(user, "is_authenticated", False)
+    """El rol de consulta no crea; los roles operativos y solicitante sí reportan."""
+    return getattr(user, "is_authenticated", False) and not is_read_only(user)
 
 
 def can_manage_incidents(user) -> bool:
@@ -186,6 +201,8 @@ def permission_flags(user) -> dict:
         "config": can_manage_config(user),
         "equipo": can_manage_equipo(user),
         "solo_lectura": is_read_only(user),
+        "solicitante": is_requester(user),
+        "perfil": getattr(user, "is_authenticated", False),
         "reportar_incidencia": can_report_incident(user),
         "gestionar_incidencias": can_manage_incidents(user),
         "crear_ot": can_create_work_order(user),
@@ -196,7 +213,17 @@ def permission_flags(user) -> dict:
 USUARIO_POST_ENDPOINTS = frozenset(
     {
         "main.logout",
+        "main.mi_perfil",
+    }
+)
+
+SOLICITANTE_ENDPOINTS = frozenset(
+    {
+        "main.logout",
         "main.incidencia",
+        "main.incidencias_list",
+        "main.incidencias_detail",
+        "main.mi_perfil",
     }
 )
 
@@ -224,7 +251,6 @@ EQUIPO_ENDPOINTS = frozenset(
         "main.equipo_list",
         "main.equipo_new",
         "main.equipo_edit",
-        "main.mi_perfil",
     }
 )
 

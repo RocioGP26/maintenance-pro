@@ -46,6 +46,7 @@
               <div class="form-text small">
                 Superadministrador: {{ roles_ayuda.get('superadmin', '') }}
                 Administrador: {{ roles_ayuda.get('admin', '') }}
+                Supervisor: {{ roles_ayuda.get('supervisor', '') }}
                 {% if mod_inventario and not mod_mantenimiento %}
                 Vendedor: {{ roles_ayuda.get('tecnico', '') }}
                 {% elif mod_inventario and mod_mantenimiento %}
@@ -54,6 +55,7 @@
                 Técnico: {{ roles_ayuda.get('tecnico', '') }}
                 {% endif %}
                 Usuario: {{ roles_ayuda.get('usuario', '') }}
+                Solicitante: {{ roles_ayuda.get('solicitante', '') }}
               </div>
               {% endif %}
             </div>
