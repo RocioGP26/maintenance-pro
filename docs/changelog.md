@@ -1,5 +1,16 @@
 # Changelog · Maintix Documentation Suite
 
+## [1.16.0] — 2026-07-11 · Sprint 16.0 · Purchasing Design
+
+### Added
+- Charter, arquitectura, contratos y matriz de migración de Purchasing.
+- Sub-sprints 16.0–16.5, estados, permisos, contrato MAG y artefactos MRL.
+
+### Status
+- ✅ Sprint 16.0 formalizado · sin cambios de esquema o negocio.
+
+---
+
 ## [1.15.0] — 2026-07-10 · Sprint 15.0 · MRL Foundation (documentación)
 
 ### Added

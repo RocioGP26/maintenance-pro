@@ -21,7 +21,7 @@
 
 | Módulo | Propósito | Dependencias |
 |--------|-----------|--------------|
-| **Purchasing** | Compras unificadas (técnicas + comerciales) | Inventory, Maintenance |
+| **Purchasing** | Compras unificadas (técnicas + comerciales) · Sprint 16.0 diseño ✅ | Inventory, Maintenance, MRL, MAG |
 | **CRM** | Clientes, pipeline, seguimiento comercial | Inventory |
 | **Sales Pro** | Cotizaciones, pedidos, facturación ligera | Inventory, CRM |
 | **Analytics** | KPIs cruzados, tendencias, export BI | Datos de todos los módulos activos |

@@ -1,5 +1,7 @@
 # Referencias cruzadas · Maintix Documentation Suite
 
+**Sprint 16 · Purchasing:** [charter](purchasing/SPRINT16-REPORT.md) · [arquitectura](purchasing/architecture.md) · [contratos MAG/MRL](purchasing/contracts.md) · [migración](purchasing/migration.md) · [MRG-04](mrg/chapters/04-compras.md) · [MPA-05](mpa/chapters/05-roadmap-modulos.md)
+
 Convenciones para enlazar manuales de forma **consistente**. Objetivo: un lector siempre puede saltar de marca → producto → experiencia → ventas → arquitectura.
 
 ---
