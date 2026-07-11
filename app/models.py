@@ -1566,10 +1566,12 @@ class PurRecepcion(db.Model):
     idempotency_key = db.Column(db.String(64), nullable=False)
     documento_proveedor = db.Column(db.String(64), nullable=False, default="")
     observaciones = db.Column(db.Text, nullable=False, default="")
+    inv_compra_id = db.Column(db.Integer, db.ForeignKey("inv_compras.id"), nullable=True, unique=True, index=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
 
     orden = db.relationship("PurOrdenCompra", backref=db.backref("recepciones", order_by="PurRecepcion.created_at"))
     recibido_por = db.relationship("User")
+    compra = db.relationship("InvCompra", backref=db.backref("recepcion", uselist=False))
     lineas = db.relationship("PurRecepcionLinea", back_populates="recepcion", cascade="all, delete-orphan", order_by="PurRecepcionLinea.id")
 
 

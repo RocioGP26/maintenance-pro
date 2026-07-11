@@ -4,6 +4,7 @@ from datetime import datetime, timezone
 
 from app.mrl.metadata import MRLDocumentMeta
 from app.mrl.pdf.exporter import BasePdfExporter
+from app.mrl.excel.exporter import BaseExcelExporter
 from app.timezone_utils import resolve_timezone_name
 
 
@@ -23,3 +24,12 @@ def export_orden_compra_pdf(empresa, orden, *, usuario=None):
         pdf.add_spacer(); pdf.add_title("Condiciones")
         pdf.add_paragraph(f"Entrega: {orden.direccion_entrega or 'Por acordar'} · Pago: {orden.condiciones_pago or 'Por acordar'} · Notas: {orden.notas or 'Sin notas'}")
     return pdf.save()
+
+
+def export_cxp_excel(empresa, compras, *, usuario=None):
+    meta = MRLDocumentMeta(doc_code="DOC-010", instance_code=f"PUR-CXP-{datetime.now(timezone.utc):%Y%m%d}", module="Purchasing", title="Cuentas por pagar · Purchasing", empresa_id=empresa.id, empresa_nombre=empresa.razon_social, empresa_nit=empresa.nit or None, generated_at=datetime.now(timezone.utc), timezone_name=resolve_timezone_name(empresa), usuario=str(getattr(usuario, "username", usuario) or "Sistema · Maintix"))
+    headers = ["Documento", "Recepción", "Proveedor", "Fecha", "Vencimiento", "Moneda", "Total", "Pagado", "Saldo", "Estado", "Días al vencimiento"]
+    today = datetime.now(timezone.utc).date()
+    rows = [[c.numero, c.recepcion.numero if getattr(c, "recepcion", None) else "—", c.proveedor.nombre if c.proveedor else "—", c.fecha, c.fecha_vencimiento, c.moneda_factura, float(c.total or 0), float(c.monto_pagado or 0), c.saldo_pendiente, c.estado_pago_label, (c.fecha_vencimiento - today).days if c.fecha_vencimiento else None] for c in compras]
+    exporter = BaseExcelExporter(meta); exporter.add_sheet("CxP").write_table(headers, rows, column_formats=[None, None, None, "date", "date", None, "currency", "currency", "currency", None, "integer"])
+    return exporter.save()

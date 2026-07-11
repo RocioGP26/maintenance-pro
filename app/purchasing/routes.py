@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from uuid import uuid4
 
 from flask import Blueprint, flash, redirect, render_template, request, send_file, url_for
@@ -10,7 +10,7 @@ from flask_login import current_user, login_required
 from sqlalchemy.orm import joinedload
 
 from app import db
-from app.models import InvProducto, InvProveedor, PurOrdenCompra, PurRecepcion, PurSolicitud
+from app.models import InvCompra, InvProducto, InvProveedor, PurOrdenCompra, PurRecepcion, PurSolicitud
 from app.module_guard import require_module
 from app.modules import MODULO_INVENTARIO
 from app.permissions import can_approve_purchase_request, can_receive_purchasing
@@ -218,7 +218,7 @@ def recepciones_new(id):
         try:
             line_ids = request.form.getlist("linea_id"); accepted = request.form.getlist("cantidad_recibida"); rejected = request.form.getlist("cantidad_rechazada"); reasons = request.form.getlist("motivo_rechazo")
             quantities = {int(line_id): (accepted[i] if i < len(accepted) else 0, rejected[i] if i < len(rejected) else 0, reasons[i] if i < len(reasons) else "") for i, line_id in enumerate(line_ids)}
-            datos = dict(request.form); datos["fecha"] = _fecha(request.form.get("fecha")) or date.today()
+            datos = dict(request.form); datos["fecha"] = _fecha(request.form.get("fecha")) or date.today(); datos["fecha_vencimiento"] = _fecha(request.form.get("fecha_vencimiento"))
             receipt = registrar_recepcion(_empresa_id(), current_user.id, orden, datos, quantities)
             db.session.commit(); flash(f"Recepción {receipt.numero} registrada. El stock fue actualizado.", "success")
             return redirect(url_for("purchasing.ordenes_detail", id=id))
@@ -226,3 +226,29 @@ def recepciones_new(id):
             db.session.rollback(); flash(str(exc), "danger")
     received = {line.id: sum(float(r.cantidad_recibida or 0) for r in line.lineas_recepcion) for line in orden.lineas}
     return render_template("purchasing/recepcion_form.html", orden=orden, recibido=received, idempotency_key=str(uuid4()), hoy=date.today())
+
+
+def _cxp_query():
+    return InvCompra.query.join(PurRecepcion, PurRecepcion.inv_compra_id == InvCompra.id).filter(InvCompra.empresa_id == _empresa_id())
+
+
+@purchasing_bp.route("/dashboard")
+@login_required
+@require_module(MODULO_INVENTARIO)
+def dashboard():
+    today = date.today(); limit = today + timedelta(days=7)
+    pending = _cxp_query().filter(InvCompra.estado_pago.in_(["pendiente", "parcial"]), InvCompra.total > 0).all()
+    kpis = {"saldo": round(sum(c.saldo_pendiente for c in pending), 2), "pendientes": len(pending), "vencidas": sum(1 for c in pending if c.fecha_vencimiento and c.fecha_vencimiento < today), "por_vencer": sum(1 for c in pending if c.fecha_vencimiento and today <= c.fecha_vencimiento <= limit), "ordenes_abiertas": _orden_query().filter(PurOrdenCompra.estado.in_(["emitida", "enviada", "parcial"])).count()}
+    upcoming = sorted([c for c in pending if c.fecha_vencimiento], key=lambda c: c.fecha_vencimiento)[:10]
+    return render_template("purchasing/dashboard.html", kpis=kpis, items=upcoming, hoy=today)
+
+
+@purchasing_bp.route("/cxp/export")
+@login_required
+@require_module(MODULO_INVENTARIO)
+def cxp_export():
+    from io import BytesIO
+    from app.purchasing.mrl_exports import export_cxp_excel
+    items = _cxp_query().options(joinedload(InvCompra.proveedor), joinedload(InvCompra.pagos)).order_by(InvCompra.fecha_vencimiento.asc()).all()
+    content, name = export_cxp_excel(current_user.empresa, items, usuario=current_user)
+    return send_file(BytesIO(content), mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", as_attachment=True, download_name=name)

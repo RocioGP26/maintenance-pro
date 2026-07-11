@@ -1,5 +1,18 @@
 # Changelog · Maintix Documentation Suite
 
+## [1.16.4] — 2026-07-11 · Sprint 16.4 · CxP e indicadores
+
+### Added
+- CxP por cada recepción aceptada, sin duplicar movimientos de stock.
+- Vencimientos, pagos parciales y vínculo recepción → `InvCompra`.
+- Dashboard Purchasing con saldos, vencidas, por vencer y OC abiertas.
+- Excel MRL de CxP formal con trazabilidad a recepción.
+
+### Status
+- ✅ Sprint 16.4 finalizado · siguiente: migración y alineación 16.5.
+
+---
+
 ## [1.16.3] — 2026-07-11 · Sprint 16.3 · Recepciones
 
 ### Added

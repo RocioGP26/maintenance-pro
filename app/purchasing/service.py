@@ -8,7 +8,7 @@ from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
 from sqlalchemy import func
 
 from app import db
-from app.models import InvProducto, InvProveedor, PurEvento, PurOrdenCompra, PurOrdenEvento, PurOrdenLinea, PurRecepcion, PurRecepcionLinea, PurSolicitud, PurSolicitudLinea
+from app.models import InvCompra, InvCompraLinea, InvProducto, InvProveedor, PurEvento, PurOrdenCompra, PurOrdenEvento, PurOrdenLinea, PurRecepcion, PurRecepcionLinea, PurSolicitud, PurSolicitudLinea
 
 ESTADOS = ("borrador", "enviada", "aprobada", "rechazada", "cancelada", "convertida")
 PRIORIDADES = (("baja", "Baja"), ("media", "Media"), ("alta", "Alta"), ("critica", "Crítica"))
@@ -204,6 +204,20 @@ def registrar_recepcion(empresa_id: int, actor_id: int, orden, datos, cantidades
         recepcion.lineas.append(PurRecepcionLinea(orden_linea=line, cantidad_recibida=float(accepted), cantidad_rechazada=float(rejected), motivo_rechazo=reason))
         if accepted > 0 and line.producto:
             aplicar_entrada_confirmada(line.producto, float(accepted))
+    if total_ok > 0:
+        total_sub = Decimal("0"); total_iva = Decimal("0")
+        compra = InvCompra(empresa_id=empresa_id, proveedor_id=orden.proveedor_id, numero=(recepcion.documento_proveedor or f"CXP-{recepcion.numero}")[:32], moneda_factura=orden.moneda, tipo_iva="con_iva" if any(line.tasa_iva > 0 and accepted > 0 for line, accepted, _, _ in parsed) else "exento", fecha=recepcion.fecha, fecha_factura=recepcion.fecha, fecha_vencimiento=datos.get("fecha_vencimiento") or None, estado_pago="pendiente", monto_pagado=0)
+        db.session.add(compra)
+        for line, accepted, _, _ in parsed:
+            if accepted <= 0:
+                continue
+            subtotal = (accepted * Decimal(str(line.precio_unitario))).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+            iva = (subtotal * Decimal(str(line.tasa_iva)) / Decimal("100")).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+            total_sub += subtotal; total_iva += iva
+            if line.producto:
+                compra.lineas.append(InvCompraLinea(producto=line.producto, cantidad=int(accepted), precio_unitario=line.precio_unitario, subtotal=float(subtotal), tasa_iva=line.tasa_iva, monto_iva=float(iva)))
+        compra.subtotal = float(total_sub); compra.monto_iva = float(total_iva); compra.total = float(total_sub + total_iva)
+        recepcion.compra = compra
     recepcion.estado = "rechazada" if total_ok == 0 else "confirmada"
     completa = all(projected_received.get(line.id, _recibido_acumulado(line)) >= Decimal(str(line.cantidad_ordenada)) for line in orden.lineas)
     anterior = orden.estado
