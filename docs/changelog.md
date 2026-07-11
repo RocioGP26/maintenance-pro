@@ -1,5 +1,17 @@
 # Changelog · Maintix Documentation Suite
 
+## [1.17.0] — 2026-07-11 · Sprint 16.5 · Purchasing cierre
+
+### Added
+- Migración idempotente `InvCompra` → solicitud + OC + recepción, sin mover stock.
+- Script seguro con `--dry-run` por defecto y `--apply` explícito.
+- Compatibilidad legacy, reconciliación, MRG/MAG y navegación alineadas.
+
+### Status
+- ✅ Sprint 16 completo · Purchasing operativo.
+
+---
+
 ## [1.16.4] — 2026-07-11 · Sprint 16.4 · CxP e indicadores
 
 ### Added

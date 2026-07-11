@@ -1,6 +1,6 @@
 # MRG-04-PUR · Compras
 
-**Código:** MRG-04-PUR · Sprint 10.4 · **Entregado (parcial)**
+**Código:** MRG-04-PUR · Sprint 16.5 · **Purchasing operativo**
 
 > El módulo **Purchasing** administra el abastecimiento de productos y servicios mediante solicitudes, órdenes de compra, recepción de mercancía y proveedores — garantizando la disponibilidad de inventario y la trazabilidad de las adquisiciones.
 
@@ -12,9 +12,9 @@
 
 Documentar el funcionamiento funcional del módulo **Purchasing**, responsable del ciclo completo de adquisición de bienes y servicios para la empresa.
 
-Actualmente **parte del proceso se realiza desde el módulo Inventory**. En futuras versiones evolucionará hacia un módulo independiente completamente integrado con inventario, cuentas por pagar y analítica.
+Purchasing opera el ciclo solicitud → aprobación → OC → recepción → CxP. Inventory conserva los maestros de productos/proveedores, el stock y las obligaciones/pagos compatibles.
 
-**Estado:** 🟡 **Subflujo operativo en Inventory** · **Sprint 14 ALIGN:** ✅ Cerrado (2026-07-10)
+**Estado:** ✅ **Sprint 16 completo** · compatibilidad legacy activa
 
 | Estado | Significado |
 |--------|-------------|
@@ -28,20 +28,20 @@ Actualmente **parte del proceso se realiza desde el módulo Inventory**. En futu
 
 | Sección | Tema | Estado |
 |---------|------|--------|
-| §1 | Alcance | 🟡 |
-| §2 | Entidades | 🟡 |
-| §3 | Flujo de compra | 🟡 |
+| §1 | Alcance | ✅ |
+| §2 | Entidades | ✅ |
+| §3 | Flujo de compra | ✅ |
 | §4 | Proveedores | ✅ |
-| §5 | Órdenes de compra | 🟡 |
+| §5 | Órdenes de compra | ✅ |
 | §5 · CxP | Cuentas por pagar | ✅ |
-| §6 | Recepción | 🟡 |
+| §6 | Recepción | ✅ |
 | §7 | Relación Inventory | ✅ |
 | §8 | Relación Maintenance | ✅ |
-| §9 | Indicadores | 🟡 |
+| §9 | Indicadores | ✅ |
 | §10–§12 | Integración · casos · buenas prácticas | ✅ doc |
 | API | MAG `/api/v1/purchasing/*` | 📋 |
 
-**Gaps abiertos (📋):** solicitudes · OC formal · recepción parcial · Purchasing standalone · API.
+**Gap abierto:** API MAG Purchasing continúa planificada; UI, modelos, MRL y migración están operativos.
 
 ---
 
@@ -56,7 +56,7 @@ Actualmente **parte del proceso se realiza desde el módulo Inventory**. En futu
 | Actualización de stock | Gestión contractual avanzada |
 | Cuentas por pagar (CxP) | |
 
-> **Hoy en producto:** registro directo de **compra / entrada de mercancía**, proveedores comerciales, actualización de stock y CxP. Solicitudes, aprobaciones, OC formales y recepción parcial — **roadmap Purchasing**.
+> **Hoy:** Purchasing formal está operativo. Las entradas directas permanecen visibles como compatibilidad legacy durante la transición.
 
 ---
 
@@ -81,7 +81,9 @@ Actualmente **parte del proceso se realiza desde el módulo Inventory**. En futu
 | Detalle de compra | `InvCompraLinea` |
 | Condición de pago | Contado / crédito · `estado_pago` |
 | Pago | `InvCompraPago` |
-| Solicitud · recepción parcial | 📋 Roadmap |
+| Solicitud | `PurSolicitud` · `PurSolicitudLinea` |
+| Orden de compra | `PurOrdenCompra` · `PurOrdenLinea` |
+| Recepción parcial | `PurRecepcion` · `PurRecepcionLinea` |
 
 ---
 

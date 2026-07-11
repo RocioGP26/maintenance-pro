@@ -6,7 +6,7 @@
 |-----|--------|----------------|---------|--------|-----------|
 | MRG-02-MAINT | Mantenimiento | `app/routes.py` · API v1 | ✅ v1.0.2 | 🟡 Fase 1 ✅ | — |
 | MRG-03-INV | Inventario | `/comercial` · `inv_comercial` | ✅ v1.0.1 | ✅ Fase 2 ✅ | — |
-| MRG-04-PUR | Compras | `inv_comercial` compras · CxP | ✅ v1.0.2 | 🟡 Fase 3 ✅ | — |
+| MRG-04-PUR | Purchasing | solicitudes · OC · recepción · CxP | ✅ Sprint 16 | ✅ Operativo | API MAG |
 | MRG-05-SALES | Ventas | `inv_comercial` ventas · POS | ✅ v1.0.1 | 🟡 Fase 4 ✅ | — |
 | MRG-06-CRM | CRM | `InvCliente` · pre-CRM | ✅ v1.0.1 | 🟡 Fase 5 ✅ | — |
 | MRG-07-ADMIN | Admin · IAM | `/equipo` · config · platform | ✅ v1.0.1 | ✅ Fase 6 ✅ | — |
@@ -68,8 +68,8 @@
 | Pagos parciales | `InvCompraPago` | ✅ |
 | Alertas vencimiento | dashboard · filtros | ✅ |
 | Stock al recibir | automático | ✅ |
-| Solicitudes / OC formal | — | 📋 |
-| Recepción parcial | — | 📋 |
+| Solicitudes / OC formal | `/purchasing/solicitudes` · `/purchasing/ordenes` | ✅ |
+| Recepción parcial | `PurRecepcion` · actualización stock idempotente | ✅ |
 | API MAG purchasing | — | 📋 |
 
 → Auditoría: [04-compras-audit.md](modules/04-compras-audit.md)

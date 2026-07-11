@@ -2,7 +2,7 @@
 
 **Fuente única de verdad** para versiones de cada manual y de la suite.
 
-**Suite actual:** **v1.16.0** (Sprint 16.0 · Purchasing Design & Contract)
+**Suite actual:** **v1.17.0** (Sprint 16 completo · Purchasing operativo)
 **Últimos tags:** `docs-v1.0` · `docs-foundation-1.0` (recomendado)
 
 ---
@@ -11,6 +11,7 @@
 
 | Versión | Fecha | Tag Git | Notas |
 |---------|-------|---------|-------|
+| **v1.17.0** | 2026-07-11 | *(pendiente)* | **Purchasing** · Sprint 16.0–16.5 completo |
 | **v1.16.0** | 2026-07-11 | *(pendiente)* | **Purchasing** · Sprint 16.0 diseño, contratos y migración |
 | **v1.15.0** | 2026-07-10 | *(pendiente)* | **MRL v1.1.0** · Sprint 15.0 MRL Foundation (docs) |
 | **v1.14.0** | 2026-07-10 | *(pendiente)* | **MDO v1.0.0** · Sprint 13 finalizado |

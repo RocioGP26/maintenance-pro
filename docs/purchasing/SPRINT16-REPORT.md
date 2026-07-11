@@ -48,5 +48,17 @@ Convertir las compras directas actuales en un proceso de abastecimiento trazable
 
 ## Próximo paso
 
-Sprint 16.1 crea solicitudes, líneas, aprobación simple y auditoría. No crea todavía OC, recepción ni movimientos de stock.
+Sprint 16 quedó cerrado: solicitudes, OC, DOC-006, recepciones, stock, CxP,
+indicadores, Excel MRL y migración legacy están operativos. La API MAG Purchasing
+permanece como contrato estable pendiente de implementación en Sprint 17.
+
+## Cierre · 16.5
+
+- [x] 12/12 compras históricas vinculadas.
+- [x] 12 solicitudes, 12 OC y 12 recepciones legacy creadas.
+- [x] Stock antes/después: 14.819 unidades, sin variación.
+- [x] Segunda ejecución: cero migraciones nuevas.
+- [x] Saldos y pagos preservados en `InvCompra`.
+- [x] Navegación diferencia Purchasing formal de entradas legacy.
+- [x] MRG y MAG alineados con el estado real.
 
