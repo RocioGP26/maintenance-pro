@@ -18,6 +18,8 @@
 
 `tecnico` y `vendedor` son roles independientes. Tener ambos módulos contratados no amplía automáticamente el acceso del rol.
 
+Regla adicional por área: `admin` + área **Mantenimiento** no accede a Inventario. `superadmin` permanece sin esta restricción.
+
 ---
 
 ## Matriz transversal · Acciones IAM

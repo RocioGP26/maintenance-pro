@@ -88,6 +88,8 @@ Cada empresa administra **sus propios usuarios**.
 
 `tecnico` y `vendedor` son claves independientes. En empresas con ambos módulos, el Técnico no entra a Inventario y el Vendedor no entra a la operación de Mantenimiento, salvo el reporte y seguimiento de sus propias incidencias.
 
+El acceso también considera el área del usuario: un `admin` cuya área contiene **Mantenimiento** no puede acceder al módulo de Inventario. Esta restricción no aplica al `superadmin`, que conserva acceso completo.
+
 ### Matriz de permisos (resumen)
 
 | Acción | Superadmin | Admin | Supervisor | Técnico | Vendedor | Usuario | Solicitante |

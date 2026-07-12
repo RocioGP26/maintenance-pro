@@ -103,14 +103,24 @@ def _verificar_modulo_rol(endpoint: str):
     from flask import flash, redirect, url_for
 
     from app.modules import MODULO_INVENTARIO, MODULO_MANTENIMIENTO, modulo_requerido_por_endpoint
-    from app.permissions import UserRole, normalize_rol
+    from app.permissions import UserRole, can_access_inventory, normalize_rol
 
     modulo = modulo_requerido_por_endpoint(endpoint)
     rol = normalize_rol(getattr(g, "user_rol", None))
     if rol == UserRole.VENDEDOR.value and endpoint == "main.dashboard":
         return redirect(url_for("inv_comercial.dashboard_inventario"))
-    if rol == UserRole.TECNICO.value and modulo == MODULO_INVENTARIO:
-        flash("El rol Técnico solo tiene acceso al módulo de Mantenimiento.", "warning")
+    usuario = current_user if current_user.is_authenticated else None
+    if usuario is None and getattr(g, "user_id", None):
+        from app.models import User
+        try:
+            usuario = User.query.get(int(g.user_id))
+        except (TypeError, ValueError):
+            usuario = None
+    if modulo == MODULO_INVENTARIO and usuario is not None and not can_access_inventory(usuario):
+        if rol == UserRole.ADMIN.value:
+            flash("Los administradores del área de Mantenimiento no tienen acceso a Inventario.", "warning")
+        else:
+            flash("El rol Técnico solo tiene acceso al módulo de Mantenimiento.", "warning")
         return redirect(url_for("main.dashboard"))
     if rol == UserRole.VENDEDOR.value and modulo == MODULO_MANTENIMIENTO:
         if endpoint == "main.incidencia" or endpoint.startswith("main.incidencias"):

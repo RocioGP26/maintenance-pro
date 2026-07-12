@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from enum import Enum
 from typing import Optional
+import unicodedata
 
 from flask_login import AnonymousUserMixin
 
@@ -68,6 +69,14 @@ def _rol(user) -> str:
     if not getattr(user, "is_authenticated", False):
         return ""
     return normalize_rol(getattr(user, "rol", ""))
+
+
+def _area_normalizada(user) -> str:
+    raw = (getattr(user, "area", "") or "").strip().lower()
+    return "".join(
+        char for char in unicodedata.normalize("NFKD", raw)
+        if not unicodedata.combining(char)
+    )
 
 
 def can_create(user) -> bool:
@@ -162,7 +171,12 @@ def can_access_maintenance(user) -> bool:
 
 
 def can_access_inventory(user) -> bool:
-    return _rol(user) != UserRole.TECNICO.value
+    rol = _rol(user)
+    if rol == UserRole.TECNICO.value:
+        return False
+    if rol == UserRole.ADMIN.value and "mantenimiento" in _area_normalizada(user):
+        return False
+    return True
 
 
 def can_create_work_order(user) -> bool:
