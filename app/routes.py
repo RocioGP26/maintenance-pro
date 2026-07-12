@@ -1624,8 +1624,8 @@ def dashboard():
         .all()
     )
     pareto_items = [
-        {"label": f"{codigo} — {nombre}", "total": int(total)}
-        for codigo, nombre, total in pareto_rows[:10]
+        {"label": codigo, "total": int(total)}
+        for codigo, _nombre, total in pareto_rows[:10]
     ]
     if len(pareto_rows) > 10:
         pareto_items.append(
