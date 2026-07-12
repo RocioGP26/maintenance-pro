@@ -114,7 +114,7 @@
               <select name="machine_id" id="equipoIncidencia" class="form-select">
                 <option value="">— No especificado —</option>
                 {% for m in machines %}
-                <option value="{{ m.id }}" data-support-area="{{ m.area_tecnica.nombre if m.area_tecnica else '' }}" {% if f.machine_id|string == m.id|string %}selected{% endif %}>
+                <option value="{{ m.id }}" {% if f.machine_id|string == m.id|string %}selected{% endif %}>
                   {{ m.codigo }} — {{ m.nombre }}
                 </option>
                 {% endfor %}
@@ -255,14 +255,6 @@
   (() => {
     const form = document.getElementById('formIncidencia');
     if (!form) return;
-    const activo = document.getElementById('equipoIncidencia');
-    const destino = document.getElementById('areaResponsable');
-    const sugerirDestino = () => {
-      const area = activo?.selectedOptions[0]?.dataset.supportArea;
-      if (area && destino) destino.value = area;
-    };
-    activo?.addEventListener('change', sugerirDestino);
-    sugerirDestino();
     form.addEventListener('submit', () => {
       if (!form.checkValidity()) return;
       document.querySelectorAll('.js-submit-incidencia').forEach((button) => {

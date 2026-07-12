@@ -100,29 +100,6 @@
             </div>
             {% endif %}
 
-            <div class="col-12"><hr class="my-1"><p class="fw-semibold mb-1">Áreas de atención</p><p class="small text-muted mb-0">Selecciona las colas de soporte en las que participa este usuario y qué puede hacer.</p></div>
-            <div class="col-12">
-              <div class="row g-2">
-                {% for a in areas_soporte %}
-                <div class="col-md-4">
-                  <div class="form-check border rounded p-2 ps-5 h-100">
-                    <input class="form-check-input" type="checkbox" name="support_area_ids" value="{{ a.id }}" id="supportArea{{ a.id }}" {% if a.id in membresias_soporte %}checked{% endif %}>
-                    <label class="form-check-label" for="supportArea{{ a.id }}">{{ a.nombre }}</label>
-                  </div>
-                </div>
-                {% endfor %}
-              </div>
-            </div>
-            {% set membresias = membresias_soporte.values()|list %}
-            <div class="col-12 d-flex flex-wrap gap-3">
-              {% for clave, etiqueta in [('puede_recibir','Recibir y clasificar'),('puede_asignar','Asignar técnicos'),('puede_atender','Atender incidentes'),('puede_diagnosticar','Diagnosticar')] %}
-              <div class="form-check">
-                <input class="form-check-input" type="checkbox" name="{{ clave }}" id="{{ clave }}" {% if membresias and membresias[0]|attr(clave) %}checked{% endif %}>
-                <label class="form-check-label" for="{{ clave }}">{{ etiqueta }}</label>
-              </div>
-              {% endfor %}
-            </div>
-
             {% if not es_self|default(false) %}
             <div class="col-12">
               <div class="form-check">
