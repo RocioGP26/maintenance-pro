@@ -650,6 +650,7 @@ class Machine(db.Model):
     responsable_technician_id = db.Column(
         db.Integer, db.ForeignKey("technicians.id"), nullable=True, index=True
     )
+    responsable_user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=True, index=True)
     responsable_area = db.Column(db.String(120), default="")
     responsable_cargo = db.Column(db.String(120), default="")
     status = db.Column(db.String(32), default=MachineStatus.OPERATIVO.value)
@@ -664,6 +665,7 @@ class Machine(db.Model):
         foreign_keys=[responsable_technician_id],
         backref="activos_responsable",
     )
+    responsable_usuario = db.relationship("User", foreign_keys=[responsable_user_id])
     proveedor_relacionado = db.relationship(
         "Proveedor",
         foreign_keys=[proveedor_id],
@@ -673,6 +675,8 @@ class Machine(db.Model):
     @property
     def responsable_nombre(self) -> str:
         """Nombre del técnico responsable en ficha de mantenimiento (respaldo si no hay campo personalizado)."""
+        if self.responsable_usuario:
+            return self.responsable_usuario.etiqueta()
         if self.responsable and self.responsable.nombre:
             return self.responsable.nombre
         if not self.responsable_technician_id:

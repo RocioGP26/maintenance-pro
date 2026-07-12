@@ -1093,15 +1093,18 @@ def _apply_machine_base_fields(machine: Machine, form) -> Optional[str]:
     machine.requiere_mantenimiento = bool(form.get("requiere_mantenimiento"))
     machine.tipos_mantenimiento = tipos_mantenimiento_from_form(form)
     machine.frecuencia_mantenimiento = (form.get("frecuencia_mantenimiento") or "").strip()
-    raw_resp = (form.get("responsable_technician_id") or "").strip()
-    if raw_resp.isdigit():
-        tid = int(raw_resp)
-        err = _validar_technician_id_tenant(tid, "responsable")
-        if err:
-            return err
-        machine.responsable_technician_id = tid
-    else:
-        machine.responsable_technician_id = None
+    raw_resp = (form.get("responsable_user_id") or "").strip()
+    machine.responsable_user_id = int(raw_resp) if raw_resp.isdigit() else None
+    if machine.responsable_user_id:
+        responsable = User.query.filter_by(
+            id=machine.responsable_user_id,
+            empresa_id=machine.empresa_id,
+            activo=True,
+        ).first()
+        if responsable is None:
+            return "Selecciona un responsable activo de tu empresa."
+        machine.responsable_area = responsable.area or ""
+        machine.responsable_cargo = responsable.cargo or ""
     machine.criticidad = form.get("criticidad") or "media"
     machine.status = form.get("status") or MachineStatus.OPERATIVO.value
     machine.notas = form.get("notas", "").strip()
@@ -1245,6 +1248,7 @@ def _activos_form_context(
         "sector_label": SECTOR_LABELS.get(sector, sector),
         "sedes": sedes,
         "technicians": technicians,
+        "usuarios_responsables": _equipo_usuarios_query().filter(User.activo.is_(True)).all() if eid else [],
         "proveedores_activo": proveedores_activo,
         "mantenimiento_tipos": MANTENIMIENTO_TIPOS,
         "frecuencia_choices": FRECUENCIA_BASE_CHOICES,

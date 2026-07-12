@@ -447,7 +447,7 @@ def responsables_display_por_maquinas(
                 if texto:
                     custom[fila.machine_id] = texto
     for m in machines:
-        resultado[m.id] = custom.get(m.id, "")
+        resultado[m.id] = custom.get(m.id, "") or m.responsable_nombre
     return resultado
 
 

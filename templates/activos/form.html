@@ -88,17 +88,17 @@
                 </select>
               </div>
               <div class="col-md-6">
-                <label class="form-label" for="responsable_technician_id">Responsable</label>
-                <select name="responsable_technician_id" id="responsable_technician_id" class="form-select">
+                <label class="form-label" for="responsable_user_id">Responsable del activo</label>
+                <select name="responsable_user_id" id="responsable_user_id" class="form-select">
                   <option value="">— Sin asignar —</option>
-                  {% for t in technicians %}
-                  <option value="{{ t.id }}"
-                          data-area="{{ t.user.area if t.user else '' }}"
-                          data-cargo="{{ (t.user.cargo or t.user.rol_label) if t.user else t.especialidad }}"
-                          {% if machine and machine.responsable_technician_id == t.id %}selected{% endif %}>{{ t.nombre }}</option>
+                  {% for u in usuarios_responsables %}
+                  <option value="{{ u.id }}"
+                          data-area="{{ u.area or '' }}"
+                          data-cargo="{{ u.cargo or '' }}"
+                          {% if machine and machine.responsable_user_id == u.id %}selected{% endif %}>{{ u.etiqueta() }}{% if u.cargo %} — {{ u.cargo }}{% endif %}</option>
                   {% endfor %}
                 </select>
-                <div class="form-text small">Técnico responsable del activo. Si usas un campo personalizado «Responsable», ese valor se muestra en las OT.</div>
+                <div class="form-text small">Usuario de la empresa que tiene asignado o responde por este activo.</div>
               </div>
               <div class="col-md-3">
                 <label class="form-label" for="responsable_area">Área del responsable</label>
@@ -487,7 +487,7 @@
   }
   {% endif %}
 
-  var selResponsable = document.getElementById('responsable_technician_id');
+  var selResponsable = document.getElementById('responsable_user_id');
   var selProveedor = document.getElementById('proveedor_id');
   var inpProveedorNombre = document.getElementById('proveedor_nombre');
   var proveedorDetalle = document.getElementById('proveedor_detalle');
