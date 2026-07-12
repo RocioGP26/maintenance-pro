@@ -1,14 +1,14 @@
 """Agrega cargo al perfil del usuario.
 
-Revision ID: l9b2d60j73i1
-Revises: k8a1c59i62h0
+Revision ID: q4g7i15o28r6
+Revises: p3f6h04n17q5
 """
 from alembic import op
 import sqlalchemy as sa
 
 
-revision = "l9b2d60j73i1"
-down_revision = "k8a1c59i62h0"
+revision = "q4g7i15o28r6"
+down_revision = "p3f6h04n17q5"
 branch_labels = None
 depends_on = None
 

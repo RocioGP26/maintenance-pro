@@ -33,9 +33,6 @@ from app.permissions import (
     can_manage_config,
     can_manage_equipo,
     can_manage_incidents,
-    can_report_incident,
-    is_requester,
-    is_vendor,
     normalize_rol,
     roles_for_select,
     role_help_map,
@@ -256,16 +253,6 @@ def _enforce_role_permissions():
     if not current_user.is_authenticated:
         return
 
-    if is_requester(current_user) and ep not in (
-        "main.logout",
-        "main.incidencia",
-        "main.incidencias_list",
-        "main.incidencias_detail",
-        "main.mi_perfil",
-    ):
-        flash("Tu rol de solicitante solo permite reportar y consultar tus incidencias.", "warning")
-        return redirect(url_for("main.incidencias_list"))
-
     method = request.method
 
     if ep.startswith(CONFIG_ENDPOINT_PREFIX):
@@ -286,13 +273,6 @@ def _enforce_role_permissions():
         return
 
     if method != "POST":
-        return
-
-    if is_requester(current_user) and ep in (
-        "main.logout",
-        "main.incidencia",
-        "main.mi_perfil",
-    ):
         return
 
     if ep in USUARIO_POST_ENDPOINTS:
@@ -1086,20 +1066,7 @@ def _apply_machine_base_fields(machine: Machine, form) -> Optional[str]:
     moneda_emp = _moneda_empresa_activo(machine)
     machine.moneda_compra = normalizar_moneda(form.get("moneda_compra"), moneda_emp)
     machine.valor_compra = parsear_monto_form(form.get("valor_compra"), machine.moneda_compra)
-    raw_proveedor = (form.get("proveedor_id") or "").strip()
-    if raw_proveedor:
-        if not raw_proveedor.isdigit():
-            return "Selecciona un proveedor válido."
-        proveedor = _filter_empresa(
-            Proveedor.query.filter_by(id=int(raw_proveedor), activo=True), Proveedor
-        ).first()
-        if proveedor is None:
-            return "El proveedor seleccionado no pertenece a tu empresa o está inactivo."
-        machine.proveedor_id = proveedor.id
-        machine.proveedor = proveedor.nombre
-    else:
-        machine.proveedor_id = None
-        machine.proveedor = ""
+    machine.proveedor = form.get("proveedor", "").strip()
     machine.tiempo_garantia_meses = _parse_int_form(form.get("tiempo_garantia_meses"))
     machine.garantia_hasta = calcular_garantia_hasta(
         machine.fecha_compra, machine.tiempo_garantia_meses
@@ -1110,8 +1077,6 @@ def _apply_machine_base_fields(machine: Machine, form) -> Optional[str]:
     machine.requiere_mantenimiento = bool(form.get("requiere_mantenimiento"))
     machine.tipos_mantenimiento = tipos_mantenimiento_from_form(form)
     machine.frecuencia_mantenimiento = (form.get("frecuencia_mantenimiento") or "").strip()
-    machine.responsable_area = (form.get("responsable_area") or "").strip()
-    machine.responsable_cargo = (form.get("responsable_cargo") or "").strip()
     raw_resp = (form.get("responsable_technician_id") or "").strip()
     if raw_resp.isdigit():
         tid = int(raw_resp)
@@ -1119,14 +1084,6 @@ def _apply_machine_base_fields(machine: Machine, form) -> Optional[str]:
         if err:
             return err
         machine.responsable_technician_id = tid
-        tecnico = db.session.get(Technician, tid)
-        if tecnico and tecnico.user:
-            if not machine.responsable_area:
-                machine.responsable_area = (tecnico.user.area or "").strip()
-            if not machine.responsable_cargo:
-                machine.responsable_cargo = (
-                    tecnico.user.cargo or tecnico.user.rol_label or ""
-                ).strip()
     else:
         machine.responsable_technician_id = None
     machine.criticidad = form.get("criticidad") or "media"
@@ -1204,16 +1161,6 @@ def _activos_form_context(
         if eid
         else []
     )
-    proveedores_activo = []
-    if eid:
-        proveedores_q = Proveedor.query.filter(Proveedor.activo.is_(True))
-        if machine and machine.proveedor_id:
-            proveedores_q = Proveedor.query.filter(
-                or_(Proveedor.activo.is_(True), Proveedor.id == machine.proveedor_id)
-            )
-        proveedores_activo = _filter_empresa(
-            proveedores_q.order_by(Proveedor.nombre), Proveedor
-        ).all()
     campos_estandar, _secciones_legacy = (
         campos_por_seccion_estructurado(eid, sector, preview_id) if eid else ({}, {})
     )
@@ -1249,7 +1196,6 @@ def _activos_form_context(
         "sector_label": SECTOR_LABELS.get(sector, sector),
         "sedes": sedes,
         "technicians": technicians,
-        "proveedores_activo": proveedores_activo,
         "mantenimiento_tipos": MANTENIMIENTO_TIPOS,
         "frecuencia_choices": FRECUENCIA_BASE_CHOICES,
         "tipos_mant_sel": tipos_mantenimiento_list(machine.tipos_mantenimiento if machine else ""),
@@ -3750,7 +3696,6 @@ def equipo_new():
         username = (request.form.get("username") or "").strip().lower()
         nombre = request.form.get("nombre_visible", "").strip()
         area = request.form.get("area", "").strip()
-        cargo = request.form.get("cargo", "").strip()
         email = request.form.get("email", "").strip()
         telefono = request.form.get("telefono", "").strip()
         rol = (request.form.get("rol") or UserRole.TECNICO.value).strip().lower()
@@ -3782,7 +3727,6 @@ def equipo_new():
                 username=username,
                 nombre_visible=nombre,
                 area=area,
-                cargo=cargo,
                 sede_id=sede_id,
                 email=email,
                 telefono=telefono,
@@ -3819,17 +3763,19 @@ def equipo_new():
 
 @bp.route("/mi-perfil", methods=["GET", "POST"])
 def mi_perfil():
-    """Cada usuario autenticado puede actualizar su propia cuenta."""
+    """El administrador puede editar su propia cuenta."""
+    if not _require_admin_equipo():
+        return redirect(url_for("main.dashboard"))
     return equipo_edit(current_user.id)
 
 
 @bp.route("/equipo/<int:id>/editar", methods=["GET", "POST"])
 def equipo_edit(id):
+    if not _require_admin_equipo():
+        return redirect(url_for("main.dashboard"))
     eid = _current_empresa_id()
     usuario = User.query.filter_by(id=id, empresa_id=eid).first_or_404()
     es_self = usuario.id == current_user.id
-    if not es_self and not _require_admin_equipo():
-        return redirect(url_for("main.dashboard"))
     emp = Empresa.query.get(eid)
     sector = normalizar_sector(emp.sector if emp else None)
     roles = roles_for_select(current_user, empresa=emp)
@@ -3840,7 +3786,6 @@ def equipo_edit(id):
         username = (request.form.get("username") or "").strip().lower()
         nombre = request.form.get("nombre_visible", "").strip()
         area = request.form.get("area", "").strip()
-        cargo = request.form.get("cargo", "").strip()
         email = request.form.get("email", "").strip()
         telefono = request.form.get("telefono", "").strip()
         if es_self:
@@ -3903,7 +3848,6 @@ def equipo_edit(id):
             usuario.username = username
             usuario.nombre_visible = nombre
             usuario.area = area
-            usuario.cargo = cargo
             usuario.sede_id = sede_id
             usuario.email = email
             usuario.telefono = telefono
@@ -4632,9 +4576,6 @@ def _incidencia_preview_numero(empresa_id: Optional[int]) -> str:
 
 @bp.route("/incidencia", methods=["GET", "POST"])
 def incidencia():
-    if not can_report_incident(current_user):
-        flash("Tu rol de usuario solo permite consultar incidencias.", "warning")
-        return redirect(url_for("main.incidencias_list"))
     eid = _current_empresa_id()
     machines = _filter_empresa(Machine.query.order_by(Machine.nombre), Machine).all()
     areas = _areas_incidencia_empresa(eid)
@@ -4722,7 +4663,7 @@ def _filter_incidents_empresa(q):
 
 def _incidents_scope_query():
     q = _filter_incidents_empresa(Incident.query)
-    if is_requester(current_user) or is_vendor(current_user):
+    if normalize_rol(current_user.rol) == UserRole.USUARIO.value:
         q = q.filter(Incident.user_id == current_user.id)
     return q
 
@@ -4783,7 +4724,7 @@ def _incidentes_kpis(base_q) -> dict:
 
 
 def _usuario_solo_mis_incidencias() -> bool:
-    return is_requester(current_user) or is_vendor(current_user)
+    return normalize_rol(current_user.rol) == UserRole.USUARIO.value
 
 
 @bp.route("/incidencias")

@@ -1,14 +1,14 @@
 """Relaciona activos con proveedores y datos del responsable.
 
-Revision ID: k8a1c59i62h0
-Revises: j7f0b48h51g9
+Revision ID: p3f6h04n17q5
+Revises: o2e5g93m06n4
 """
 from alembic import op
 import sqlalchemy as sa
 
 
-revision = "k8a1c59i62h0"
-down_revision = "j7f0b48h51g9"
+revision = "p3f6h04n17q5"
+down_revision = "o2e5g93m06n4"
 branch_labels = None
 depends_on = None
 

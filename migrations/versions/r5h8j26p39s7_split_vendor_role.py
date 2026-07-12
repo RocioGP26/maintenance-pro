@@ -1,13 +1,13 @@
 """Separa vendedor del rol técnico.
 
-Revision ID: m0c3e71k84j2
-Revises: l9b2d60j73i1
+Revision ID: r5h8j26p39s7
+Revises: q4g7i15o28r6
 """
 from alembic import op
 
 
-revision = "m0c3e71k84j2"
-down_revision = "l9b2d60j73i1"
+revision = "r5h8j26p39s7"
+down_revision = "q4g7i15o28r6"
 branch_labels = None
 depends_on = None
 
