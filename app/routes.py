@@ -35,6 +35,7 @@ from app.permissions import (
     can_manage_config,
     can_manage_equipo,
     can_manage_incidents,
+    can_report_incident,
     normalize_rol,
     roles_for_select,
     role_help_map,
@@ -279,6 +280,11 @@ def _enforce_role_permissions():
         return
 
     if ep in USUARIO_POST_ENDPOINTS:
+        return
+
+    # Reportar una incidencia es una creación autorizada para Solicitantes y
+    # demás roles operativos; no concede permiso para modificar otros registros.
+    if ep == "main.incidencia" and can_report_incident(current_user):
         return
 
     if normalize_rol(current_user.rol) == UserRole.USUARIO.value:
