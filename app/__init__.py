@@ -142,6 +142,13 @@ def create_app(config_name: str | None = None):
     app.jinja_env.globals["proveedor_tipo_meta"] = proveedor_tipo_meta
     app.jinja_env.globals["incident_prioridad_meta"] = incident_prioridad_meta
 
+    # Los datos de instalaciones antiguas pueden contener mojibake o acentos
+    # reemplazados por ``?``. Se normalizan al renderizar cualquier vista.
+    from app.text_encoding import texto_legible
+
+    app.jinja_env.finalize = texto_legible
+    app.jinja_env.filters["texto_legible"] = texto_legible
+
     from app.custom_fields import seccion_campos_cuatro_por_fila
     from app.password_policy import PASSWORD_REQUIREMENTS_TEXT
     from app.locale_options import zona_horaria_label

@@ -19,6 +19,8 @@ SECTOR_CHOICES: tuple[tuple[str, str], ...] = (
     ("alimentos", "Alimentos"),
     ("construccion", "Construcción"),
     ("educacion", "Educación"),
+    ("hoteleria", "Hotelería"),
+    ("transporte", "Transporte"),
 )
 
 SECTOR_LABELS: dict[str, str] = dict(SECTOR_CHOICES)
@@ -77,6 +79,20 @@ SECTOR_CATEGORIES: dict[str, tuple[tuple[str, str, str], ...]] = {
         ("audiovisual", "Audiovisual", "AV"),
         ("mobiliario_tecnico", "Mobiliario técnico", "MT"),
     ),
+    "hoteleria": (
+        ("habitacion", "Habitaciones", "HB"),
+        ("aire_acondicionado", "Aires acondicionados", "AA"),
+        ("ascensor", "Ascensores", "AS"),
+        ("lavanderia", "Equipos de lavandería", "LV"),
+        ("cocina_hotel", "Equipos de cocina", "CC"),
+    ),
+    "transporte": (
+        ("vehiculo_liviano", "Vehículos livianos", "VL"),
+        ("camion", "Camiones", "CM"),
+        ("bus", "Buses", "BS"),
+        ("remolque", "Remolques", "RM"),
+        ("gps", "GPS / telemetría", "GP"),
+    ),
 }
 
 # Campos personalizados: (clave, nombre, tipo, obligatorio, categoria_clave|None)
@@ -93,14 +109,35 @@ SECTOR_CUSTOM_FIELDS: dict[str, tuple[tuple[str, str, str, bool, str | None], ..
     "manufactura": (
         ("potencia", "Potencia (kW)", "text", False, None),
         ("voltaje", "Voltaje", "text", False, None),
+        ("amperaje", "Amperaje", "text", False, None),
         ("rpm", "RPM", "number", False, None),
+        ("lubricante", "Lubricante", "text", False, None),
+        ("capacidad", "Capacidad", "text", False, None),
         ("capacidad_produccion", "Capacidad producción", "text", False, None),
         ("consumo_energia", "Consumo energía", "text", False, None),
+        ("planta", "Planta", "text", False, None),
+        ("linea_produccion", "Línea de producción", "text", False, None),
+        ("proceso_asociado", "Proceso asociado", "text", False, None),
+        ("centro_costo", "Centro de costo", "text", False, None),
+        ("impacto_produccion", "Impacto en producción", "text", False, None),
+        ("oee_objetivo", "OEE objetivo (%)", "number", False, None),
+        ("loto", "Requiere LOTO", "boolean", False, None),
+        ("riesgos", "Riesgos", "text", False, None),
+        ("puntos_inspeccion", "Puntos de inspección", "text", False, None),
+        ("epp_requerido", "EPP requerido", "text", False, None),
+        ("normas", "Normas aplicables", "text", False, None),
     ),
     "salud": (
         ("registro_invima", "Registro INVIMA", "text", False, None),
         ("fecha_calibracion", "Próxima calibración", "date", False, None),
         ("clase_riesgo", "Clase de riesgo", "text", False, None),
+        ("metrologia", "Control metrológico", "text", False, None),
+        ("certificados", "Certificados", "text", False, None),
+        ("riesgo_biomedico", "Riesgo biomédico", "text", False, None),
+        ("ubicacion_clinica", "Ubicación clínica", "text", False, None),
+        ("servicio_clinico", "Servicio", "text", False, None),
+        ("contrato_mantenimiento", "Contrato de mantenimiento", "text", False, None),
+        ("proveedor_autorizado", "Proveedor autorizado", "text", False, None),
     ),
     "mineria": (
         ("horometro", "Horómetro", "number", False, None),
@@ -117,7 +154,51 @@ SECTOR_CUSTOM_FIELDS: dict[str, tuple[tuple[str, str, str, bool, str | None], ..
     "educacion": (
         ("inventario_institucional", "Inventario institucional", "text", False, None),
         ("garantia_hasta", "Garantía hasta", "date", False, None),
+        ("dependencia", "Dependencia", "text", False, None),
+        ("funcionario_responsable", "Funcionario responsable", "text", False, None),
+        ("licencias_software", "Licencias de software", "text", False, None),
+        ("antivirus", "Antivirus", "text", False, None),
     ),
+    "hoteleria": (
+        ("habitacion", "Habitación", "text", False, None),
+        ("piso", "Piso", "text", False, None),
+        ("edificio", "Edificio", "text", False, None),
+        ("consumo", "Consumo", "text", False, None),
+        ("garantia_hasta", "Garantía hasta", "date", False, None),
+    ),
+    "transporte": (
+        ("placa", "Placa", "text", True, None),
+        ("numero_motor", "Número de motor", "text", False, None),
+        ("chasis", "Chasis", "text", False, None),
+        ("soat", "Vencimiento SOAT", "date", False, None),
+        ("tecnomecanica", "Vencimiento tecnomecánica", "date", False, None),
+        ("gps", "Identificador GPS", "text", False, None),
+        ("kilometraje", "Kilometraje", "number", False, None),
+        ("conductor", "Conductor", "text", False, None),
+        ("ruta", "Ruta", "text", False, None),
+        ("consumo_combustible", "Consumo de combustible", "number", False, None),
+    ),
+}
+
+SECTOR_CUSTOM_FIELD_SECTIONS: dict[str, str] = {
+    "potencia": "tecnica", "voltaje": "tecnica", "amperaje": "tecnica", "rpm": "tecnica",
+    "lubricante": "tecnica", "capacidad": "tecnica",
+    "numero_motor": "tecnica", "chasis": "tecnica", "registro_invima": "documentacion",
+    "clase_riesgo": "mantenimiento", "riesgo_biomedico": "mantenimiento",
+    "fecha_calibracion": "mantenimiento", "metrologia": "mantenimiento",
+    "loto": "mantenimiento", "riesgos": "mantenimiento", "puntos_inspeccion": "mantenimiento",
+    "epp_requerido": "mantenimiento", "normas": "documentacion", "certificados": "documentacion",
+    "placa": "general", "kilometraje": "operativa", "horometro": "operativa",
+    "soat": "documentacion", "tecnomecanica": "documentacion", "garantia_hasta": "financiera",
+    "dependencia": "ubicacion", "funcionario_responsable": "general",
+    "planta": "ubicacion", "linea_produccion": "operativa", "proceso_asociado": "operativa",
+    "centro_costo": "financiera", "impacto_produccion": "operativa", "oee_objetivo": "operativa",
+    "ubicacion_clinica": "ubicacion", "servicio_clinico": "ubicacion",
+    "contrato_mantenimiento": "documentacion", "proveedor_autorizado": "documentacion",
+    "habitacion": "ubicacion", "piso": "ubicacion", "edificio": "ubicacion",
+    "conductor": "operativa", "ruta": "operativa", "gps": "operativa",
+    "consumo": "operativa", "consumo_combustible": "operativa",
+    "licencias_software": "documentacion", "antivirus": "documentacion",
 }
 
 # Agrupación dashboard (etiqueta, claves de categoría)
@@ -156,6 +237,16 @@ SECTOR_DASHBOARD_CATEGORIES: dict[str, tuple[tuple[str, tuple[str, ...]], ...]] 
         ("Laboratorio", ("laboratorio", "mobiliario_tecnico")),
         ("Infraestructura", ("aire_acondicionado", "audiovisual")),
         ("Tecnología", ("computo",)),
+    ),
+    "hoteleria": (
+        ("Habitaciones", ("habitacion", "aire_acondicionado")),
+        ("Servicios", ("ascensor", "lavanderia")),
+        ("Alimentos y bebidas", ("cocina_hotel",)),
+    ),
+    "transporte": (
+        ("Flota", ("vehiculo_liviano", "camion", "bus")),
+        ("Carga", ("remolque",)),
+        ("Telemetría", ("gps",)),
     ),
 }
 
@@ -205,6 +296,16 @@ SECTOR_DASHBOARD_CATEGORY_UI: dict[str, tuple[dict[str, str], ...]] = {
         {"icon": "bi-wind", "tone": "green"},
         {"icon": "bi-pc-display", "tone": "purple"},
     ),
+    "hoteleria": (
+        {"icon": "bi-building", "tone": "blue"},
+        {"icon": "bi-tools", "tone": "green"},
+        {"icon": "bi-cup-hot", "tone": "purple"},
+    ),
+    "transporte": (
+        {"icon": "bi-truck", "tone": "blue"},
+        {"icon": "bi-box-seam", "tone": "green"},
+        {"icon": "bi-broadcast", "tone": "purple"},
+    ),
 }
 
 # KPIs del dashboard (fila de planta — mismos indicadores por sector)
@@ -220,6 +321,8 @@ SECTOR_DASHBOARD_KPIS: dict[str, tuple[tuple[str, str], ...]] = {
         "alimentos",
         "construccion",
         "educacion",
+        "hoteleria",
+        "transporte",
     )
 }
 

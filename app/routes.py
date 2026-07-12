@@ -1876,6 +1876,105 @@ def activos_list():
     )
 
 
+@bp.route("/activos/<int:id>/hoja-vida")
+def activos_hoja_vida(id):
+    """Ficha consolidada y de solo consulta del activo."""
+    from sqlalchemy.orm import joinedload
+
+    machine = _filter_empresa(
+        Machine.query.options(
+            joinedload(Machine.responsable),
+            joinedload(Machine.responsable_usuario),
+            joinedload(Machine.proveedor_relacionado),
+        ).filter_by(id=id),
+        Machine,
+    ).first_or_404()
+    tipos = _machine_types_para_formulario(machine)
+    ctx = _activos_form_context(machine, tipos, machine.machine_type_id)
+    ordenes = (
+        _filter_work_orders_empresa(
+            WorkOrder.query.options(
+                joinedload(WorkOrder.technician),
+                joinedload(WorkOrder.jornadas),
+                joinedload(WorkOrder.repuestos).joinedload(WorkOrderRepuesto.spare_part),
+            ).filter(WorkOrder.machine_id == machine.id)
+        )
+        .order_by(WorkOrder.created_at.desc())
+        .all()
+    )
+    incidentes = (
+        _incidents_scope_query()
+        .filter(Incident.machine_id == machine.id)
+        .order_by(Incident.reportado_en.desc())
+        .all()
+    )
+    ctx.update(
+        ordenes=ordenes,
+        incidentes=incidentes,
+        total_preventivos=sum(1 for orden in ordenes if orden.tipo == "preventivo"),
+        total_correctivos=sum(1 for orden in ordenes if orden.tipo == "correctivo"),
+        costo_repuestos=sum(
+            linea.costo_total_linea for orden in ordenes for linea in orden.repuestos
+        ),
+        status_meta=machine_status_meta(machine.status),
+    )
+    return render_template("activos/hoja_vida.html", **ctx)
+
+
+@bp.route("/activos/<int:id>/hoja-vida/pdf")
+def activos_hoja_vida_pdf(id):
+    from io import BytesIO
+
+    from flask import send_file
+    from sqlalchemy.orm import joinedload
+
+    from app.maintenance.asset_life_pdf import export_asset_life_pdf
+
+    machine = _filter_empresa(
+        Machine.query.options(
+            joinedload(Machine.responsable),
+            joinedload(Machine.responsable_usuario),
+            joinedload(Machine.proveedor_relacionado),
+        ).filter_by(id=id),
+        Machine,
+    ).first_or_404()
+    empresa = current_user.empresa
+    tipos = _machine_types_para_formulario(machine)
+    ctx = _activos_form_context(machine, tipos, machine.machine_type_id)
+    ordenes = (
+        _filter_work_orders_empresa(
+            WorkOrder.query.options(
+                joinedload(WorkOrder.technician),
+                joinedload(WorkOrder.jornadas),
+                joinedload(WorkOrder.repuestos).joinedload(WorkOrderRepuesto.spare_part),
+            ).filter(WorkOrder.machine_id == machine.id)
+        )
+        .order_by(WorkOrder.created_at.desc())
+        .all()
+    )
+    incidentes = (
+        _incidents_scope_query()
+        .filter(Incident.machine_id == machine.id)
+        .order_by(Incident.reportado_en.desc())
+        .all()
+    )
+    contenido, nombre = export_asset_life_pdf(
+        empresa,
+        machine,
+        ctx["campos_personalizados"],
+        ctx["valores_campos"],
+        ordenes,
+        incidentes,
+        ctx["sector_label"],
+    )
+    return send_file(
+        BytesIO(contenido),
+        mimetype="application/pdf",
+        as_attachment=True,
+        download_name=nombre,
+    )
+
+
 @bp.route("/activos/export")
 @login_required
 def activos_export():
