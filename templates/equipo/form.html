@@ -66,6 +66,12 @@
                      placeholder="Mantenimiento, producción…">
             </div>
             <div class="col-md-6">
+              <label class="form-label" for="cargo">Cargo</label>
+              <input type="text" name="cargo" id="cargo" class="form-control"
+                     value="{{ usuario.cargo if usuario else '' }}"
+                     placeholder="Jefe de mantenimiento, operario…">
+            </div>
+            <div class="col-md-6">
               <label class="form-label" for="sede_id">5. Sede</label>
               <select name="sede_id" id="sede_id" class="form-select">
                 <option value="">— Sin sede —</option>

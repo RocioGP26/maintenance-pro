@@ -1114,6 +1114,14 @@ def _apply_machine_base_fields(machine: Machine, form) -> Optional[str]:
         if err:
             return err
         machine.responsable_technician_id = tid
+        tecnico = db.session.get(Technician, tid)
+        if tecnico and tecnico.user:
+            if not machine.responsable_area:
+                machine.responsable_area = (tecnico.user.area or "").strip()
+            if not machine.responsable_cargo:
+                machine.responsable_cargo = (
+                    tecnico.user.cargo or tecnico.user.rol_label or ""
+                ).strip()
     else:
         machine.responsable_technician_id = None
     machine.criticidad = form.get("criticidad") or "media"
@@ -3661,6 +3669,7 @@ def equipo_new():
         username = (request.form.get("username") or "").strip().lower()
         nombre = request.form.get("nombre_visible", "").strip()
         area = request.form.get("area", "").strip()
+        cargo = request.form.get("cargo", "").strip()
         email = request.form.get("email", "").strip()
         telefono = request.form.get("telefono", "").strip()
         rol = (request.form.get("rol") or UserRole.TECNICO.value).strip().lower()
@@ -3692,6 +3701,7 @@ def equipo_new():
                 username=username,
                 nombre_visible=nombre,
                 area=area,
+                cargo=cargo,
                 sede_id=sede_id,
                 email=email,
                 telefono=telefono,
@@ -3749,6 +3759,7 @@ def equipo_edit(id):
         username = (request.form.get("username") or "").strip().lower()
         nombre = request.form.get("nombre_visible", "").strip()
         area = request.form.get("area", "").strip()
+        cargo = request.form.get("cargo", "").strip()
         email = request.form.get("email", "").strip()
         telefono = request.form.get("telefono", "").strip()
         if es_self:
@@ -3811,6 +3822,7 @@ def equipo_edit(id):
             usuario.username = username
             usuario.nombre_visible = nombre
             usuario.area = area
+            usuario.cargo = cargo
             usuario.sede_id = sede_id
             usuario.email = email
             usuario.telefono = telefono

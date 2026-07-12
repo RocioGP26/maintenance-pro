@@ -92,7 +92,10 @@
                 <select name="responsable_technician_id" id="responsable_technician_id" class="form-select">
                   <option value="">— Sin asignar —</option>
                   {% for t in technicians %}
-                  <option value="{{ t.id }}" {% if machine and machine.responsable_technician_id == t.id %}selected{% endif %}>{{ t.nombre }}</option>
+                  <option value="{{ t.id }}"
+                          data-area="{{ t.user.area if t.user else '' }}"
+                          data-cargo="{{ (t.user.cargo or t.user.rol_label) if t.user else t.especialidad }}"
+                          {% if machine and machine.responsable_technician_id == t.id %}selected{% endif %}>{{ t.nombre }}</option>
                   {% endfor %}
                 </select>
                 <div class="form-text small">Técnico responsable del activo. Si usas un campo personalizado «Responsable», ese valor se muestra en las OT.</div>
@@ -454,6 +457,24 @@
     sync();
   }
   {% endif %}
+
+  var selResponsable = document.getElementById('responsable_technician_id');
+  var inpResponsableArea = document.getElementById('responsable_area');
+  var inpResponsableCargo = document.getElementById('responsable_cargo');
+  function completarDatosResponsable() {
+    if (!selResponsable) return;
+    var opcion = selResponsable.options[selResponsable.selectedIndex];
+    if (!opcion || !opcion.value) {
+      if (inpResponsableArea) inpResponsableArea.value = '';
+      if (inpResponsableCargo) inpResponsableCargo.value = '';
+      return;
+    }
+    if (inpResponsableArea) inpResponsableArea.value = opcion.dataset.area || '';
+    if (inpResponsableCargo) inpResponsableCargo.value = opcion.dataset.cargo || '';
+  }
+  if (selResponsable) {
+    selResponsable.addEventListener('change', completarDatosResponsable);
+  }
 
   function sumarMesesGarantia(iso, meses) {
     if (!iso || !meses || meses < 1) return '';

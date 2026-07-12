@@ -412,6 +412,7 @@ class User(UserMixin, db.Model):
     nombre_visible = db.Column(db.String(120), default="")
     telefono = db.Column(db.String(40), default="")
     area = db.Column(db.String(120), default="")
+    cargo = db.Column(db.String(120), default="")
     sede_id = db.Column(db.Integer, db.ForeignKey("sedes.id"), nullable=True, index=True)
     rol = db.Column(db.String(32), default=UserRole.ADMIN.value)
     activo = db.Column(db.Boolean, default=True)
@@ -1891,6 +1892,7 @@ def ensure_saas_schema():
         _add_column_if_missing("users", "telefono", "telefono VARCHAR(40)")
         _add_column_if_missing("users", "rol", "rol VARCHAR(32)")
         _add_column_if_missing("users", "area", "area VARCHAR(120)")
+        _add_column_if_missing("users", "cargo", "cargo VARCHAR(120)")
         _add_column_if_missing("users", "sede_id", "sede_id INTEGER")
         _add_column_if_missing(
             "users", "onboarding_completado", "onboarding_completado BOOLEAN DEFAULT 0"
