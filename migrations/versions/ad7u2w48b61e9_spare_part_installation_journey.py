@@ -29,23 +29,32 @@ def upgrade():
             batch_op.add_column(sa.Column("jornada_tecnico", sa.String(200), nullable=True))
 
     # Los consumos históricos se atribuyen a la última jornada conocida de su OT.
-    op.execute(sa.text("""
+    # SQLite y PostgreSQL usan funciones diferentes para extraer fecha y hora.
+    dialect = op.get_bind().dialect.name
+    if dialect == "postgresql":
+        fecha_expr = "CAST(({} ) AS DATE)"
+        hora_inicio_expr = "to_char(({}), 'HH24:MI')"
+        hora_fin_expr = "to_char(({}), 'HH24:MI')"
+    else:
+        fecha_expr = "date(({}))"
+        hora_inicio_expr = "strftime('%H:%M', ({}))"
+        hora_fin_expr = "strftime('%H:%M', ({}))"
+
+    inicio_query = """
+        SELECT j.fecha_inicio FROM work_order_jornadas j
+        WHERE j.work_order_id = work_order_repuestos.work_order_id
+        ORDER BY j.orden DESC, j.id DESC LIMIT 1
+    """
+    fin_query = """
+        SELECT j.fecha_fin FROM work_order_jornadas j
+        WHERE j.work_order_id = work_order_repuestos.work_order_id
+        ORDER BY j.orden DESC, j.id DESC LIMIT 1
+    """
+    backfill_sql = """
         UPDATE work_order_repuestos
-        SET jornada_fecha = date((
-                SELECT j.fecha_inicio FROM work_order_jornadas j
-                WHERE j.work_order_id = work_order_repuestos.work_order_id
-                ORDER BY j.orden DESC, j.id DESC LIMIT 1
-            )),
-            jornada_hora_inicio = strftime('%H:%M', (
-                SELECT j.fecha_inicio FROM work_order_jornadas j
-                WHERE j.work_order_id = work_order_repuestos.work_order_id
-                ORDER BY j.orden DESC, j.id DESC LIMIT 1
-            )),
-            jornada_hora_fin = strftime('%H:%M', (
-                SELECT j.fecha_fin FROM work_order_jornadas j
-                WHERE j.work_order_id = work_order_repuestos.work_order_id
-                ORDER BY j.orden DESC, j.id DESC LIMIT 1
-            )),
+        SET jornada_fecha = {fecha},
+            jornada_hora_inicio = {hora_inicio},
+            jornada_hora_fin = {hora_fin},
             jornada_tecnico = COALESCE((
                 SELECT t.nombre FROM work_order_jornadas j
                 JOIN technicians t ON t.id = j.technician_id
@@ -56,7 +65,12 @@ def upgrade():
                 WHERE j.work_order_id = work_order_repuestos.work_order_id
                 ORDER BY j.orden DESC, j.id DESC LIMIT 1
             ), '')
-    """))
+    """.format(
+        fecha=fecha_expr.format(inicio_query),
+        hora_inicio=hora_inicio_expr.format(inicio_query),
+        hora_fin=hora_fin_expr.format(fin_query),
+    )
+    op.execute(sa.text(backfill_sql))
 
 
 def downgrade():
