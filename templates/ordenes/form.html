@@ -236,7 +236,9 @@
                 <input type="text" name="recibido_por" id="recibido_por" class="form-control"
                        placeholder="Nombre o cargo" value="{{ order.recibido_por if order else '' }}">
               </div>
-              {% include 'ordenes/_ejecucion_ot.html' %}
+              <div id="asignacionEjecucionCampos" class="d-none">
+                {% include 'ordenes/_ejecucion_ot.html' %}
+              </div>
 
             <div class="col-md-6">
               <label class="form-label" for="selectEstadoManual">Acción manual</label>
@@ -410,6 +412,12 @@
       </div>
       <div class="modal-body">
         <div class="row g-3">
+          <div class="col-12">
+            <div class="border rounded p-3 bg-light">
+              <h6 class="fw-semibold mb-3">Quién realiza esta intervención</h6>
+              <div class="row g-3" id="ejecucionModalDestino"></div>
+            </div>
+          </div>
           <div class="col-12">
             <label class="form-label fw-semibold" for="jornadaFecha">Fecha</label>
             <input type="date" class="form-control" id="jornadaFecha" required>
@@ -745,6 +753,8 @@
     syncHidden();
     renderLista();
     if (modal) modal.hide();
+    var ordenForm = document.getElementById('ordenForm');
+    if (ordenForm && typeof ordenForm.requestSubmit === 'function') ordenForm.requestSubmit();
   });
 
   function toggleManual() {
@@ -1032,6 +1042,16 @@
 
 {% if order %}
 (function () {
+  var ejecucionCampos = document.getElementById('asignacionEjecucionCampos');
+  var ejecucionDestino = document.getElementById('ejecucionModalDestino');
+  if (ejecucionCampos && ejecucionDestino) {
+    while (ejecucionCampos.firstChild) ejecucionDestino.appendChild(ejecucionCampos.firstChild);
+    ejecucionCampos.remove();
+    ejecucionDestino.querySelectorAll('input[name], select[name], textarea[name]').forEach(function (el) {
+      el.setAttribute('form', 'ordenForm');
+    });
+  }
+
   function escHtml(s) {
     if (!s) return '';
     return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
