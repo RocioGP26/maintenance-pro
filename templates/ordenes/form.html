@@ -1126,6 +1126,13 @@
   actualizarSeccionRepuestos();
   togglePanelRep();
   renderRepuestos();
+  var ordenFormRepuestos = document.getElementById('ordenForm');
+  if (ordenFormRepuestos && !soloLectura) {
+    ordenFormRepuestos.addEventListener('submit', function () {
+      syncRepFromDom();
+      syncRepHidden();
+    });
+  }
 })();
 
 {% if order %}
@@ -1147,14 +1154,6 @@
       el.setAttribute('form', 'ordenForm');
     });
   }
-  var ordenFormRepuestos = document.getElementById('ordenForm');
-  if (ordenFormRepuestos && !soloLectura) {
-    ordenFormRepuestos.addEventListener('submit', function () {
-      syncRepFromDom();
-      syncRepHidden();
-    });
-  }
-
   function escHtml(s) {
     if (!s) return '';
     return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
