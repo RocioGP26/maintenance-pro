@@ -1012,6 +1012,17 @@ def _dashboard_resumen_operativo(
         .filter(func.lower(WorkOrder.tipo) == WorkOrderType.PREVENTIVO.value)
         .count()
     )
+    correctivos = (
+        _wo_in_period_query(start, end, sector, machine_ids)
+        .filter(func.lower(WorkOrder.tipo) == WorkOrderType.CORRECTIVO.value)
+        .all()
+    )
+    minutos_correctivos_con_paro = sum(
+        jornada.duracion_minutos
+        for orden in correctivos
+        for jornada in orden.jornadas
+        if bool(jornada.requirio_paro)
+    )
     sp_q = _filter_empresa(SparePart.query, SparePart)
     repuestos_bajo_minimo = sp_q.filter(SparePart.cantidad < SparePart.stock_minimo).count()
 
@@ -1020,6 +1031,11 @@ def _dashboard_resumen_operativo(
         "ordenes_abiertas": ordenes_abiertas,
         "ordenes_vencidas": ordenes_vencidas,
         "preventivos_mes": preventivos_mes,
+        "total_correctivos": len(correctivos),
+        "minutos_correctivos_con_paro": minutos_correctivos_con_paro,
+        "horas_correctivos_con_paro_label": formatear_duracion(
+            minutos_correctivos_con_paro
+        ),
         "repuestos_bajo_minimo": repuestos_bajo_minimo,
     }
 
@@ -1653,6 +1669,26 @@ def dashboard():
                 anio=str(ref.year),
             ),
             "style": "primary",
+        },
+        {
+            "key": "correctivos",
+            "label": "Total correctivos",
+            "value": dash_resumen["total_correctivos"],
+            "href": url_for(
+                "main.ordenes_list", tipo=WorkOrderType.CORRECTIVO.value
+            ),
+            "style": "warning" if dash_resumen["total_correctivos"] else "neutral",
+        },
+        {
+            "key": "horas_correctivos_paro",
+            "label": "Horas en correctivos con paro",
+            "value": dash_resumen["horas_correctivos_con_paro_label"],
+            "href": url_for(
+                "main.ordenes_list", tipo=WorkOrderType.CORRECTIVO.value
+            ),
+            "style": "danger"
+            if dash_resumen["minutos_correctivos_con_paro"]
+            else "neutral",
         },
         {
             "key": "repuestos",
