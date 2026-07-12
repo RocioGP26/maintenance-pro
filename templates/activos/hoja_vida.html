@@ -63,16 +63,17 @@
 <div class="card mb-3">
   <div class="card-header fw-semibold"><i class="bi bi-tools me-1"></i>Historial de órdenes de trabajo</div>
   <div class="table-responsive"><table class="table table-sm table-hover align-middle mb-0">
-    <thead class="table-light"><tr><th>OT</th><th>Fecha</th><th>Tipo</th><th>Estado</th><th>Técnico realizador</th><th>Tiempo</th><th>Repuestos</th><th></th></tr></thead>
+    <thead class="table-light"><tr><th>OT</th><th>Título de la OT</th><th>Fecha</th><th>Tipo</th><th>Estado</th><th>Técnico realizador</th><th>Tiempo</th><th>Repuestos</th><th></th></tr></thead>
     <tbody>{% for orden in ordenes %}<tr>
       <td class="font-monospace">{{ orden.numero or ('#' ~ orden.id) }}</td>
+      <td>{{ orden.titulo or '—' }}</td>
       <td>{{ orden.fecha_programada.strftime('%d/%m/%Y') if orden.fecha_programada else '—' }}</td>
       <td>{{ wo_tipo_meta(orden.tipo).label }}</td><td><span class="{{ wo_status_meta(orden.status).badge_class }}">{{ wo_status_meta(orden.status).label }}</span></td>
       <td>{{ orden.tecnicos_realizadores_label }}</td><td>{{ orden.tiempo_gastado_label }}</td><td>{{ orden.repuestos|length }}</td>
       <td><a href="{{ url_for('main.ordenes_edit', id=orden.id) }}" class="btn btn-outline-secondary btn-sm">Ver</a></td>
     </tr>
     {% set avances = avances_por_ot.get(orden.id, []) %}
-    <tr class="table-light"><td colspan="8" class="p-2">
+    <tr class="table-light"><td colspan="9" class="p-2">
       <div class="fw-semibold small mb-2"><i class="bi bi-list-check me-1"></i>Avances de {{ orden.numero or ('OT #' ~ orden.id) }}</div>
       {% if avances %}
       <div class="table-responsive bg-white border rounded"><table class="table table-sm align-middle mb-0">
@@ -89,7 +90,7 @@
       </table></div>
       {% else %}<div class="text-muted small">Esta OT todavía no tiene avances registrados.</div>{% endif %}
     </td></tr>
-    {% else %}<tr><td colspan="8" class="text-center text-muted py-3">Sin órdenes de trabajo registradas.</td></tr>{% endfor %}</tbody>
+    {% else %}<tr><td colspan="9" class="text-center text-muted py-3">Sin órdenes de trabajo registradas.</td></tr>{% endfor %}</tbody>
   </table></div>
 </div>
 

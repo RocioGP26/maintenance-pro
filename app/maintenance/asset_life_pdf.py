@@ -164,16 +164,17 @@ def export_asset_life_pdf(
         story.extend([tabla(datos, [70 * mm, 116 * mm]), Spacer(1, 3 * mm)])
 
     story.append(_p("HISTORIAL DE ÓRDENES DE TRABAJO", subtitle))
-    datos_ot = [[_p(x, header) for x in ["OT", "Fecha", "Tipo", "Estado", "Técnico", "Tiempo", "Repuestos"]]]
+    datos_ot = [[_p(x, header) for x in ["OT", "Título de la OT", "Fecha", "Tipo", "Estado", "Técnico", "Tiempo", "Repuestos"]]]
     for o in ordenes:
         datos_ot.append([
-            _p(o.numero or f"#{o.id}", normal), _p(o.fecha_programada.strftime("%d/%m/%Y") if o.fecha_programada else "-", normal),
+            _p(o.numero or f"#{o.id}", normal), _p(o.titulo or "-", normal),
+            _p(o.fecha_programada.strftime("%d/%m/%Y") if o.fecha_programada else "-", normal),
             _p(wo_tipo_meta(o.tipo)["label"], normal), _p(wo_status_meta(o.status)["label"], normal),
             _p(o.tecnicos_realizadores_label, normal), _p(o.tiempo_gastado_label, normal), _p(len(o.repuestos), center),
         ])
     if not ordenes:
-        datos_ot.append([_p("Sin órdenes registradas", normal)] + [""] * 6)
-    story.append(tabla(datos_ot, [21*mm, 22*mm, 25*mm, 25*mm, 45*mm, 24*mm, 24*mm]))
+        datos_ot.append([_p("Sin órdenes registradas", normal)] + [""] * 7)
+    story.append(tabla(datos_ot, [18*mm, 38*mm, 20*mm, 22*mm, 22*mm, 34*mm, 17*mm, 15*mm]))
 
     avances_por_ot = avances_por_ot or {}
     story.extend([Spacer(1, 3 * mm), _p("AVANCES REALIZADOS EN LAS OT", subtitle)])
