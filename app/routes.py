@@ -5085,11 +5085,15 @@ def incidencias_crear_ot(id):
     prio = (inc.prioridad or "media").strip().lower()
     if prio not in {p[0] for p in WORK_ORDER_PRIORITIES}:
         prio = "media"
-    wo_tipo = (
-        WorkOrderType.EMERGENCIA.value
-        if prio == IncidentPrioridad.CRITICA.value
-        else WorkOrderType.CORRECTIVO.value
-    )
+    wo_tipo = (request.form.get("tipo_ot") or "").strip().lower()
+    tipos_ot_validos = {
+        WorkOrderType.PREVENTIVO.value,
+        WorkOrderType.CORRECTIVO.value,
+        WorkOrderType.EMERGENCIA.value,
+    }
+    if wo_tipo not in tipos_ot_validos:
+        flash("Selecciona el tipo de orden de trabajo.", "danger")
+        return redirect(url_for("main.incidencias_detail", id=inc.id))
     desc = (inc.descripcion or "").strip()
     if inc.numero:
         desc = f"{desc}\n\n[Origen: incidencia {inc.numero}]".strip()

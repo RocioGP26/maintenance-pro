@@ -187,6 +187,13 @@
       {% if puede_crear_ot and inc.estado == 'diagnosticado' and not inc.work_order_id %}
       <form method="post" action="{{ url_for('main.incidencias_crear_ot', id=inc.id) }}">
         {% include "_csrf.html" %}
+        <label class="form-label small" for="tipoOtTicketDesktop">Tipo de OT</label>
+        <select name="tipo_ot" id="tipoOtTicketDesktop" class="form-select form-select-sm mb-2" required>
+          <option value="">Seleccionar…</option>
+          <option value="preventivo">Preventiva</option>
+          <option value="correctivo">Correctiva</option>
+          <option value="emergencia">Emergencia</option>
+        </select>
         <button type="submit" class="btn btn-primary w-100" {% if not inc.machine_id %}disabled title="Sin activo relacionado"{% endif %}>
           <i class="bi bi-wrench"></i> Crear OT
         </button>
@@ -207,8 +214,14 @@
         <i class="bi bi-arrow-left"></i> Volver al listado
       </a>
       {% if puede_crear_ot and inc.estado == 'diagnosticado' and not inc.work_order_id %}
-      <form method="post" action="{{ url_for('main.incidencias_crear_ot', id=inc.id) }}" class="d-inline">
+      <form method="post" action="{{ url_for('main.incidencias_crear_ot', id=inc.id) }}" class="d-flex gap-2 flex-wrap">
         {% include "_csrf.html" %}
+        <select name="tipo_ot" class="form-select" style="width:auto" required>
+          <option value="">Tipo de OT…</option>
+          <option value="preventivo">Preventiva</option>
+          <option value="correctivo">Correctiva</option>
+          <option value="emergencia">Emergencia</option>
+        </select>
         <button type="submit" class="btn btn-primary" {% if not inc.machine_id %}disabled title="Sin activo relacionado"{% endif %}>
           <i class="bi bi-wrench"></i> Crear OT
         </button>
