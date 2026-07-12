@@ -219,7 +219,14 @@ def planes_landing() -> list[dict[str, Any]]:
         items.append(
             {
                 **meta,
-                "precio_label": formato_precio_landing(meta.get("precio_mensual")),
+                # Los valores del catálogo siguen disponibles para facturación y
+                # administración, pero no se exponen en la experiencia pública
+                # mientras se valida la estrategia comercial.
+                "precio_label": (
+                    "Contactar para conocer el precio"
+                    if is_enterprise
+                    else "Precio disponible próximamente"
+                ),
                 "features": _plan_features_pricing(meta),
                 "cta": CTA_ENTERPRISE if is_enterprise else CTA_FINAL,
                 "cta_prompt": (

@@ -13,7 +13,6 @@ from flask_login import current_user, login_user
 
 from app import db
 from app.models import User
-from app.landing_service import formato_precio_landing
 from app.platform_config_service import planes_para_registro, sectores_para_registro
 from app.currency import monedas_desde_modo_venezuela
 from app.locale_options import (
@@ -253,7 +252,6 @@ def wizard():
         sectores=sectores_para_registro(),
         planes=planes_para_registro(),
         total_steps=len(STEPS),
-        formato_precio_landing=formato_precio_landing,
         sales_prompt=session.get("onboarding_prompt", ""),
         modulos_meta=MODULO_META,
         modulos_seleccionados=data.get("modulos") or ["mantenimiento"],
