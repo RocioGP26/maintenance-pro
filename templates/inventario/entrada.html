@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}Entrada de repuesto — {{ app_name }}{% endblock %}
+{% block page_title %}Registrar entrada de repuesto{% endblock %}
+{% block content %}
+<div class="row justify-content-center"><div class="col-lg-8">
+  <div class="card card-dashboard"><div class="card-body">
+    <div class="alert alert-light border mb-3">
+      <strong>{{ item.sku }} — {{ item.nombre }}</strong><br>
+      <span class="small text-muted">Stock actual: {{ item.cantidad }} {{ item.unidad }}</span>
+    </div>
+    <form method="post">{% include "_csrf.html" %}
+      <div class="row g-3">
+        <div class="col-md-4"><label class="form-label">Cantidad recibida *</label><input type="number" name="cantidad" class="form-control" min="1" required></div>
+        <div class="col-md-4"><label class="form-label">Costo unitario *</label><input type="number" name="costo_unitario" class="form-control" min="0" step="0.01" required></div>
+        <div class="col-md-4"><label class="form-label">Fecha de compra *</label><input type="date" name="fecha_compra" class="form-control" value="{{ hoy }}" required></div>
+        <div class="col-md-6"><label class="form-label">Proveedor</label><select name="proveedor_id" id="proveedorEntrada" class="form-select"><option value="">— Sin especificar —</option>{% for p in proveedores %}<option value="{{ p.id }}">{{ p.nombre }}</option>{% endfor %}<option value="__nuevo__">+ Registrar nuevo proveedor</option></select></div>
+        <div class="col-md-3"><label class="form-label">Requisición</label><input type="text" name="numero_requisicion" class="form-control" maxlength="80" placeholder="Número de requisición"></div>
+        <div class="col-md-3"><label class="form-label">Factura</label><input type="text" name="numero_factura" class="form-control" maxlength="80" placeholder="Número o referencia"></div>
+        <div class="col-12 d-none" id="nuevoProveedorCampos"><div class="border rounded bg-light p-3"><p class="fw-semibold mb-2">Nuevo proveedor</p><div class="row g-3">
+          <div class="col-md-6"><label class="form-label">Nombre *</label><input type="text" name="nuevo_proveedor_nombre" id="nuevoProveedorNombre" class="form-control"></div>
+          <div class="col-md-3"><label class="form-label">NIT</label><input type="text" name="nuevo_proveedor_nit" class="form-control"></div>
+          <div class="col-md-3"><label class="form-label">Contacto</label><input type="text" name="nuevo_proveedor_contacto" class="form-control"></div>
+          <div class="col-md-6"><label class="form-label">Teléfono</label><input type="text" name="nuevo_proveedor_telefono" class="form-control"></div>
+          <div class="col-md-6"><label class="form-label">Correo</label><input type="email" name="nuevo_proveedor_email" class="form-control"></div>
+        </div></div></div>
+        <div class="col-12"><label class="form-label">Notas</label><textarea name="notas" class="form-control" rows="3" placeholder="Observaciones de la compra o recepción"></textarea></div>
+      </div>
+      <div class="mt-4 d-flex gap-2"><button class="btn btn-primary">Registrar entrada</button><a href="{{ url_for('main.inventario_list') }}" class="btn btn-outline-secondary">Cancelar</a></div>
+    </form>
+  </div></div>
+</div></div>
+{% endblock %}
+{% block scripts %}
+<script>
+(() => {
+  const select = document.getElementById('proveedorEntrada');
+  const campos = document.getElementById('nuevoProveedorCampos');
+  const nombre = document.getElementById('nuevoProveedorNombre');
+  const actualizar = () => {
+    const nuevo = select && select.value === '__nuevo__';
+    campos?.classList.toggle('d-none', !nuevo);
+    if (nombre) nombre.required = nuevo;
+  };
+  select?.addEventListener('change', actualizar);
+  actualizar();
+})();
+</script>
+{% endblock %}

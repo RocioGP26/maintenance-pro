@@ -84,6 +84,7 @@ from app.models import (
     Sede,
     MachineMonthlyPlan,
     SparePart,
+    SparePartEntry,
     Proveedor,
     PROVEEDOR_TIPOS_VALIDOS,
     ProveedorTipo,
@@ -3624,6 +3625,83 @@ def inventario_edit(id):
                 db.session.rollback()
                 flash("No se pudo guardar.", "danger")
     return render_template("inventario/form.html", item=p)
+
+
+@bp.route("/inventario/<int:id>/entrada", methods=["GET", "POST"])
+def inventario_entrada(id):
+    p = _get_spare_part_or_404(id)
+    proveedores = _filter_empresa(
+        Proveedor.query.filter(Proveedor.activo.is_(True)).order_by(Proveedor.nombre),
+        Proveedor,
+    ).all()
+    if request.method == "POST":
+        try:
+            cantidad = int(request.form.get("cantidad") or 0)
+        except ValueError:
+            cantidad = 0
+        costo = _parse_costo(request.form.get("costo_unitario", ""))
+        fecha = _parse_form_date(request.form.get("fecha_compra"))
+        proveedor_raw = (request.form.get("proveedor_id") or "").strip()
+        proveedor_id = int(proveedor_raw) if proveedor_raw.isdigit() else None
+        proveedor = None
+        if proveedor_id:
+            proveedor = _filter_empresa(
+                Proveedor.query.filter_by(id=proveedor_id, activo=True), Proveedor
+            ).first()
+        nuevo_proveedor = (request.form.get("nuevo_proveedor_nombre") or "").strip()
+        if cantidad <= 0:
+            flash("La cantidad recibida debe ser mayor que cero.", "danger")
+        elif costo < 0:
+            flash("El costo unitario no puede ser negativo.", "danger")
+        elif not fecha:
+            flash("La fecha de compra es obligatoria.", "danger")
+        elif proveedor_id and not proveedor:
+            flash("Selecciona un proveedor activo de tu empresa.", "danger")
+        elif proveedor_raw == "__nuevo__" and not nuevo_proveedor:
+            flash("Indica el nombre del nuevo proveedor.", "danger")
+        else:
+            if proveedor_raw == "__nuevo__":
+                proveedor = Proveedor(
+                    empresa_id=p.empresa_id,
+                    nombre=nuevo_proveedor,
+                    nit=(request.form.get("nuevo_proveedor_nit") or "").strip(),
+                    contacto_nombre=(request.form.get("nuevo_proveedor_contacto") or "").strip(),
+                    contacto_telefono=(request.form.get("nuevo_proveedor_telefono") or "").strip(),
+                    contacto_email=(request.form.get("nuevo_proveedor_email") or "").strip(),
+                    tipo=ProveedorTipo.INSUMOS.value,
+                    activo=True,
+                )
+                db.session.add(proveedor)
+                db.session.flush()
+            stock_anterior = int(p.cantidad or 0)
+            costo_anterior = float(p.costo_unitario or 0)
+            nuevo_stock = stock_anterior + cantidad
+            p.costo_unitario = (
+                ((stock_anterior * costo_anterior) + (cantidad * costo)) / nuevo_stock
+                if nuevo_stock else costo
+            )
+            p.cantidad = nuevo_stock
+            db.session.add(SparePartEntry(
+                empresa_id=p.empresa_id,
+                spare_part_id=p.id,
+                cantidad=cantidad,
+                costo_unitario=costo,
+                fecha_compra=fecha,
+                proveedor_id=proveedor.id if proveedor else None,
+                numero_requisicion=(request.form.get("numero_requisicion") or "").strip(),
+                numero_factura=(request.form.get("numero_factura") or "").strip(),
+                notas=(request.form.get("notas") or "").strip(),
+                user_id=current_user.id,
+            ))
+            db.session.commit()
+            flash(f"Entrada registrada: {cantidad} {p.unidad} de {p.nombre}.", "success")
+            return redirect(url_for("main.inventario_list"))
+    return render_template(
+        "inventario/entrada.html",
+        item=p,
+        proveedores=proveedores,
+        hoy=date.today().isoformat(),
+    )
 
 
 # --- Equipo de trabajo (usuarios de la empresa) ---

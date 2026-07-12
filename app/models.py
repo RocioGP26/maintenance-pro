@@ -1217,6 +1217,29 @@ class SparePart(db.Model):
         return round(float(self.costo_unitario or 0) * int(self.cantidad or 0), 2)
 
 
+class SparePartEntry(db.Model):
+    """Compra o entrada de existencias de un repuesto técnico."""
+
+    __tablename__ = "spare_part_entries"
+
+    id = db.Column(db.Integer, primary_key=True)
+    empresa_id = db.Column(db.Integer, db.ForeignKey("empresas.id"), nullable=False, index=True)
+    spare_part_id = db.Column(db.Integer, db.ForeignKey("spare_parts.id"), nullable=False, index=True)
+    cantidad = db.Column(db.Integer, nullable=False)
+    costo_unitario = db.Column(db.Float, nullable=False, default=0.0)
+    fecha_compra = db.Column(db.Date, nullable=False, default=date.today)
+    proveedor_id = db.Column(db.Integer, db.ForeignKey("proveedores.id"), nullable=True)
+    numero_requisicion = db.Column(db.String(80), default="")
+    numero_factura = db.Column(db.String(80), default="")
+    notas = db.Column(db.Text, default="")
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    spare_part = db.relationship("SparePart", backref=db.backref("entradas", lazy="dynamic"))
+    proveedor = db.relationship("Proveedor")
+    usuario = db.relationship("User")
+
+
 # --- Módulo inventario comercial (prefijo inv_, sin FK cruzadas a mantenimiento) ---
 
 

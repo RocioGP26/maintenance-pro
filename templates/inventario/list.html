@@ -39,6 +39,7 @@
           <td>{{ p.stock_minimo }}</td>
           <td>{{ p.ubicacion_almacen or '—' }}</td>
           <td class="text-end">
+            {% if perm.crear %}<a href="{{ url_for('main.inventario_entrada', id=p.id) }}" class="btn btn-sm btn-outline-primary">Entrada</a>{% endif %}
             {% if perm.editar %}<a href="{{ url_for('main.inventario_edit', id=p.id) }}" class="btn btn-sm btn-outline-secondary">Editar</a>{% elif perm.solo_lectura %}<a href="{{ url_for('main.inventario_edit', id=p.id) }}" class="btn btn-sm btn-outline-secondary">Ver</a>{% endif %}
           </td>
         </tr>
