@@ -1164,6 +1164,7 @@
   var radiosEj = document.querySelectorAll('.ot-ejec-radio');
   var panelInt = document.getElementById('panelEjecucionInterno');
   var panelExt = document.getElementById('panelEjecucionExterno');
+  var panelProveedorExt = document.getElementById('panelProveedorExternoJornada');
   var buscarProv = document.getElementById('buscarProveedorOt');
   var listaProv = document.getElementById('listaProveedorOt');
   var provHidden = document.getElementById('proveedorIdHidden');
@@ -1256,6 +1257,7 @@
     var esExt = document.querySelector('.ot-ejec-radio[value="externo"]')?.checked;
     if (panelInt) panelInt.classList.toggle('d-none', !!esExt);
     if (panelExt) panelExt.classList.toggle('d-none', !esExt);
+    if (panelProveedorExt) panelProveedorExt.classList.toggle('d-none', !esExt);
     var techSel = document.getElementById('selectTecnicoAsignado');
     if (techSel) techSel.disabled = !!esExt;
     if (panelExt) {
@@ -1264,6 +1266,7 @@
         else el.disabled = !esExt;
       });
     }
+    if (provHidden) provHidden.disabled = !esExt;
     actualizarResumenSidebar();
   }
 

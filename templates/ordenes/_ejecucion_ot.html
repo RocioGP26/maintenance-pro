@@ -26,6 +26,22 @@
   </div>
 </div>
 
+<div class="col-12 {% if not es_externo %}d-none{% endif %}" id="panelProveedorExternoJornada">
+  <label class="form-label fw-semibold" for="proveedorIdHidden">Proveedor externo *</label>
+  <select name="proveedor_id" id="proveedorIdHidden" class="form-select" required>
+    <option value="">— Seleccionar proveedor —</option>
+    {% for proveedor in proveedores_ot %}
+    <option value="{{ proveedor.id }}"
+            {% if order and order.proveedor_id == proveedor.id %}selected{% endif %}>
+      {{ proveedor.nombre }}{% if proveedor.nit %} — NIT {{ proveedor.nit }}{% endif %}
+    </option>
+    {% endfor %}
+  </select>
+  {% if not proveedores_ot %}
+  <div class="form-text text-danger">No hay proveedores activos registrados.</div>
+  {% endif %}
+</div>
+
 <div class="col-12 {% if es_externo %}d-none{% endif %}" id="panelEjecucionInterno">
   <label class="form-label" for="selectTecnicoAsignado">Técnico asignado</label>
   <select name="technician_id" id="selectTecnicoAsignado" class="form-select">
@@ -38,17 +54,6 @@
 </div>
 
 <div class="col-12 {% if not es_externo %}d-none{% endif %}" id="panelEjecucionExterno">
-  <label class="form-label" for="proveedorIdHidden">Proveedor *</label>
-  <select name="proveedor_id" id="proveedorIdHidden" class="form-select mb-2" required>
-    <option value="">— Seleccionar proveedor —</option>
-    {% for proveedor in proveedores_ot %}
-    <option value="{{ proveedor.id }}"
-            {% if order and order.proveedor_id == proveedor.id %}selected{% endif %}>
-      {{ proveedor.nombre }}{% if proveedor.nit %} — NIT {{ proveedor.nit }}{% endif %}
-    </option>
-    {% endfor %}
-  </select>
-
   <div id="tarjetaProveedorOt" class="ot-prov-selected {% if not prov_sel %}d-none{% endif %}">
     {% if prov_sel %}
     {% set tm = proveedor_tipo_meta(prov_sel.tipo) %}
