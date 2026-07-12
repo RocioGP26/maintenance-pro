@@ -1152,6 +1152,7 @@ class WorkOrderJornada(db.Model):
     fecha_fin = db.Column(db.DateTime, nullable=False)
     technician_id = db.Column(db.Integer, db.ForeignKey("technicians.id"), nullable=True)
     tecnico_nombre = db.Column(db.String(200), default="")
+    recibido_por = db.Column(db.String(200), default="")
     descripcion_avance = db.Column(db.Text, default="")
 
     work_order = db.relationship("WorkOrder", back_populates="jornadas")

@@ -2191,6 +2191,7 @@ def _jornada_a_dict(j: WorkOrderJornada) -> dict:
         "hora_fin": j.fecha_fin.strftime("%H:%M"),
         "technician_id": str(j.technician_id) if j.technician_id else "otro",
         "tecnico_nombre": j.tecnico_nombre or "",
+        "recibido_por": j.recibido_por or "",
         "descripcion": j.descripcion_avance or "",
     }
 
@@ -2235,6 +2236,9 @@ def _parse_jornadas_json() -> Tuple[list[dict], Optional[str]]:
         nombre = (item.get("tecnico_nombre") or "").strip()
         if tech_id is None and not nombre:
             return [], f"Jornada {i}: indica el técnico realizador o su nombre."
+        recibido_por = (item.get("recibido_por") or "").strip()
+        if not recibido_por:
+            return [], f"Jornada {i}: indica quién recibió el avance."
 
         parsed.append(
             {
@@ -2242,6 +2246,7 @@ def _parse_jornadas_json() -> Tuple[list[dict], Optional[str]]:
                 "fecha_fin": fin,
                 "technician_id": tech_id,
                 "tecnico_nombre": nombre if tech_id is None else "",
+                "recibido_por": recibido_por,
                 "descripcion_avance": (item.get("descripcion") or "").strip(),
             }
         )
@@ -2280,6 +2285,7 @@ def _guardar_jornadas_orden(wo: WorkOrder) -> Optional[str]:
                 fecha_fin=s["fecha_fin"],
                 technician_id=s["technician_id"],
                 tecnico_nombre=s["tecnico_nombre"],
+                recibido_por=s["recibido_por"],
                 descripcion_avance=s["descripcion_avance"],
             )
         )

@@ -331,6 +331,7 @@
                       <th>Fin</th>
                       <th>Duración</th>
                       <th>Técnico realizador</th>
+                      <th>Recibido por</th>
                       <th class="col-desc">Descripción</th>
                       <th style="width: 5.5rem;"></th>
                     </tr>
@@ -443,6 +444,11 @@
           <div class="col-12" id="wrapTecnicoNombre">
             <label class="form-label fw-semibold" for="jornadaTecnicoNombre">Nombre técnico o empresa</label>
             <input type="text" class="form-control" id="jornadaTecnicoNombre" placeholder="Nombre del técnico o empresa externa">
+          </div>
+          <div class="col-12">
+            <label class="form-label fw-semibold" for="jornadaRecibidoPor">Recibido por *</label>
+            <input type="text" class="form-control" id="jornadaRecibidoPor" required
+                   placeholder="Nombre de quien recibe o valida el avance">
           </div>
           <div class="col-12">
             <label class="form-label fw-semibold" for="jornadaDescripcion">Descripción del avance</label>
@@ -605,6 +611,7 @@
         '<td class="text-nowrap">' + escHtml(j.hora_fin || '—') + '</td>' +
         '<td class="text-nowrap">' + escHtml(formatear(mins)) + '</td>' +
         '<td class="col-tecnico">' + escHtml(tecnicoLabel(j)) + '</td>' +
+        '<td>' + escHtml(j.recibido_por || '—') + '</td>' +
         '<td class="col-desc" title="' + escHtml(j.descripcion || '') + '">' + escHtml(j.descripcion || '—') + '</td>' +
         '<td class="text-end text-nowrap">' +
           (soloLectura ? '—' : (
@@ -674,6 +681,7 @@
     document.getElementById('jornadaHoraFin').value = '';
     document.getElementById('jornadaTecnico').value = '';
     document.getElementById('jornadaTecnicoNombre').value = '';
+    document.getElementById('jornadaRecibidoPor').value = '';
     document.getElementById('jornadaDescripcion').value = '';
     toggleTecnicoNombre();
   }
@@ -689,6 +697,7 @@
       document.getElementById('jornadaHoraFin').value = j.hora_fin || '';
       document.getElementById('jornadaTecnico').value = j.technician_id ? String(j.technician_id) : 'otro';
       document.getElementById('jornadaTecnicoNombre').value = j.tecnico_nombre || '';
+      document.getElementById('jornadaRecibidoPor').value = j.recibido_por || '';
       document.getElementById('jornadaDescripcion').value = j.descripcion || '';
       toggleTecnicoNombre();
     }
@@ -712,6 +721,7 @@
     var horaFin = document.getElementById('jornadaHoraFin').value;
     var tech = document.getElementById('jornadaTecnico').value;
     var nombre = document.getElementById('jornadaTecnicoNombre').value.trim();
+    var recibidoPor = document.getElementById('jornadaRecibidoPor').value.trim();
     var desc = document.getElementById('jornadaDescripcion').value.trim();
 
     if (!fecha || !horaIni || !horaFin) {
@@ -730,6 +740,10 @@
       alert('Indica el nombre del técnico o empresa.');
       return;
     }
+    if (!recibidoPor) {
+      alert('Indica quién recibió el avance.');
+      return;
+    }
 
     var item = {
       fecha: fecha,
@@ -737,6 +751,7 @@
       hora_fin: horaFin,
       technician_id: tech,
       tecnico_nombre: tech === 'otro' ? nombre : '',
+      recibido_por: recibidoPor,
       descripcion: desc
     };
 
