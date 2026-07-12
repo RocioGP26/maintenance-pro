@@ -1307,6 +1307,16 @@
   }
 
   radiosEj.forEach(function (r) { r.addEventListener('change', toggleEjecucion); });
+  if (provHidden) {
+    provHidden.addEventListener('change', function () {
+      var p = catalogoProv.find(function (x) { return String(x.id) === String(provHidden.value); });
+      if (p) seleccionarProveedor(p);
+      else {
+        if (tarjetaProv) tarjetaProv.classList.add('d-none');
+        actualizarResumenSidebar();
+      }
+    });
+  }
   if (buscarProv) {
     buscarProv.addEventListener('input', function () { filtrarProveedores(buscarProv.value); });
     buscarProv.addEventListener('focus', function () { filtrarProveedores(buscarProv.value); });

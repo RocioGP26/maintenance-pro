@@ -38,16 +38,16 @@
 </div>
 
 <div class="col-12 {% if not es_externo %}d-none{% endif %}" id="panelEjecucionExterno">
-  <input type="hidden" name="proveedor_id" id="proveedorIdHidden"
-         value="{{ order.proveedor_id if order and order.proveedor_id else '' }}">
-
-  <label class="form-label" for="buscarProveedorOt">Buscar proveedor</label>
-  <div class="position-relative mb-2">
-    <input type="text" id="buscarProveedorOt" class="form-control" autocomplete="off"
-           placeholder="Nombre o NIT del proveedor…"
-           value="{{ prov_sel.nombre if prov_sel else '' }}">
-    <div id="listaProveedorOt" class="ot-prov-suggest d-none"></div>
-  </div>
+  <label class="form-label" for="proveedorIdHidden">Proveedor *</label>
+  <select name="proveedor_id" id="proveedorIdHidden" class="form-select mb-2" required>
+    <option value="">— Seleccionar proveedor —</option>
+    {% for proveedor in proveedores_ot %}
+    <option value="{{ proveedor.id }}"
+            {% if order and order.proveedor_id == proveedor.id %}selected{% endif %}>
+      {{ proveedor.nombre }}{% if proveedor.nit %} — NIT {{ proveedor.nit }}{% endif %}
+    </option>
+    {% endfor %}
+  </select>
 
   <div id="tarjetaProveedorOt" class="ot-prov-selected {% if not prov_sel %}d-none{% endif %}">
     {% if prov_sel %}
