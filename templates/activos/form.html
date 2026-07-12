@@ -88,7 +88,23 @@
                 </select>
               </div>
               <div class="col-md-6">
-                <label class="form-label" for="responsable_technician_id">Responsable</label>
+                <label class="form-label" for="custodio_user_id">Usuario custodio</label>
+                <select name="custodio_user_id" id="custodio_user_id" class="form-select">
+                  <option value="">— Sin custodio —</option>
+                  {% for u in usuarios_custodios %}<option value="{{ u.id }}" {% if machine and machine.custodio_user_id == u.id %}selected{% endif %}>{{ u.etiqueta() }}{% if u.cargo %} — {{ u.cargo }}{% endif %}</option>{% endfor %}
+                </select>
+                <div class="form-text small">Persona que usa o tiene asignado el activo; no implica que lo repare.</div>
+              </div>
+              <div class="col-md-3">
+                <label class="form-label" for="support_area_id">Área técnica responsable *</label>
+                <select name="support_area_id" id="support_area_id" class="form-select" required>
+                  <option value="">Seleccionar…</option>
+                  {% for a in areas_soporte %}<option value="{{ a.id }}" {% if machine and machine.support_area_id == a.id %}selected{% endif %}>{{ a.nombre }}</option>{% endfor %}
+                </select>
+                <div class="form-text small">Cola que recibirá automáticamente los incidentes del activo.</div>
+              </div>
+              <div class="col-md-3">
+                <label class="form-label" for="responsable_technician_id">Técnico habitual</label>
                 <select name="responsable_technician_id" id="responsable_technician_id" class="form-select">
                   <option value="">— Sin asignar —</option>
                   {% for t in technicians %}
@@ -98,19 +114,7 @@
                           {% if machine and machine.responsable_technician_id == t.id %}selected{% endif %}>{{ t.nombre }}</option>
                   {% endfor %}
                 </select>
-                <div class="form-text small">Técnico responsable del activo. Si usas un campo personalizado «Responsable», ese valor se muestra en las OT.</div>
-              </div>
-              <div class="col-md-3">
-                <label class="form-label" for="responsable_area">Área del responsable</label>
-                <input type="text" name="responsable_area" id="responsable_area" class="form-control"
-                       value="{{ machine.responsable_area if machine else '' }}"
-                       placeholder="Mantenimiento, producción…">
-              </div>
-              <div class="col-md-3">
-                <label class="form-label" for="responsable_cargo">Cargo</label>
-                <input type="text" name="responsable_cargo" id="responsable_cargo" class="form-control"
-                       value="{{ machine.responsable_cargo if machine else '' }}"
-                       placeholder="Jefe de mantenimiento…">
+                <div class="form-text small">Opcional. La atención seguirá llegando al área aunque esta persona no esté disponible.</div>
               </div>
             </div>
             {% with seccion_key='general' %}{% include "activos/_campos_seccion.html" %}{% endwith %}

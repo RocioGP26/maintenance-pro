@@ -448,6 +448,44 @@ class User(UserMixin, db.Model):
     )
 
 
+class SupportArea(db.Model):
+    """Cola de atención de incidentes dentro de una empresa."""
+
+    __tablename__ = "support_areas"
+    __table_args__ = (
+        db.UniqueConstraint("empresa_id", "nombre", name="uq_support_area_empresa_nombre"),
+    )
+
+    id = db.Column(db.Integer, primary_key=True)
+    empresa_id = db.Column(db.Integer, db.ForeignKey("empresas.id"), nullable=False, index=True)
+    nombre = db.Column(db.String(120), nullable=False)
+    activo = db.Column(db.Boolean, default=True, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    membresias = db.relationship("UserSupportArea", back_populates="area_soporte", cascade="all, delete-orphan")
+
+
+class UserSupportArea(db.Model):
+    """Membresía y capacidades de un usuario en una cola de soporte."""
+
+    __tablename__ = "user_support_areas"
+    __table_args__ = (
+        db.UniqueConstraint("user_id", "support_area_id", name="uq_user_support_area"),
+    )
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False, index=True)
+    support_area_id = db.Column(db.Integer, db.ForeignKey("support_areas.id"), nullable=False, index=True)
+    puede_recibir = db.Column(db.Boolean, default=False, nullable=False)
+    puede_asignar = db.Column(db.Boolean, default=False, nullable=False)
+    puede_atender = db.Column(db.Boolean, default=False, nullable=False)
+    puede_diagnosticar = db.Column(db.Boolean, default=False, nullable=False)
+    activo = db.Column(db.Boolean, default=True, nullable=False)
+
+    user = db.relationship("User", backref=db.backref("membresias_soporte", cascade="all, delete-orphan"))
+    area_soporte = db.relationship("SupportArea", back_populates="membresias")
+
+
 class MachineStatus(str, Enum):
     OPERATIVO = "operativo"
     MANTENIMIENTO = "mantenimiento"
@@ -649,6 +687,8 @@ class Machine(db.Model):
     responsable_technician_id = db.Column(
         db.Integer, db.ForeignKey("technicians.id"), nullable=True, index=True
     )
+    custodio_user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=True, index=True)
+    support_area_id = db.Column(db.Integer, db.ForeignKey("support_areas.id"), nullable=True, index=True)
     responsable_area = db.Column(db.String(120), default="")
     responsable_cargo = db.Column(db.String(120), default="")
     status = db.Column(db.String(32), default=MachineStatus.OPERATIVO.value)
@@ -663,6 +703,8 @@ class Machine(db.Model):
         foreign_keys=[responsable_technician_id],
         backref="activos_responsable",
     )
+    custodio = db.relationship("User", foreign_keys=[custodio_user_id])
+    area_tecnica = db.relationship("SupportArea", foreign_keys=[support_area_id])
     proveedor_relacionado = db.relationship(
         "Proveedor",
         foreign_keys=[proveedor_id],
@@ -1693,6 +1735,7 @@ class Incident(db.Model):
     telefono_contacto = db.Column(db.String(40), default="")
     area = db.Column(db.String(120), default="")
     area_responsable = db.Column(db.String(120), default="", nullable=False)
+    support_area_id = db.Column(db.Integer, db.ForeignKey("support_areas.id"), nullable=True, index=True)
     ubicacion = db.Column(db.String(200), default="")
     tipo = db.Column(db.String(32), default="")
     prioridad = db.Column(db.String(32), default="media")
@@ -1723,6 +1766,7 @@ class Incident(db.Model):
     usuario = db.relationship("User", foreign_keys=[user_id], backref="incidentes_reportados")
     resuelto_por = db.relationship("User", foreign_keys=[resuelto_por_id])
     responsable_area = db.relationship("User", foreign_keys=[responsable_area_id])
+    area_soporte = db.relationship("SupportArea", foreign_keys=[support_area_id])
     tecnico_asignado = db.relationship("Technician", foreign_keys=[tecnico_asignado_id])
     work_order = db.relationship("WorkOrder", backref=db.backref("incidencia_origen", uselist=False))
 

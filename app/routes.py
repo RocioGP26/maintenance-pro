@@ -86,6 +86,8 @@ from app.models import (
     PROVEEDOR_TIPOS_VALIDOS,
     ProveedorTipo,
     Technician,
+    SupportArea,
+    UserSupportArea,
     UsuarioCampoValor,
     User,
     WORK_ORDER_PRIORITIES,
@@ -1053,6 +1055,22 @@ def _apply_machine_base_fields(machine: Machine, form) -> Optional[str]:
     raw_sede = (form.get("sede_id") or "").strip()
     machine.sede_id = int(raw_sede) if raw_sede.isdigit() else None
     machine.area = form.get("area", "").strip()
+    raw_custodio = (form.get("custodio_user_id") or "").strip()
+    machine.custodio_user_id = int(raw_custodio) if raw_custodio.isdigit() else None
+    if machine.custodio_user_id and not User.query.filter_by(
+        id=machine.custodio_user_id, empresa_id=machine.empresa_id, activo=True
+    ).first():
+        return "Selecciona un usuario custodio válido."
+    raw_support = (form.get("support_area_id") or "").strip()
+    machine.support_area_id = int(raw_support) if raw_support.isdigit() else None
+    if not machine.support_area_id:
+        return "El área técnica responsable es obligatoria."
+    support_area = SupportArea.query.filter_by(
+        id=machine.support_area_id, empresa_id=machine.empresa_id, activo=True
+    ).first() if machine.support_area_id else None
+    if machine.support_area_id and not support_area:
+        return "Selecciona un área técnica responsable válida."
+    machine.responsable_area = support_area.nombre if support_area else ""
     machine.ubicacion = form.get("ubicacion", "").strip()
     machine.marca = form.get("marca", "").strip()
     machine.modelo = form.get("modelo", "").strip()
@@ -1198,6 +1216,8 @@ def _activos_form_context(
         "sector_label": SECTOR_LABELS.get(sector, sector),
         "sedes": sedes,
         "technicians": technicians,
+        "usuarios_custodios": _equipo_usuarios_query().filter(User.activo.is_(True)).all() if eid else [],
+        "areas_soporte": _support_areas_empresa(eid) if eid else [],
         "mantenimiento_tipos": MANTENIMIENTO_TIPOS,
         "frecuencia_choices": FRECUENCIA_BASE_CHOICES,
         "tipos_mant_sel": tipos_mantenimiento_list(machine.tipos_mantenimiento if machine else ""),
@@ -3578,6 +3598,38 @@ def _equipo_usuarios_query():
     return q.order_by(User.activo.desc(), User.nombre_visible, User.username)
 
 
+def _support_areas_empresa(empresa_id: int) -> list[SupportArea]:
+    """Obtiene las colas; crea el catálogo base para empresas antiguas."""
+    existentes = SupportArea.query.filter_by(empresa_id=empresa_id).all()
+    nombres = {a.nombre.casefold() for a in existentes}
+    for nombre in INCIDENT_AREAS_BASE:
+        if nombre.strip().casefold() not in nombres:
+            area = SupportArea(empresa_id=empresa_id, nombre=nombre.strip())
+            db.session.add(area)
+            existentes.append(area)
+    if db.session.new:
+        db.session.commit()
+    return sorted((a for a in existentes if a.activo), key=lambda a: a.nombre.casefold())
+
+
+def _save_user_support_areas(user: User, form, empresa_id: int) -> Optional[str]:
+    selected = {int(v) for v in form.getlist("support_area_ids") if v.isdigit()}
+    valid = {a.id for a in _support_areas_empresa(empresa_id)}
+    if not selected.issubset(valid):
+        return "Una de las áreas de soporte no es válida."
+    UserSupportArea.query.filter_by(user_id=user.id).delete(synchronize_session=False)
+    for area_id in selected:
+        db.session.add(UserSupportArea(
+            user_id=user.id,
+            support_area_id=area_id,
+            puede_recibir=bool(form.get("puede_recibir")),
+            puede_asignar=bool(form.get("puede_asignar")),
+            puede_atender=bool(form.get("puede_atender")),
+            puede_diagnosticar=bool(form.get("puede_diagnosticar")),
+        ))
+    return None
+
+
 def _validar_username_equipo(username: str) -> Optional[str]:
     u = (username or "").strip().lower()
     if len(u) < 3:
@@ -3663,6 +3715,8 @@ def _equipo_form_context(usuario: Optional[User], empresa_id: int) -> dict:
     valores = valores_campos_usuario_map(usuario) if usuario else {}
     return {
         "sedes": _sedes_empresa(empresa_id) if empresa_id else [],
+        "areas_soporte": _support_areas_empresa(empresa_id) if empresa_id else [],
+        "membresias_soporte": {m.support_area_id: m for m in usuario.membresias_soporte} if usuario else {},
         "campos_personalizados": campos,
         "valores_campos": valores,
     }
@@ -3743,7 +3797,7 @@ def equipo_new():
             user.set_password(password)
             db.session.add(user)
             db.session.flush()
-            err_c = _save_user_custom_fields(user, request.form, eid, sector)
+            err_c = _save_user_support_areas(user, request.form, eid) or _save_user_custom_fields(user, request.form, eid, sector)
             if err_c:
                 db.session.rollback()
                 flash(err_c, "danger")
@@ -3866,7 +3920,7 @@ def equipo_edit(id):
                 usuario.activo = activo
             if password:
                 usuario.set_password(password)
-            err_c = _save_user_custom_fields(usuario, request.form, eid, sector)
+            err_c = _save_user_support_areas(usuario, request.form, eid) or _save_user_custom_fields(usuario, request.form, eid, sector)
             if err_c:
                 flash(err_c, "danger")
             else:
@@ -4472,6 +4526,7 @@ def _areas_incidencia_empresa(empresa_id: Optional[int]) -> list[str]:
     if current_user.is_authenticated and (current_user.area or "").strip():
         areas.add(current_user.area.strip())
     if empresa_id:
+        areas.update(a.nombre for a in _support_areas_empresa(empresa_id))
         q = db.session.query(Machine.area).filter(
             Machine.empresa_id == empresa_id,
             Machine.area.isnot(None),
@@ -4487,7 +4542,7 @@ def _incidencia_form_defaults() -> dict:
     area = (getattr(u, "area", None) or "").strip() if u else ""
     return {
         "reportado_por": u.etiqueta() if u else "",
-        "cargo_reportante": u.rol_label if u else "",
+        "cargo_reportante": (getattr(u, "cargo", None) or "").strip() if u else "",
         "telefono_contacto": tel,
         "area": area,
         "area_responsable": "",
@@ -4524,7 +4579,7 @@ def _incidencia_desde_form(form) -> tuple[dict, Optional[str]]:
         return data, "Indica el nombre de quien reporta la falla."
     if not data["area"]:
         return data, "Selecciona el área del reportante."
-    if not data["area_responsable"]:
+    if not data["area_responsable"] and not data["machine_id"]:
         return data, "Selecciona el área responsable que recibirá el incidente."
     if not data["titulo"]:
         return data, "Describe brevemente la incidencia."
@@ -4631,6 +4686,11 @@ def incidencia():
                         ahora=ahora,
                         idempotency_key=idempotency_key,
                     )
+                if machine.area_tecnica:
+                    form_data["area_responsable"] = machine.area_tecnica.nombre
+                elif not form_data["area_responsable"]:
+                    flash("El activo no tiene un área técnica responsable configurada.", "danger")
+                    return redirect(url_for("main.incidencia"))
             fecha_ev = None
             if form_data["fecha_evento"]:
                 fecha_ev = datetime.strptime(form_data["fecha_evento"], "%Y-%m-%d").date()
@@ -4646,6 +4706,7 @@ def incidencia():
                 telefono_contacto=form_data["telefono_contacto"],
                 area=form_data["area"],
                 area_responsable=form_data["area_responsable"],
+                support_area_id=machine.support_area_id if machine else None,
                 ubicacion=form_data["ubicacion"],
                 tipo=form_data["tipo"],
                 prioridad=form_data["prioridad"],
@@ -4699,7 +4760,29 @@ def _incidents_scope_query():
     q = _filter_incidents_empresa(Incident.query)
     if normalize_rol(current_user.rol) == UserRole.USUARIO.value:
         q = q.filter(Incident.user_id == current_user.id)
+    elif normalize_rol(current_user.rol) not in (
+        UserRole.SUPERADMIN.value,
+        UserRole.ADMIN.value,
+    ):
+        area_ids = [
+            m.support_area_id for m in current_user.membresias_soporte if m.activo
+        ]
+        if area_ids:
+            q = q.filter(Incident.support_area_id.in_(area_ids))
     return q
+
+
+def _puede_en_area(inc: Incident, capacidad: str) -> bool:
+    if normalize_rol(current_user.rol) in (UserRole.SUPERADMIN.value, UserRole.ADMIN.value):
+        return True
+    if not inc.support_area_id:  # compatibilidad con incidentes anteriores a la migración
+        return can_manage_incidents(current_user)
+    return UserSupportArea.query.filter(
+        UserSupportArea.user_id == current_user.id,
+        UserSupportArea.support_area_id == inc.support_area_id,
+        UserSupportArea.activo.is_(True),
+        getattr(UserSupportArea, capacidad).is_(True),
+    ).first() is not None
 
 
 def _get_incident_or_404(incident_id: int):
@@ -4818,11 +4901,25 @@ def incidencias_list():
 @bp.route("/incidencias/<int:id>")
 def incidencias_detail(id):
     inc = _get_incident_or_404(id)
-    tecnicos = _filter_empresa(Technician.query.filter_by(activo=True).order_by(Technician.nombre), Technician).all()
+    tecnicos_q = _filter_empresa(Technician.query.filter_by(activo=True), Technician)
+    if inc.support_area_id:
+        tecnicos_q = tecnicos_q.join(User, Technician.user_id == User.id).join(
+            UserSupportArea, UserSupportArea.user_id == User.id
+        ).filter(
+            UserSupportArea.support_area_id == inc.support_area_id,
+            UserSupportArea.activo.is_(True),
+            UserSupportArea.puede_atender.is_(True),
+            User.activo.is_(True),
+        )
+    tecnicos = tecnicos_q.order_by(Technician.nombre).all()
     return render_template(
         "incidencias/detail.html",
         inc=inc,
-        puede_gestionar=can_manage_incidents(current_user),
+        puede_gestionar=can_manage_incidents(current_user) and any(
+            _puede_en_area(inc, c) for c in (
+                "puede_recibir", "puede_asignar", "puede_atender", "puede_diagnosticar"
+            )
+        ),
         puede_crear_ot=can_create_work_order(current_user),
         tecnicos=tecnicos,
         areas=_areas_incidencia_empresa(_current_empresa_id()),
@@ -4842,6 +4939,15 @@ def incidencias_accion(id):
     elif not can_manage_incidents(current_user):
         abort(403)
 
+    capacidad = {
+        "recibir": "puede_recibir",
+        "asignar": "puede_asignar",
+        "iniciar": "puede_atender",
+        "diagnosticar": "puede_diagnosticar",
+    }.get(accion)
+    if capacidad and not _puede_en_area(inc, capacidad):
+        abort(403)
+
     ahora = datetime.utcnow()
     if accion == "recibir" and inc.estado in ("reportado", "reasignado"):
         inc.responsable_area_id = current_user.id
@@ -4853,6 +4959,14 @@ def incidencias_accion(id):
         tecnico = _filter_empresa(Technician.query.filter_by(id=tid, activo=True), Technician).first() if tid else None
         if not tecnico:
             flash("Selecciona un técnico válido.", "danger")
+            return redirect(url_for("main.incidencias_detail", id=id))
+        if inc.support_area_id and not UserSupportArea.query.filter_by(
+            user_id=tecnico.user_id,
+            support_area_id=inc.support_area_id,
+            puede_atender=True,
+            activo=True,
+        ).first():
+            flash("El técnico no está autorizado para atender incidentes de esta área.", "danger")
             return redirect(url_for("main.incidencias_detail", id=id))
         inc.tecnico_asignado_id, inc.asignado_en = tecnico.id, ahora
         _cambiar_estado(inc, "asignado", "tecnico_asignado", f"{tecnico.nombre}. {comentario}".strip())
@@ -4875,7 +4989,12 @@ def incidencias_accion(id):
             if not area:
                 flash("Selecciona el área destino.", "danger")
                 return redirect(url_for("main.incidencias_detail", id=id))
-            inc.area_responsable, inc.responsable_area_id, inc.tecnico_asignado_id = area, None, None
+            area_obj = SupportArea.query.filter_by(
+                empresa_id=inc.empresa_id, nombre=area, activo=True
+            ).first()
+            inc.area_responsable = area
+            inc.support_area_id = area_obj.id if area_obj else None
+            inc.responsable_area_id, inc.tecnico_asignado_id = None, None
         _cambiar_estado(inc, destinos[resultado], "diagnostico_registrado", hallazgo)
     elif accion == "resolver" and inc.estado in ("solucionado_visita", "pendiente_ot", "pendiente_reemplazo"):
         inc.resuelto_en, inc.resuelto_por_id, inc.notas_resolucion = ahora, current_user.id, comentario
