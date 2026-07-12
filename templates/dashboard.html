@@ -323,7 +323,7 @@
 
   </div>
 
-  <div class="col-lg-12">
+  <div class="col-lg-8">
 
     <div class="row g-4">
 
@@ -470,9 +470,8 @@
 
 
 
-<div class="row g-4 mt-1">
-  <div class="col-lg-6 d-flex" id="proximosMantenimientosDestino"></div>
-  <div class="col-lg-6">
+<div class="row g-4 mt-1" id="paretoTemporalRow">
+  <div class="col-12" id="paretoCorrectivosCol">
     <div class="card card-dashboard h-100">
       <div class="card-body">
         <div class="dash-card-head">
@@ -502,7 +501,9 @@
 
 <div class="row g-4 mt-1">
 
-  <div class="col-lg-6">
+  <div class="col-lg-4 d-flex" id="proximosMantenimientosDestino"></div>
+
+  <div class="col-lg-4">
 
     <div class="card card-dashboard h-100">
 
@@ -554,7 +555,7 @@
 
   </div>
 
-  <div class="col-lg-6">
+  <div class="col-lg-4">
 
     <div class="card card-dashboard h-100">
 
@@ -709,11 +710,19 @@ document.addEventListener('DOMContentLoaded', function () {
 
   const proximosOrigen = document.getElementById('proximosMantenimientosCol');
   const proximosDestino = document.getElementById('proximosMantenimientosDestino');
+  const paretoOrigen = document.getElementById('paretoCorrectivosCol');
+  const paretoTemporalRow = document.getElementById('paretoTemporalRow');
   if (proximosOrigen && proximosDestino) {
     const proximosCard = proximosOrigen.querySelector('.upcoming-maint');
     if (proximosCard) proximosDestino.appendChild(proximosCard);
-    proximosOrigen.remove();
   }
+  if (proximosOrigen && paretoOrigen) {
+    const paretoCard = paretoOrigen.querySelector('.card-dashboard');
+    if (paretoCard) proximosOrigen.appendChild(paretoCard);
+    paretoOrigen.remove();
+    proximosOrigen.className = 'col-lg-4';
+  }
+  if (paretoTemporalRow && !paretoTemporalRow.children.length) paretoTemporalRow.remove();
 
   function dashCssVar(name) {
     return getComputedStyle(document.body).getPropertyValue(name).trim();
