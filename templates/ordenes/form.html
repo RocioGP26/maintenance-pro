@@ -318,7 +318,6 @@
               </div>
             </div>
 
-            {% if repuestos_inicial %}
             <div class="col-12">
               <h6 class="fw-semibold mb-2"><i class="bi bi-box-seam me-1"></i> Repuestos instalados</h6>
               <div class="table-responsive border rounded">
@@ -328,27 +327,39 @@
                       <th>Código</th>
                       <th>Repuesto</th>
                       <th class="text-center">Cantidad</th>
+                      <th>Jornada de instalación</th>
+                      <th>Técnico</th>
                       <th class="text-end">Costo unitario</th>
                       <th class="text-end">Costo total</th>
                       <th>Notas</th>
                     </tr>
                   </thead>
                   <tbody>
+                    {% if repuestos_inicial %}
                     {% for repuesto in repuestos_inicial %}
                     <tr>
                       <td>{{ repuesto.sku or '—' }}</td>
                       <td>{{ repuesto.nombre or '—' }}</td>
                       <td class="text-center">{{ repuesto.cantidad }}</td>
+                      <td class="text-nowrap">
+                        {% if repuesto.jornada_fecha %}{{ repuesto.jornada_fecha }}{% else %}—{% endif %}
+                        {% if repuesto.jornada_hora_inicio or repuesto.jornada_hora_fin %}<br><small class="text-muted">{{ repuesto.jornada_hora_inicio or '—' }} – {{ repuesto.jornada_hora_fin or '—' }}</small>{% endif %}
+                      </td>
+                      <td>{{ repuesto.jornada_tecnico or '—' }}</td>
                       <td class="text-end">${{ '{:,.2f}'.format(repuesto.costo_unitario or 0) }}</td>
                       <td class="text-end fw-semibold">${{ '{:,.2f}'.format(repuesto.costo_total or 0) }}</td>
                       <td>{{ repuesto.notas or '—' }}</td>
                     </tr>
                     {% endfor %}
+                    {% else %}
+                    <tr>
+                      <td colspan="8" class="text-center text-muted py-3">No hay repuestos instalados en esta OT.</td>
+                    </tr>
+                    {% endif %}
                   </tbody>
                 </table>
               </div>
             </div>
-            {% endif %}
 
             <div class="col-md-5">
               <label class="form-label">Tiempo gastado (total)</label>
@@ -782,6 +793,18 @@
     } else {
       jornadas.push(item);
     }
+    // Los repuestos nuevos del modal pertenecen a la jornada que se está guardando.
+    if (typeof syncRepFromDom === 'function') syncRepFromDom();
+    if (typeof repuestos !== 'undefined') {
+      repuestos.forEach(function (r) {
+        if (r.jornada_fecha) return;
+        r.jornada_fecha = item.fecha;
+        r.jornada_hora_inicio = item.hora_inicio;
+        r.jornada_hora_fin = item.hora_fin;
+        r.jornada_tecnico = tecnicoLabel(item);
+      });
+      if (typeof syncRepHidden === 'function') syncRepHidden();
+    }
     var picked = document.querySelector('input[name="jornadaEstadoOt"]:checked');
     var accion = picked ? picked.value : 'en_proceso';
     var hiddenEst = document.getElementById('jornadaEstadoOtHidden');
@@ -988,17 +1011,23 @@
   }
 
   function syncRepFromDom() {
+    var anteriores = repuestos.slice();
     repuestos = [];
     if (!repuestosTbody) return;
-    repuestosTbody.querySelectorAll('tr').forEach(function (tr) {
+    repuestosTbody.querySelectorAll('tr').forEach(function (tr, idx) {
       var sel = tr.querySelector('.rep-spare');
       var qty = tr.querySelector('.rep-qty');
       var notas = tr.querySelector('.rep-notas');
       if (!sel || !sel.value) return;
+      var anterior = anteriores[idx] || {};
       repuestos.push({
         spare_part_id: parseInt(sel.value, 10),
         cantidad: parseInt(qty && qty.value, 10) || 1,
-        notas: notas ? notas.value.trim() : ''
+        notas: notas ? notas.value.trim() : '',
+        jornada_fecha: anterior.jornada_fecha || '',
+        jornada_hora_inicio: anterior.jornada_hora_inicio || '',
+        jornada_hora_fin: anterior.jornada_hora_fin || '',
+        jornada_tecnico: anterior.jornada_tecnico || ''
       });
     });
   }

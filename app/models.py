@@ -1184,6 +1184,10 @@ class WorkOrderRepuesto(db.Model):
     spare_part_id = db.Column(db.Integer, db.ForeignKey("spare_parts.id"), nullable=False)
     cantidad = db.Column(db.Integer, nullable=False, default=1)
     notas = db.Column(db.String(255), default="")
+    jornada_fecha = db.Column(db.Date, nullable=True)
+    jornada_hora_inicio = db.Column(db.String(5), default="")
+    jornada_hora_fin = db.Column(db.String(5), default="")
+    jornada_tecnico = db.Column(db.String(200), default="")
 
     work_order = db.relationship("WorkOrder", back_populates="repuestos")
     spare_part = db.relationship("SparePart", backref="usos_en_ordenes")

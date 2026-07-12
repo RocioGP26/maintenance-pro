@@ -2366,6 +2366,10 @@ def _repuesto_linea_a_dict(line: WorkOrderRepuesto) -> dict:
         "nombre": p.nombre if p else "",
         "costo_unitario": cu,
         "costo_total": line.costo_total_linea,
+        "jornada_fecha": line.jornada_fecha.isoformat() if line.jornada_fecha else "",
+        "jornada_hora_inicio": line.jornada_hora_inicio or "",
+        "jornada_hora_fin": line.jornada_hora_fin or "",
+        "jornada_tecnico": line.jornada_tecnico or "",
     }
 
 
@@ -2411,6 +2415,10 @@ def _parse_repuestos_json() -> Tuple[list[dict], Optional[str]]:
                 "spare_part_id": part_id,
                 "cantidad": qty,
                 "notas": (item.get("notas") or "").strip()[:255],
+                "jornada_fecha": (item.get("jornada_fecha") or "").strip(),
+                "jornada_hora_inicio": (item.get("jornada_hora_inicio") or "").strip()[:5],
+                "jornada_hora_fin": (item.get("jornada_hora_fin") or "").strip()[:5],
+                "jornada_tecnico": (item.get("jornada_tecnico") or "").strip()[:200],
             }
         )
     return parsed, None
@@ -2449,12 +2457,25 @@ def _guardar_repuestos_orden(wo: WorkOrder) -> Optional[str]:
 
     for item in items:
         part = db.session.get(SparePart, item["spare_part_id"])
+        jornada = wo.jornadas[-1] if wo.jornadas else None
+        jornada_fecha = None
+        if item["jornada_fecha"]:
+            try:
+                jornada_fecha = datetime.strptime(item["jornada_fecha"], "%Y-%m-%d").date()
+            except ValueError:
+                jornada_fecha = None
+        if jornada_fecha is None and jornada:
+            jornada_fecha = jornada.fecha_inicio.date()
         part.cantidad = (part.cantidad or 0) - item["cantidad"]
         wo.repuestos.append(
             WorkOrderRepuesto(
                 spare_part_id=part.id,
                 cantidad=item["cantidad"],
                 notas=item["notas"],
+                jornada_fecha=jornada_fecha,
+                jornada_hora_inicio=item["jornada_hora_inicio"] or (jornada.fecha_inicio.strftime("%H:%M") if jornada else ""),
+                jornada_hora_fin=item["jornada_hora_fin"] or (jornada.fecha_fin.strftime("%H:%M") if jornada else ""),
+                jornada_tecnico=item["jornada_tecnico"] or (jornada.tecnico_label if jornada else ""),
             )
         )
     return None
