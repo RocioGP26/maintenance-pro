@@ -634,6 +634,9 @@ class Machine(db.Model):
     valor_compra = db.Column(db.Float, nullable=True)
     moneda_compra = db.Column(db.String(8), default="")
     proveedor = db.Column(db.String(200), default="")
+    proveedor_id = db.Column(
+        db.Integer, db.ForeignKey("proveedores.id"), nullable=True, index=True
+    )
     tiempo_garantia_meses = db.Column(db.Integer, nullable=True)
     garantia_hasta = db.Column(db.Date, nullable=True)
     manual_url = db.Column(db.String(500), default="")
@@ -645,6 +648,8 @@ class Machine(db.Model):
     responsable_technician_id = db.Column(
         db.Integer, db.ForeignKey("technicians.id"), nullable=True, index=True
     )
+    responsable_area = db.Column(db.String(120), default="")
+    responsable_cargo = db.Column(db.String(120), default="")
     status = db.Column(db.String(32), default=MachineStatus.OPERATIVO.value)
     es_critico = db.Column(db.Boolean, default=False)
     notas = db.Column(db.Text, default="")
@@ -656,6 +661,11 @@ class Machine(db.Model):
         "Technician",
         foreign_keys=[responsable_technician_id],
         backref="activos_responsable",
+    )
+    proveedor_relacionado = db.relationship(
+        "Proveedor",
+        foreign_keys=[proveedor_id],
+        backref="activos",
     )
 
     @property
@@ -1898,6 +1908,9 @@ def ensure_saas_schema():
         _add_column_if_missing("machines", "vida_util_anios", "vida_util_anios INTEGER")
         _add_column_if_missing("machines", "horas_operacion", "horas_operacion REAL")
         _add_column_if_missing("machines", "valor_compra", "valor_compra REAL")
+        _add_column_if_missing("machines", "proveedor_id", "proveedor_id INTEGER")
+        _add_column_if_missing("machines", "responsable_area", "responsable_area VARCHAR(120)")
+        _add_column_if_missing("machines", "responsable_cargo", "responsable_cargo VARCHAR(120)")
         _add_column_if_missing("machines", "garantia_hasta", "garantia_hasta DATE")
         _add_column_if_missing("machines", "ficha_tecnica_url", "ficha_tecnica_url VARCHAR(500)")
         _add_column_if_missing(

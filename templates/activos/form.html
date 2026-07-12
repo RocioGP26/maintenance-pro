@@ -97,6 +97,18 @@
                 </select>
                 <div class="form-text small">Técnico responsable del activo. Si usas un campo personalizado «Responsable», ese valor se muestra en las OT.</div>
               </div>
+              <div class="col-md-3">
+                <label class="form-label" for="responsable_area">Área del responsable</label>
+                <input type="text" name="responsable_area" id="responsable_area" class="form-control"
+                       value="{{ machine.responsable_area if machine else '' }}"
+                       placeholder="Mantenimiento, producción…">
+              </div>
+              <div class="col-md-3">
+                <label class="form-label" for="responsable_cargo">Cargo</label>
+                <input type="text" name="responsable_cargo" id="responsable_cargo" class="form-control"
+                       value="{{ machine.responsable_cargo if machine else '' }}"
+                       placeholder="Jefe de mantenimiento…">
+              </div>
             </div>
             {% with seccion_key='general' %}{% include "activos/_campos_seccion.html" %}{% endwith %}
           </fieldset>
@@ -213,8 +225,16 @@
                 </div>
               </div>
               <div class="col-md-3">
-                <label class="form-label">Proveedor</label>
-                <input type="text" name="proveedor" class="form-control" value="{{ machine.proveedor if machine else '' }}">
+                <label class="form-label" for="proveedor_id">Proveedor</label>
+                <select name="proveedor_id" id="proveedor_id" class="form-select">
+                  <option value="">— Sin proveedor —</option>
+                  {% for p in proveedores_activo %}
+                  <option value="{{ p.id }}" {% if machine and machine.proveedor_id == p.id %}selected{% endif %}>
+                    {{ p.nombre }} — {{ p.tipo_meta.label }}
+                  </option>
+                  {% endfor %}
+                </select>
+                <div class="form-text">Seleccionado desde el catálogo de proveedores.</div>
               </div>
               <div class="col-md-3">
                 <label class="form-label" for="tiempo_garantia_meses">Tiempo garantía (meses)</label>

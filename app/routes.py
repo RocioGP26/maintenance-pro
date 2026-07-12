@@ -1081,7 +1081,20 @@ def _apply_machine_base_fields(machine: Machine, form) -> Optional[str]:
     moneda_emp = _moneda_empresa_activo(machine)
     machine.moneda_compra = normalizar_moneda(form.get("moneda_compra"), moneda_emp)
     machine.valor_compra = parsear_monto_form(form.get("valor_compra"), machine.moneda_compra)
-    machine.proveedor = form.get("proveedor", "").strip()
+    raw_proveedor = (form.get("proveedor_id") or "").strip()
+    if raw_proveedor:
+        if not raw_proveedor.isdigit():
+            return "Selecciona un proveedor válido."
+        proveedor = _filter_empresa(
+            Proveedor.query.filter_by(id=int(raw_proveedor), activo=True), Proveedor
+        ).first()
+        if proveedor is None:
+            return "El proveedor seleccionado no pertenece a tu empresa o está inactivo."
+        machine.proveedor_id = proveedor.id
+        machine.proveedor = proveedor.nombre
+    else:
+        machine.proveedor_id = None
+        machine.proveedor = ""
     machine.tiempo_garantia_meses = _parse_int_form(form.get("tiempo_garantia_meses"))
     machine.garantia_hasta = calcular_garantia_hasta(
         machine.fecha_compra, machine.tiempo_garantia_meses
@@ -1092,6 +1105,8 @@ def _apply_machine_base_fields(machine: Machine, form) -> Optional[str]:
     machine.requiere_mantenimiento = bool(form.get("requiere_mantenimiento"))
     machine.tipos_mantenimiento = tipos_mantenimiento_from_form(form)
     machine.frecuencia_mantenimiento = (form.get("frecuencia_mantenimiento") or "").strip()
+    machine.responsable_area = (form.get("responsable_area") or "").strip()
+    machine.responsable_cargo = (form.get("responsable_cargo") or "").strip()
     raw_resp = (form.get("responsable_technician_id") or "").strip()
     if raw_resp.isdigit():
         tid = int(raw_resp)
@@ -1176,6 +1191,16 @@ def _activos_form_context(
         if eid
         else []
     )
+    proveedores_activo = []
+    if eid:
+        proveedores_q = Proveedor.query.filter(Proveedor.activo.is_(True))
+        if machine and machine.proveedor_id:
+            proveedores_q = Proveedor.query.filter(
+                or_(Proveedor.activo.is_(True), Proveedor.id == machine.proveedor_id)
+            )
+        proveedores_activo = _filter_empresa(
+            proveedores_q.order_by(Proveedor.nombre), Proveedor
+        ).all()
     campos_estandar, _secciones_legacy = (
         campos_por_seccion_estructurado(eid, sector, preview_id) if eid else ({}, {})
     )
@@ -1211,6 +1236,7 @@ def _activos_form_context(
         "sector_label": SECTOR_LABELS.get(sector, sector),
         "sedes": sedes,
         "technicians": technicians,
+        "proveedores_activo": proveedores_activo,
         "mantenimiento_tipos": MANTENIMIENTO_TIPOS,
         "frecuencia_choices": FRECUENCIA_BASE_CHOICES,
         "tipos_mant_sel": tipos_mantenimiento_list(machine.tipos_mantenimiento if machine else ""),
