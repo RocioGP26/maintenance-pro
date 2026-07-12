@@ -218,6 +218,12 @@
                        value="{{ machine.fecha_compra.isoformat() if machine and machine.fecha_compra else '' }}">
               </div>
               <div class="col-md-3">
+                <label class="form-label" for="numero_factura">Factura</label>
+                <input type="text" name="numero_factura" id="numero_factura" class="form-control"
+                       value="{{ machine.numero_factura if machine else '' }}"
+                       placeholder="Ej. FAC-2026-00125" maxlength="80">
+              </div>
+              <div class="col-md-3">
                 <label class="form-label" for="valor_compra">Valor de compra</label>
                 <div class="input-group">
                   <span class="input-group-text" id="simbolo_moneda_compra">{{ simbolo_moneda_compra }}</span>

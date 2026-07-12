@@ -1083,6 +1083,7 @@ def _apply_machine_base_fields(machine: Machine, form) -> Optional[str]:
     machine.vida_util_anios = _parse_int_form(form.get("vida_util_anios"))
     machine.horas_operacion = _parse_float_form(form.get("horas_operacion"))
     machine.fecha_compra = _parse_form_date(form.get("fecha_compra"))
+    machine.numero_factura = (form.get("numero_factura") or "").strip()
     moneda_emp = _moneda_empresa_activo(machine)
     machine.moneda_compra = normalizar_moneda(form.get("moneda_compra"), moneda_emp)
     machine.valor_compra = parsear_monto_form(form.get("valor_compra"), machine.moneda_compra)
