@@ -3516,7 +3516,7 @@ def ordenes_pdf(id):
     return send_file(
         BytesIO(contenido),
         mimetype="application/pdf",
-        as_attachment=True,
+        as_attachment=request.args.get("inline") != "1",
         download_name=nombre,
     )
 

@@ -200,8 +200,8 @@
       </form>
       {% endif %}
       {% if inc.work_order %}
-      <a href="{{ url_for('main.ordenes_edit', id=inc.work_order.id) }}" class="btn btn-outline-primary w-100">
-        <i class="bi bi-box-arrow-up-right"></i> Ver OT {{ inc.work_order.numero }}
+      <a href="{{ url_for('main.ordenes_pdf', id=inc.work_order.id, inline=1) }}" class="btn btn-outline-primary w-100" target="_blank" rel="noopener">
+        <i class="bi bi-file-earmark-pdf"></i> Ver PDF OT {{ inc.work_order.numero }}
       </a>
       {% endif %}
     </div>
@@ -228,8 +228,8 @@
       </form>
       {% endif %}
       {% if inc.work_order %}
-      <a href="{{ url_for('main.ordenes_edit', id=inc.work_order.id) }}" class="btn btn-outline-primary">
-        <i class="bi bi-box-arrow-up-right"></i> Ver OT {{ inc.work_order.numero }}
+      <a href="{{ url_for('main.ordenes_pdf', id=inc.work_order.id, inline=1) }}" class="btn btn-outline-primary" target="_blank" rel="noopener">
+        <i class="bi bi-file-earmark-pdf"></i> Ver PDF OT {{ inc.work_order.numero }}
       </a>
       {% endif %}
     </div>
