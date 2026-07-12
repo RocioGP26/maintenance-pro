@@ -13,6 +13,7 @@ class UserRole(str, Enum):
     ADMIN = "admin"
     SUPERVISOR = "supervisor"
     TECNICO = "tecnico"
+    VENDEDOR = "vendedor"
     USUARIO = "usuario"
     SOLICITANTE = "solicitante"
 
@@ -27,14 +28,9 @@ USER_ROLE_LABELS = {
     UserRole.ADMIN.value: "Administrador",
     UserRole.SUPERVISOR.value: "Supervisor",
     UserRole.TECNICO.value: "Técnico",
+    UserRole.VENDEDOR.value: "Vendedor",
     UserRole.USUARIO.value: "Usuario — solo consulta",
     UserRole.SOLICITANTE.value: "Solicitante / Reportante",
-}
-
-# Etiqueta del rol operativo (tecnico) en empresas con inventario comercial
-USER_ROLE_LABELS_INVENTARIO = {
-    **USER_ROLE_LABELS,
-    UserRole.TECNICO.value: "Vendedor",
 }
 
 USER_ROLE_HELP = {
@@ -42,6 +38,7 @@ USER_ROLE_HELP = {
     UserRole.ADMIN.value: "Editar y eliminar registros operativos.",
     UserRole.SUPERVISOR.value: "Coordinar, asignar y cambiar estados operativos.",
     UserRole.TECNICO.value: "Editar registros (sin crear ni eliminar).",
+    UserRole.VENDEDOR.value: "Gestionar inventario comercial y reportar incidencias.",
     UserRole.USUARIO.value: "Consulta general de los módulos autorizados, sin modificaciones.",
     UserRole.SOLICITANTE.value: "Reportar incidencias y consultar únicamente sus propios reportes.",
 }
@@ -56,7 +53,7 @@ USER_ROLE_HELP_MANTENIMIENTO = {
 
 USER_ROLE_HELP_INVENTARIO = {
     **USER_ROLE_HELP,
-    UserRole.TECNICO.value: "Registrar ventas, compras y stock (sin crear catálogos ni eliminar).",
+    UserRole.VENDEDOR.value: "Registrar ventas, compras y stock; puede reportar incidencias.",
 }
 
 
@@ -87,6 +84,7 @@ def can_edit(user) -> bool:
         UserRole.ADMIN.value,
         UserRole.SUPERVISOR.value,
         UserRole.TECNICO.value,
+        UserRole.VENDEDOR.value,
     )
 
 
@@ -110,6 +108,10 @@ def is_requester(user) -> bool:
     return _rol(user) == UserRole.SOLICITANTE.value
 
 
+def is_vendor(user) -> bool:
+    return _rol(user) == UserRole.VENDEDOR.value
+
+
 def _modulos_empresa(empresa) -> list[str]:
     if empresa is None:
         return []
@@ -119,7 +121,7 @@ def _modulos_empresa(empresa) -> list[str]:
 
 
 def usa_terminologia_inventario(modulos_activos: list[str] | None) -> bool:
-    """True si la empresa usa inventario comercial (rol operativo = Vendedor)."""
+    """True cuando la empresa tiene habilitado Inventario comercial."""
     from app.modules import MODULO_INVENTARIO
 
     mods = modulos_activos or []
@@ -137,12 +139,7 @@ def role_display_label(
 
     key = normalize_rol(rol)
     mods = modulos_activos if modulos_activos is not None else _modulos_empresa(empresa)
-    labels = USER_ROLE_LABELS
-    if key == UserRole.TECNICO.value and MODULO_INVENTARIO in mods:
-        if MODULO_MANTENIMIENTO in mods:
-            return "Vendedor / Técnico"
-        labels = USER_ROLE_LABELS_INVENTARIO
-    return labels.get(key, USER_ROLE_LABELS.get(key, rol or "—"))
+    return USER_ROLE_LABELS.get(key, rol or "—")
 
 
 def can_report_incident(user) -> bool:
@@ -152,7 +149,20 @@ def can_report_incident(user) -> bool:
 
 def can_manage_incidents(user) -> bool:
     """Supervisor / técnico: revisar y resolver incidencias (no rol Usuario)."""
-    return can_edit(user) and not is_read_only(user)
+    return _rol(user) in (
+        UserRole.SUPERADMIN.value,
+        UserRole.ADMIN.value,
+        UserRole.SUPERVISOR.value,
+        UserRole.TECNICO.value,
+    )
+
+
+def can_access_maintenance(user) -> bool:
+    return _rol(user) != UserRole.VENDEDOR.value
+
+
+def can_access_inventory(user) -> bool:
+    return _rol(user) != UserRole.TECNICO.value
 
 
 def can_create_work_order(user) -> bool:
@@ -187,6 +197,11 @@ def roles_for_select(
     """Opciones de rol que el usuario actual puede asignar."""
     mods = modulos_activos if modulos_activos is not None else _modulos_empresa(empresa)
     keys = list(USER_ROLE_LABELS.keys())
+    from app.modules import MODULO_INVENTARIO, MODULO_MANTENIMIENTO
+    if MODULO_MANTENIMIENTO not in mods:
+        keys = [k for k in keys if k != UserRole.TECNICO.value]
+    if MODULO_INVENTARIO not in mods:
+        keys = [k for k in keys if k != UserRole.VENDEDOR.value]
     if _rol(user) != UserRole.SUPERADMIN.value:
         keys = [k for k in keys if k != UserRole.SUPERADMIN.value]
     return [(k, role_display_label(k, modulos_activos=mods)) for k in keys]
@@ -202,6 +217,9 @@ def permission_flags(user) -> dict:
         "equipo": can_manage_equipo(user),
         "solo_lectura": is_read_only(user),
         "solicitante": is_requester(user),
+        "vendedor": is_vendor(user),
+        "acceso_mantenimiento": can_access_maintenance(user),
+        "acceso_inventario": can_access_inventory(user),
         "perfil": getattr(user, "is_authenticated", False),
         "reportar_incidencia": can_report_incident(user),
         "gestionar_incidencias": can_manage_incidents(user),

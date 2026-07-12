@@ -35,6 +35,7 @@ from app.permissions import (
     can_manage_incidents,
     can_report_incident,
     is_requester,
+    is_vendor,
     normalize_rol,
     roles_for_select,
     role_help_map,
@@ -4634,7 +4635,7 @@ def _filter_incidents_empresa(q):
 
 def _incidents_scope_query():
     q = _filter_incidents_empresa(Incident.query)
-    if is_requester(current_user):
+    if is_requester(current_user) or is_vendor(current_user):
         q = q.filter(Incident.user_id == current_user.id)
     return q
 
@@ -4677,7 +4678,7 @@ def _incidentes_kpis(base_q) -> dict:
 
 
 def _usuario_solo_mis_incidencias() -> bool:
-    return is_requester(current_user)
+    return is_requester(current_user) or is_vendor(current_user)
 
 
 @bp.route("/incidencias")

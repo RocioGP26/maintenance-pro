@@ -98,6 +98,28 @@ def _verificar_modulo_activo(endpoint: str):
     return redirect(url_for("main.login"))
 
 
+def _verificar_modulo_rol(endpoint: str):
+    """Restringe módulos por rol aunque la empresa tenga ambos contratados."""
+    from flask import flash, redirect, url_for
+
+    from app.modules import MODULO_INVENTARIO, MODULO_MANTENIMIENTO, modulo_requerido_por_endpoint
+    from app.permissions import UserRole, normalize_rol
+
+    modulo = modulo_requerido_por_endpoint(endpoint)
+    rol = normalize_rol(getattr(g, "user_rol", None))
+    if rol == UserRole.VENDEDOR.value and endpoint == "main.dashboard":
+        return redirect(url_for("inv_comercial.dashboard_inventario"))
+    if rol == UserRole.TECNICO.value and modulo == MODULO_INVENTARIO:
+        flash("El rol Técnico solo tiene acceso al módulo de Mantenimiento.", "warning")
+        return redirect(url_for("main.dashboard"))
+    if rol == UserRole.VENDEDOR.value and modulo == MODULO_MANTENIMIENTO:
+        if endpoint == "main.incidencia" or endpoint.startswith("main.incidencias"):
+            return None
+        flash("El rol Vendedor solo tiene acceso a Inventario comercial.", "warning")
+        return redirect(url_for("inv_comercial.dashboard_inventario"))
+    return None
+
+
 def _verificar_bloqueo_tenant(endpoint: str):
     from app.models import Empresa
     from app.tenant_activity import empresa_puede_operar, endpoint_exento_bloqueo
@@ -150,6 +172,9 @@ def register_tenancy_middleware(app: Flask) -> None:
             modulo = _verificar_modulo_activo(endpoint)
             if modulo is not None:
                 return modulo
+            modulo_rol = _verificar_modulo_rol(endpoint)
+            if modulo_rol is not None:
+                return modulo_rol
             return None
 
         _load_from_session_user()
@@ -160,6 +185,9 @@ def register_tenancy_middleware(app: Flask) -> None:
         modulo = _verificar_modulo_activo(endpoint)
         if modulo is not None:
             return modulo
+        modulo_rol = _verificar_modulo_rol(endpoint)
+        if modulo_rol is not None:
+            return modulo_rol
         return None
 
     @app.teardown_appcontext
