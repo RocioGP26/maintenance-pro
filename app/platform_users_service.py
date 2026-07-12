@@ -18,7 +18,9 @@ PLATFORM_ROLE_SHORT = {
     UserRole.ADMIN.value: "Admin",
     "supervisor": "Supervisor",
     UserRole.TECNICO.value: "Técnico",
+    UserRole.VENDEDOR.value: "Vendedor",
     UserRole.USUARIO.value: "Usuario",
+    UserRole.SOLICITANTE.value: "Solicitante",
 }
 
 PLATFORM_ROLE_BADGE = {
@@ -26,7 +28,9 @@ PLATFORM_ROLE_BADGE = {
     UserRole.ADMIN.value: "platform-role platform-role--admin",
     "supervisor": "platform-role platform-role--supervisor",
     UserRole.TECNICO.value: "platform-role platform-role--tecnico",
+    UserRole.VENDEDOR.value: "platform-role platform-role--tecnico",
     UserRole.USUARIO.value: "platform-role platform-role--usuario",
+    UserRole.SOLICITANTE.value: "platform-role platform-role--usuario",
 }
 
 ESTADO_USUARIO_CHOICES = (
@@ -42,7 +46,9 @@ ROL_USUARIO_CHOICES = (
     (UserRole.ADMIN.value, "Administrador"),
     ("supervisor", "Supervisor"),
     (UserRole.TECNICO.value, "Técnico"),
+    (UserRole.VENDEDOR.value, "Vendedor"),
     (UserRole.USUARIO.value, "Usuario"),
+    (UserRole.SOLICITANTE.value, "Solicitante"),
 )
 
 
@@ -117,7 +123,7 @@ def listar_usuarios_platform(
             pass
     if rol:
         if rol == "supervisor":
-            query = query.filter(User.rol.in_(("supervisor", UserRole.ADMIN.value)))
+            query = query.filter(User.rol == UserRole.SUPERVISOR.value)
         else:
             query = query.filter(User.rol == rol)
     if q:

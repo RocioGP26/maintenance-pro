@@ -1,6 +1,6 @@
 # MRG-07 · Matriz de permisos · IAM tenant
 
-**Sprint 14.22** · Fuente: [MRG-07 §3](/mrg/chapters/07-administracion.md) · Código: `app/permissions.py`
+**Actualización 2026-07-11** · Fuente: [MRG-07 §3](/mrg/chapters/07-administracion.md) · Código: `app/permissions.py`
 
 ---
 
@@ -10,39 +10,49 @@
 |-----|-------|---------------|----------------------|
 | Superadministrador | `superadmin` | Completo | Completo |
 | Administrador | `admin` | Operativo + equipo | Operativo + equipo |
-| Técnico | `tecnico` | OT · incidencias | — |
-| Vendedor | `tecnico` *(label)* | — | Ventas · clientes |
-| Vendedor / Técnico | `tecnico` *(ambos módulos)* | OT | Ventas |
-| Usuario | `usuario` | Lectura · incidencias | Lectura |
+| Supervisor | `supervisor` | Coordinar · asignar · estados | Coordinación operativa |
+| Técnico | `tecnico` | OT · incidencias | Sin acceso |
+| Vendedor | `vendedor` | Incidencias propias | Inventario · ventas · clientes |
+| Usuario — solo consulta | `usuario` | Lectura general | Lectura general |
+| Solicitante / Reportante | `solicitante` | Reportar · incidencias propias | Sin acceso operativo |
+
+`tecnico` y `vendedor` son roles independientes. Tener ambos módulos contratados no amplía automáticamente el acceso del rol.
+
+Regla adicional por área: `admin` + área **Mantenimiento** no accede a Inventario. `superadmin` permanece sin esta restricción.
 
 ---
 
 ## Matriz transversal · Acciones IAM
 
-| Acción | Superadmin | Admin | Técnico/Vendedor | Usuario | Helper |
-|--------|:----------:|:-----:|:----------------:|:-------:|--------|
-| Crear catálogos | ✅ | ✅ | ❌ | ❌ | `can_create` |
-| Editar operación | ✅ | ✅ | ✅ | ❌ | `can_edit` |
-| Eliminar registros | ✅ | ✅ | ❌ | ❌ | `can_delete` |
-| Configuración empresa | ✅ | ❌ | ❌ | ❌ | `can_manage_config` |
-| Campos personalizados | ✅ | ❌ | ❌ | ❌ | `can_manage_config` |
-| Gestionar usuarios | ✅ | ✅ | ❌ | ❌ | `can_manage_equipo` |
-| Asignar superadmin | ✅ | ❌ | ❌ | ❌ | `can_assign_role` |
-| Solo lectura | ✅ | ✅ | ✅ | ✅ | `is_read_only` |
+| Acción | Superadmin | Admin | Supervisor | Técnico | Vendedor | Usuario | Solicitante | Helper |
+|--------|:----------:|:-----:|:----------:|:-------:|:--------:|:-------:|:-----------:|--------|
+| Crear catálogos | ✅ | ✅ | ✅ | ❌ | Operación comercial | ❌ | ❌ | `can_create` |
+| Editar operación | ✅ | ✅ | ✅ | Mantenimiento | Inventario | ❌ | Reportar | `can_edit` |
+| Eliminar registros | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | `can_delete` |
+| Configuración empresa | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | `can_manage_config` |
+| Gestionar usuarios | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | `can_manage_equipo` |
+| Resolver incidencias | ✅ | ✅ | ✅ | ✅ | ❌ | ❌ | ❌ | `can_manage_incidents` |
+| Reportar incidencias | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ | ✅ | `can_report_incident` |
+| Acceder a Mantenimiento | ✅ | ✅ | ✅ | ✅ | Solo incidencias | ✅ | Solo incidencias | `can_access_maintenance` |
+| Acceder a Inventario | ✅ | ✅ | ✅ | ❌ | ✅ | ✅ | ❌ | `can_access_inventory` |
 
 ---
 
-## Flags plantilla (`permission_flags`)
+## Flags de plantilla (`permission_flags`)
 
-| Flag | Uso nav / UI |
-|------|--------------|
-| `perm.crear` | Botones alta |
-| `perm.editar` | Edición |
+| Flag | Uso en navegación / UI |
+|------|-------------------------|
+| `perm.crear` | Botones de alta |
+| `perm.editar` | Edición operativa |
 | `perm.eliminar` | Borrado |
-| `perm.config` | Administración → config |
+| `perm.config` | Administración → configuración |
 | `perm.equipo` | Administración → usuarios |
-| `perm.solo_lectura` | Restricción POST |
-| `perm.reportar_incidencia` | Incidencias |
+| `perm.solo_lectura` | Restricción global de escritura |
+| `perm.solicitante` | Navegación exclusiva del reportante |
+| `perm.vendedor` | Navegación comercial + incidencias propias |
+| `perm.acceso_mantenimiento` | Visibilidad de Mantenimiento |
+| `perm.acceso_inventario` | Visibilidad de Inventario |
+| `perm.reportar_incidencia` | Reportar incidencias |
 | `perm.gestionar_incidencias` | Resolver incidencias |
 | `perm.crear_ot` | OT desde incidencia |
 
@@ -52,10 +62,11 @@
 
 | # | MRG | Producto | Estado |
 |---|-----|----------|--------|
-| D1 | Admin config avanzada | Solo superadmin | 🟡 Más restrictivo |
-| D2 | Supervisor rol | → `admin` legacy | 🟡 Aceptado |
-| D3 | Invitación email | Manual / formulario | 🟡 |
+| D1 | Admin configura avanzado | Solo superadmin | 🟡 Más restrictivo |
+| D2 | Supervisor independiente | `supervisor` | ✅ Resuelto |
+| D3 | Técnico y Vendedor separados | `tecnico` · `vendedor` | ✅ Resuelto |
+| D4 | Invitación por email | Manual / formulario | 🟡 Pendiente automatización |
 
 ---
 
-→ [Auditoría Fase 6](07-admin-audit.md) · [MRG-02 permisos mant.](02-permissions-matrix.md)
+→ [Auditoría Fase 6](07-admin-audit.md) · [MRG-02 permisos mantenimiento](02-permissions-matrix.md)

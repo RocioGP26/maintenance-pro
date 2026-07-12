@@ -80,21 +80,25 @@ Cada empresa administra **sus propios usuarios**.
 |-----|-------------|-----------|
 | **Superadministrador** | Acceso completo | Acceso completo |
 | **Administrador** | Gestión operativa | Gestión operativa |
+| **Supervisor** | Coordina, asigna y cambia estados | Coordinación operativa |
 | **Técnico** | Órdenes de trabajo | — |
-| **Vendedor** | — | Ventas y clientes |
-| **Usuario** | Consulta | Consulta |
+| **Vendedor** | Reporte y seguimiento de incidencias propias | Inventario, ventas y clientes |
+| **Usuario — solo consulta** | Consulta general | Consulta general |
+| **Solicitante / Reportante** | Reporta y consulta incidencias propias | — |
 
-Cuando un tenant únicamente dispone del módulo **Inventario**, el rol Técnico se presenta como **Vendedor** (misma clave `tecnico` en plataforma).
+`tecnico` y `vendedor` son claves independientes. En empresas con ambos módulos, el Técnico no entra a Inventario y el Vendedor no entra a la operación de Mantenimiento, salvo el reporte y seguimiento de sus propias incidencias.
+
+El acceso también considera el área del usuario: un `admin` cuya área contiene **Mantenimiento** no puede acceder al módulo de Inventario. Esta restricción no aplica al `superadmin`, que conserva acceso completo.
 
 ### Matriz de permisos (resumen)
 
-| Acción | Superadmin | Admin | Técnico/Vendedor | Usuario |
-|--------|------------|-------|------------------|---------|
-| Crear / eliminar catálogos | ✅ | ✅ | ❌ | ❌ |
-| Editar operación (OT, ventas…) | ✅ | ✅ | ✅ | ❌ |
-| Configuración avanzada empresa | ✅ | ❌ | ❌ | ❌ |
-| Gestionar equipo | ✅ | ✅ | ❌ | ❌ |
-| Solo lectura | ✅ | ✅ | ✅ | ✅ |
+| Acción | Superadmin | Admin | Supervisor | Técnico | Vendedor | Usuario | Solicitante |
+|--------|------------|-------|------------|---------|----------|---------|-------------|
+| Crear catálogos | ✅ | ✅ | ✅ | ❌ | Operación comercial | ❌ | ❌ |
+| Editar operación | ✅ | ✅ | ✅ | Solo mantenimiento | Solo inventario | ❌ | Incidencias propias |
+| Eliminar registros | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ |
+| Configuración avanzada | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
+| Gestionar equipo | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ |
 
 → [MRG-02 · Mantenimiento · Roles](02-maintenance.md) · [MRG-05 · Ventas](05-ventas.md)
 

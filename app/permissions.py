@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from enum import Enum
 from typing import Optional
+import unicodedata
 
 from flask_login import AnonymousUserMixin
 
@@ -11,46 +12,49 @@ from flask_login import AnonymousUserMixin
 class UserRole(str, Enum):
     SUPERADMIN = "superadmin"
     ADMIN = "admin"
+    SUPERVISOR = "supervisor"
     TECNICO = "tecnico"
+    VENDEDOR = "vendedor"
     USUARIO = "usuario"
+    SOLICITANTE = "solicitante"
 
 
 # Rol legado → permisos de administrador
 _LEGACY_ROLE_MAP = {
-    "supervisor": UserRole.ADMIN.value,
     "admin": UserRole.ADMIN.value,
 }
 
 USER_ROLE_LABELS = {
     UserRole.SUPERADMIN.value: "Superadministrador",
     UserRole.ADMIN.value: "Administrador",
+    UserRole.SUPERVISOR.value: "Supervisor",
     UserRole.TECNICO.value: "Técnico",
-    UserRole.USUARIO.value: "Usuario",
-}
-
-# Etiqueta del rol operativo (tecnico) en empresas con inventario comercial
-USER_ROLE_LABELS_INVENTARIO = {
-    **USER_ROLE_LABELS,
-    UserRole.TECNICO.value: "Vendedor",
+    UserRole.VENDEDOR.value: "Vendedor",
+    UserRole.USUARIO.value: "Usuario — solo consulta",
+    UserRole.SOLICITANTE.value: "Solicitante / Reportante",
 }
 
 USER_ROLE_HELP = {
     UserRole.SUPERADMIN.value: "Crear, editar y eliminar en todo el sistema.",
     UserRole.ADMIN.value: "Editar y eliminar registros operativos.",
+    UserRole.SUPERVISOR.value: "Coordinar, asignar y cambiar estados operativos.",
     UserRole.TECNICO.value: "Editar registros (sin crear ni eliminar).",
-    UserRole.USUARIO.value: "Consulta operativa y reporte de incidencias.",
+    UserRole.VENDEDOR.value: "Gestionar inventario comercial y reportar incidencias.",
+    UserRole.USUARIO.value: "Consulta general de los módulos autorizados, sin modificaciones.",
+    UserRole.SOLICITANTE.value: "Reportar incidencias y consultar únicamente sus propios reportes.",
 }
 
 USER_ROLE_HELP_MANTENIMIENTO = {
     **USER_ROLE_HELP,
     UserRole.ADMIN.value: "Configura activos y OT; asigna técnicos; crea OT desde incidencias.",
     UserRole.TECNICO.value: "Ejecuta OT, registra jornadas y repuestos; puede resolver incidencias.",
-    UserRole.USUARIO.value: "Consulta operativa y reporte de incidencias (rol Solicitante).",
+    UserRole.USUARIO.value: "Consulta general de mantenimiento, OT, incidencias e indicadores.",
+    UserRole.SOLICITANTE.value: "Reporta incidencias y hace seguimiento solo a las propias.",
 }
 
 USER_ROLE_HELP_INVENTARIO = {
     **USER_ROLE_HELP,
-    UserRole.TECNICO.value: "Registrar ventas, compras y stock (sin crear catálogos ni eliminar).",
+    UserRole.VENDEDOR.value: "Registrar ventas, compras y stock; puede reportar incidencias.",
 }
 
 
@@ -67,15 +71,29 @@ def _rol(user) -> str:
     return normalize_rol(getattr(user, "rol", ""))
 
 
+def _area_normalizada(user) -> str:
+    raw = (getattr(user, "area", "") or "").strip().lower()
+    return "".join(
+        char for char in unicodedata.normalize("NFKD", raw)
+        if not unicodedata.combining(char)
+    )
+
+
 def can_create(user) -> bool:
-    return _rol(user) in (UserRole.SUPERADMIN.value, UserRole.ADMIN.value)
+    return _rol(user) in (
+        UserRole.SUPERADMIN.value,
+        UserRole.ADMIN.value,
+        UserRole.SUPERVISOR.value,
+    )
 
 
 def can_edit(user) -> bool:
     return _rol(user) in (
         UserRole.SUPERADMIN.value,
         UserRole.ADMIN.value,
+        UserRole.SUPERVISOR.value,
         UserRole.TECNICO.value,
+        UserRole.VENDEDOR.value,
     )
 
 
@@ -95,6 +113,14 @@ def is_read_only(user) -> bool:
     return _rol(user) == UserRole.USUARIO.value
 
 
+def is_requester(user) -> bool:
+    return _rol(user) == UserRole.SOLICITANTE.value
+
+
+def is_vendor(user) -> bool:
+    return _rol(user) == UserRole.VENDEDOR.value
+
+
 def _modulos_empresa(empresa) -> list[str]:
     if empresa is None:
         return []
@@ -104,7 +130,7 @@ def _modulos_empresa(empresa) -> list[str]:
 
 
 def usa_terminologia_inventario(modulos_activos: list[str] | None) -> bool:
-    """True si la empresa usa inventario comercial (rol operativo = Vendedor)."""
+    """True cuando la empresa tiene habilitado Inventario comercial."""
     from app.modules import MODULO_INVENTARIO
 
     mods = modulos_activos or []
@@ -122,22 +148,35 @@ def role_display_label(
 
     key = normalize_rol(rol)
     mods = modulos_activos if modulos_activos is not None else _modulos_empresa(empresa)
-    labels = USER_ROLE_LABELS
-    if key == UserRole.TECNICO.value and MODULO_INVENTARIO in mods:
-        if MODULO_MANTENIMIENTO in mods:
-            return "Vendedor / Técnico"
-        labels = USER_ROLE_LABELS_INVENTARIO
-    return labels.get(key, USER_ROLE_LABELS.get(key, rol or "—"))
+    return USER_ROLE_LABELS.get(key, rol or "—")
 
 
 def can_report_incident(user) -> bool:
-    """Cualquier usuario autenticado puede reportar incidencias (MRG Solicitante)."""
-    return getattr(user, "is_authenticated", False)
+    """El rol de consulta no crea; los roles operativos y solicitante sí reportan."""
+    return getattr(user, "is_authenticated", False) and not is_read_only(user)
 
 
 def can_manage_incidents(user) -> bool:
     """Supervisor / técnico: revisar y resolver incidencias (no rol Usuario)."""
-    return can_edit(user) and not is_read_only(user)
+    return _rol(user) in (
+        UserRole.SUPERADMIN.value,
+        UserRole.ADMIN.value,
+        UserRole.SUPERVISOR.value,
+        UserRole.TECNICO.value,
+    )
+
+
+def can_access_maintenance(user) -> bool:
+    return _rol(user) != UserRole.VENDEDOR.value
+
+
+def can_access_inventory(user) -> bool:
+    rol = _rol(user)
+    if rol == UserRole.TECNICO.value:
+        return False
+    if rol == UserRole.ADMIN.value and "mantenimiento" in _area_normalizada(user):
+        return False
+    return True
 
 
 def can_create_work_order(user) -> bool:
@@ -184,6 +223,11 @@ def roles_for_select(
     """Opciones de rol que el usuario actual puede asignar."""
     mods = modulos_activos if modulos_activos is not None else _modulos_empresa(empresa)
     keys = list(USER_ROLE_LABELS.keys())
+    from app.modules import MODULO_INVENTARIO, MODULO_MANTENIMIENTO
+    if MODULO_MANTENIMIENTO not in mods:
+        keys = [k for k in keys if k != UserRole.TECNICO.value]
+    if MODULO_INVENTARIO not in mods:
+        keys = [k for k in keys if k != UserRole.VENDEDOR.value]
     if _rol(user) != UserRole.SUPERADMIN.value:
         keys = [k for k in keys if k != UserRole.SUPERADMIN.value]
     return [(k, role_display_label(k, modulos_activos=mods)) for k in keys]
@@ -198,6 +242,11 @@ def permission_flags(user) -> dict:
         "config": can_manage_config(user),
         "equipo": can_manage_equipo(user),
         "solo_lectura": is_read_only(user),
+        "solicitante": is_requester(user),
+        "vendedor": is_vendor(user),
+        "acceso_mantenimiento": can_access_maintenance(user),
+        "acceso_inventario": can_access_inventory(user),
+        "perfil": getattr(user, "is_authenticated", False),
         "reportar_incidencia": can_report_incident(user),
         "gestionar_incidencias": can_manage_incidents(user),
         "crear_ot": can_create_work_order(user),
@@ -208,7 +257,17 @@ def permission_flags(user) -> dict:
 USUARIO_POST_ENDPOINTS = frozenset(
     {
         "main.logout",
+        "main.mi_perfil",
+    }
+)
+
+SOLICITANTE_ENDPOINTS = frozenset(
+    {
+        "main.logout",
         "main.incidencia",
+        "main.incidencias_list",
+        "main.incidencias_detail",
+        "main.mi_perfil",
         "main.incidencias_accion",
     }
 )
@@ -237,7 +296,6 @@ EQUIPO_ENDPOINTS = frozenset(
         "main.equipo_list",
         "main.equipo_new",
         "main.equipo_edit",
-        "main.mi_perfil",
     }
 )
 

@@ -1,4 +1,4 @@
-"""Logging estructurado para Mantis."""
+"""Logging estructurado para Maintix."""
 
 from __future__ import annotations
 

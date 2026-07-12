@@ -4,13 +4,10 @@
 
 {% block content %}
 <div class="row justify-content-center">
-  <div class="col-lg-8">
+  <div class="col-12">
     <p class="text-muted small mb-2">
-      {% if usuario %}
-      Actualiza los datos de acceso de este miembro del equipo.
-      {% else %}
-      Crea una cuenta para un nuevo miembro de tu empresa. Comparte el usuario y la contraseña con la persona invitada.
-      {% endif %}
+      {% if usuario %}Actualiza los datos de acceso de este miembro del equipo.
+      {% else %}Crea una cuenta para un nuevo miembro de tu empresa. Comparte el usuario y la contraseña con la persona invitada.{% endif %}
     </p>
     <div class="card card-dashboard">
       <div class="card-body">
@@ -20,20 +17,48 @@
         <form method="post">
           {% include "_csrf.html" %}
           <div class="row g-3">
-            <div class="col-12">
+            <div class="col-12 col-md-6 col-xl-4">
               <label class="form-label" for="username">1. Usuario de acceso *</label>
               <input type="text" name="username" id="username" class="form-control font-monospace" required
                      autocomplete="username" placeholder="ej. jperez" pattern="[a-z0-9._-]{3,}"
                      value="{{ usuario.username if usuario else '' }}">
               <div class="form-text">Mín. 3 caracteres; minúsculas, números, . _ -</div>
             </div>
-            <div class="col-12">
+            <div class="col-12 col-md-6 col-xl-4">
               <label class="form-label" for="nombre_visible">2. Nombre completo *</label>
               <input type="text" name="nombre_visible" id="nombre_visible" class="form-control" required
                      value="{{ usuario.nombre_visible if usuario else '' }}">
             </div>
-            <div class="col-md-6">
-              <label class="form-label" for="rol">3. Rol *</label>
+            <div class="col-12 col-md-6 col-xl-4">
+              <label class="form-label" for="area">3. Área</label>
+              <input type="text" name="area" id="area" class="form-control"
+                     value="{{ usuario.area if usuario else '' }}" placeholder="Mantenimiento, producción…">
+            </div>
+            <div class="col-12 col-md-6 col-xl-4">
+              <label class="form-label" for="cargo">4. Cargo</label>
+              <input type="text" name="cargo" id="cargo" class="form-control"
+                     value="{{ usuario.cargo if usuario else '' }}" placeholder="Jefe de mantenimiento, operario…">
+            </div>
+            <div class="col-12 col-md-6 col-xl-4">
+              <label class="form-label" for="sede_id">5. Sede</label>
+              <select name="sede_id" id="sede_id" class="form-select">
+                <option value="">— Sin sede —</option>
+                {% for s in sedes %}
+                <option value="{{ s.id }}" {% if usuario and usuario.sede_id == s.id %}selected{% endif %}>{{ s.nombre }}{% if s.es_principal %} (principal){% endif %}</option>
+                {% endfor %}
+              </select>
+              {% if not sedes %}<div class="form-text">Define sedes en Configuración → Empresa.</div>{% endif %}
+            </div>
+            <div class="col-12 col-md-6 col-xl-4">
+              <label class="form-label" for="email">6. Correo</label>
+              <input type="email" name="email" id="email" class="form-control" value="{{ usuario.email if usuario else '' }}">
+            </div>
+            <div class="col-12 col-md-6 col-xl-4">
+              <label class="form-label" for="telefono">7. Teléfono</label>
+              <input type="text" name="telefono" id="telefono" class="form-control" value="{{ usuario.telefono if usuario else '' }}">
+            </div>
+            <div class="col-12 col-md-6 col-xl-4">
+              <label class="form-label" for="rol">8. Rol *</label>
               {% if usuario and es_self|default(false) %}
               <input type="text" class="form-control" value="{{ usuario.rol_label }}" readonly>
               <input type="hidden" name="rol" value="{{ usuario.rol }}">
@@ -43,63 +68,38 @@
                 <option value="{{ r_key }}" {% if usuario and usuario.rol == r_key %}selected{% elif not usuario and r_key == 'tecnico' %}selected{% endif %}>{{ r_lbl }}</option>
                 {% endfor %}
               </select>
-              <div class="form-text small">
-                Superadministrador: {{ roles_ayuda.get('superadmin', '') }}
-                Administrador: {{ roles_ayuda.get('admin', '') }}
-                {% if mod_inventario and not mod_mantenimiento %}
-                Vendedor: {{ roles_ayuda.get('tecnico', '') }}
-                {% elif mod_inventario and mod_mantenimiento %}
-                Vendedor / Técnico: {{ roles_ayuda.get('tecnico', '') }}
-                {% else %}
-                Técnico: {{ roles_ayuda.get('tecnico', '') }}
-                {% endif %}
-                Usuario: {{ roles_ayuda.get('usuario', '') }}
-              </div>
               {% endif %}
             </div>
-            <div class="col-md-6">
-              <label class="form-label" for="area">4. Área</label>
-              <input type="text" name="area" id="area" class="form-control"
-                     value="{{ usuario.area if usuario else '' }}"
-                     placeholder="Mantenimiento, producción…">
-            </div>
-            <div class="col-md-6">
-              <label class="form-label" for="sede_id">5. Sede</label>
-              <select name="sede_id" id="sede_id" class="form-select">
-                <option value="">— Sin sede —</option>
-                {% for s in sedes %}
-                <option value="{{ s.id }}" {% if usuario and usuario.sede_id == s.id %}selected{% endif %}>{{ s.nombre }}{% if s.es_principal %} (principal){% endif %}</option>
-                {% endfor %}
-              </select>
-              {% if not sedes %}
-              <div class="form-text">Define sedes en Configuración → Empresa.</div>
-              {% endif %}
-            </div>
-            <div class="col-md-6">
-              <label class="form-label" for="telefono">6. Teléfono</label>
-              <input type="text" name="telefono" id="telefono" class="form-control"
-                     value="{{ usuario.telefono if usuario else '' }}">
-            </div>
-            <div class="col-12">
-              <label class="form-label" for="email">7. Correo</label>
-              <input type="email" name="email" id="email" class="form-control"
-                     value="{{ usuario.email if usuario else '' }}">
-            </div>
-            <div class="col-md-6">
-              <label class="form-label" for="password">8. Contraseña{% if not usuario %} *{% endif %}</label>
+            <div class="col-12 col-md-6 col-xl-4">
+              <label class="form-label" for="password">9. Contraseña{% if not usuario %} *{% endif %}</label>
               <input type="password" name="password" id="password" class="form-control"
                      autocomplete="new-password" {% if not usuario %}required{% endif %}>
-              {% if usuario %}
-              <div class="form-text">Déjala en blanco para no cambiar.</div>
-              {% else %}
-              <div class="form-text">{{ password_requirements }}</div>
-              {% endif %}
+              {% if usuario %}<div class="form-text">Déjala en blanco para no cambiar.</div>
+              {% else %}<div class="form-text">{{ password_requirements }}</div>{% endif %}
             </div>
-            <div class="col-md-6">
-              <label class="form-label" for="password2">9. Confirmar contraseña{% if not usuario %} *{% endif %}</label>
+            <div class="col-12 col-md-6 col-xl-4">
+              <label class="form-label" for="password2">10. Confirmar contraseña{% if not usuario %} *{% endif %}</label>
               <input type="password" name="password2" id="password2" class="form-control"
                      autocomplete="new-password" {% if not usuario %}required{% endif %}>
             </div>
+
+            {% if not (usuario and es_self|default(false)) %}
+            <div class="col-12">
+              <details class="small text-muted">
+                <summary class="text-primary">Ver descripción de los roles</summary>
+                <div class="mt-2">
+                  Superadministrador: {{ roles_ayuda.get('superadmin', '') }}<br>
+                  Administrador: {{ roles_ayuda.get('admin', '') }}<br>
+                  Supervisor: {{ roles_ayuda.get('supervisor', '') }}<br>
+                  Técnico: {{ roles_ayuda.get('tecnico', '') }}<br>
+                  Vendedor: {{ roles_ayuda.get('vendedor', '') }}<br>
+                  Usuario: {{ roles_ayuda.get('usuario', '') }}<br>
+                  Solicitante: {{ roles_ayuda.get('solicitante', '') }}
+                </div>
+              </details>
+            </div>
+            {% endif %}
+
             {% if not es_self|default(false) %}
             <div class="col-12">
               <div class="form-check">
@@ -111,15 +111,14 @@
             {% else %}
             <input type="hidden" name="activo" value="1">
             {% endif %}
+
             {% if campos_personalizados %}
             <div class="col-12"><hr class="my-1"><p class="small text-muted mb-0">Campos adicionales</p></div>
             {% include "includes/campos_personalizados_fields.html" %}
             {% endif %}
           </div>
           <div class="d-flex flex-wrap gap-2 mt-4">
-            <button type="submit" class="btn btn-primary">
-              {% if usuario %}Guardar cambios{% else %}Invitar usuario{% endif %}
-            </button>
+            <button type="submit" class="btn btn-primary">{% if usuario %}Guardar cambios{% else %}Invitar usuario{% endif %}</button>
             <a href="{{ url_for('main.equipo_list') }}" class="btn btn-outline-secondary">Cancelar</a>
           </div>
         </form>

@@ -32,15 +32,30 @@
       {% set ep = request.endpoint or '' %}
       {% set mod_mant = mod_mantenimiento|default(true) %}
       {% set mod_inv = mod_inventario|default(false) %}
-      {% set dash_url = url_for('inv_comercial.dashboard_inventario') if mod_inv and not mod_mant else url_for('main.dashboard') %}
+      {% set dash_url = url_for('inv_comercial.dashboard_inventario') if mod_inv and (not mod_mant or perm.vendedor) else url_for('main.dashboard') %}
       {% set es_submenu_equipos = ep in ['main.activos_list', 'main.activos_new', 'main.activos_edit'] %}
       {% set es_submenu_tipos = ep.startswith('main.activos_tipo') %}
       {% set menu_activos_abierto = es_submenu_equipos or es_submenu_tipos %}
       <nav class="nav flex-column flex-grow-1 py-2">
+        {% if perm.solicitante %}
+        <p class="sidebar-module-label px-3 small text-uppercase text-white-50 mb-1 mt-2">Solicitante</p>
+        <a class="nav-link {% if ep in ['main.incidencias_list', 'main.incidencias_detail'] %}active{% endif %}"
+           href="{{ url_for('main.incidencias_list') }}">
+          <i class="bi bi-exclamation-circle me-2"></i> Mis incidencias
+        </a>
+        <a class="nav-link {% if ep == 'main.incidencia' %}active{% endif %}"
+           href="{{ url_for('main.incidencia') }}">
+          <i class="bi bi-send me-2"></i> Reportar incidencia
+        </a>
+        <a class="nav-link {% if ep == 'main.mi_perfil' %}active{% endif %}"
+           href="{{ url_for('main.mi_perfil') }}">
+          <i class="bi bi-person-circle me-2"></i> Mi perfil
+        </a>
+        {% else %}
         <a id="tour-nav-dashboard" class="nav-link {% if request.endpoint in ['main.dashboard', 'inv_comercial.dashboard_inventario'] %}active{% endif %}" href="{{ dash_url }}">
           <i class="bi bi-house-door me-2"></i> Dashboard
         </a>
-        {% if mod_mant %}
+        {% if mod_mant and perm.acceso_mantenimiento %}
         <p class="sidebar-module-label px-3 small text-uppercase text-white-50 mb-1 mt-2">Mantenimiento</p>
         <div class="sidebar-nav-group">
           <button type="button" id="tour-nav-activos" class="nav-link sidebar-nav-toggle w-100 text-start {% if menu_activos_abierto %}active-parent{% endif %}"
@@ -97,7 +112,7 @@
         <a class="nav-link {% if request.endpoint and (request.endpoint.startswith('main.incidencias') or request.endpoint == 'main.incidencia') %}active{% endif %}" href="{{ url_for('main.incidencias_list') }}">
           <i class="bi bi-exclamation-triangle me-2"></i> Incidencias
         </a>
-        {% if mod_inv %}
+        {% if mod_inv and perm.acceso_inventario %}
         {% set es_submenu_rep_mant = ep == 'main.reportes' %}
         {% set es_submenu_rep_com = ep == 'inv_comercial.dashboard_inventario' %}
         {% set menu_indicadores_abierto = es_submenu_rep_mant or es_submenu_rep_com %}
@@ -127,8 +142,16 @@
         </a>
         {% endif %}
         {% endif %}
-        {% if mod_inv %}
+        {% if mod_inv and perm.acceso_inventario %}
         <p class="sidebar-module-label px-3 small text-uppercase text-white-50 mb-1 mt-2">Inventario comercial</p>
+        {% if perm.vendedor and mod_mant %}
+        <a class="nav-link {% if ep == 'main.incidencia' %}active{% endif %}" href="{{ url_for('main.incidencia') }}">
+          <i class="bi bi-send me-2"></i> Reportar incidencia
+        </a>
+        <a class="nav-link {% if ep in ['main.incidencias_list', 'main.incidencias_detail'] %}active{% endif %}" href="{{ url_for('main.incidencias_list') }}">
+          <i class="bi bi-exclamation-circle me-2"></i> Mis incidencias
+        </a>
+        {% endif %}
         <a class="nav-link {% if ep == 'inv_comercial.productos_list' %}active{% endif %}" href="{{ url_for('inv_comercial.productos_list') }}">
           <i class="bi bi-box2-heart me-2"></i> Productos
         </a>
@@ -231,9 +254,10 @@
           </div>
         </div>
         {% endif %}
+        {% endif %}
       </nav>
       <div class="mt-auto sidebar-footer-actions">
-        {% if mod_mant %}
+        {% if mod_mant and perm.reportar_incidencia and not perm.solicitante and not perm.vendedor %}
         <a href="{{ url_for('main.incidencia') }}" class="btn btn-report-incident w-100 rounded-0 d-flex align-items-center justify-content-center gap-2">
           <i class="bi bi-exclamation-triangle-fill"></i> Reportar Incidencia
         </a>
@@ -261,7 +285,7 @@
             </div>
             <div class="header-user-divider" aria-hidden="true"></div>
             <div class="header-user-info d-none d-sm-flex flex-column">
-              {% if perm.equipo %}
+              {% if perm.perfil %}
               <a href="{{ url_for('main.mi_perfil') }}" class="header-user-name text-decoration-none">{{ current_user.etiqueta()|upper }}</a>
               {% else %}
               <span class="header-user-name">{{ current_user.etiqueta()|upper }}</span>
@@ -272,7 +296,7 @@
             </div>
             {% set nombre_usuario = current_user.etiqueta() %}
             {% set partes_nombre = nombre_usuario.split() %}
-            {% if perm.equipo %}
+            {% if perm.perfil %}
             <a href="{{ url_for('main.mi_perfil') }}" class="header-user-avatar{% if empresa_logo_url %} header-user-avatar--logo{% endif %}"
                   title="Mi perfil">
               {% if empresa_logo_url %}

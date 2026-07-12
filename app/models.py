@@ -330,7 +330,7 @@ class PlatformAuditLog(db.Model):
     empresa_id = db.Column(db.Integer, db.ForeignKey("empresas.id"), nullable=True, index=True)
     user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=True, index=True)
     accion = db.Column(db.String(32), nullable=False, index=True)
-    actor_label = db.Column(db.String(120), nullable=False, default="Soporte Mantis")
+    actor_label = db.Column(db.String(120), nullable=False, default="Soporte Maintix")
     detalle = db.Column(db.String(500), default="")
     ip_address = db.Column(db.String(45), default="")
     visible_cliente = db.Column(db.Boolean, default=True, nullable=False)
@@ -412,6 +412,7 @@ class User(UserMixin, db.Model):
     nombre_visible = db.Column(db.String(120), default="")
     telefono = db.Column(db.String(40), default="")
     area = db.Column(db.String(120), default="")
+    cargo = db.Column(db.String(120), default="")
     sede_id = db.Column(db.Integer, db.ForeignKey("sedes.id"), nullable=True, index=True)
     rol = db.Column(db.String(32), default=UserRole.ADMIN.value)
     activo = db.Column(db.Boolean, default=True)
@@ -634,6 +635,9 @@ class Machine(db.Model):
     valor_compra = db.Column(db.Float, nullable=True)
     moneda_compra = db.Column(db.String(8), default="")
     proveedor = db.Column(db.String(200), default="")
+    proveedor_id = db.Column(
+        db.Integer, db.ForeignKey("proveedores.id"), nullable=True, index=True
+    )
     tiempo_garantia_meses = db.Column(db.Integer, nullable=True)
     garantia_hasta = db.Column(db.Date, nullable=True)
     manual_url = db.Column(db.String(500), default="")
@@ -645,6 +649,8 @@ class Machine(db.Model):
     responsable_technician_id = db.Column(
         db.Integer, db.ForeignKey("technicians.id"), nullable=True, index=True
     )
+    responsable_area = db.Column(db.String(120), default="")
+    responsable_cargo = db.Column(db.String(120), default="")
     status = db.Column(db.String(32), default=MachineStatus.OPERATIVO.value)
     es_critico = db.Column(db.Boolean, default=False)
     notas = db.Column(db.Text, default="")
@@ -656,6 +662,11 @@ class Machine(db.Model):
         "Technician",
         foreign_keys=[responsable_technician_id],
         backref="activos_responsable",
+    )
+    proveedor_relacionado = db.relationship(
+        "Proveedor",
+        foreign_keys=[proveedor_id],
+        backref="activos",
     )
 
     @property
@@ -2127,6 +2138,7 @@ def ensure_saas_schema():
         _add_column_if_missing("users", "telefono", "telefono VARCHAR(40)")
         _add_column_if_missing("users", "rol", "rol VARCHAR(32)")
         _add_column_if_missing("users", "area", "area VARCHAR(120)")
+        _add_column_if_missing("users", "cargo", "cargo VARCHAR(120)")
         _add_column_if_missing("users", "sede_id", "sede_id INTEGER")
         _add_column_if_missing(
             "users", "onboarding_completado", "onboarding_completado BOOLEAN DEFAULT 0"
@@ -2144,6 +2156,9 @@ def ensure_saas_schema():
         _add_column_if_missing("machines", "vida_util_anios", "vida_util_anios INTEGER")
         _add_column_if_missing("machines", "horas_operacion", "horas_operacion REAL")
         _add_column_if_missing("machines", "valor_compra", "valor_compra REAL")
+        _add_column_if_missing("machines", "proveedor_id", "proveedor_id INTEGER")
+        _add_column_if_missing("machines", "responsable_area", "responsable_area VARCHAR(120)")
+        _add_column_if_missing("machines", "responsable_cargo", "responsable_cargo VARCHAR(120)")
         _add_column_if_missing("machines", "garantia_hasta", "garantia_hasta DATE")
         _add_column_if_missing("machines", "ficha_tecnica_url", "ficha_tecnica_url VARCHAR(500)")
         _add_column_if_missing(
