@@ -740,6 +740,12 @@
       if (e.relatedTarget && e.relatedTarget.id === 'btnAbrirModalJornada') {
         editIndex = -1;
         limpiarModal();
+        // En jornadas adicionales los repuestos ya instalados se consultan
+        // únicamente en la tabla principal de la OT.
+        if (typeof seccionRep !== 'undefined' && seccionRep) {
+          var esCorrectivo = selectTipo && selectTipo.value === 'correctivo';
+          seccionRep.classList.toggle('d-none', !esCorrectivo || jornadas.length > 0);
+        }
       }
     });
   }
