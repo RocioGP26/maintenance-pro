@@ -36,8 +36,11 @@
 |-----|-------|--------|
 | Superadministrador | `superadmin` | ✅ |
 | Administrador | `admin` | ✅ |
-| Técnico / Vendedor | `tecnico` | ✅ label dinámico |
-| Usuario | `usuario` | ✅ |
+| Supervisor | `supervisor` | ✅ independiente |
+| Técnico | `tecnico` | ✅ solo Mantenimiento |
+| Vendedor | `vendedor` | ✅ solo Inventario + reportante |
+| Usuario — solo consulta | `usuario` | ✅ |
+| Solicitante / Reportante | `solicitante` | ✅ incidencias propias |
 
 → Matriz completa: [07-permissions-matrix.md](07-permissions-matrix.md) · Mantenimiento: [02-permissions-matrix.md](02-permissions-matrix.md)
 
