@@ -3207,21 +3207,11 @@ def ordenes_new():
             db.session.add(wo)
             db.session.flush()
             numero = asignar_numero_ot(wo)
-            err = _guardar_jornadas_orden(wo)
-            if err:
-                db.session.rollback()
-                flash(err, "danger")
-            else:
-                _aplicar_estado_orden_desde_formulario(wo)
-                _aplicar_fecha_cierre_si_terminal(wo)
-                err_rep = _guardar_repuestos_orden(wo)
-                if err_rep:
-                    db.session.rollback()
-                    flash(err_rep, "danger")
-                else:
-                    db.session.commit()
-                    flash(f"Orden {numero} creada.", "success")
-                    return redirect(url_for("main.ordenes_list"))
+            # La creación solo planifica la OT. Jornadas, repuestos, tiempos y
+            # decisiones de ejecución se registran al abrir la orden guardada.
+            db.session.commit()
+            flash(f"Orden {numero} creada. Ábrela para iniciar su ejecución.", "success")
+            return redirect(url_for("main.ordenes_list"))
     return render_template(
         "ordenes/form.html",
         order=None,
@@ -5028,9 +5018,10 @@ def incidencias_crear_ot(id):
         empresa_id=inc.empresa_id or _current_empresa_id(),
         fecha_programada=hoy,
         machine_id=inc.machine_id,
+        technician_id=inc.tecnico_asignado_id,
         area=inc.area or "",
         ubicacion=inc.ubicacion or "",
-        maquina_requirio_paro=bool(inc.equipo_detenido),
+        maquina_requirio_paro=False,
     )
     db.session.add(wo)
     db.session.flush()
@@ -5038,5 +5029,8 @@ def incidencias_crear_ot(id):
     inc.work_order_id = wo.id
     _cambiar_estado(inc, IncidentEstado.PENDIENTE_OT.value, "ot_creada", f"OT {numero} vinculada")
     db.session.commit()
-    flash(f"OT {numero} creada desde la incidencia {inc.numero}.", "success")
-    return redirect(url_for("main.ordenes_edit", id=wo.id))
+    flash(
+        f"OT {numero} creada desde la incidencia {inc.numero}. Ábrela cuando vayas a iniciar su ejecución.",
+        "success",
+    )
+    return redirect(url_for("main.ordenes_list"))
