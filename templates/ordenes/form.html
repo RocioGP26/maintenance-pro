@@ -452,7 +452,7 @@
             <label class="form-label fw-semibold" for="jornadaHoraFin">Hora fin</label>
             <input type="time" class="form-control" id="jornadaHoraFin" required>
           </div>
-          <div class="col-12">
+          <div class="col-12" id="wrapJornadaTecnico">
             <label class="form-label fw-semibold" for="jornadaTecnico">Técnico realizador (esta jornada)</label>
             <select class="form-select" id="jornadaTecnico">
               <option value="">— Seleccionar —</option>
@@ -697,11 +697,21 @@
 
   function toggleTecnicoNombre() {
     var sel = document.getElementById('jornadaTecnico');
+    var wrapSel = document.getElementById('wrapJornadaTecnico');
     var wrap = document.getElementById('wrapTecnicoNombre');
     var inp = document.getElementById('jornadaTecnicoNombre');
-    var esOtro = sel && sel.value === 'otro';
-    if (wrap) wrap.style.display = esOtro || !sel.value ? '' : 'none';
-    if (inp) inp.required = esOtro;
+    var externo = document.querySelector('input[name="ejecucion_tipo"]:checked')?.value === 'externo';
+    if (wrapSel) wrapSel.style.display = externo ? 'none' : '';
+    if (wrap) wrap.style.display = externo ? '' : 'none';
+    if (sel) {
+      sel.required = !externo;
+      if (externo) sel.value = 'otro';
+      else if (sel.value === 'otro') sel.value = '';
+    }
+    if (inp) {
+      inp.required = externo;
+      if (!externo) inp.value = '';
+    }
   }
 
   function limpiarModal() {
@@ -751,6 +761,9 @@
   }
 
   document.getElementById('jornadaTecnico').addEventListener('change', toggleTecnicoNombre);
+  document.querySelectorAll('input[name="ejecucion_tipo"]').forEach(function (radio) {
+    radio.addEventListener('change', toggleTecnicoNombre);
+  });
 
   if (!soloLectura) document.getElementById('btnGuardarJornada').addEventListener('click', function () {
     var fecha = document.getElementById('jornadaFecha').value;
@@ -758,6 +771,7 @@
     var horaFin = document.getElementById('jornadaHoraFin').value;
     var tech = document.getElementById('jornadaTecnico').value;
     var nombre = document.getElementById('jornadaTecnicoNombre').value.trim();
+    var ejecucionExterna = document.querySelector('input[name="ejecucion_tipo"]:checked')?.value === 'externo';
     var recibidoPor = document.getElementById('jornadaRecibidoPor').value.trim();
     var requirioParo = document.querySelector('input[name="jornadaRequirioParo"]:checked')?.value === '1';
     var desc = document.getElementById('jornadaDescripcion').value.trim();
@@ -770,11 +784,11 @@
       alert('La hora fin debe ser posterior a la hora inicio.');
       return;
     }
-    if (!tech) {
+    if (!ejecucionExterna && !tech) {
       alert('Selecciona el técnico realizador.');
       return;
     }
-    if (tech === 'otro' && !nombre) {
+    if (ejecucionExterna && !nombre) {
       alert('Indica el nombre del técnico o empresa.');
       return;
     }
@@ -787,8 +801,8 @@
       fecha: fecha,
       hora_inicio: horaIni,
       hora_fin: horaFin,
-      technician_id: tech,
-      tecnico_nombre: tech === 'otro' ? nombre : '',
+      technician_id: ejecucionExterna ? 'otro' : tech,
+      tecnico_nombre: ejecucionExterna ? nombre : '',
       recibido_por: recibidoPor,
       requirio_paro: requirioParo,
       descripcion: desc
