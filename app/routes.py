@@ -1087,6 +1087,16 @@ def _apply_machine_base_fields(machine: Machine, form) -> Optional[str]:
     machine.moneda_compra = normalizar_moneda(form.get("moneda_compra"), moneda_emp)
     machine.valor_compra = parsear_monto_form(form.get("valor_compra"), machine.moneda_compra)
     machine.proveedor = form.get("proveedor", "").strip()
+    raw_proveedor = (form.get("proveedor_id") or "").strip()
+    machine.proveedor_id = int(raw_proveedor) if raw_proveedor.isdigit() else None
+    if machine.proveedor_id:
+        proveedor = _filter_empresa(
+            Proveedor.query.filter_by(id=machine.proveedor_id, activo=True), Proveedor
+        ).first()
+        if proveedor is None:
+            return "Selecciona un proveedor activo de tu empresa."
+        # Conserva el campo textual para exportaciones y registros antiguos.
+        machine.proveedor = proveedor.nombre
     machine.tiempo_garantia_meses = _parse_int_form(form.get("tiempo_garantia_meses"))
     machine.garantia_hasta = calcular_garantia_hasta(
         machine.fecha_compra, machine.tiempo_garantia_meses
@@ -1181,6 +1191,14 @@ def _activos_form_context(
         if eid
         else []
     )
+    proveedores_activo = (
+        _filter_empresa(
+            Proveedor.query.filter(Proveedor.activo.is_(True)).order_by(Proveedor.nombre),
+            Proveedor,
+        ).all()
+        if eid
+        else []
+    )
     campos_estandar, _secciones_legacy = (
         campos_por_seccion_estructurado(eid, sector, preview_id) if eid else ({}, {})
     )
@@ -1216,6 +1234,7 @@ def _activos_form_context(
         "sector_label": SECTOR_LABELS.get(sector, sector),
         "sedes": sedes,
         "technicians": technicians,
+        "proveedores_activo": proveedores_activo,
         "usuarios_custodios": _equipo_usuarios_query().filter(User.activo.is_(True)).all() if eid else [],
         "areas_soporte": _support_areas_empresa(eid) if eid else [],
         "mantenimiento_tipos": MANTENIMIENTO_TIPOS,
