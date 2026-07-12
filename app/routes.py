@@ -175,6 +175,7 @@ from app.work_time import (
 )
 
 EMPRESA_LOGO_EXTENSIONS = {"png", "jpg", "jpeg", "webp"}
+ACTIVO_IMAGE_EXTENSIONS = {"png", "jpg", "jpeg", "webp"}
 ZONAS_EMPRESA = (
     ("America/Bogota", "América / Bogotá"),
     ("America/Mexico_City", "América / Ciudad de México"),
@@ -1104,7 +1105,9 @@ def _apply_machine_base_fields(machine: Machine, form) -> Optional[str]:
     )
     machine.manual_url = form.get("manual_url", "").strip()
     machine.ficha_tecnica_url = form.get("ficha_tecnica_url", "").strip()
-    machine.foto_url = form.get("foto_url", "").strip()
+    foto_url = form.get("foto_url", "").strip()
+    if foto_url:
+        machine.foto_url = foto_url
     machine.requiere_mantenimiento = bool(form.get("requiere_mantenimiento"))
     machine.tipos_mantenimiento = tipos_mantenimiento_from_form(form)
     machine.frecuencia_mantenimiento = (form.get("frecuencia_mantenimiento") or "").strip()
@@ -1122,6 +1125,31 @@ def _apply_machine_base_fields(machine: Machine, form) -> Optional[str]:
     machine.notas = form.get("notas", "").strip()
     machine.sync_criticidad_critico()
     return None
+
+
+def _guardar_imagen_activo(machine: Machine, archivo) -> None:
+    """Guarda la fotografía del activo dentro del espacio de su empresa."""
+    if not archivo or not getattr(archivo, "filename", None):
+        return
+    if not machine.id or not machine.empresa_id:
+        raise ValueError("El activo debe estar guardado antes de cargar la imagen.")
+    nombre = secure_filename(archivo.filename)
+    ext = nombre.rsplit(".", 1)[-1].lower() if "." in nombre else ""
+    if ext not in ACTIVO_IMAGE_EXTENSIONS:
+        raise ValueError("Formato de imagen no permitido. Use PNG, JPG o WEBP.")
+    carpeta = os.path.join(
+        current_app.static_folder, "uploads", "empresas", str(machine.empresa_id), "activos"
+    )
+    os.makedirs(carpeta, exist_ok=True)
+    for old_ext in ACTIVO_IMAGE_EXTENSIONS:
+        old_path = os.path.join(carpeta, f"{machine.id}.{old_ext}")
+        if os.path.isfile(old_path) and old_ext != ext:
+            try:
+                os.remove(old_path)
+            except OSError:
+                pass
+    archivo.save(os.path.join(carpeta, f"{machine.id}.{ext}"))
+    machine.foto_url = f"uploads/empresas/{machine.empresa_id}/activos/{machine.id}.{ext}"
 
 
 def _save_machine_custom_fields(
@@ -1886,9 +1914,13 @@ def activos_new():
                     flash(err_campo, "danger")
                 else:
                     try:
+                        _guardar_imagen_activo(m, request.files.get("foto_archivo"))
                         db.session.commit()
                         flash(f"Activo registrado con código {m.codigo}.", "success")
                         return redirect(url_for("main.activos_list"))
+                    except ValueError as exc:
+                        db.session.rollback()
+                        flash(str(exc), "danger")
                     except Exception:
                         db.session.rollback()
                         flash("No se pudo guardar (¿código duplicado?).", "danger")
@@ -1944,9 +1976,13 @@ def activos_edit(id):
                 flash(err_campo, "danger")
             else:
                 try:
+                    _guardar_imagen_activo(m, request.files.get("foto_archivo"))
                     db.session.commit()
                     flash("Activo actualizado.", "success")
                     return redirect(url_for("main.activos_list"))
+                except ValueError as exc:
+                    db.session.rollback()
+                    flash(str(exc), "danger")
                 except Exception:
                     db.session.rollback()
                     flash("No se pudo guardar.", "danger")

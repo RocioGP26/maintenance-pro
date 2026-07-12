@@ -11,7 +11,7 @@
           Formulario estándar multisectorial · sector <strong>{{ sector_label }}</strong>.
           Los campos adicionales se configuran en <strong>Configuración → Campos personalizados</strong>.
         </p>
-        <form method="post" id="form-activo">
+        <form method="post" id="form-activo" enctype="multipart/form-data">
           {% include "_csrf.html" %}
           {# 1. Información General #}
           <fieldset class="mb-4 form-activo-seccion">
@@ -242,12 +242,21 @@
                 <select name="proveedor_id" id="proveedor_id" class="form-select">
                   <option value="">— Sin proveedor —</option>
                   {% for p in proveedores_activo %}
-                  <option value="{{ p.id }}" {% if machine and machine.proveedor_id == p.id %}selected{% endif %}>
+                  <option value="{{ p.id }}"
+                          data-nombre="{{ p.nombre }}"
+                          data-nit="{{ p.nit or '' }}"
+                          data-contacto="{{ p.contacto_nombre or '' }}"
+                          data-telefono="{{ p.contacto_telefono or '' }}"
+                          data-email="{{ p.contacto_email or '' }}"
+                          {% if machine and machine.proveedor_id == p.id %}selected{% endif %}>
                     {{ p.nombre }} — {{ p.tipo_meta.label }}
                   </option>
                   {% endfor %}
                 </select>
+                <input type="hidden" name="proveedor" id="proveedor_nombre"
+                       value="{{ machine.proveedor if machine else '' }}">
                 <div class="form-text">Seleccionado desde el catálogo de proveedores.</div>
+                <div id="proveedor_detalle" class="small text-muted mt-1"></div>
               </div>
               <div class="col-md-3">
                 <label class="form-label" for="tiempo_garantia_meses">Tiempo garantía (meses)</label>
@@ -277,9 +286,23 @@
             {% with titulo=activo_secciones_labels.documentacion, seccion_key='documentacion' %}{% include 'activos/_seccion_encabezado.html' %}{% endwith %}
             <div class="row g-3">
               <div class="col-md-6">
-                <label class="form-label">Fotografía principal (URL)</label>
-                <input type="url" name="foto_url" class="form-control" placeholder="https://"
-                       value="{{ machine.foto_url if machine else '' }}">
+                <label class="form-label" for="foto_archivo">Imagen del activo</label>
+                <input type="file" name="foto_archivo" id="foto_archivo" class="form-control"
+                       accept="image/png,image/jpeg,image/webp">
+                <div class="form-text">PNG, JPG o WEBP. Tamaño máximo: 5 MB.</div>
+                {% if machine and machine.foto_url %}
+                {% set foto_actual = machine.foto_url if machine.foto_url.startswith(('http://', 'https://')) else url_for('static', filename=machine.foto_url) %}
+                <div class="mt-2">
+                  <img src="{{ foto_actual }}" alt="Imagen actual de {{ machine.nombre }}"
+                       class="img-thumbnail" style="max-width:220px;max-height:160px;object-fit:cover;">
+                  <div class="small text-muted mt-1">Selecciona otro archivo para reemplazarla.</div>
+                </div>
+                {% endif %}
+                <details class="mt-2">
+                  <summary class="small text-primary">Usar una URL externa</summary>
+                  <input type="url" name="foto_url" class="form-control mt-2" placeholder="https://"
+                         value="{{ machine.foto_url if machine and machine.foto_url.startswith(('http://', 'https://')) else '' }}">
+                </details>
               </div>
               <div class="col-md-6">
                 <label class="form-label">Manual técnico (URL)</label>
@@ -469,6 +492,24 @@
   {% endif %}
 
   var selResponsable = document.getElementById('responsable_technician_id');
+  var selProveedor = document.getElementById('proveedor_id');
+  var inpProveedorNombre = document.getElementById('proveedor_nombre');
+  var proveedorDetalle = document.getElementById('proveedor_detalle');
+  function sincronizarProveedor() {
+    if (!selProveedor) return;
+    var opcion = selProveedor.options[selProveedor.selectedIndex];
+    var seleccionado = opcion && opcion.value;
+    if (inpProveedorNombre) inpProveedorNombre.value = seleccionado ? (opcion.dataset.nombre || opcion.textContent.trim()) : '';
+    if (proveedorDetalle) {
+      var datos = seleccionado ? [opcion.dataset.nit, opcion.dataset.contacto, opcion.dataset.telefono, opcion.dataset.email].filter(Boolean) : [];
+      proveedorDetalle.textContent = datos.join(' · ');
+    }
+  }
+  if (selProveedor) {
+    selProveedor.addEventListener('change', sincronizarProveedor);
+    sincronizarProveedor();
+  }
+
   var inpResponsableArea = document.getElementById('responsable_area');
   var inpResponsableCargo = document.getElementById('responsable_cargo');
   function completarDatosResponsable() {
