@@ -252,30 +252,6 @@
               <input type="hidden" name="jornada_estado_ot" id="jornadaEstadoOtHidden" value="{{ jornada_estado_inicial or '' }}">
             </div>
 
-            <div class="col-12 d-none" id="seccionParoMaquina">
-              <label class="form-label">¿Requirió parar el activo?</label>
-              <div class="border rounded p-3 bg-light">
-                {% set paro = order.maquina_requirio_paro %}
-                <div class="form-check">
-                  <input class="form-check-input" type="radio" name="maquina_requirio_paro" value="1" id="paroMaquinaSi"
-                         {% if paro %}checked{% endif %}>
-                  <label class="form-check-label" for="paroMaquinaSi">
-                    Sí, el activo estuvo parado
-                  </label>
-                </div>
-                <div class="form-check">
-                  <input class="form-check-input" type="radio" name="maquina_requirio_paro" value="0" id="paroMaquinaNo"
-                         {% if not paro %}checked{% endif %}>
-                  <label class="form-check-label" for="paroMaquinaNo">
-                    No, no se requirió parar el activo
-                  </label>
-                </div>
-                <p class="form-text small mb-0 mt-2">
-                  Solo las OT correctivas con paro del activo cuentan para el indicador MTTR del dashboard.
-                </p>
-              </div>
-            </div>
-
             <div class="col-12 d-none" id="seccionRepuestos">
               <h6 class="fw-semibold mb-2"><i class="bi bi-box-seam me-1"></i> Repuestos (inventario)</h6>
               <div class="form-check mb-2">
@@ -332,6 +308,7 @@
                       <th>Duración</th>
                       <th>Técnico realizador</th>
                       <th>Recibido por</th>
+                      <th>Paro</th>
                       <th class="col-desc">Descripción</th>
                       <th style="width: 5.5rem;"></th>
                     </tr>
@@ -449,6 +426,13 @@
             <label class="form-label fw-semibold" for="jornadaRecibidoPor">Recibido por *</label>
             <input type="text" class="form-control" id="jornadaRecibidoPor" required
                    placeholder="Nombre de quien recibe o valida el avance">
+          </div>
+          <div class="col-12">
+            <label class="form-label fw-semibold d-block">¿Esta jornada requirió parar el activo?</label>
+            <div class="d-flex gap-4">
+              <div class="form-check"><input class="form-check-input" type="radio" name="jornadaRequirioParo" id="jornadaParoNo" value="0" checked><label class="form-check-label" for="jornadaParoNo">No</label></div>
+              <div class="form-check"><input class="form-check-input" type="radio" name="jornadaRequirioParo" id="jornadaParoSi" value="1"><label class="form-check-label" for="jornadaParoSi">Sí</label></div>
+            </div>
           </div>
           <div class="col-12">
             <label class="form-label fw-semibold" for="jornadaDescripcion">Descripción del avance</label>
@@ -612,6 +596,7 @@
         '<td class="text-nowrap">' + escHtml(formatear(mins)) + '</td>' +
         '<td class="col-tecnico">' + escHtml(tecnicoLabel(j)) + '</td>' +
         '<td>' + escHtml(j.recibido_por || '—') + '</td>' +
+        '<td>' + (j.requirio_paro ? 'Sí' : 'No') + '</td>' +
         '<td class="col-desc" title="' + escHtml(j.descripcion || '') + '">' + escHtml(j.descripcion || '—') + '</td>' +
         '<td class="text-end text-nowrap">' +
           (soloLectura ? '—' : (
@@ -682,6 +667,7 @@
     document.getElementById('jornadaTecnico').value = '';
     document.getElementById('jornadaTecnicoNombre').value = '';
     document.getElementById('jornadaRecibidoPor').value = '';
+    document.getElementById('jornadaParoNo').checked = true;
     document.getElementById('jornadaDescripcion').value = '';
     toggleTecnicoNombre();
   }
@@ -698,6 +684,7 @@
       document.getElementById('jornadaTecnico').value = j.technician_id ? String(j.technician_id) : 'otro';
       document.getElementById('jornadaTecnicoNombre').value = j.tecnico_nombre || '';
       document.getElementById('jornadaRecibidoPor').value = j.recibido_por || '';
+      document.getElementById(j.requirio_paro ? 'jornadaParoSi' : 'jornadaParoNo').checked = true;
       document.getElementById('jornadaDescripcion').value = j.descripcion || '';
       toggleTecnicoNombre();
     }
@@ -722,6 +709,7 @@
     var tech = document.getElementById('jornadaTecnico').value;
     var nombre = document.getElementById('jornadaTecnicoNombre').value.trim();
     var recibidoPor = document.getElementById('jornadaRecibidoPor').value.trim();
+    var requirioParo = document.querySelector('input[name="jornadaRequirioParo"]:checked')?.value === '1';
     var desc = document.getElementById('jornadaDescripcion').value.trim();
 
     if (!fecha || !horaIni || !horaFin) {
@@ -752,6 +740,7 @@
       technician_id: tech,
       tecnico_nombre: tech === 'otro' ? nombre : '',
       recibido_por: recibidoPor,
+      requirio_paro: requirioParo,
       descripcion: desc
     };
 

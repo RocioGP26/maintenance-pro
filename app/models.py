@@ -1153,6 +1153,7 @@ class WorkOrderJornada(db.Model):
     technician_id = db.Column(db.Integer, db.ForeignKey("technicians.id"), nullable=True)
     tecnico_nombre = db.Column(db.String(200), default="")
     recibido_por = db.Column(db.String(200), default="")
+    requirio_paro = db.Column(db.Boolean, default=False, nullable=False)
     descripcion_avance = db.Column(db.Text, default="")
 
     work_order = db.relationship("WorkOrder", back_populates="jornadas")

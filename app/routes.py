@@ -825,7 +825,13 @@ def _dashboard_kpis(
     ]
     repair_hours = []
     for wo in mttr_wos:
-        mins = wo_tiempo_gastado_minutos(wo, emp)
+        jornadas_paro = [j for j in wo.jornadas if bool(j.requirio_paro)]
+        if jornadas_paro:
+            mins = sum(j.duracion_minutos for j in jornadas_paro)
+        else:
+            # Compatibilidad con OT históricas: antes el paro se registraba
+            # globalmente y no existía la marca por jornada.
+            mins = wo_tiempo_gastado_minutos(wo, emp)
         if mins is not None:
             repair_hours.append(mins / 60.0)
         elif wo.fecha_inicio and wo.fecha_cierre:
@@ -2192,6 +2198,7 @@ def _jornada_a_dict(j: WorkOrderJornada) -> dict:
         "technician_id": str(j.technician_id) if j.technician_id else "otro",
         "tecnico_nombre": j.tecnico_nombre or "",
         "recibido_por": j.recibido_por or "",
+        "requirio_paro": bool(j.requirio_paro),
         "descripcion": j.descripcion_avance or "",
     }
 
@@ -2247,6 +2254,7 @@ def _parse_jornadas_json() -> Tuple[list[dict], Optional[str]]:
                 "technician_id": tech_id,
                 "tecnico_nombre": nombre if tech_id is None else "",
                 "recibido_por": recibido_por,
+                "requirio_paro": bool(item.get("requirio_paro")),
                 "descripcion_avance": (item.get("descripcion") or "").strip(),
             }
         )
@@ -2286,12 +2294,14 @@ def _guardar_jornadas_orden(wo: WorkOrder) -> Optional[str]:
                 technician_id=s["technician_id"],
                 tecnico_nombre=s["tecnico_nombre"],
                 recibido_por=s["recibido_por"],
+                requirio_paro=s["requirio_paro"],
                 descripcion_avance=s["descripcion_avance"],
             )
         )
     wo.fecha_inicio = sesiones[0]["fecha_inicio"]
     wo.fecha_cierre = sesiones[-1]["fecha_fin"]
     wo.tiempo_gastado_minutos = total_minutos_jornadas(wo.jornadas)
+    wo.maquina_requirio_paro = any(bool(j.requirio_paro) for j in wo.jornadas)
     return None
 
 
