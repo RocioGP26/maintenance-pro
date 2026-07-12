@@ -463,8 +463,10 @@
             </select>
           </div>
           <div class="col-12" id="wrapTecnicoNombre">
-            <label class="form-label fw-semibold" for="jornadaTecnicoNombre">Nombre técnico o empresa</label>
-            <input type="text" class="form-control" id="jornadaTecnicoNombre" placeholder="Nombre del técnico o empresa externa">
+            <label class="form-label fw-semibold" for="jornadaTecnicoNombre">Técnico del proveedor *</label>
+            <input type="text" class="form-control" id="jornadaTecnicoNombre"
+                   placeholder="Nombre del técnico enviado por el proveedor">
+            <div class="form-text small">Escribe la persona que realizó el trabajo durante esta jornada.</div>
           </div>
           <div class="col-12">
             <label class="form-label fw-semibold" for="jornadaRecibidoPor">Recibido por *</label>
@@ -789,7 +791,7 @@
       return;
     }
     if (ejecucionExterna && !nombre) {
-      alert('Indica el nombre del técnico o empresa.');
+      alert('Indica el nombre del técnico enviado por el proveedor.');
       return;
     }
     if (!recibidoPor) {
