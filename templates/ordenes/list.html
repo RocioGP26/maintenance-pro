@@ -289,13 +289,15 @@
       {% endif %}
       {% endfor %}
     </div>
+    <div class="d-flex flex-wrap align-items-center gap-2">
     {% if perm.crear %}
     <a href="{{ url_for('main.ordenes_new') }}" class="btn btn-primary btn-sm">
       <i class="bi bi-plus-lg"></i> Nueva OT
     </a>
     {% endif %}
     <a href="{{ url_for('main.ordenes_export', **filtros) }}" class="btn btn-outline-success btn-sm"><i class="bi bi-download"></i> Excel MRL</a>
-    <a href="{{ url_for('main.ordenes_export_pdf', **filtros) }}" class="btn btn-outline-danger btn-sm"><i class="bi bi-file-earmark-pdf"></i> PDF 71-MT-43</a>
+    <a href="{{ url_for('main.ordenes_export_pdf', **filtros) }}" class="btn btn-outline-danger btn-sm"><i class="bi bi-file-earmark-pdf"></i> PDF</a>
+    </div>
   </div>
 </div>
 

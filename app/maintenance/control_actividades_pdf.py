@@ -5,6 +5,7 @@ from __future__ import annotations
 from datetime import datetime
 from io import BytesIO
 from pathlib import Path
+import re
 from xml.sax.saxutils import escape
 
 from flask import current_app, has_app_context
@@ -38,8 +39,51 @@ class _PageCountCanvas(Canvas):
         super().save()
 
 
+_REEMPLAZOS_ACENTOS = {
+    "inspecci?n": "inspección",
+    "l?nea": "línea",
+    "producci?n": "producción",
+    "ubicaci?n": "ubicación",
+    "descripci?n": "descripción",
+    "observaci?n": "observación",
+    "observaciones": "observaciones",
+    "t?cnico": "técnico",
+    "t?cnica": "técnica",
+    "m?quina": "máquina",
+    "el?ctrico": "eléctrico",
+    "el?ctrica": "eléctrica",
+    "lubricaci?n": "lubricación",
+    "revisi?n": "revisión",
+    "ejecuci?n": "ejecución",
+    "correcci?n": "corrección",
+    "v?lvula": "válvula",
+    "v?lvulas": "válvulas",
+    "m?ndez": "méndez",
+}
+
+
+def _normalizar_texto(value) -> str:
+    text = "" if value is None else str(value)
+    if "Ã" in text or "Â" in text:
+        try:
+            text = text.encode("latin-1").decode("utf-8")
+        except (UnicodeEncodeError, UnicodeDecodeError):
+            pass
+    for incorrecto, correcto in _REEMPLAZOS_ACENTOS.items():
+        def reemplazar(match):
+            original = match.group(0)
+            if original.isupper():
+                return correcto.upper()
+            if original[:1].isupper():
+                return correcto[:1].upper() + correcto[1:]
+            return correcto
+
+        text = re.sub(re.escape(incorrecto), reemplazar, text, flags=re.IGNORECASE)
+    return text
+
+
 def _p(value, style):
-    return Paragraph(escape("" if value is None else str(value)), style)
+    return Paragraph(escape(_normalizar_texto(value)), style)
 
 
 def _logo_empresa(empresa):
