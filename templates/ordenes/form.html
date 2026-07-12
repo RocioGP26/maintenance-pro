@@ -1055,6 +1055,13 @@
       el.setAttribute('form', 'ordenForm');
     });
   }
+  var ordenFormRepuestos = document.getElementById('ordenForm');
+  if (ordenFormRepuestos && !soloLectura) {
+    ordenFormRepuestos.addEventListener('submit', function () {
+      syncRepFromDom();
+      syncRepHidden();
+    });
+  }
 
   function escHtml(s) {
     if (!s) return '';

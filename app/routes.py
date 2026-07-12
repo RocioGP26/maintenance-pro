@@ -3320,12 +3320,14 @@ def ordenes_edit(id):
             else:
                 err = _guardar_jornadas_orden(wo)
                 if err:
+                    db.session.rollback()
                     flash(err, "danger")
                 else:
                     _aplicar_estado_orden_desde_formulario(wo)
                     _aplicar_fecha_cierre_si_terminal(wo)
                     err_rep = _guardar_repuestos_orden(wo)
                     if err_rep:
+                        db.session.rollback()
                         flash(err_rep, "danger")
                     else:
                         db.session.commit()
@@ -3337,12 +3339,14 @@ def ordenes_edit(id):
             wo.frecuencia_unidad = None
             err = _guardar_jornadas_orden(wo)
             if err:
+                db.session.rollback()
                 flash(err, "danger")
             else:
                 _aplicar_estado_orden_desde_formulario(wo)
                 _aplicar_fecha_cierre_si_terminal(wo)
                 err_rep = _guardar_repuestos_orden(wo)
                 if err_rep:
+                    db.session.rollback()
                     flash(err_rep, "danger")
                 else:
                     db.session.commit()
