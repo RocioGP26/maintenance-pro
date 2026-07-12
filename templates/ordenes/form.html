@@ -396,6 +396,7 @@
               <div class="row g-3" id="ejecucionModalDestino"></div>
             </div>
           </div>
+          <div class="col-12" id="repuestosModalDestino"></div>
           <div class="col-12">
             <label class="form-label fw-semibold" for="jornadaFecha">Fecha</label>
             <input type="date" class="form-control" id="jornadaFecha" required>
@@ -1052,6 +1053,14 @@
     while (ejecucionCampos.firstChild) ejecucionDestino.appendChild(ejecucionCampos.firstChild);
     ejecucionCampos.remove();
     ejecucionDestino.querySelectorAll('input[name], select[name], textarea[name]').forEach(function (el) {
+      el.setAttribute('form', 'ordenForm');
+    });
+  }
+  var repuestosCampos = document.getElementById('seccionRepuestos');
+  var repuestosDestino = document.getElementById('repuestosModalDestino');
+  if (repuestosCampos && repuestosDestino) {
+    repuestosDestino.appendChild(repuestosCampos);
+    repuestosCampos.querySelectorAll('input[name], select[name], textarea[name]').forEach(function (el) {
       el.setAttribute('form', 'ordenForm');
     });
   }
