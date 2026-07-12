@@ -2939,7 +2939,7 @@ def _ordenes_list_query(filtros: Optional[dict[str, str]] = None):
     filtros = filtros if filtros is not None else _ordenes_filtros_desde_request()
     q = _filter_work_orders_empresa(
         WorkOrder.query.options(
-            joinedload(WorkOrder.jornadas),
+            joinedload(WorkOrder.jornadas).joinedload(WorkOrderJornada.technician),
             joinedload(WorkOrder.machine),
             joinedload(WorkOrder.technician),
         )

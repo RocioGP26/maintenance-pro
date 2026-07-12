@@ -1121,6 +1121,20 @@ class WorkOrder(db.Model):
         return len(self.jornadas)
 
     @property
+    def tecnicos_realizadores_label(self) -> str:
+        """Técnicos que ejecutaron jornadas, sin repetir nombres."""
+        nombres = []
+        vistos = set()
+        for jornada in self.jornadas:
+            nombre = (jornada.tecnico_label or "").strip()
+            if nombre and nombre != "—" and nombre.lower() not in vistos:
+                nombres.append(nombre)
+                vistos.add(nombre.lower())
+        if nombres:
+            return ", ".join(nombres)
+        return self.technician.nombre if self.technician else "—"
+
+    @property
     def status_meta(self) -> dict:
         return wo_status_meta(self.status)
 

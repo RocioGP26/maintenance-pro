@@ -208,7 +208,7 @@
   }
   .ot-list-table .ot-meta { font-size: 0.75rem; color: #6c757d; white-space: nowrap; }
   .ot-list-table .ot-tecnico {
-    max-width: 6.5rem;
+    max-width: 10rem;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -387,7 +387,7 @@
           <th>Prog.</th>
           <th>Ejecución</th>
           <th class="text-center" title="Jornadas / tiempo">J/T</th>
-          <th>Téc.</th>
+          <th>Técnico realizador</th>
           <th class="text-end" style="width:2.5rem;"></th>
         </tr>
       </thead>
@@ -445,7 +445,7 @@
               <span class="text-muted">·</span> {{ o.tiempo_gastado_label }}
             {% endif %}
           </td>
-          <td><span class="ot-tecnico d-inline-block" title="{{ o.technician.nombre if o.technician else '' }}">{{ o.technician.nombre if o.technician else '—' }}</span></td>
+          <td><span class="ot-tecnico d-inline-block" title="{{ o.tecnicos_realizadores_label }}">{{ o.tecnicos_realizadores_label }}</span></td>
           <td class="text-end">
             {% if perm.editar or perm.solo_lectura %}
             <a href="{{ url_for('main.ordenes_edit', id=o.id) }}" class="btn btn-outline-secondary btn-ot-action"
@@ -456,7 +456,7 @@
           </td>
         </tr>
         {% else %}
-        <tr><td colspan="9" class="text-center text-muted py-3 small">No hay órdenes{% if hay_filtros %} con estos filtros{% endif %}.</td></tr>
+        <tr><td colspan="10" class="text-center text-muted py-3 small">No hay órdenes{% if hay_filtros %} con estos filtros{% endif %}.</td></tr>
         {% endfor %}
       </tbody>
     </table>
