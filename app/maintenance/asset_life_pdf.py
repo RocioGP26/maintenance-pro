@@ -61,7 +61,9 @@ def _imagen_activo(machine):
     return imagen
 
 
-def export_asset_life_pdf(empresa, machine, campos, valores, ordenes, incidentes, sector_label):
+def export_asset_life_pdf(
+    empresa, machine, campos, valores, ordenes, incidentes, sector_label, avances_por_ot=None
+):
     buffer = BytesIO()
     doc = SimpleDocTemplate(
         buffer,
@@ -172,6 +174,35 @@ def export_asset_life_pdf(empresa, machine, campos, valores, ordenes, incidentes
     if not ordenes:
         datos_ot.append([_p("Sin órdenes registradas", normal)] + [""] * 6)
     story.append(tabla(datos_ot, [21*mm, 22*mm, 25*mm, 25*mm, 45*mm, 24*mm, 24*mm]))
+
+    avances_por_ot = avances_por_ot or {}
+    story.extend([Spacer(1, 3 * mm), _p("AVANCES REALIZADOS EN LAS OT", subtitle)])
+    for orden in ordenes:
+        story.append(_p(f"{orden.numero or ('OT #' + str(orden.id))} - {orden.titulo or machine.nombre}", label))
+        avances = avances_por_ot.get(orden.id, [])
+        datos_avance = [[_p(x, header) for x in ["#", "Fecha / horario", "Técnico / proveedor", "Trabajo realizado", "Paro", "Recibido por", "Repuestos"]]]
+        for avance in avances:
+            jornada = avance["jornada"]
+            repuestos = ", ".join(
+                f"{linea.spare_part.nombre if linea.spare_part else 'Repuesto'} x {linea.cantidad}"
+                for linea in avance["repuestos"]
+            ) or "-"
+            fecha_horario = (
+                f"{avance['fecha'].strftime('%d/%m/%Y') if avance['fecha'] else '-'}\n"
+                f"{avance['hora_inicio'] or '-'} - {avance['hora_fin'] or '-'} ({avance['duracion']})"
+            )
+            datos_avance.append([
+                _p(jornada.orden or "-", center), _p(fecha_horario, normal),
+                _p(jornada.tecnico_label, normal), _p(jornada.descripcion_avance or "-", normal),
+                _p("Sí" if jornada.requirio_paro else "No", center),
+                _p(jornada.recibido_por or "-", normal), _p(repuestos, normal),
+            ])
+        if not avances:
+            datos_avance.append([_p("Sin avances registrados", normal)] + [""] * 6)
+        story.extend([
+            tabla(datos_avance, [8*mm, 30*mm, 32*mm, 52*mm, 13*mm, 25*mm, 26*mm]),
+            Spacer(1, 2.5 * mm),
+        ])
 
     story.extend([Spacer(1, 3 * mm), _p("HISTORIAL DE INCIDENCIAS", subtitle)])
     datos_inc = [[_p(x, header) for x in ["Reporte", "Fecha", "Descripción", "Prioridad", "Estado"]]]

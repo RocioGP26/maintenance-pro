@@ -1895,7 +1895,7 @@ def activos_hoja_vida(id):
         _filter_work_orders_empresa(
             WorkOrder.query.options(
                 joinedload(WorkOrder.technician),
-                joinedload(WorkOrder.jornadas),
+                joinedload(WorkOrder.jornadas).joinedload(WorkOrderJornada.technician),
                 joinedload(WorkOrder.repuestos).joinedload(WorkOrderRepuesto.spare_part),
             ).filter(WorkOrder.machine_id == machine.id)
         )
@@ -1916,9 +1916,50 @@ def activos_hoja_vida(id):
         costo_repuestos=sum(
             linea.costo_total_linea for orden in ordenes for linea in orden.repuestos
         ),
+        avances_por_ot=_avances_hoja_vida(ordenes),
         status_meta=machine_status_meta(machine.status),
     )
     return render_template("activos/hoja_vida.html", **ctx)
+
+
+def _avances_hoja_vida(ordenes):
+    """Organiza cada jornada y los repuestos instalados en ella."""
+    resultado = {}
+    for orden in ordenes:
+        jornadas = list(orden.jornadas or [])
+        avances = []
+        for jornada in jornadas:
+            fecha = jornada.fecha_inicio.date() if jornada.fecha_inicio else None
+            inicio = jornada.fecha_inicio.strftime("%H:%M") if jornada.fecha_inicio else ""
+            fin = jornada.fecha_fin.strftime("%H:%M") if jornada.fecha_fin else ""
+            repuestos = [
+                linea
+                for linea in orden.repuestos
+                if (
+                    linea.jornada_fecha == fecha
+                    and (not linea.jornada_hora_inicio or linea.jornada_hora_inicio == inicio)
+                    and (not linea.jornada_hora_fin or linea.jornada_hora_fin == fin)
+                )
+                or (
+                    len(jornadas) == 1
+                    and not linea.jornada_fecha
+                    and not linea.jornada_hora_inicio
+                    and not linea.jornada_hora_fin
+                )
+            ]
+            horas = jornada.duracion_minutos / 60
+            avances.append(
+                {
+                    "jornada": jornada,
+                    "fecha": fecha,
+                    "hora_inicio": inicio,
+                    "hora_fin": fin,
+                    "duracion": f"{horas:.2f} h".replace(".00", ""),
+                    "repuestos": repuestos,
+                }
+            )
+        resultado[orden.id] = avances
+    return resultado
 
 
 @bp.route("/activos/<int:id>/hoja-vida/pdf")
@@ -1945,7 +1986,7 @@ def activos_hoja_vida_pdf(id):
         _filter_work_orders_empresa(
             WorkOrder.query.options(
                 joinedload(WorkOrder.technician),
-                joinedload(WorkOrder.jornadas),
+                joinedload(WorkOrder.jornadas).joinedload(WorkOrderJornada.technician),
                 joinedload(WorkOrder.repuestos).joinedload(WorkOrderRepuesto.spare_part),
             ).filter(WorkOrder.machine_id == machine.id)
         )
@@ -1966,6 +2007,7 @@ def activos_hoja_vida_pdf(id):
         ordenes,
         incidentes,
         ctx["sector_label"],
+        _avances_hoja_vida(ordenes),
     )
     return send_file(
         BytesIO(contenido),
