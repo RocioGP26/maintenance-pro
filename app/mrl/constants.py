@@ -1,0 +1,47 @@
+"""Constantes de layout MRL · sin valores quemados en exportadores."""
+
+from __future__ import annotations
+
+# Versión del motor MRL en código
+MRL_VERSION = "1.1"
+
+# Sistema
+GENERATED_BY_LABEL = "Generado por Maintix"
+SYSTEM_USER = "Sistema · Maintix"
+WORDMARK = "MAINTIX"
+
+# Excel · convención Sprint 15 (MRL-STD §7)
+EXCEL_META_START_ROW = 1
+EXCEL_META_END_ROW = 6
+EXCEL_HEADER_ROW = 7
+EXCEL_DATA_START_ROW = 8
+
+# Logo tenant · MRL-04-HDR
+LOGO_MAX_WIDTH_MM = 40.0
+LOGO_MAX_HEIGHT_MM = 20.0
+
+# PDF · márgenes en mm (Sprint 15.3+)
+PDF_MARGIN_TOP_MM = 20.0
+PDF_MARGIN_BOTTOM_MM = 18.0
+PDF_MARGIN_LEFT_MM = 15.0
+PDF_MARGIN_RIGHT_MM = 15.0
+
+# PDF · header / footer
+PDF_HEADER_HEIGHT_MM = 35.0
+PDF_FOOTER_HEIGHT_MM = 12.0
+PDF_HEADER_SEPARATOR_OPACITY = 0.15
+
+# Tablas
+TABLE_HEADER_HEIGHT_PT = 14.0
+TABLE_ROW_ZEBRA = True
+TABLE_CELL_PADDING_PT = 4.0
+
+# KPI cards · MRL-KPI-001
+KPI_CARD_MIN_WIDTH_MM = 45.0
+KPI_CARD_PADDING_MM = 4.0
+
+# Bloques MRL
+BLOCK_HEADER = "MRL-HDR-001"
+BLOCK_FOOTER = "MRL-FTR-001"
+BLOCK_TABLE = "MRL-TBL-001"
+BLOCK_KPI = "MRL-KPI-001"

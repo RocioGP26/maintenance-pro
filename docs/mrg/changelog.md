@@ -1,5 +1,14 @@
 # MRG Changelog
 
+## [1.1.0] — 2026-07-11 · Sprint 16 · Purchasing
+
+### Changed
+- MRG-04-PUR pasa de parcial a operativo.
+- Solicitudes, OC, recepción parcial, stock, CxP e indicadores alineados.
+- Compatibilidad y migración legacy documentadas.
+
+---
+
 ## [1.0.9] — 2026-07-10 · Sprint 14 · Cierre MRG-09-WORKFLOWS (ALIGN Fase 8)
 
 ### Changed

@@ -8,7 +8,7 @@ from typing import Any, List, Optional, Tuple
 
 from flask import Blueprint, abort, current_app, flash, jsonify, redirect, render_template, request, session, url_for
 from werkzeug.utils import secure_filename
-from flask_login import current_user, login_user, logout_user
+from flask_login import current_user, login_required, login_user, logout_user
 from sqlalchemy import and_, false, func, or_
 
 from app import db, limiter
@@ -64,6 +64,10 @@ from app.models import (
     CampoPersonalizado,
     Empresa,
     Incident,
+    IncidentDiagnosis,
+    IncidentHistory,
+    IncidentEstado,
+    INCIDENT_ESTADO_LABELS,
     INCIDENT_AREAS_BASE,
     INCIDENT_PRIORIDADES,
     INCIDENT_TIPOS,
@@ -1783,6 +1787,29 @@ def activos_list():
     )
 
 
+@bp.route("/activos/export")
+@login_required
+def activos_export():
+    from io import BytesIO
+
+    from flask import send_file
+
+    from app.maintenance.mrl_exports import export_activos_excel
+
+    machines = _filter_empresa(Machine.query.order_by(Machine.codigo)).all()
+    empresa = current_user.empresa
+    if not empresa:
+        flash("No hay empresa asociada a tu sesión.", "danger")
+        return redirect(url_for("main.activos_list"))
+    contenido, nombre = export_activos_excel(empresa, machines, usuario=current_user)
+    return send_file(
+        BytesIO(contenido),
+        mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        as_attachment=True,
+        download_name=nombre,
+    )
+
+
 @bp.route("/activos/<int:id>/toggle-critico", methods=["POST"])
 def activos_toggle_critico(id):
     m = _filter_empresa(Machine.query.filter_by(id=id)).first_or_404()
@@ -3017,6 +3044,27 @@ def ordenes_list():
     )
 
 
+@bp.route("/ordenes/export")
+@login_required
+def ordenes_export():
+    from io import BytesIO
+    from flask import send_file
+    from app.maintenance.mrl_exports import export_ordenes_excel
+
+    empresa = current_user.empresa
+    if not empresa:
+        return redirect(url_for("main.ordenes_list"))
+    content, name = export_ordenes_excel(
+        empresa, _ordenes_list_query().all(), usuario=current_user
+    )
+    return send_file(
+        BytesIO(content),
+        mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        as_attachment=True,
+        download_name=name,
+    )
+
+
 @bp.route("/ordenes/nueva", methods=["GET", "POST"])
 def ordenes_new():
     from sqlalchemy.orm import joinedload
@@ -3286,6 +3334,38 @@ def ordenes_edit(id):
         prioridades=WORK_ORDER_PRIORITIES,
         solo_lectura=solo_lectura,
         **_orden_form_context(wo, technicians, machines),
+    )
+
+
+@bp.route("/ordenes/<int:id>/pdf")
+@login_required
+def ordenes_pdf(id):
+    from io import BytesIO
+
+    from flask import send_file
+    from sqlalchemy.orm import joinedload
+
+    from app.maintenance.mrl_exports import export_orden_trabajo_pdf
+
+    wo = _get_work_order_or_404(
+        id,
+        joinedload(WorkOrder.machine),
+        joinedload(WorkOrder.technician),
+        joinedload(WorkOrder.jornadas).joinedload(WorkOrderJornada.technician),
+        joinedload(WorkOrder.repuestos).joinedload(WorkOrderRepuesto.spare_part),
+        joinedload(WorkOrder.proveedor),
+        joinedload(WorkOrder.supervisor),
+    )
+    empresa = current_user.empresa
+    if not empresa:
+        flash("No hay empresa asociada a tu sesión.", "danger")
+        return redirect(url_for("main.ordenes_list"))
+    contenido, nombre = export_orden_trabajo_pdf(empresa, wo, usuario=current_user)
+    return send_file(
+        BytesIO(contenido),
+        mimetype="application/pdf",
+        as_attachment=True,
+        download_name=nombre,
     )
 
 
@@ -4456,6 +4536,7 @@ def _incidencia_form_defaults() -> dict:
         "cargo_reportante": u.rol_label if u else "",
         "telefono_contacto": tel,
         "area": area,
+        "area_responsable": "",
         "ubicacion": "",
         "titulo": "",
         "machine_id": "",
@@ -4474,6 +4555,7 @@ def _incidencia_desde_form(form) -> tuple[dict, Optional[str]]:
         "cargo_reportante": (form.get("cargo_reportante") or "").strip(),
         "telefono_contacto": (form.get("telefono_contacto") or "").strip(),
         "area": (form.get("area") or "").strip(),
+        "area_responsable": (form.get("area_responsable") or "").strip(),
         "ubicacion": (form.get("ubicacion") or "").strip(),
         "titulo": (form.get("titulo") or "").strip(),
         "machine_id": (form.get("machine_id") or "").strip(),
@@ -4487,7 +4569,9 @@ def _incidencia_desde_form(form) -> tuple[dict, Optional[str]]:
     if not data["reportado_por"]:
         return data, "Indica el nombre de quien reporta la falla."
     if not data["area"]:
-        return data, "Selecciona el área o departamento."
+        return data, "Selecciona el área del reportante."
+    if not data["area_responsable"]:
+        return data, "Selecciona el área responsable que recibirá el incidente."
     if not data["titulo"]:
         return data, "Describe brevemente la incidencia."
     if not data["tipo"]:
@@ -4595,6 +4679,7 @@ def incidencia():
                 cargo_reportante=form_data["cargo_reportante"],
                 telefono_contacto=form_data["telefono_contacto"],
                 area=form_data["area"],
+                area_responsable=form_data["area_responsable"],
                 ubicacion=form_data["ubicacion"],
                 tipo=form_data["tipo"],
                 prioridad=form_data["prioridad"],
@@ -4605,6 +4690,8 @@ def incidencia():
             db.session.add(inc)
             db.session.flush()
             numero = _asignar_numero_incidencia(inc)
+            _registrar_historial(inc, "reportado", "", IncidentEstado.REPORTADO.value,
+                                f"Asignado al área {inc.area_responsable}")
             db.session.commit()
             flash(f"Incidencia {numero} registrada. El supervisor será notificado.", "success")
             return redirect(url_for("main.incidencias_detail", id=inc.id))
@@ -4659,6 +4746,24 @@ def _get_incident_or_404(incident_id: int):
     return inc
 
 
+def _registrar_historial(inc, accion, anterior="", nuevo="", comentario=""):
+    db.session.add(IncidentHistory(
+        incident_id=inc.id,
+        user_id=current_user.id if current_user.is_authenticated else None,
+        accion=accion,
+        estado_anterior=anterior or "",
+        estado_nuevo=nuevo or "",
+        comentario=comentario or "",
+    ))
+
+
+def _cambiar_estado(inc, nuevo, accion, comentario=""):
+    anterior = inc.estado or IncidentEstado.REPORTADO.value
+    inc.estado = nuevo
+    inc.resuelto = nuevo in (IncidentEstado.RESUELTO.value, IncidentEstado.CERRADO.value)
+    _registrar_historial(inc, accion, anterior, nuevo, comentario)
+
+
 def _incidentes_kpis(base_q) -> dict:
     pendientes_q = base_q.filter(Incident.resuelto.is_(False))
     return {
@@ -4702,7 +4807,7 @@ def incidencias_list():
     elif estado_f == "resuelta":
         q = q.filter(Incident.resuelto.is_(True))
     if area_f:
-        q = q.filter(Incident.area == area_f)
+        q = q.filter(Incident.area_responsable == area_f)
     if prio_f:
         q = q.filter(Incident.prioridad == prio_f)
     if q_str:
@@ -4738,12 +4843,80 @@ def incidencias_list():
 @bp.route("/incidencias/<int:id>")
 def incidencias_detail(id):
     inc = _get_incident_or_404(id)
+    tecnicos = _filter_empresa(Technician.query.filter_by(activo=True).order_by(Technician.nombre), Technician).all()
     return render_template(
         "incidencias/detail.html",
         inc=inc,
         puede_gestionar=can_manage_incidents(current_user),
         puede_crear_ot=can_create_work_order(current_user),
+        tecnicos=tecnicos,
+        areas=_areas_incidencia_empresa(_current_empresa_id()),
+        estados_labels=INCIDENT_ESTADO_LABELS,
     )
+
+
+@bp.route("/incidencias/<int:id>/accion", methods=["POST"])
+def incidencias_accion(id):
+    inc = _get_incident_or_404(id)
+    accion = (request.form.get("accion") or "").strip()
+    comentario = (request.form.get("comentario") or "").strip()
+    es_reportante = current_user.is_authenticated and inc.user_id == current_user.id
+    if accion in ("validar", "reabrir"):
+        if not es_reportante and not can_manage_incidents(current_user):
+            abort(403)
+    elif not can_manage_incidents(current_user):
+        abort(403)
+
+    ahora = datetime.utcnow()
+    if accion == "recibir" and inc.estado in ("reportado", "reasignado"):
+        inc.responsable_area_id = current_user.id
+        inc.recibido_en = ahora
+        inc.prioridad_confirmada = (request.form.get("prioridad_confirmada") or inc.prioridad).strip()
+        _cambiar_estado(inc, "recibido", "recibido", comentario)
+    elif accion == "asignar" and inc.estado in ("recibido", "asignado"):
+        tid = request.form.get("tecnico_id", type=int)
+        tecnico = _filter_empresa(Technician.query.filter_by(id=tid, activo=True), Technician).first() if tid else None
+        if not tecnico:
+            flash("Selecciona un técnico válido.", "danger")
+            return redirect(url_for("main.incidencias_detail", id=id))
+        inc.tecnico_asignado_id, inc.asignado_en = tecnico.id, ahora
+        _cambiar_estado(inc, "asignado", "tecnico_asignado", f"{tecnico.nombre}. {comentario}".strip())
+    elif accion == "iniciar" and inc.estado == "asignado":
+        inc.iniciado_en = ahora
+        _cambiar_estado(inc, "en_atencion", "atencion_iniciada", comentario)
+    elif accion == "diagnosticar" and inc.estado in ("en_atencion", "diagnosticado"):
+        resultado = (request.form.get("resultado") or "").strip()
+        destinos = {"solucionado": "solucionado_visita", "ot": "diagnosticado", "reemplazo": "pendiente_reemplazo", "pendiente": "pendiente_usuario", "reasignar": "reasignado"}
+        hallazgo = (request.form.get("hallazgo") or "").strip()
+        if not hallazgo or resultado not in destinos:
+            flash("Registra el hallazgo y selecciona una conclusión.", "danger")
+            return redirect(url_for("main.incidencias_detail", id=id))
+        db.session.add(IncidentDiagnosis(incident_id=inc.id, technician_id=inc.tecnico_asignado_id,
+            hallazgo=hallazgo, causa=(request.form.get("causa") or "").strip(),
+            pruebas=(request.form.get("pruebas") or "").strip(), recomendacion=(request.form.get("recomendacion") or "").strip(), resultado=resultado))
+        inc.diagnosticado_en = ahora
+        if resultado == "reasignar":
+            area = (request.form.get("area_responsable") or "").strip()
+            if not area:
+                flash("Selecciona el área destino.", "danger")
+                return redirect(url_for("main.incidencias_detail", id=id))
+            inc.area_responsable, inc.responsable_area_id, inc.tecnico_asignado_id = area, None, None
+        _cambiar_estado(inc, destinos[resultado], "diagnostico_registrado", hallazgo)
+    elif accion == "resolver" and inc.estado in ("solucionado_visita", "pendiente_ot", "pendiente_reemplazo"):
+        inc.resuelto_en, inc.resuelto_por_id, inc.notas_resolucion = ahora, current_user.id, comentario
+        _cambiar_estado(inc, "resuelto", "resuelto", comentario)
+    elif accion == "validar" and inc.estado == "resuelto":
+        inc.cerrado_en, inc.motivo_cierre = ahora, comentario or "Solución validada"
+        _cambiar_estado(inc, "cerrado", "cerrado", inc.motivo_cierre)
+    elif accion == "reabrir" and inc.estado in ("resuelto", "cerrado"):
+        inc.resuelto, inc.cerrado_en = False, None
+        _cambiar_estado(inc, "recibido", "reabierto", comentario or "La falla persiste")
+    else:
+        flash("La acción no es válida para el estado actual.", "warning")
+        return redirect(url_for("main.incidencias_detail", id=id))
+    db.session.commit()
+    flash(f"Incidente {inc.numero} actualizado: {inc.estado_label}.", "success")
+    return redirect(url_for("main.incidencias_detail", id=id))
 
 
 @bp.route("/incidencias/<int:id>/resolver", methods=["POST"])
@@ -4752,6 +4925,11 @@ def incidencias_resolver(id):
         flash("No tienes permiso para resolver incidencias.", "warning")
         return redirect(url_for("main.incidencias_list"))
     inc = _get_incident_or_404(id)
+    if inc.estado not in (IncidentEstado.SOLUCIONADO_VISITA.value,
+                          IncidentEstado.PENDIENTE_OT.value,
+                          IncidentEstado.PENDIENTE_REEMPLAZO.value):
+        flash("Primero debe registrarse un diagnóstico y una conclusión.", "warning")
+        return redirect(url_for("main.incidencias_detail", id=inc.id))
     if inc.resuelto:
         flash("Esta incidencia ya está resuelta.", "info")
         return redirect(url_for("main.incidencias_detail", id=inc.id))
@@ -4759,6 +4937,7 @@ def incidencias_resolver(id):
     inc.resuelto_en = datetime.utcnow()
     inc.resuelto_por_id = current_user.id
     inc.notas_resolucion = (request.form.get("notas_resolucion") or "").strip()
+    _cambiar_estado(inc, IncidentEstado.RESUELTO.value, "resuelto", inc.notas_resolucion)
     db.session.commit()
     flash(f"Incidencia {inc.numero or inc.id} marcada como resuelta.", "success")
     return redirect(url_for("main.incidencias_detail", id=inc.id))
@@ -4770,6 +4949,9 @@ def incidencias_crear_ot(id):
         flash("No tienes permiso para crear órdenes de trabajo.", "warning")
         return redirect(url_for("main.incidencias_list"))
     inc = _get_incident_or_404(id)
+    if inc.estado != IncidentEstado.DIAGNOSTICADO.value:
+        flash("La OT solo puede crearse después de un diagnóstico que la recomiende.", "warning")
+        return redirect(url_for("main.incidencias_detail", id=inc.id))
     if inc.work_order_id and inc.work_order:
         flash(f"Ya existe la OT {inc.work_order.numero}.", "info")
         return redirect(url_for("main.ordenes_edit", id=inc.work_order_id))
@@ -4807,6 +4989,7 @@ def incidencias_crear_ot(id):
     db.session.flush()
     numero = asignar_numero_ot(wo)
     inc.work_order_id = wo.id
+    _cambiar_estado(inc, IncidentEstado.PENDIENTE_OT.value, "ot_creada", f"OT {numero} vinculada")
     db.session.commit()
     flash(f"OT {numero} creada desde la incidencia {inc.numero}.", "success")
     return redirect(url_for("main.ordenes_edit", id=wo.id))

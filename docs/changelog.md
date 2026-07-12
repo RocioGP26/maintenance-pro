@@ -1,5 +1,96 @@
 # Changelog · Maintix Documentation Suite
 
+## [1.17.0] — 2026-07-11 · Sprint 16.5 · Purchasing cierre
+
+### Added
+- Migración idempotente `InvCompra` → solicitud + OC + recepción, sin mover stock.
+- Script seguro con `--dry-run` por defecto y `--apply` explícito.
+- Compatibilidad legacy, reconciliación, MRG/MAG y navegación alineadas.
+
+### Status
+- ✅ Sprint 16 completo · Purchasing operativo.
+
+---
+
+## [1.16.4] — 2026-07-11 · Sprint 16.4 · CxP e indicadores
+
+### Added
+- CxP por cada recepción aceptada, sin duplicar movimientos de stock.
+- Vencimientos, pagos parciales y vínculo recepción → `InvCompra`.
+- Dashboard Purchasing con saldos, vencidas, por vencer y OC abiertas.
+- Excel MRL de CxP formal con trazabilidad a recepción.
+
+### Status
+- ✅ Sprint 16.4 finalizado · siguiente: migración y alineación 16.5.
+
+---
+
+## [1.16.3] — 2026-07-11 · Sprint 16.3 · Recepciones
+
+### Added
+- Recepciones totales, parciales y rechazadas con trazabilidad por línea.
+- Confirmación idempotente y control de sobre-recepción.
+- Actualización de stock únicamente por cantidades aceptadas.
+- Estados OC `parcial` y `recibida`; recepciones confirmadas son inmutables.
+
+### Status
+- ✅ Sprint 16.3 finalizado · CxP permanece para Sprint 16.4.
+
+---
+
+## [1.16.2] — 2026-07-11 · Sprint 16.2 · Órdenes de compra
+
+### Added
+- Conversión única de solicitud aprobada a orden de compra.
+- Proveedor, snapshots de línea, moneda, precios, IVA y totales server-side.
+- Estados borrador → emitida → enviada con auditoría.
+- DOC-006 PDF MRL; borradores identificados con watermark.
+
+### Status
+- ✅ Sprint 16.2 finalizado · recepción y stock permanecen fuera de alcance.
+
+---
+
+## [1.16.1] — 2026-07-11 · Sprint 16.1 · Solicitudes
+
+### Added
+- Solicitudes de compra tenant-safe con líneas de catálogo o descripción libre.
+- Ciclo borrador → enviada → aprobada/rechazada y auditoría `PurEvento`.
+- Permisos específicos, navegación y migración aditiva `pur_*`.
+
+### Status
+- ✅ Sprint 16.1 finalizado · sin OC, recepciones, stock ni CxP nuevas.
+
+---
+
+## [1.16.0] — 2026-07-11 · Sprint 16.0 · Purchasing Design
+
+### Added
+- Charter, arquitectura, contratos y matriz de migración de Purchasing.
+- Sub-sprints 16.0–16.5, estados, permisos, contrato MAG y artefactos MRL.
+
+### Status
+- ✅ Sprint 16.0 formalizado · sin cambios de esquema o negocio.
+
+---
+
+## [1.15.0] — 2026-07-10 · Sprint 15.0 · MRL Foundation (documentación)
+
+### Added
+- **Sprint 15 · MRL Foundation — Report & Document Engine**
+- MRL v1.1.0 docs: `SPRINT15-REPORT.md`, `architecture.md`, `standards.md`, `roadmap.md`, `templates/`
+- Charter sub-sprints 15.0–15.5 · Definition of Done · sprints desbloqueados 16–20
+
+### Changed
+- MRL README — sección Sprint 15 e índice implementación
+- MRL strategy.md — enlace a arquitectura Sprint 15
+- MRL-10-ROAD cap. 10 — sección v1.1 implementación
+
+### Status
+- ✅ Sprint 15.0 documentación formalizada · código 15.1+ pendiente
+
+---
+
 ## [1.14.0] — 2026-07-10 · MDO v1.0.0 · Sprint 13 finalizado
 
 ### Added

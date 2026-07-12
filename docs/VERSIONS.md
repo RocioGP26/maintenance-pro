@@ -2,7 +2,7 @@
 
 **Fuente única de verdad** para versiones de cada manual y de la suite.
 
-**Suite actual:** **v1.14.0** (MAG v1.0 + MSD v1.0 + MRG v1.0.0 + MCM v1.0.0 + MKT v1.0.0 + **MDO v1.0.0**)  
+**Suite actual:** **v1.17.0** (Sprint 16 completo · Purchasing operativo)
 **Últimos tags:** `docs-v1.0` · `docs-foundation-1.0` (recomendado)
 
 ---
@@ -11,6 +11,9 @@
 
 | Versión | Fecha | Tag Git | Notas |
 |---------|-------|---------|-------|
+| **v1.17.0** | 2026-07-11 | *(pendiente)* | **Purchasing** · Sprint 16.0–16.5 completo |
+| **v1.16.0** | 2026-07-11 | *(pendiente)* | **Purchasing** · Sprint 16.0 diseño, contratos y migración |
+| **v1.15.0** | 2026-07-10 | *(pendiente)* | **MRL v1.1.0** · Sprint 15.0 MRL Foundation (docs) |
 | **v1.14.0** | 2026-07-10 | *(pendiente)* | **MDO v1.0.0** · Sprint 13 finalizado |
 | **v1.13.0** | 2026-07-10 | *(pendiente)* | MDO v0.7.0 · Sprint 13 en curso |
 | **v1.12.0** | 2026-07-10 | *(pendiente)* | MKT v1.0.0 · Sprint 12 finalizado |
@@ -46,7 +49,7 @@ Changelog: [changelog.md](changelog.md)
 | 12 | MKT | Sales Enablement & Marketing | **v1.0.0** | ✅ Sprint 12 | [mkt/changelog.md](mkt/changelog.md) | [/mkt/](http://127.0.0.1:5000/mkt/) |
 | 13 | MDO | Documentation Operations | **v1.0.0** | ✅ Sprint 13 | [mdo/changelog.md](mdo/changelog.md) | [/mdo/](http://127.0.0.1:5000/mdo/) |
 | 05 | MPA | Platform Architecture | **v1.0** | ✔ Congelado | [mpa/changelog.md](mpa/changelog.md) | [/mpa/](http://127.0.0.1:5000/mpa/) |
-| 06 | MRL | Report Language | **v1.0.1** | ✔ Sprint 7 | [mrl/changelog.md](mrl/changelog.md) | [/mrl/](http://127.0.0.1:5000/mrl/) |
+| 06 | MRL | Report Language | **v1.1.0** | 🚧 Sprint 15.0 | [mrl/changelog.md](mrl/changelog.md) | [/mrl/](http://127.0.0.1:5000/mrl/) |
 | 07 | MAG | API Guide | **v1.0.12** | ✅ MAG v1.0 | [mag/changelog.md](mag/changelog.md) | [/mag/](http://127.0.0.1:5000/mag/) |
 | 08 | SDK | SDK & Developer Portal (MSD) | **v1.0.0** | ✅ Sprint 9 | [msd/changelog.md](msd/changelog.md) | [/msd/](http://127.0.0.1:5000/msd/) |
 | 11 | MRG | Maintix Reference Guide | **v1.0.0** | ✅ Sprint 10 | [mrg/changelog.md](mrg/changelog.md) | [/mrg/](http://127.0.0.1:5000/mrg/) |

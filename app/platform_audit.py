@@ -17,7 +17,7 @@ PLATFORM_AUDIT_LABELS = {
     "unblock_user": "Usuario desbloqueado",
 }
 
-DEFAULT_ACTOR = "Soporte Mantis (Plataforma)"
+DEFAULT_ACTOR = "Soporte Maintix (Plataforma)"
 
 
 def _client_ip() -> str:

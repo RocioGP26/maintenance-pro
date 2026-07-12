@@ -72,13 +72,21 @@
                      value="{{ f.telefono_contacto }}">
             </div>
             <div class="col-md-6">
-              <label class="form-label" for="areaIncidencia">Área / Departamento *</label>
+              <label class="form-label" for="areaIncidencia">Área del reportante *</label>
               <select name="area" id="areaIncidencia" class="form-select" required>
                 <option value="">Seleccionar área…</option>
                 {% for a in areas %}
                 <option value="{{ a }}" {% if f.area == a %}selected{% endif %}>{{ a }}</option>
                 {% endfor %}
               </select>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label" for="areaResponsable">Área responsable / destino *</label>
+              <select name="area_responsable" id="areaResponsable" class="form-select" required>
+                <option value="">Seleccionar destino…</option>
+                {% for a in areas %}<option value="{{ a }}" {% if f.area_responsable == a %}selected{% endif %}>{{ a }}</option>{% endfor %}
+              </select>
+              <div class="form-text">Elige quién debe recibir y gestionar el reporte.</div>
             </div>
             <div class="col-12">
               <label class="form-label" for="ubicacionIncidencia">Ubicación específica</label>

@@ -22,6 +22,7 @@ python run.py
 | Versionado | [VERSIONING.md](VERSIONING.md) |
 | Nomenclatura | [NOMENCLATURE.md](NOMENCLATURE.md) |
 | Sitio público (futuro) | [publishing/README.md](publishing/README.md) |
+| Sprint 16 · Purchasing | [purchasing/README.md](purchasing/README.md) |
 
 ---
 

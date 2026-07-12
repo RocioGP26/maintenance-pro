@@ -4,13 +4,23 @@
 
 ---
 
-## v1.0 · Sprint 7 (este release)
+## v1.0 · Sprint 7 (documentación — cerrado ✅)
 
 - [x] Filosofía y anatomía documentada
 - [x] Registro DOC-001 – DOC-010
 - [x] Header, tablas, KPI, colores, gráficos, exportaciones
 - [x] Catálogo `/mrl/`
-- [ ] Módulo Python `mrl_styles` compartido (implementación)
+
+## v1.1 · Sprint 15 · MRL Foundation (implementación)
+
+→ Charter: [SPRINT15-REPORT.md](../SPRINT15-REPORT.md)  
+→ Roadmap código: [roadmap.md](../roadmap.md)  
+→ Arquitectura: [architecture.md](../architecture.md)
+
+- [ ] Paquete `app/mrl/` (Sprint 15.1)
+- [ ] `BaseExcelExporter` (Sprint 15.2)
+- [ ] `BasePdfExporter` (Sprint 15.3)
+- [ ] DOC-001 OT PDF (Sprint 15.4)
 - [ ] Migrar OT PDF a MRL-HDR/TBL
 - [ ] Migrar export Excel Inventory a estándar MRL
 

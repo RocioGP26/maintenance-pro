@@ -67,7 +67,7 @@ def empresa_puede_operar(empresa: Empresa | None) -> tuple[bool, str, str]:
         return (
             False,
             "suspendida",
-            "Esta cuenta está suspendida. Contacta a soporte de Mantis para reactivarla.",
+            "Esta cuenta está suspendida. Contacta a soporte de Maintix para reactivarla.",
         )
     estado = estado_ciclo_empresa(empresa)
     if estado == "suspendida":
@@ -80,7 +80,7 @@ def empresa_puede_operar(empresa: Empresa | None) -> tuple[bool, str, str]:
         return (
             False,
             "mora",
-            "Hay pagos pendientes. Regulariza la facturación para continuar usando Mantis.",
+            "Hay pagos pendientes. Regulariza la facturación para continuar usando Maintix.",
         )
     return True, "", ""
 

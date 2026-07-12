@@ -46,8 +46,11 @@
     <div class="card card-dashboard h-100">
       <div class="card-body">
         <h6 class="text-muted text-uppercase small">Exportaciones</h6>
-        <p class="small mb-2 text-muted">Exportación Excel de OT y activos — próximamente.</p>
-        <span class="badge text-bg-secondary">Próximamente</span>
+        <p class="small mb-2 text-muted">Exportaciones operativas con identidad MRL.</p>
+        <div class="d-flex flex-wrap gap-2">
+          <a href="{{ url_for('main.ordenes_export') }}" class="btn btn-sm btn-outline-success">OT Excel</a>
+          <a href="{{ url_for('main.activos_export') }}" class="btn btn-sm btn-outline-success">Activos Excel</a>
+        </div>
       </div>
     </div>
   </div>

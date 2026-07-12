@@ -228,6 +228,7 @@ def create_app(config_name: str | None = None):
     from app.health_routes import health_bp
     from app.onboarding_routes import onboarding_bp
     from app.inventario_comercial.routes import inv_comercial_bp
+    from app.purchasing.routes import purchasing_bp
     from app.tenancy.admin_routes import admin_bp
     from app.tenancy.api_routes import tenancy_api_bp
     from app.tenancy.platform_routes import platform_bp
@@ -264,6 +265,7 @@ def create_app(config_name: str | None = None):
     app.register_blueprint(docs_bp)
     app.register_blueprint(onboarding_bp)
     app.register_blueprint(inv_comercial_bp)
+    app.register_blueprint(purchasing_bp)
     app.register_blueprint(tenancy_api_bp)
     app.register_blueprint(admin_bp)
     app.register_blueprint(platform_bp)

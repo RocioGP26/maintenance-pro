@@ -330,7 +330,7 @@ class PlatformAuditLog(db.Model):
     empresa_id = db.Column(db.Integer, db.ForeignKey("empresas.id"), nullable=True, index=True)
     user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=True, index=True)
     accion = db.Column(db.String(32), nullable=False, index=True)
-    actor_label = db.Column(db.String(120), nullable=False, default="Soporte Mantis")
+    actor_label = db.Column(db.String(120), nullable=False, default="Soporte Maintix")
     detalle = db.Column(db.String(500), default="")
     ip_address = db.Column(db.String(45), default="")
     visible_cliente = db.Column(db.Boolean, default=True, nullable=False)
@@ -1424,6 +1424,182 @@ class InvCompraLinea(db.Model):
     producto = db.relationship("InvProducto", backref="lineas_compra")
 
 
+class PurSolicitud(db.Model):
+    """Solicitud interna de compra · Sprint 16.1."""
+
+    __tablename__ = "pur_solicitudes"
+    __table_args__ = (
+        db.UniqueConstraint("empresa_id", "numero", name="uq_pur_solicitud_empresa_numero"),
+    )
+
+    id = db.Column(db.Integer, primary_key=True)
+    empresa_id = db.Column(db.Integer, db.ForeignKey("empresas.id"), nullable=False, index=True)
+    numero = db.Column(db.String(32), nullable=False, index=True)
+    solicitante_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False, index=True)
+    estado = db.Column(db.String(16), nullable=False, default="borrador", index=True)
+    prioridad = db.Column(db.String(16), nullable=False, default="media")
+    justificacion = db.Column(db.Text, nullable=False, default="")
+    requerida_para = db.Column(db.Date, nullable=True)
+    aprobador_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=True)
+    decision_en = db.Column(db.DateTime, nullable=True)
+    motivo_decision = db.Column(db.Text, nullable=False, default="")
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+
+    solicitante = db.relationship("User", foreign_keys=[solicitante_id])
+    aprobador = db.relationship("User", foreign_keys=[aprobador_id])
+    lineas = db.relationship("PurSolicitudLinea", back_populates="solicitud", cascade="all, delete-orphan", order_by="PurSolicitudLinea.id")
+    eventos = db.relationship("PurEvento", back_populates="solicitud", cascade="all, delete-orphan", order_by="PurEvento.created_at")
+
+
+class PurSolicitudLinea(db.Model):
+    __tablename__ = "pur_solicitud_lineas"
+
+    id = db.Column(db.Integer, primary_key=True)
+    solicitud_id = db.Column(db.Integer, db.ForeignKey("pur_solicitudes.id", ondelete="CASCADE"), nullable=False, index=True)
+    producto_id = db.Column(db.Integer, db.ForeignKey("inv_productos.id"), nullable=True, index=True)
+    descripcion_libre = db.Column(db.String(255), nullable=False, default="")
+    cantidad = db.Column(db.Float, nullable=False)
+    unidad = db.Column(db.String(32), nullable=False, default="pza")
+    costo_estimado = db.Column(db.Float, nullable=True)
+
+    solicitud = db.relationship("PurSolicitud", back_populates="lineas")
+    producto = db.relationship("InvProducto")
+
+
+class PurEvento(db.Model):
+    __tablename__ = "pur_eventos"
+
+    id = db.Column(db.Integer, primary_key=True)
+    empresa_id = db.Column(db.Integer, db.ForeignKey("empresas.id"), nullable=False, index=True)
+    solicitud_id = db.Column(db.Integer, db.ForeignKey("pur_solicitudes.id", ondelete="CASCADE"), nullable=False, index=True)
+    evento = db.Column(db.String(32), nullable=False)
+    actor_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
+    estado_anterior = db.Column(db.String(16), nullable=True)
+    estado_nuevo = db.Column(db.String(16), nullable=False)
+    detalle = db.Column(db.Text, nullable=False, default="")
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+
+    solicitud = db.relationship("PurSolicitud", back_populates="eventos")
+    actor = db.relationship("User")
+
+
+class PurOrdenCompra(db.Model):
+    """Orden de compra formal · Sprint 16.2."""
+
+    __tablename__ = "pur_ordenes"
+    __table_args__ = (
+        db.UniqueConstraint("empresa_id", "numero", name="uq_pur_orden_empresa_numero"),
+        db.UniqueConstraint("solicitud_id", name="uq_pur_orden_solicitud"),
+    )
+
+    id = db.Column(db.Integer, primary_key=True)
+    empresa_id = db.Column(db.Integer, db.ForeignKey("empresas.id"), nullable=False, index=True)
+    numero = db.Column(db.String(32), nullable=False, index=True)
+    solicitud_id = db.Column(db.Integer, db.ForeignKey("pur_solicitudes.id"), nullable=False, index=True)
+    proveedor_id = db.Column(db.Integer, db.ForeignKey("inv_proveedores.id"), nullable=False, index=True)
+    creador_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
+    estado = db.Column(db.String(16), nullable=False, default="borrador", index=True)
+    moneda = db.Column(db.String(8), nullable=False, default="COP")
+    subtotal = db.Column(db.Float, nullable=False, default=0.0)
+    monto_iva = db.Column(db.Float, nullable=False, default=0.0)
+    total = db.Column(db.Float, nullable=False, default=0.0)
+    entrega_prevista = db.Column(db.Date, nullable=True)
+    direccion_entrega = db.Column(db.String(255), nullable=False, default="")
+    condiciones_pago = db.Column(db.String(255), nullable=False, default="")
+    notas = db.Column(db.Text, nullable=False, default="")
+    emitida_en = db.Column(db.DateTime, nullable=True)
+    enviada_en = db.Column(db.DateTime, nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+
+    solicitud = db.relationship("PurSolicitud", backref=db.backref("orden_compra", uselist=False))
+    proveedor = db.relationship("InvProveedor")
+    creador = db.relationship("User")
+    lineas = db.relationship("PurOrdenLinea", back_populates="orden", cascade="all, delete-orphan", order_by="PurOrdenLinea.id")
+    eventos = db.relationship("PurOrdenEvento", back_populates="orden", cascade="all, delete-orphan", order_by="PurOrdenEvento.created_at")
+
+
+class PurOrdenLinea(db.Model):
+    __tablename__ = "pur_orden_lineas"
+
+    id = db.Column(db.Integer, primary_key=True)
+    orden_id = db.Column(db.Integer, db.ForeignKey("pur_ordenes.id", ondelete="CASCADE"), nullable=False, index=True)
+    solicitud_linea_id = db.Column(db.Integer, db.ForeignKey("pur_solicitud_lineas.id"), nullable=False)
+    producto_id = db.Column(db.Integer, db.ForeignKey("inv_productos.id"), nullable=True)
+    descripcion_snapshot = db.Column(db.String(255), nullable=False)
+    unidad = db.Column(db.String(32), nullable=False)
+    cantidad_ordenada = db.Column(db.Float, nullable=False)
+    precio_unitario = db.Column(db.Float, nullable=False, default=0.0)
+    tasa_iva = db.Column(db.Float, nullable=False, default=0.0)
+    subtotal = db.Column(db.Float, nullable=False, default=0.0)
+    monto_iva = db.Column(db.Float, nullable=False, default=0.0)
+    total = db.Column(db.Float, nullable=False, default=0.0)
+
+    orden = db.relationship("PurOrdenCompra", back_populates="lineas")
+    solicitud_linea = db.relationship("PurSolicitudLinea")
+    producto = db.relationship("InvProducto")
+
+
+class PurOrdenEvento(db.Model):
+    __tablename__ = "pur_orden_eventos"
+
+    id = db.Column(db.Integer, primary_key=True)
+    empresa_id = db.Column(db.Integer, db.ForeignKey("empresas.id"), nullable=False, index=True)
+    orden_id = db.Column(db.Integer, db.ForeignKey("pur_ordenes.id", ondelete="CASCADE"), nullable=False, index=True)
+    evento = db.Column(db.String(32), nullable=False)
+    actor_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
+    estado_anterior = db.Column(db.String(16), nullable=True)
+    estado_nuevo = db.Column(db.String(16), nullable=False)
+    detalle = db.Column(db.Text, nullable=False, default="")
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+
+    orden = db.relationship("PurOrdenCompra", back_populates="eventos")
+    actor = db.relationship("User")
+
+
+class PurRecepcion(db.Model):
+    """Recepción inmutable de una orden de compra · Sprint 16.3."""
+
+    __tablename__ = "pur_recepciones"
+    __table_args__ = (
+        db.UniqueConstraint("empresa_id", "numero", name="uq_pur_recepcion_empresa_numero"),
+        db.UniqueConstraint("empresa_id", "idempotency_key", name="uq_pur_recepcion_empresa_idempotency"),
+    )
+
+    id = db.Column(db.Integer, primary_key=True)
+    empresa_id = db.Column(db.Integer, db.ForeignKey("empresas.id"), nullable=False, index=True)
+    numero = db.Column(db.String(32), nullable=False, index=True)
+    orden_id = db.Column(db.Integer, db.ForeignKey("pur_ordenes.id"), nullable=False, index=True)
+    estado = db.Column(db.String(16), nullable=False, default="confirmada", index=True)
+    recibido_por_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
+    fecha = db.Column(db.Date, nullable=False)
+    idempotency_key = db.Column(db.String(64), nullable=False)
+    documento_proveedor = db.Column(db.String(64), nullable=False, default="")
+    observaciones = db.Column(db.Text, nullable=False, default="")
+    inv_compra_id = db.Column(db.Integer, db.ForeignKey("inv_compras.id"), nullable=True, unique=True, index=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+
+    orden = db.relationship("PurOrdenCompra", backref=db.backref("recepciones", order_by="PurRecepcion.created_at"))
+    recibido_por = db.relationship("User")
+    compra = db.relationship("InvCompra", backref=db.backref("recepcion", uselist=False))
+    lineas = db.relationship("PurRecepcionLinea", back_populates="recepcion", cascade="all, delete-orphan", order_by="PurRecepcionLinea.id")
+
+
+class PurRecepcionLinea(db.Model):
+    __tablename__ = "pur_recepcion_lineas"
+
+    id = db.Column(db.Integer, primary_key=True)
+    recepcion_id = db.Column(db.Integer, db.ForeignKey("pur_recepciones.id", ondelete="CASCADE"), nullable=False, index=True)
+    orden_linea_id = db.Column(db.Integer, db.ForeignKey("pur_orden_lineas.id"), nullable=False, index=True)
+    cantidad_recibida = db.Column(db.Float, nullable=False, default=0.0)
+    cantidad_rechazada = db.Column(db.Float, nullable=False, default=0.0)
+    motivo_rechazo = db.Column(db.String(255), nullable=False, default="")
+
+    recepcion = db.relationship("PurRecepcion", back_populates="lineas")
+    orden_linea = db.relationship("PurOrdenLinea", backref="lineas_recepcion")
+
+
 class InvVenta(db.Model):
     __tablename__ = "inv_ventas"
 
@@ -1515,9 +1691,20 @@ class Incident(db.Model):
     cargo_reportante = db.Column(db.String(120), default="")
     telefono_contacto = db.Column(db.String(40), default="")
     area = db.Column(db.String(120), default="")
+    area_responsable = db.Column(db.String(120), default="", nullable=False)
     ubicacion = db.Column(db.String(200), default="")
     tipo = db.Column(db.String(32), default="")
     prioridad = db.Column(db.String(32), default="media")
+    prioridad_confirmada = db.Column(db.String(32), default="")
+    estado = db.Column(db.String(32), default="reportado", nullable=False, index=True)
+    responsable_area_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=True)
+    tecnico_asignado_id = db.Column(db.Integer, db.ForeignKey("technicians.id"), nullable=True)
+    recibido_en = db.Column(db.DateTime, nullable=True)
+    asignado_en = db.Column(db.DateTime, nullable=True)
+    iniciado_en = db.Column(db.DateTime, nullable=True)
+    diagnosticado_en = db.Column(db.DateTime, nullable=True)
+    cerrado_en = db.Column(db.DateTime, nullable=True)
+    motivo_cierre = db.Column(db.Text, default="")
     equipo_detenido = db.Column(db.Boolean, default=False, nullable=False)
     fecha_evento = db.Column(db.Date, nullable=True)
     hora_evento = db.Column(db.String(5), default="")
@@ -1534,6 +1721,8 @@ class Incident(db.Model):
     empresa = db.relationship("Empresa", backref="incidents")
     usuario = db.relationship("User", foreign_keys=[user_id], backref="incidentes_reportados")
     resuelto_por = db.relationship("User", foreign_keys=[resuelto_por_id])
+    responsable_area = db.relationship("User", foreign_keys=[responsable_area_id])
+    tecnico_asignado = db.relationship("Technician", foreign_keys=[tecnico_asignado_id])
     work_order = db.relationship("WorkOrder", backref=db.backref("incidencia_origen", uselist=False))
 
     @property
@@ -1550,11 +1739,66 @@ class Incident(db.Model):
 
     @property
     def estado_label(self) -> str:
-        return "Resuelta" if self.resuelto else "Pendiente"
+        return INCIDENT_ESTADO_LABELS.get(self.estado or "", self.estado or "—")
 
     @property
     def estado_slug(self) -> str:
-        return "resuelta" if self.resuelto else "pendiente"
+        return self.estado or "reportado"
+
+
+class IncidentEstado(str, Enum):
+    REPORTADO = "reportado"
+    RECIBIDO = "recibido"
+    ASIGNADO = "asignado"
+    EN_ATENCION = "en_atencion"
+    DIAGNOSTICADO = "diagnosticado"
+    SOLUCIONADO_VISITA = "solucionado_visita"
+    PENDIENTE_OT = "pendiente_ot"
+    PENDIENTE_REEMPLAZO = "pendiente_reemplazo"
+    PENDIENTE_USUARIO = "pendiente_usuario"
+    REASIGNADO = "reasignado"
+    RESUELTO = "resuelto"
+    CERRADO = "cerrado"
+    CANCELADO = "cancelado"
+
+
+INCIDENT_ESTADO_LABELS = {
+    "reportado": "Reportado", "recibido": "Recibido", "asignado": "Asignado",
+    "en_atencion": "En atención", "diagnosticado": "Diagnosticado",
+    "solucionado_visita": "Solucionado en visita", "pendiente_ot": "Pendiente de OT",
+    "pendiente_reemplazo": "Pendiente de reemplazo", "pendiente_usuario": "Pendiente de usuario/acceso",
+    "reasignado": "Reasignado", "resuelto": "Resuelto", "cerrado": "Cerrado", "cancelado": "Cancelado",
+}
+
+
+class IncidentDiagnosis(db.Model):
+    __tablename__ = "incident_diagnoses"
+    id = db.Column(db.Integer, primary_key=True)
+    incident_id = db.Column(db.Integer, db.ForeignKey("incidents.id", ondelete="CASCADE"), nullable=False, index=True)
+    technician_id = db.Column(db.Integer, db.ForeignKey("technicians.id"), nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    hallazgo = db.Column(db.Text, nullable=False)
+    causa = db.Column(db.Text, default="")
+    pruebas = db.Column(db.Text, default="")
+    recomendacion = db.Column(db.Text, default="")
+    resultado = db.Column(db.String(32), nullable=False)
+    evidencia = db.Column(db.Text, default="")
+    incident = db.relationship("Incident", backref=db.backref("diagnosticos", lazy="dynamic", order_by="IncidentDiagnosis.created_at"))
+    technician = db.relationship("Technician")
+
+
+class IncidentHistory(db.Model):
+    __tablename__ = "incident_history"
+    id = db.Column(db.Integer, primary_key=True)
+    incident_id = db.Column(db.Integer, db.ForeignKey("incidents.id", ondelete="CASCADE"), nullable=False, index=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=True)
+    accion = db.Column(db.String(80), nullable=False)
+    estado_anterior = db.Column(db.String(32), default="")
+    estado_nuevo = db.Column(db.String(32), default="")
+    comentario = db.Column(db.Text, default="")
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    incident = db.relationship("Incident", backref=db.backref("historial", lazy="dynamic", order_by="IncidentHistory.created_at"))
+    user = db.relationship("User")
 
 
 class IncidentPrioridad(str, Enum):
@@ -1596,6 +1840,7 @@ INCIDENT_TIPO_LABELS = dict(INCIDENT_TIPOS)
 INCIDENT_AREAS_BASE = (
     "Producción",
     "Mantenimiento",
+    "TIC / Sistemas",
     "Calidad",
     "Logística",
     "Administración",

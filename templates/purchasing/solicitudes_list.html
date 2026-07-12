@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Solicitudes de compra — {{ app_name }}{% endblock %}
+{% block page_title %}Solicitudes de compra{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center gap-2 mb-3">
+  <div class="btn-group btn-group-sm">
+    {% for key, label in [('', 'Todas'), ('borrador','Borradores'), ('enviada','Por aprobar'), ('aprobada','Aprobadas'), ('rechazada','Rechazadas')] %}
+    <a href="{{ url_for('purchasing.solicitudes_list', estado=key or none) }}" class="btn {% if estado == key %}btn-primary{% else %}btn-outline-primary{% endif %}">{{ label }}</a>
+    {% endfor %}
+  </div>
+  <a href="{{ url_for('purchasing.solicitudes_new') }}" class="btn btn-primary"><i class="bi bi-plus-lg"></i> Nueva solicitud</a>
+</div>
+<div class="table-responsive"><table class="table table-hover align-middle"><thead class="table-light"><tr><th>Número</th><th>Solicitante</th><th>Prioridad</th><th>Requerida</th><th>Estado</th><th>Líneas</th><th></th></tr></thead><tbody>
+{% for s in items %}<tr><td><code>{{ s.numero }}</code></td><td>{{ s.solicitante.etiqueta() }}</td><td class="text-capitalize">{{ s.prioridad }}</td><td>{{ s.requerida_para.strftime('%d/%m/%Y') if s.requerida_para else '—' }}</td><td><span class="badge {% if s.estado == 'aprobada' %}text-bg-success{% elif s.estado == 'rechazada' %}text-bg-danger{% elif s.estado == 'enviada' %}text-bg-warning{% else %}text-bg-secondary{% endif %}">{{ s.estado|replace('_',' ')|title }}</span></td><td>{{ s.lineas|length }}</td><td class="text-end"><a href="{{ url_for('purchasing.solicitudes_detail', id=s.id) }}" class="btn btn-sm btn-outline-secondary">Ver</a></td></tr>
+{% else %}<tr><td colspan="7" class="text-center text-muted py-4">No hay solicitudes en este estado. <a href="{{ url_for('purchasing.solicitudes_new') }}">Crea la primera</a>.</td></tr>{% endfor %}
+</tbody></table></div>
+{% endblock %}
