@@ -3223,6 +3223,44 @@ def ordenes_export():
     )
 
 
+@bp.route("/ordenes/export/pdf")
+@login_required
+def ordenes_export_pdf():
+    from io import BytesIO
+    from flask import send_file
+    from app.maintenance.control_actividades_pdf import export_control_actividades_pdf
+
+    empresa = current_user.empresa
+    if not empresa:
+        return redirect(url_for("main.ordenes_list"))
+    filtros = _ordenes_filtros_desde_request()
+    orders = _ordenes_list_query(filtros).all()
+    mes = filtros.get("mes", "")
+    anio = filtros.get("anio", "")
+    meses = dict(MESES_PLANEACION)
+    if mes.isdigit() and int(mes) in meses:
+        periodo_label = f"{meses[int(mes)]} {anio or date.today().year}"
+    elif anio:
+        periodo_label = anio
+    elif filtros.get("fecha_desde") or filtros.get("fecha_hasta"):
+        periodo_label = " - ".join(
+            value
+            for value in (filtros.get("fecha_desde"), filtros.get("fecha_hasta"))
+            if value
+        )
+    else:
+        periodo_label = "Listado filtrado"
+    content, name = export_control_actividades_pdf(
+        empresa, orders, periodo_label=periodo_label
+    )
+    return send_file(
+        BytesIO(content),
+        mimetype="application/pdf",
+        as_attachment=True,
+        download_name=name,
+    )
+
+
 @bp.route("/ordenes/nueva", methods=["GET", "POST"])
 def ordenes_new():
     from sqlalchemy.orm import joinedload

@@ -9,7 +9,7 @@ from xml.sax.saxutils import escape
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.units import mm
 from reportlab.pdfgen.canvas import Canvas
-from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer
+from reportlab.platypus import KeepTogether, Paragraph, SimpleDocTemplate, Spacer
 
 from app.mrl import colors, constants, typography
 from app.mrl.metadata import MRLDocumentMeta
@@ -39,6 +39,25 @@ class BasePdfExporter:
         column_widths: Sequence[float] | None = None,
     ) -> None:
         self._story.append(build_table(headers, rows, column_widths=column_widths))
+
+    def add_titled_table(
+        self,
+        title: str,
+        headers: Sequence[object],
+        rows: Sequence[Sequence[object]],
+        *,
+        column_widths: Sequence[float] | None = None,
+    ) -> None:
+        """Mantiene el título junto a la tabla al paginar."""
+        self._story.append(
+            KeepTogether(
+                [
+                    Paragraph(escape(title), paragraph_styles()["title"]),
+                    Spacer(1, 2 * mm),
+                    build_table(headers, rows, column_widths=column_widths),
+                ]
+            )
+        )
 
     def add_kpis(self, items: Sequence[tuple[str, object]]) -> None:
         if items:
