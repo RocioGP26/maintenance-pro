@@ -103,7 +103,20 @@
     <div class="card card-dashboard mb-3"><div class="card-body">
       <h6 class="fw-semibold">Siguiente acción operativa</h6>
       {% if inc.estado in ('reportado','reasignado') %}
-      <form method="post" action="{{ url_for('main.incidencias_accion', id=inc.id) }}">{% include '_csrf.html' %}<input type="hidden" name="accion" value="recibir"><textarea name="comentario" class="form-control mb-2" placeholder="Clasificación u observación inicial"></textarea><button class="btn btn-primary">Recibir incidente</button></form>
+      <form method="post" action="{{ url_for('main.incidencias_accion', id=inc.id) }}" class="mb-3">
+        {% include '_csrf.html' %}<input type="hidden" name="accion" value="asignar">
+        <label class="form-label">Asignar técnico directamente</label>
+        <select name="tecnico_id" class="form-select mb-2" required>
+          <option value="">Seleccionar técnico…</option>
+          {% for t in tecnicos %}<option value="{{ t.id }}">{{ t.nombre }}</option>{% endfor %}
+        </select>
+        <textarea name="comentario" class="form-control mb-2" placeholder="Clasificación u observación inicial"></textarea>
+        <button class="btn btn-primary">Recibir y asignar técnico</button>
+      </form>
+      <form method="post" action="{{ url_for('main.incidencias_accion', id=inc.id) }}">
+        {% include '_csrf.html' %}<input type="hidden" name="accion" value="recibir">
+        <button class="btn btn-outline-secondary btn-sm">Recibir sin asignar todavía</button>
+      </form>
       {% elif inc.estado == 'recibido' %}
       <form method="post" action="{{ url_for('main.incidencias_accion', id=inc.id) }}">{% include '_csrf.html' %}<input type="hidden" name="accion" value="asignar"><select name="tecnico_id" class="form-select mb-2" required><option value="">Seleccionar técnico…</option>{% for t in tecnicos %}<option value="{{ t.id }}">{{ t.nombre }}</option>{% endfor %}</select><button class="btn btn-primary">Asignar técnico</button></form>
       {% elif inc.estado == 'asignado' %}

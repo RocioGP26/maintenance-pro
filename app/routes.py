@@ -4916,12 +4916,16 @@ def incidencias_accion(id):
         inc.recibido_en = ahora
         inc.prioridad_confirmada = (request.form.get("prioridad_confirmada") or inc.prioridad).strip()
         _cambiar_estado(inc, "recibido", "recibido", comentario)
-    elif accion == "asignar" and inc.estado in ("recibido", "asignado"):
+    elif accion == "asignar" and inc.estado in ("reportado", "reasignado", "recibido", "asignado"):
         tid = request.form.get("tecnico_id", type=int)
         tecnico = _filter_empresa(Technician.query.filter_by(id=tid, activo=True), Technician).first() if tid else None
         if not tecnico:
             flash("Selecciona un técnico válido.", "danger")
             return redirect(url_for("main.incidencias_detail", id=id))
+        if inc.estado in ("reportado", "reasignado"):
+            inc.responsable_area_id = current_user.id
+            inc.recibido_en = ahora
+            inc.prioridad_confirmada = inc.prioridad
         inc.tecnico_asignado_id, inc.asignado_en = tecnico.id, ahora
         _cambiar_estado(inc, "asignado", "tecnico_asignado", f"{tecnico.nombre}. {comentario}".strip())
     elif accion == "iniciar" and inc.estado == "asignado":
