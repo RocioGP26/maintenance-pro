@@ -478,8 +478,8 @@
           <div class="d-flex align-items-center gap-2">
             <span class="dash-card-head-icon" aria-hidden="true"><i class="bi bi-bar-chart-line"></i></span>
             <div>
-              <h5 class="card-title mb-0">Pareto de correctivos por equipo</h5>
-              <p class="text-muted small mb-0">Cantidad de OT correctivas y porcentaje acumulado del período seleccionado.</p>
+              <h5 class="card-title mb-0">Correctivos por equipo</h5>
+              <p class="text-muted small mb-0">Distribución de las OT correctivas del período seleccionado.</p>
             </div>
           </div>
         </div>
@@ -823,67 +823,39 @@ document.addEventListener('DOMContentLoaded', function () {
 
   const paretoCtx = document.getElementById('chartParetoCorrectivos');
   if (paretoCtx) {
+    const paretoValues = {{ pareto_values | tojson }};
+    const paretoPalette = [
+      '#e53e3e', '#ed8936', '#ecc94b', '#38a169', '#319795',
+      '#3182ce', '#5a67d8', '#805ad5', '#d53f8c', '#718096', '#a0aec0'
+    ];
     new Chart(paretoCtx, {
-      type: 'bar',
+      type: 'pie',
       data: {
         labels: {{ pareto_labels | tojson }},
-        datasets: [
-          {
-            type: 'bar',
-            label: 'OT correctivas',
-            data: {{ pareto_values | tojson }},
-            backgroundColor: 'rgba(237, 137, 54, 0.88)',
-            borderColor: 'rgba(237, 137, 54, 1)',
-            borderWidth: 1,
-            borderRadius: 4,
-            yAxisID: 'y'
-          },
-          {
-            type: 'line',
-            label: '% acumulado',
-            data: {{ pareto_percentages | tojson }},
-            borderColor: '#e53e3e',
-            backgroundColor: '#e53e3e',
-            pointBackgroundColor: '#e53e3e',
-            pointRadius: 3,
-            borderWidth: 2,
-            tension: 0.15,
-            yAxisID: 'y1'
-          }
-        ]
+        datasets: [{
+          label: 'OT correctivas',
+          data: paretoValues,
+          backgroundColor: paretoValues.map(function (_, i) { return paretoPalette[i % paretoPalette.length]; }),
+          borderColor: chartBorder,
+          borderWidth: 2,
+          hoverOffset: 6
+        }]
       },
       options: {
         responsive: true,
         maintainAspectRatio: false,
-        interaction: { mode: 'index', intersect: false },
-        scales: {
-          x: {
-            ticks: { color: dashCssVar('--dash-text-muted') || 'rgba(255,255,255,0.6)', maxRotation: 35, minRotation: 0 },
-            grid: { display: false }
-          },
-          y: {
-            beginAtZero: true,
-            ticks: { stepSize: 1, color: dashCssVar('--dash-text-muted') || 'rgba(255,255,255,0.6)' },
-            grid: { color: chartGrid },
-            title: { display: true, text: 'OT correctivas' }
-          },
-          y1: {
-            beginAtZero: true,
-            max: 100,
-            position: 'right',
-            ticks: { callback: function (value) { return value + '%'; }, color: '#e53e3e' },
-            grid: { drawOnChartArea: false },
-            title: { display: true, text: '% acumulado' }
-          }
-        },
         plugins: {
-          legend: { position: 'bottom' },
+          legend: {
+            position: 'right',
+            labels: { boxWidth: 12, usePointStyle: true }
+          },
           tooltip: {
             callbacks: {
               label: function (ctx) {
-                return ctx.dataset.yAxisID === 'y1'
-                  ? ctx.dataset.label + ': ' + ctx.parsed.y + '%'
-                  : ctx.dataset.label + ': ' + ctx.parsed.y;
+                const total = paretoValues.reduce(function (sum, value) { return sum + value; }, 0);
+                const value = ctx.parsed || 0;
+                const pct = total ? (value * 100 / total).toFixed(1) : '0.0';
+                return ctx.label + ': ' + value + ' OT (' + pct + '%)';
               }
             }
           }
