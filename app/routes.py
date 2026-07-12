@@ -2393,6 +2393,36 @@ def _aplicar_estado_orden_desde_formulario(wo: WorkOrder) -> None:
         jornada_estado_ot=jornada_estado or None,
         tiene_jornadas=tiene_jornadas,
     )
+    _cerrar_incidente_vinculado_si_ot_terminal(wo)
+
+
+def _cerrar_incidente_vinculado_si_ot_terminal(wo: WorkOrder) -> None:
+    """Cierra el incidente de origen cuando su OT queda completada o cerrada."""
+    if (wo.status or "").strip().lower() not in WORK_ORDER_TERMINAL_STATUSES:
+        return
+    incidente = getattr(wo, "incidencia_origen", None)
+    if not incidente or incidente.estado in (
+        IncidentEstado.CERRADO.value,
+        IncidentEstado.CANCELADO.value,
+    ):
+        return
+
+    ahora = datetime.utcnow()
+    detalle = f"Cierre automático por finalización de la OT {wo.numero or wo.id}."
+    incidente.resuelto = True
+    incidente.resuelto_en = incidente.resuelto_en or ahora
+    incidente.cerrado_en = ahora
+    incidente.resuelto_por_id = (
+        current_user.id if current_user.is_authenticated else incidente.resuelto_por_id
+    )
+    incidente.notas_resolucion = incidente.notas_resolucion or detalle
+    incidente.motivo_cierre = detalle
+    _cambiar_estado(
+        incidente,
+        IncidentEstado.CERRADO.value,
+        "cerrado_por_ot",
+        detalle,
+    )
 
 
 def _spare_parts_para_formulario() -> list:
