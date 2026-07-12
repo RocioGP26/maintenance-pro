@@ -1609,6 +1609,37 @@ def dashboard():
 
     workload_empty = sum(workload_values) == 0
     workload_total = sum(workload_values)
+
+    pareto_rows = (
+        _wo_in_period_query(start, end, sector, machine_ids)
+        .join(Machine, Machine.id == WorkOrder.machine_id)
+        .filter(func.lower(WorkOrder.tipo) == WorkOrderType.CORRECTIVO.value)
+        .with_entities(
+            Machine.codigo,
+            Machine.nombre,
+            func.count(WorkOrder.id).label("total"),
+        )
+        .group_by(Machine.id, Machine.codigo, Machine.nombre)
+        .order_by(func.count(WorkOrder.id).desc(), Machine.nombre.asc())
+        .all()
+    )
+    pareto_items = [
+        {"label": f"{codigo} — {nombre}", "total": int(total)}
+        for codigo, nombre, total in pareto_rows[:10]
+    ]
+    if len(pareto_rows) > 10:
+        pareto_items.append(
+            {"label": "Otros", "total": sum(int(row.total) for row in pareto_rows[10:])}
+        )
+    pareto_total = sum(item["total"] for item in pareto_items)
+    pareto_acumulado = 0
+    pareto_porcentajes = []
+    for item in pareto_items:
+        pareto_acumulado += item["total"]
+        pareto_porcentajes.append(
+            round(100.0 * pareto_acumulado / pareto_total, 1) if pareto_total else 0
+        )
+
     machines = machines_q.all()
     kpis = _dashboard_kpis(start, end, total_m, op, sector, machine_ids)
     kpis = _attach_plant_kpi_cards(
@@ -1745,6 +1776,10 @@ def dashboard():
         workload_values=workload_values,
         workload_total=workload_total,
         workload_empty=workload_empty,
+        pareto_labels=[item["label"] for item in pareto_items],
+        pareto_values=[item["total"] for item in pareto_items],
+        pareto_percentages=pareto_porcentajes,
+        pareto_total=pareto_total,
         ot_en_periodo=ot_en_periodo,
         dash_resumen=dash_resumen,
         dash_resumen_items=dash_resumen_items,
