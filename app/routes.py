@@ -1577,9 +1577,12 @@ def dashboard():
     else:
         prev_msg = prev_data["prev_msg"]
 
-    criticos_q = machines_q.filter(Machine.es_critico.is_(True)).order_by(Machine.nombre).limit(5)
+    criticos_all = (
+        machines_q.filter(Machine.es_critico.is_(True)).order_by(Machine.nombre).all()
+    )
+    limite_criticos = max(1, (len(criticos_all) + 4) // 5) if criticos_all else 0
     critico_items = []
-    for m in criticos_q.all():
+    for m in criticos_all[:limite_criticos]:
         st = machine_status_meta(m.status)
         critico_items.append(
             {
