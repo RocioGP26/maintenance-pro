@@ -3698,6 +3698,7 @@ def equipo_new():
         username = (request.form.get("username") or "").strip().lower()
         nombre = request.form.get("nombre_visible", "").strip()
         area = request.form.get("area", "").strip()
+        cargo = request.form.get("cargo", "").strip()
         email = request.form.get("email", "").strip()
         telefono = request.form.get("telefono", "").strip()
         rol = (request.form.get("rol") or UserRole.TECNICO.value).strip().lower()
@@ -3713,6 +3714,8 @@ def equipo_new():
             flash("Ese nombre de usuario ya está en uso en tu empresa.", "danger")
         elif not nombre:
             flash("El nombre es obligatorio.", "danger")
+        elif not area:
+            flash("El área es obligatoria.", "danger")
         elif rol not in USER_ROLE_LABELS:
             flash("Selecciona un rol válido.", "danger")
         elif not can_assign_role(current_user, rol):
@@ -3729,6 +3732,7 @@ def equipo_new():
                 username=username,
                 nombre_visible=nombre,
                 area=area,
+                cargo=cargo,
                 sede_id=sede_id,
                 email=email,
                 telefono=telefono,
@@ -3788,6 +3792,7 @@ def equipo_edit(id):
         username = (request.form.get("username") or "").strip().lower()
         nombre = request.form.get("nombre_visible", "").strip()
         area = request.form.get("area", "").strip()
+        cargo = request.form.get("cargo", "").strip()
         email = request.form.get("email", "").strip()
         telefono = request.form.get("telefono", "").strip()
         if es_self:
@@ -3809,6 +3814,8 @@ def equipo_edit(id):
             flash("Ese nombre de usuario ya está en uso en tu empresa.", "danger")
         elif not nombre:
             flash("El nombre es obligatorio.", "danger")
+        elif not area:
+            flash("El área es obligatoria.", "danger")
         elif rol not in USER_ROLE_LABELS:
             flash("Selecciona un rol válido.", "danger")
         elif not es_self and not can_assign_role(current_user, rol):
@@ -3850,6 +3857,7 @@ def equipo_edit(id):
             usuario.username = username
             usuario.nombre_visible = nombre
             usuario.area = area
+            usuario.cargo = cargo
             usuario.sede_id = sede_id
             usuario.email = email
             usuario.telefono = telefono
