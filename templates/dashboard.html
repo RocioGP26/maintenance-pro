@@ -249,9 +249,9 @@
 
 <div class="row g-4">
 
-  <div class="col-lg-4">
+  <div class="col-lg-4" id="proximosMantenimientosCol">
 
-    <div class="card card-dashboard upcoming-maint h-100">
+    <div class="card card-dashboard upcoming-maint h-100 w-100">
 
       <div class="card-body d-flex flex-column">
 
@@ -323,7 +323,7 @@
 
   </div>
 
-  <div class="col-lg-8">
+  <div class="col-lg-12">
 
     <div class="row g-4">
 
@@ -471,7 +471,8 @@
 
 
 <div class="row g-4 mt-1">
-  <div class="col-12">
+  <div class="col-lg-6 d-flex" id="proximosMantenimientosDestino"></div>
+  <div class="col-lg-6">
     <div class="card card-dashboard h-100">
       <div class="card-body">
         <div class="dash-card-head">
@@ -705,6 +706,14 @@ document.addEventListener('DOMContentLoaded', function () {
 {% endif %}
 
 <script>
+
+  const proximosOrigen = document.getElementById('proximosMantenimientosCol');
+  const proximosDestino = document.getElementById('proximosMantenimientosDestino');
+  if (proximosOrigen && proximosDestino) {
+    const proximosCard = proximosOrigen.querySelector('.upcoming-maint');
+    if (proximosCard) proximosDestino.appendChild(proximosCard);
+    proximosOrigen.remove();
+  }
 
   function dashCssVar(name) {
     return getComputedStyle(document.body).getPropertyValue(name).trim();
