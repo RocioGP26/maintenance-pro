@@ -166,11 +166,18 @@ def export_asset_life_pdf(
     story.append(_p("HISTORIAL DE ÓRDENES DE TRABAJO", subtitle))
     datos_ot = [[_p(x, header) for x in ["OT", "Título de la OT", "Fecha", "Tipo", "Estado", "Técnico", "Tiempo", "Repuestos"]]]
     for o in ordenes:
+        informes = ", ".join(informe.nombre_original for informe in o.informes) or "Sin informes"
+        empresa_realizadora = (
+            (o.proveedor.nombre if o.proveedor else o.empresa_tercerizada)
+            if o.es_ejecucion_externa
+            else (empresa.razon_social or "")
+        )
+        tecnico_empresa = "\n".join(filter(None, [o.tecnicos_realizadores_label, empresa_realizadora]))
         datos_ot.append([
-            _p(o.numero or f"#{o.id}", normal), _p(o.titulo or "-", normal),
+            _p(o.numero or f"#{o.id}", normal), _p(f"{o.titulo or '-'}\nInformes: {informes}", normal),
             _p(o.fecha_programada.strftime("%d/%m/%Y") if o.fecha_programada else "-", normal),
             _p(wo_tipo_meta(o.tipo)["label"], normal), _p(wo_status_meta(o.status)["label"], normal),
-            _p(o.tecnicos_realizadores_label, normal), _p(o.tiempo_gastado_label, normal), _p(len(o.repuestos), center),
+            _p(tecnico_empresa, normal), _p(o.tiempo_gastado_label, normal), _p(len(o.repuestos), center),
         ])
     if not ordenes:
         datos_ot.append([_p("Sin órdenes registradas", normal)] + [""] * 7)
@@ -184,6 +191,12 @@ def export_asset_life_pdf(
         datos_avance = [[_p(x, header) for x in ["#", "Fecha / horario", "Técnico / proveedor", "Trabajo realizado", "Paro", "Recibido por", "Repuestos"]]]
         for avance in avances:
             jornada = avance["jornada"]
+            empresa_avance = (
+                (orden.proveedor.nombre if orden.proveedor else orden.empresa_tercerizada)
+                if orden.es_ejecucion_externa
+                else (empresa.razon_social or "")
+            )
+            tecnico_avance = "\n".join(filter(None, [jornada.tecnico_label, empresa_avance]))
             repuestos = ", ".join(
                 f"{linea.spare_part.nombre if linea.spare_part else 'Repuesto'} x {linea.cantidad}"
                 for linea in avance["repuestos"]
@@ -194,7 +207,7 @@ def export_asset_life_pdf(
             )
             datos_avance.append([
                 _p(jornada.orden or "-", center), _p(fecha_horario, normal),
-                _p(jornada.tecnico_label, normal), _p(jornada.descripcion_avance or "-", normal),
+                _p(tecnico_avance, normal), _p(jornada.descripcion_avance or "-", normal),
                 _p("Sí" if jornada.requirio_paro else "No", center),
                 _p(jornada.recibido_por or "-", normal), _p(repuestos, normal),
             ])

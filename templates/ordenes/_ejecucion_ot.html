@@ -26,7 +26,7 @@
   </div>
 </div>
 
-<div class="col-12 {% if not es_externo %}d-none{% endif %}" id="panelProveedorExternoJornada">
+<div class="col-12 col-md-6 {% if not es_externo %}d-none{% endif %}" id="panelProveedorExternoJornada">
   <label class="form-label fw-semibold" for="proveedorIdHidden">Proveedor externo *</label>
   <select name="proveedor_id" id="proveedorIdHidden" class="form-select" required>
     <option value="">— Seleccionar proveedor —</option>
@@ -40,6 +40,12 @@
   {% if not proveedores_ot %}
   <div class="form-text text-danger">No hay proveedores activos registrados.</div>
   {% endif %}
+</div>
+
+<div class="col-12 col-md-6 {% if not es_externo %}d-none{% endif %}" id="wrapTecnicoNombre">
+  <label class="form-label fw-semibold" for="jornadaTecnicoNombre">Técnico del proveedor *</label>
+  <input type="text" class="form-control" id="jornadaTecnicoNombre"
+         placeholder="Nombre del técnico enviado por el proveedor">
 </div>
 
 <div class="col-12 {% if es_externo %}d-none{% endif %}" id="panelEjecucionInterno">
@@ -81,46 +87,28 @@
     {% endif %}
   </div>
 
-  <div class="row g-2 mt-2">
-    <div class="col-md-6">
-      <label class="form-label" for="contactoProveedorOt">Persona de contacto del proveedor</label>
-      <input type="text" name="contacto_proveedor" id="contactoProveedorOt" class="form-control"
-             value="{{ order.contacto_proveedor if order else '' }}">
-    </div>
-    <div class="col-md-6">
-      <label class="form-label" for="numeroCotizacionOt">Nº de cotización / contrato</label>
-      <input type="text" name="numero_cotizacion" id="numeroCotizacionOt" class="form-control"
-             placeholder="Ej: COT-2026-045"
-             value="{{ order.numero_cotizacion if order else '' }}">
-    </div>
-  </div>
-
   <div class="alert alert-info small py-2 px-3 mt-3 mb-3">
     La asignación aplica solo a esta OT. Cada orden puede tener un proveedor distinto.
     El historial lateral muestra OT cerradas o completadas de ese proveedor, no todas las del sistema.
   </div>
 
-  <label class="form-label" for="selectSupervisorOt">Técnico interno supervisor (opcional)</label>
-  <select name="supervisor_technician_id" id="selectSupervisorOt" class="form-select mb-3">
-    <option value="">— Sin supervisor asignado —</option>
-    {% for t in technicians %}
-    <option value="{{ t.id }}"
-            {% if order and order.supervisor_technician_id == t.id %}selected{% endif %}>{{ t.nombre }}</option>
-    {% endfor %}
-  </select>
+  <div class="row g-2 mb-3 align-items-start">
+    <div class="col-12 col-md-6">
+      <label class="form-label" for="selectSupervisorOt">Técnico interno supervisor (opcional)</label>
+      <select name="supervisor_technician_id" id="selectSupervisorOt" class="form-select">
+        <option value="">— Sin supervisor asignado —</option>
+        {% for t in technicians %}
+        <option value="{{ t.id }}"
+                {% if order and order.supervisor_technician_id == t.id %}selected{% endif %}>{{ t.nombre }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-12 col-md-6" id="recibidoExternoDestino"></div>
+  </div>
 
   <p class="ot-drawer-seccion-like fw-semibold small text-muted text-uppercase mb-2">Costo del servicio externo</p>
   <div class="row g-2">
-    <div class="col-md-6">
-      <label class="form-label" for="costoEstimadoOt">Costo estimado</label>
-      <div class="input-group">
-        <span class="input-group-text">$</span>
-        <input type="text" name="costo_estimado" id="costoEstimadoOt" class="form-control"
-               inputmode="decimal"
-               value="{{ order.costo_estimado|int if order and order.costo_estimado else '' }}">
-      </div>
-    </div>
-    <div class="col-md-6">
+    <div class="col-12">
       <label class="form-label" for="costoRealOt">Costo real (al cerrar)</label>
       <div class="input-group">
         <span class="input-group-text">$</span>

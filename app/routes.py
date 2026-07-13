@@ -96,6 +96,7 @@ from app.models import (
     WorkOrder,
     WorkOrderEjecucionTipo,
     WorkOrderJornada,
+    WorkOrderInforme,
     WorkOrderRepuesto,
     WorkOrderStatus,
     WorkOrderType,
@@ -1897,6 +1898,7 @@ def activos_hoja_vida(id):
                 joinedload(WorkOrder.technician),
                 joinedload(WorkOrder.jornadas).joinedload(WorkOrderJornada.technician),
                 joinedload(WorkOrder.repuestos).joinedload(WorkOrderRepuesto.spare_part),
+                joinedload(WorkOrder.informes),
             ).filter(WorkOrder.machine_id == machine.id)
         )
         .order_by(WorkOrder.created_at.desc())
@@ -1988,6 +1990,7 @@ def activos_hoja_vida_pdf(id):
                 joinedload(WorkOrder.technician),
                 joinedload(WorkOrder.jornadas).joinedload(WorkOrderJornada.technician),
                 joinedload(WorkOrder.repuestos).joinedload(WorkOrderRepuesto.spare_part),
+                joinedload(WorkOrder.informes),
             ).filter(WorkOrder.machine_id == machine.id)
         )
         .order_by(WorkOrder.created_at.desc())
@@ -3151,6 +3154,7 @@ def _ordenes_list_query(filtros: Optional[dict[str, str]] = None):
             joinedload(WorkOrder.jornadas).joinedload(WorkOrderJornada.technician),
             joinedload(WorkOrder.machine),
             joinedload(WorkOrder.technician),
+            joinedload(WorkOrder.proveedor),
         )
     )
 
@@ -3666,6 +3670,82 @@ def ordenes_edit(id):
         solo_lectura=solo_lectura,
         **_orden_form_context(wo, technicians, machines),
     )
+
+
+INFORME_OT_EXTENSIONES = {"pdf", "doc", "docx", "xls", "xlsx", "png", "jpg", "jpeg", "webp"}
+
+
+def _ruta_informe_ot(informe: WorkOrderInforme) -> str:
+    raiz = os.path.abspath(current_app.static_folder)
+    ruta = os.path.abspath(os.path.join(raiz, informe.ruta_archivo.replace("/", os.sep)))
+    if os.path.commonpath([raiz, ruta]) != raiz:
+        abort(404)
+    return ruta
+
+
+@bp.route("/ordenes/<int:id>/informes", methods=["POST"])
+def ordenes_informe_upload(id):
+    if not can_edit(current_user):
+        abort(403)
+    wo = _get_work_order_or_404(id)
+    archivo = request.files.get("informe_archivo")
+    if not archivo or not archivo.filename:
+        flash("Selecciona el informe técnico que deseas cargar.", "warning")
+        return redirect(url_for("main.ordenes_edit", id=wo.id) + "#informes-tecnicos")
+    original = secure_filename(archivo.filename)
+    extension = original.rsplit(".", 1)[-1].lower() if "." in original else ""
+    if extension not in INFORME_OT_EXTENSIONES:
+        flash("Formato no permitido. Usa PDF, Word, Excel o una imagen.", "danger")
+        return redirect(url_for("main.ordenes_edit", id=wo.id) + "#informes-tecnicos")
+    empresa_id = wo.empresa_id or _current_empresa_id()
+    carpeta_rel = f"uploads/empresas/{empresa_id}/ordenes/{wo.id}/informes"
+    carpeta_abs = os.path.join(current_app.static_folder, *carpeta_rel.split("/"))
+    os.makedirs(carpeta_abs, exist_ok=True)
+    nombre_guardado = f"{uuid4().hex}.{extension}"
+    archivo.save(os.path.join(carpeta_abs, nombre_guardado))
+    informe = WorkOrderInforme(
+        empresa_id=empresa_id,
+        work_order_id=wo.id,
+        nombre_original=original,
+        ruta_archivo=f"{carpeta_rel}/{nombre_guardado}",
+        descripcion=(request.form.get("informe_descripcion") or "").strip()[:255],
+        user_id=current_user.id,
+    )
+    db.session.add(informe)
+    db.session.commit()
+    flash("Informe técnico cargado.", "success")
+    return redirect(url_for("main.ordenes_edit", id=wo.id) + "#informes-tecnicos")
+
+
+@bp.route("/ordenes/<int:id>/informes/<int:informe_id>/descargar")
+def ordenes_informe_download(id, informe_id):
+    from flask import send_file
+
+    wo = _get_work_order_or_404(id)
+    informe = WorkOrderInforme.query.filter_by(
+        id=informe_id, work_order_id=wo.id, empresa_id=wo.empresa_id
+    ).first_or_404()
+    ruta = _ruta_informe_ot(informe)
+    if not os.path.isfile(ruta):
+        abort(404)
+    return send_file(ruta, as_attachment=True, download_name=informe.nombre_original)
+
+
+@bp.route("/ordenes/<int:id>/informes/<int:informe_id>/eliminar", methods=["POST"])
+def ordenes_informe_delete(id, informe_id):
+    if not can_edit(current_user):
+        abort(403)
+    wo = _get_work_order_or_404(id)
+    informe = WorkOrderInforme.query.filter_by(
+        id=informe_id, work_order_id=wo.id, empresa_id=wo.empresa_id
+    ).first_or_404()
+    ruta = _ruta_informe_ot(informe)
+    db.session.delete(informe)
+    db.session.commit()
+    if os.path.isfile(ruta):
+        os.remove(ruta)
+    flash("Informe técnico eliminado.", "success")
+    return redirect(url_for("main.ordenes_edit", id=wo.id) + "#informes-tecnicos")
 
 
 @bp.route("/ordenes/<int:id>/pdf")

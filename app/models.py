@@ -1105,6 +1105,12 @@ class WorkOrder(db.Model):
         back_populates="work_order",
         cascade="all, delete-orphan",
     )
+    informes = db.relationship(
+        "WorkOrderInforme",
+        back_populates="work_order",
+        cascade="all, delete-orphan",
+        order_by="WorkOrderInforme.created_at.desc()",
+    )
 
     @property
     def usa_repuestos(self) -> bool:
@@ -1215,6 +1221,26 @@ class WorkOrderRepuesto(db.Model):
     @property
     def costo_total_linea(self) -> float:
         return round(self.costo_unitario_linea * int(self.cantidad or 0), 2)
+
+
+class WorkOrderInforme(db.Model):
+    """Informe o soporte documental entregado por el técnico de una OT."""
+
+    __tablename__ = "work_order_informes"
+
+    id = db.Column(db.Integer, primary_key=True)
+    empresa_id = db.Column(db.Integer, db.ForeignKey("empresas.id"), nullable=False, index=True)
+    work_order_id = db.Column(
+        db.Integer, db.ForeignKey("work_orders.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    nombre_original = db.Column(db.String(255), nullable=False)
+    ruta_archivo = db.Column(db.String(500), nullable=False)
+    descripcion = db.Column(db.String(255), default="")
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+
+    work_order = db.relationship("WorkOrder", back_populates="informes")
+    usuario = db.relationship("User")
 
 
 class SparePart(db.Model):

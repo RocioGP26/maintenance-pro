@@ -448,7 +448,13 @@
               <span class="text-muted">·</span> {{ o.tiempo_gastado_label }}
             {% endif %}
           </td>
-          <td><span class="ot-tecnico d-inline-block" title="{{ o.tecnicos_realizadores_label }}">{{ o.tecnicos_realizadores_label }}</span></td>
+          <td>
+            {% set empresa_realizadora = (o.proveedor.nombre if o.proveedor else o.empresa_tercerizada) if o.es_ejecucion_externa else (empresa_actual.razon_social if empresa_actual else '') %}
+            <span class="ot-tecnico d-inline-block" title="{{ o.tecnicos_realizadores_label }}{% if empresa_realizadora %} · {{ empresa_realizadora }}{% endif %}">
+              <span class="d-block">{{ o.tecnicos_realizadores_label }}</span>
+              {% if empresa_realizadora %}<small class="d-block text-muted">{{ empresa_realizadora }}</small>{% endif %}
+            </span>
+          </td>
           <td class="text-end">
             {% if perm.editar or perm.solo_lectura %}
             <a href="{{ url_for('main.ordenes_edit', id=o.id) }}" class="btn btn-outline-secondary btn-ot-action"

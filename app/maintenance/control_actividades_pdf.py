@@ -150,6 +150,12 @@ def export_control_actividades_pdf(empresa, orders, *, periodo_label: str = "") 
         tecnico = getattr(order, "tecnicos_realizadores_label", "") or (
             order.technician.nombre if order.technician else ""
         )
+        empresa_realizadora = (
+            (order.proveedor.nombre if order.proveedor else order.empresa_tercerizada)
+            if order.es_ejecucion_externa
+            else (empresa.razon_social or "")
+        )
+        tecnico = "\n".join(filter(None, [tecnico, empresa_realizadora]))
         recibido = next((j.recibido_por for j in reversed(jornadas) if j.recibido_por), "")
         observaciones = "\n".join(
             j.descripcion_avance.strip() for j in jornadas if (j.descripcion_avance or "").strip()

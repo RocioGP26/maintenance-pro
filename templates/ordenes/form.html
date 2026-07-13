@@ -409,6 +409,54 @@
             <a href="{{ url_for('main.ordenes_list') }}" class="btn btn-outline-secondary">{% if solo_lectura|default(false) %}Volver{% else %}Cancelar{% endif %}</a>
           </div>
         </form>
+        {% if order %}
+        <section class="card border-0 shadow-sm mt-3" id="informes-tecnicos">
+          <div class="card-header bg-white d-flex align-items-center justify-content-between gap-2">
+            <h2 class="h6 mb-0"><i class="bi bi-paperclip me-1"></i>Informes técnicos de la OT</h2>
+            <span class="badge text-bg-light">{{ order.informes|length }} archivo(s)</span>
+          </div>
+          <div class="card-body">
+            {% if perm.editar %}
+            <form action="{{ url_for('main.ordenes_informe_upload', id=order.id) }}" method="post" enctype="multipart/form-data" class="row g-2 align-items-end mb-3">
+              {% include '_csrf.html' %}
+              <div class="col-12 col-md-5">
+                <label for="informe_archivo" class="form-label">Archivo del informe</label>
+                <input type="file" name="informe_archivo" id="informe_archivo" class="form-control" accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg,.webp" required>
+              </div>
+              <div class="col-12 col-md-5">
+                <label for="informe_descripcion" class="form-label">Descripción</label>
+                <input type="text" name="informe_descripcion" id="informe_descripcion" class="form-control" maxlength="255" placeholder="Ej. Informe final del mantenimiento">
+              </div>
+              <div class="col-12 col-md-2 d-grid">
+                <button type="submit" class="btn btn-outline-primary"><i class="bi bi-upload me-1"></i>Cargar</button>
+              </div>
+              <div class="col-12"><div class="form-text">Formatos permitidos: PDF, Word, Excel e imágenes.</div></div>
+            </form>
+            {% endif %}
+            <div class="list-group list-group-flush border rounded">
+              {% for informe in order.informes %}
+              <div class="list-group-item d-flex flex-wrap align-items-center justify-content-between gap-2">
+                <div>
+                  <a href="{{ url_for('main.ordenes_informe_download', id=order.id, informe_id=informe.id) }}" class="fw-semibold text-decoration-none">
+                    <i class="bi bi-file-earmark-arrow-down me-1"></i>{{ informe.nombre_original }}
+                  </a>
+                  {% if informe.descripcion %}<div class="small text-muted">{{ informe.descripcion }}</div>{% endif %}
+                  <div class="small text-muted">Cargado {{ informe.created_at|formato_fecha_hora if informe.created_at else '' }}{% if informe.usuario %} por {{ informe.usuario.etiqueta() }}{% endif %}</div>
+                </div>
+                {% if perm.editar %}
+                <form action="{{ url_for('main.ordenes_informe_delete', id=order.id, informe_id=informe.id) }}" method="post" onsubmit="return confirm('¿Eliminar este informe técnico?');">
+                  {% include '_csrf.html' %}
+                  <button type="submit" class="btn btn-outline-danger btn-sm" title="Eliminar informe"><i class="bi bi-trash"></i></button>
+                </form>
+                {% endif %}
+              </div>
+              {% else %}
+              <div class="list-group-item text-muted text-center py-3">No hay informes técnicos cargados en esta OT.</div>
+              {% endfor %}
+            </div>
+          </div>
+        </section>
+        {% endif %}
       </div>
     </div>
       </div>
@@ -440,19 +488,19 @@
             </div>
           </div>
           <div class="col-12" id="repuestosModalDestino"></div>
-          <div class="col-12">
+          <div class="col-12 col-md-4">
             <label class="form-label fw-semibold" for="jornadaFecha">Fecha</label>
             <input type="date" class="form-control" id="jornadaFecha" required>
           </div>
-          <div class="col-md-6">
+          <div class="col-12 col-md-4">
             <label class="form-label fw-semibold" for="jornadaHoraInicio">Hora inicio</label>
             <input type="time" class="form-control" id="jornadaHoraInicio" required>
           </div>
-          <div class="col-md-6">
+          <div class="col-12 col-md-4">
             <label class="form-label fw-semibold" for="jornadaHoraFin">Hora fin</label>
             <input type="time" class="form-control" id="jornadaHoraFin" required>
           </div>
-          <div class="col-12" id="wrapJornadaTecnico">
+          <div class="col-12 col-md-6" id="wrapJornadaTecnico">
             <label class="form-label fw-semibold" for="jornadaTecnico">Técnico realizador (esta jornada)</label>
             <select class="form-select" id="jornadaTecnico">
               <option value="">— Seleccionar —</option>
@@ -462,13 +510,7 @@
               <option value="otro">Otro</option>
             </select>
           </div>
-          <div class="col-12" id="wrapTecnicoNombre">
-            <label class="form-label fw-semibold" for="jornadaTecnicoNombre">Técnico del proveedor *</label>
-            <input type="text" class="form-control" id="jornadaTecnicoNombre"
-                   placeholder="Nombre del técnico enviado por el proveedor">
-            <div class="form-text small">Escribe la persona que realizó el trabajo durante esta jornada.</div>
-          </div>
-          <div class="col-12">
+          <div class="col-12 col-md-6" id="wrapJornadaRecibido">
             <label class="form-label fw-semibold" for="jornadaRecibidoPor">Recibido por *</label>
             <input type="text" class="form-control" id="jornadaRecibidoPor" required
                    placeholder="Nombre de quien recibe o valida el avance">
@@ -702,9 +744,17 @@
     var wrapSel = document.getElementById('wrapJornadaTecnico');
     var wrap = document.getElementById('wrapTecnicoNombre');
     var inp = document.getElementById('jornadaTecnicoNombre');
+    var recibido = document.getElementById('wrapJornadaRecibido');
+    var recibidoExterno = document.getElementById('recibidoExternoDestino');
     var externo = document.querySelector('input[name="ejecucion_tipo"]:checked')?.value === 'externo';
-    if (wrapSel) wrapSel.style.display = externo ? 'none' : '';
-    if (wrap) wrap.style.display = externo ? '' : 'none';
+    if (wrapSel) {
+      wrapSel.classList.toggle('d-none', externo);
+      wrapSel.style.display = '';
+    }
+    if (wrap) {
+      wrap.classList.toggle('d-none', !externo);
+      wrap.style.display = '';
+    }
     if (sel) {
       sel.required = !externo;
       if (externo) sel.value = 'otro';
@@ -714,6 +764,17 @@
       inp.required = externo;
       if (!externo) inp.value = '';
     }
+    if (recibido) {
+      if (externo && recibidoExterno) {
+        recibido.className = '';
+        recibidoExterno.appendChild(recibido);
+      } else if (!externo && wrapSel) {
+        recibido.className = 'col-12 col-md-6';
+        wrapSel.insertAdjacentElement('afterend', recibido);
+      }
+    }
+    var recibidoInput = document.getElementById('jornadaRecibidoPor');
+    if (recibidoInput) recibidoInput.disabled = false;
   }
 
   function limpiarModal() {
@@ -1169,7 +1230,6 @@
   var provHidden = document.getElementById('proveedorIdHidden');
   var tarjetaProv = document.getElementById('tarjetaProveedorOt');
   var btnCambiar = document.getElementById('btnCambiarProveedor');
-  var contactoProv = document.getElementById('contactoProveedorOt');
   var selectEquipo = document.getElementById('selectEquipo');
   var inputFechaProg = document.getElementById('inputFechaProgramada');
   var selectTipo = document.getElementById('selectTipo');
@@ -1284,7 +1344,6 @@
     if (elTipo) { elTipo.textContent = p.tipo_label; elTipo.className = 'badge ' + p.badge_class; }
     if (elAv) { elAv.textContent = p.iniciales; elAv.className = 'prov-avatar ' + (p.tipo === 'insumos' ? 'prov-avatar--insumos' : (p.tipo === 'ambos' ? 'prov-avatar--ambos' : 'prov-avatar--servicio')); }
     if (elCon) elCon.textContent = p.contacto_nombre || '';
-    if (contactoProv && !contactoProv.value) contactoProv.value = p.contacto_nombre || '';
     if (listaProv) listaProv.classList.add('d-none');
     actualizarResumenSidebar();
   }
