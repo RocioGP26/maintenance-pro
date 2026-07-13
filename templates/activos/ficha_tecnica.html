@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}Ficha Técnica · {{ machine.codigo }}{% endblock %}
+{% block page_title %}Ficha Técnica del Activo{% endblock %}
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+  <div><div class="text-muted small">{{ sector_label }} · {{ machine.tipo_etiqueta }}</div><h2 class="h4 mb-0">{{ machine.codigo }} · {{ machine.nombre }}</h2></div>
+  <div class="d-flex gap-2">
+    <a href="{{ url_for('main.activos_list') }}" class="btn btn-outline-secondary"><i class="bi bi-arrow-left me-1"></i>Activos</a>
+    <a href="{{ url_for('main.activos_ficha_tecnica_pdf', id=machine.id) }}" class="btn btn-outline-danger"><i class="bi bi-file-earmark-pdf me-1"></i>PDF</a>
+    {% if perm.editar %}<a href="{{ url_for('main.activos_edit', id=machine.id) }}" class="btn btn-primary"><i class="bi bi-pencil me-1"></i>Editar activo</a>{% endif %}
+  </div>
+</div>
+
+<div class="card mb-3"><div class="card-header fw-semibold"><i class="bi bi-card-heading me-1"></i>Identificación</div><div class="card-body">
+  <div class="row g-3 align-items-start">
+    {% if machine.foto_url %}<div class="col-12 col-lg-3"><img src="{{ machine.foto_url if machine.foto_url.startswith('http') else url_for('static', filename=machine.foto_url) }}" class="img-fluid rounded border" alt="{{ machine.nombre }}"></div>{% endif %}
+    <div class="col"><div class="row g-3">
+      {% set datos = [('Código',machine.codigo),('Nombre',machine.nombre),('Tipo',machine.tipo_etiqueta),('Estado',status_meta.label),('Sector',sector_label),('Criticidad',machine.criticidad),('Marca',machine.marca),('Modelo',machine.modelo),('Número de serie',machine.numero_serie),('Fabricante',machine.fabricante),('Fecha de fabricación',machine.fecha_fabricacion.strftime('%d/%m/%Y') if machine.fecha_fabricacion else ''),('Fecha de instalación',machine.fecha_instalacion.strftime('%d/%m/%Y') if machine.fecha_instalacion else '')] %}
+      {% for etiqueta, valor in datos %}<div class="col-12 col-md-6 col-xl-4"><div class="text-muted small">{{ etiqueta }}</div><div class="fw-medium">{{ valor or '—' }}</div></div>{% endfor %}
+    </div></div>
+  </div>
+</div></div>
+
+<div class="card mb-3"><div class="card-header fw-semibold"><i class="bi bi-gear-wide-connected me-1"></i>Datos técnicos y operativos</div><div class="card-body"><div class="row g-3">
+  {% set operativos = [('Ubicación',machine.ubicacion),('Área',machine.area),('Sede',machine.sede.nombre if machine.sede else ''),('Responsable',machine.responsable_nombre),('Horas de operación',machine.horas_operacion),('Vida útil',((machine.vida_util_anios|string) ~ ' años') if machine.vida_util_anios else ''),('Requiere mantenimiento','Sí' if machine.requiere_mantenimiento else 'No'),('Frecuencia',machine.frecuencia_mantenimiento),('Notas',machine.notas)] %}
+  {% for etiqueta, valor in operativos %}<div class="col-12 col-md-6 col-xl-4"><div class="text-muted small">{{ etiqueta }}</div><div class="fw-medium">{{ valor or '—' }}</div></div>{% endfor %}
+</div></div></div>
+
+{% if campos_personalizados %}<div class="card mb-3"><div class="card-header fw-semibold"><i class="bi bi-ui-checks-grid me-1"></i>Especificaciones del sector</div><div class="card-body"><div class="row g-3">
+  {% for campo in campos_personalizados %}<div class="col-12 col-md-6 col-xl-4"><div class="text-muted small">{{ campo.nombre }}</div><div class="fw-medium">{{ valores_campos.get(campo.id) or '—' }}</div></div>{% endfor %}
+</div></div></div>{% endif %}
+
+<div class="card"><div class="card-header fw-semibold"><i class="bi bi-folder me-1"></i>Documentación técnica</div><div class="card-body d-flex flex-wrap gap-2">
+  {% if machine.manual_url %}<a href="{{ machine.manual_url }}" target="_blank" rel="noopener" class="btn btn-outline-primary"><i class="bi bi-book me-1"></i>Manual técnico</a>{% endif %}
+  {% if machine.ficha_tecnica_url %}<a href="{{ machine.ficha_tecnica_url }}" target="_blank" rel="noopener" class="btn btn-outline-primary"><i class="bi bi-link-45deg me-1"></i>Ficha técnica del fabricante</a>{% endif %}
+  {% if not machine.manual_url and not machine.ficha_tecnica_url %}<span class="text-muted">No hay documentos técnicos vinculados.</span>{% endif %}
+</div></div>
+{% endblock %}

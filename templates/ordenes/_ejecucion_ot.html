@@ -114,8 +114,7 @@
         <span class="input-group-text">$</span>
         <input type="text" name="costo_real" id="costoRealOt" class="form-control"
                inputmode="decimal"
-               value="{{ order.costo_real|int if order and order.costo_real else '' }}"
-               {% if not wo_es_terminal|default(false) %}readonly{% endif %}>
+               value="{{ order.costo_real|int if order and order.costo_real else '' }}">
       </div>
     </div>
     <div class="col-12">

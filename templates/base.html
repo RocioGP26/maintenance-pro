@@ -78,8 +78,9 @@
           </div>
         </div>
         {% set es_submenu_ot_lista = ep in ['main.ordenes_list', 'main.ordenes_new', 'main.ordenes_edit'] %}
+        {% set es_submenu_costos = ep == 'main.mantenimiento_costos' %}
         {% set es_submenu_ot_planeacion = ep == 'main.ordenes_planeacion' %}
-        {% set menu_ordenes_abierto = es_submenu_ot_lista or es_submenu_ot_planeacion %}
+        {% set menu_ordenes_abierto = es_submenu_ot_lista or es_submenu_ot_planeacion or es_submenu_costos %}
         <div class="sidebar-nav-group">
           <button type="button" id="tour-nav-ordenes" class="nav-link sidebar-nav-toggle w-100 text-start {% if menu_ordenes_abierto %}active-parent{% endif %}"
              data-bs-toggle="collapse" data-bs-target="#submenuOrdenes"
@@ -94,6 +95,9 @@
                data-sidebar-group="programador" data-sidebar-in-section="{{ '1' if menu_ordenes_abierto else '0' }}">
             <a class="nav-link nav-link-sub {% if es_submenu_ot_lista %}active{% endif %}" href="{{ url_for('main.ordenes_list') }}">
               <i class="bi bi-list-ul me-2"></i> Listado de OT
+            </a>
+            <a class="nav-link nav-link-sub {% if es_submenu_costos %}active{% endif %}" href="{{ url_for('main.mantenimiento_costos') }}">
+              <i class="bi bi-cash-coin me-2"></i> Análisis de costos
             </a>
             <a class="nav-link nav-link-sub {% if es_submenu_ot_planeacion %}active{% endif %}" href="{{ url_for('main.ordenes_planeacion') }}">
               <i class="bi bi-calendar2-range me-2"></i> Planeación mensual

@@ -1924,6 +1924,41 @@ def activos_hoja_vida(id):
     return render_template("activos/hoja_vida.html", **ctx)
 
 
+@bp.route("/activos/<int:id>/ficha-tecnica")
+def activos_ficha_tecnica(id):
+    machine = _filter_empresa(Machine.query.filter_by(id=id), Machine).first_or_404()
+    tipos = _machine_types_para_formulario(machine)
+    ctx = _activos_form_context(machine, tipos, machine.machine_type_id)
+    ctx["status_meta"] = machine_status_meta(machine.status)
+    return render_template("activos/ficha_tecnica.html", **ctx)
+
+
+@bp.route("/activos/<int:id>/ficha-tecnica/pdf")
+def activos_ficha_tecnica_pdf(id):
+    from io import BytesIO
+
+    from flask import send_file
+
+    from app.maintenance.asset_technical_pdf import export_asset_technical_pdf
+
+    machine = _filter_empresa(Machine.query.filter_by(id=id), Machine).first_or_404()
+    tipos = _machine_types_para_formulario(machine)
+    ctx = _activos_form_context(machine, tipos, machine.machine_type_id)
+    contenido, nombre = export_asset_technical_pdf(
+        current_user.empresa,
+        machine,
+        ctx["campos_personalizados"],
+        ctx["valores_campos"],
+        ctx["sector_label"],
+    )
+    return send_file(
+        BytesIO(contenido),
+        mimetype="application/pdf",
+        as_attachment=True,
+        download_name=nombre,
+    )
+
+
 def _avances_hoja_vida(ordenes):
     """Organiza cada jornada y los repuestos instalados en ella."""
     resultado = {}
@@ -3120,6 +3155,100 @@ def _ordenes_filtros_desde_request() -> dict[str, str]:
         "fecha_hasta": request.args.get("fecha_hasta", "").strip(),
         "alerta": request.args.get("alerta", "").strip(),
     }
+
+
+@bp.route("/mantenimiento/analisis-costos")
+def mantenimiento_costos():
+    from collections import defaultdict
+    from sqlalchemy.orm import joinedload
+
+    hoy = date.today()
+    fecha_desde = _parse_fecha_filtro(request.args.get("fecha_desde", "")) or date(hoy.year, 1, 1)
+    fecha_hasta = _parse_fecha_filtro(request.args.get("fecha_hasta", "")) or hoy
+    if fecha_desde > fecha_hasta:
+        fecha_desde, fecha_hasta = fecha_hasta, fecha_desde
+
+    ordenes = _filter_work_orders_empresa(
+        WorkOrder.query.options(
+            joinedload(WorkOrder.machine),
+            joinedload(WorkOrder.proveedor),
+            joinedload(WorkOrder.repuestos).joinedload(WorkOrderRepuesto.spare_part),
+        )
+    ).all()
+
+    filas = []
+    por_tipo = defaultdict(float)
+    por_activo = defaultdict(lambda: {"codigo": "", "nombre": "", "ordenes": 0, "servicios": 0.0, "repuestos": 0.0})
+    por_proveedor = defaultdict(lambda: {"nombre": "", "ordenes": 0, "costo": 0.0})
+    por_mes = defaultdict(float)
+    total_servicios = total_repuestos = 0.0
+
+    for orden in ordenes:
+        referencia = (
+            orden.fecha_cierre.date() if orden.fecha_cierre else
+            orden.fecha_programada if orden.fecha_programada else
+            orden.created_at.date() if orden.created_at else None
+        )
+        if not referencia or referencia < fecha_desde or referencia > fecha_hasta:
+            continue
+        costo_servicio = float(orden.costo_real or 0) if orden.es_ejecucion_externa else 0.0
+        costo_repuestos = sum(float(linea.costo_total_linea or 0) for linea in orden.repuestos)
+        costo_total = costo_servicio + costo_repuestos
+        total_servicios += costo_servicio
+        total_repuestos += costo_repuestos
+        por_tipo[orden.tipo or "otro"] += costo_total
+        por_mes[referencia.strftime("%Y-%m")] += costo_total
+
+        machine = orden.machine
+        activo_key = machine.id if machine else f"sin-{orden.id}"
+        activo = por_activo[activo_key]
+        activo["codigo"] = machine.codigo if machine else "—"
+        activo["nombre"] = machine.nombre if machine else "Sin activo"
+        activo["ordenes"] += 1
+        activo["servicios"] += costo_servicio
+        activo["repuestos"] += costo_repuestos
+
+        if orden.es_ejecucion_externa:
+            proveedor_nombre = orden.proveedor.nombre if orden.proveedor else (orden.empresa_tercerizada or "Sin proveedor")
+            proveedor = por_proveedor[proveedor_nombre]
+            proveedor["nombre"] = proveedor_nombre
+            proveedor["ordenes"] += 1
+            proveedor["costo"] += costo_servicio
+
+        filas.append({
+            "orden": orden, "fecha": referencia, "servicio": costo_servicio,
+            "repuestos": costo_repuestos, "total": costo_total,
+        })
+
+    activos = sorted(
+        ({**v, "total": v["servicios"] + v["repuestos"]} for v in por_activo.values()),
+        key=lambda x: x["total"], reverse=True,
+    )
+    proveedores = sorted(por_proveedor.values(), key=lambda x: x["costo"], reverse=True)
+    meses = []
+    cursor = date(fecha_desde.year, fecha_desde.month, 1)
+    limite = date(fecha_hasta.year, fecha_hasta.month, 1)
+    while cursor <= limite:
+        key = cursor.strftime("%Y-%m")
+        meses.append({"key": key, "label": cursor.strftime("%m/%Y"), "costo": por_mes.get(key, 0.0)})
+        cursor = date(cursor.year + (cursor.month == 12), 1 if cursor.month == 12 else cursor.month + 1, 1)
+
+    total = total_servicios + total_repuestos
+    return render_template(
+        "mantenimiento/costos.html",
+        fecha_desde=fecha_desde,
+        fecha_hasta=fecha_hasta,
+        total=total,
+        total_servicios=total_servicios,
+        total_repuestos=total_repuestos,
+        total_ordenes=len(filas),
+        costo_promedio=(total / len(filas)) if filas else 0,
+        por_tipo=por_tipo,
+        activos=activos,
+        proveedores=proveedores,
+        meses=meses,
+        filas=sorted(filas, key=lambda x: x["fecha"], reverse=True),
+    )
 
 
 def _parse_mes_anio_filtro(mes_s: str, anio_s: str) -> Optional[tuple[date, date]]:
