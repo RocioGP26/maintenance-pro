@@ -220,7 +220,7 @@ def export_asset_life_pdf(
     for orden in ordenes:
         story.append(_p(f"{orden.numero or ('OT #' + str(orden.id))} - {orden.titulo or machine.nombre}", label))
         avances = avances_por_ot.get(orden.id, [])
-        datos_avance = [[_p(x, header) for x in ["#", "Fecha / horario", "Técnico / proveedor", "Trabajo realizado", "Paro", "Recibido por", "Repuestos"]]]
+        datos_avance = [[_p(x, header) for x in ["#", "Fecha / horario", "Técnico / proveedor", "Trabajo realizado", "Paro", "Recibido por", "Repuestos", "Herramientas"]]]
         for avance in avances:
             jornada = avance["jornada"]
             empresa_avance = (
@@ -242,11 +242,12 @@ def export_asset_life_pdf(
                 _p(tecnico_avance, normal), _p(jornada.descripcion_avance or "-", normal),
                 _p("Sí" if jornada.requirio_paro else "No", center),
                 _p(jornada.recibido_por or "-", normal), _p(repuestos, normal),
+                _p(formato_moneda(jornada.costo_herramientas_total, moneda), normal),
             ])
         if not avances:
-            datos_avance.append([_p("Sin avances registrados", normal)] + [""] * 6)
+            datos_avance.append([_p("Sin avances registrados", normal)] + [""] * 7)
         story.extend([
-            tabla(datos_avance, [8*mm, 30*mm, 32*mm, 52*mm, 13*mm, 25*mm, 26*mm]),
+            tabla(datos_avance, [7*mm, 27*mm, 29*mm, 44*mm, 12*mm, 22*mm, 23*mm, 22*mm]),
             Spacer(1, 2.5 * mm),
         ])
 

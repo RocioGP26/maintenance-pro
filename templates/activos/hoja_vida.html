@@ -94,7 +94,7 @@
       <div class="fw-semibold small mb-2"><i class="bi bi-list-check me-1"></i>Avances de {{ orden.numero or ('OT #' ~ orden.id) }}</div>
       {% if avances %}
       <div class="table-responsive bg-white border rounded"><table class="table table-sm align-middle mb-0">
-        <thead><tr><th>#</th><th>Fecha y horario</th><th>Técnico / proveedor</th><th>Trabajo realizado</th><th>Paro</th><th>Recibido por</th><th>Repuestos instalados</th></tr></thead>
+        <thead><tr><th>#</th><th>Fecha y horario</th><th>Técnico / proveedor</th><th>Trabajo realizado</th><th>Paro</th><th>Recibido por</th><th>Repuestos instalados</th><th class="text-end">Herramientas</th></tr></thead>
         <tbody>{% for avance in avances %}{% set jornada = avance.jornada %}<tr>
           <td>{{ jornada.orden or loop.index }}</td>
           <td class="text-nowrap">{{ avance.fecha.strftime('%d/%m/%Y') if avance.fecha else '—' }}<br><small class="text-muted">{{ avance.hora_inicio or '—' }} - {{ avance.hora_fin or '—' }} · {{ avance.duracion }}</small></td>
@@ -107,6 +107,7 @@
           <td><span class="badge {% if jornada.requirio_paro %}text-bg-danger{% else %}text-bg-success{% endif %}">{{ 'Sí' if jornada.requirio_paro else 'No' }}</span></td>
           <td>{{ jornada.recibido_por or '—' }}</td>
           <td>{% for linea in avance.repuestos %}<div>{{ linea.spare_part.nombre if linea.spare_part else 'Repuesto' }} × {{ linea.cantidad }}</div>{% else %}<span class="text-muted">—</span>{% endfor %}</td>
+          <td class="text-end">{{ formato_moneda(jornada.costo_herramientas_total, empresa_actual.moneda) }}</td>
         </tr>{% endfor %}</tbody>
       </table></div>
       {% else %}<div class="text-muted small">Esta OT todavía no tiene avances registrados.</div>{% endif %}

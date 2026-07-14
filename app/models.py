@@ -1255,7 +1255,13 @@ class WorkOrder(db.Model):
 
     @property
     def costo_herramientas_total(self) -> float:
-        return round(float(self.costo_herramientas or 0), 2)
+        # El campo de la OT se conserva para valores legacy registrados antes
+        # de que el costo se trasladara al detalle de cada jornada.
+        return round(
+            float(self.costo_herramientas or 0)
+            + sum(jornada.costo_herramientas_total for jornada in self.jornadas),
+            2,
+        )
 
     @property
     def costo_servicio_externo(self) -> float:
@@ -1286,6 +1292,7 @@ class WorkOrderJornada(db.Model):
     fecha_fin = db.Column(db.DateTime, nullable=False)
     technician_id = db.Column(db.Integer, db.ForeignKey("technicians.id"), nullable=True)
     tarifa_hora_aplicada = db.Column(db.Numeric(14, 2), nullable=True)
+    costo_herramientas = db.Column(db.Numeric(14, 2), default=0, nullable=False)
     tecnico_nombre = db.Column(db.String(200), default="")
     recibido_por = db.Column(db.String(200), default="")
     requirio_paro = db.Column(db.Boolean, default=False, nullable=False)
@@ -1318,6 +1325,10 @@ class WorkOrderJornada(db.Model):
     @property
     def costo_mano_obra(self) -> float:
         return round((self.duracion_minutos / 60) * self.tarifa_hora_efectiva, 2)
+
+    @property
+    def costo_herramientas_total(self) -> float:
+        return round(float(self.costo_herramientas or 0), 2)
 
 
 class WorkOrderRepuesto(db.Model):

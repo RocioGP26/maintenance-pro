@@ -15,7 +15,7 @@ from app.models import (
     WorkOrderJornada,
     WorkOrderRepuesto,
 )
-from app.routes import _parse_costo_herramientas, _parse_tarifa_hora_equipo
+from app.routes import _parse_tarifa_hora_equipo
 
 
 class TestLaborCosts(unittest.TestCase):
@@ -50,13 +50,13 @@ class TestLaborCosts(unittest.TestCase):
             machine_id=1,
             ejecucion_tipo=WorkOrderEjecucionTipo.EXTERNO.value,
             costo_real=30000,
-            costo_herramientas=Decimal("12000.00"),
         )
         order.jornadas.append(
             WorkOrderJornada(
                 fecha_inicio=datetime(2026, 7, 14, 8, 0),
                 fecha_fin=datetime(2026, 7, 14, 10, 0),
                 tarifa_hora_aplicada=Decimal("25000.00"),
+                costo_herramientas=Decimal("12000.00"),
             )
         )
         order.repuestos.append(
@@ -92,16 +92,6 @@ class TestLaborCosts(unittest.TestCase):
         empresa = type("EmpresaStub", (), {"moneda": "USD"})()
         _, error = _parse_tarifa_hora_equipo({"tarifa_hora": "-5"}, empresa)
         self.assertIsNotNone(error)
-
-    def test_tool_cost_parser_respects_company_currency_format(self):
-        empresa = type("EmpresaStub", (), {"moneda": "COP"})()
-        value, error = _parse_costo_herramientas(
-            {"costo_herramientas": "18.500,75"}, empresa
-        )
-
-        self.assertIsNone(error)
-        self.assertEqual(value, 18500.75)
-
 
 class TestLaborCostReport(unittest.TestCase):
     def setUp(self):
@@ -153,7 +143,6 @@ class TestLaborCostReport(unittest.TestCase):
             titulo="OT con mano de obra",
             machine_id=machine.id,
             fecha_programada=date.today(),
-            costo_herramientas=Decimal("12000.00"),
         )
         order.jornadas.append(
             WorkOrderJornada(
@@ -162,6 +151,7 @@ class TestLaborCostReport(unittest.TestCase):
                 fecha_fin=datetime.combine(date.today(), datetime.min.time()).replace(hour=10),
                 technician_id=technician.id,
                 tarifa_hora_aplicada=Decimal("25000.00"),
+                costo_herramientas=Decimal("12000.00"),
                 recibido_por="Supervisor",
             )
         )
@@ -204,6 +194,24 @@ class TestLaborCostReport(unittest.TestCase):
         self.assertIn("Herramientas", response.get_data(as_text=True))
         self.assertIn("$12.000", response.get_data(as_text=True))
         self.assertIn("$62.000", response.get_data(as_text=True))
+
+    def test_work_order_modal_exposes_tool_cost_and_main_form_is_summary_only(self):
+        self.client.post(
+            "/login",
+            data={
+                "username": "admincostos",
+                "empresa_slug": "costos-sas",
+                "password": "Clave-Segura-123!",
+            },
+        )
+        order = WorkOrder.query.filter_by(titulo="OT con mano de obra").one()
+        response = self.client.get(f"/ordenes/{order.id}/editar")
+
+        self.assertEqual(response.status_code, 200)
+        html = response.get_data(as_text=True)
+        self.assertIn('id="jornadaCostoHerramientas"', html)
+        self.assertNotIn('name="costo_herramientas"', html)
+        self.assertIn("se acumulan desde las jornadas", html)
 
     def test_asset_life_includes_cost_breakdown(self):
         self.client.post(

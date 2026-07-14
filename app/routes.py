@@ -1,5 +1,6 @@
 from datetime import date
 import json
+import math
 import os
 import re
 import unicodedata
@@ -2583,6 +2584,7 @@ def _jornada_a_dict(j: WorkOrderJornada) -> dict:
         "hora_fin": j.fecha_fin.strftime("%H:%M"),
         "technician_id": str(j.technician_id) if j.technician_id else "otro",
         "tecnico_nombre": j.tecnico_nombre or "",
+        "costo_herramientas": j.costo_herramientas_total,
         "recibido_por": j.recibido_por or "",
         "requirio_paro": bool(j.requirio_paro),
         "descripcion": j.descripcion_avance or "",
@@ -2636,6 +2638,16 @@ def _parse_jornadas_json() -> Tuple[list[dict], Optional[str]]:
         recibido_por = (item.get("recibido_por") or "").strip()
         if not recibido_por:
             return [], f"Jornada {i}: indica quién recibió el avance."
+        try:
+            costo_herramientas = round(float(item.get("costo_herramientas") or 0), 2)
+        except (TypeError, ValueError):
+            return [], f"Jornada {i}: el costo de herramientas no es válido."
+        if not math.isfinite(costo_herramientas):
+            return [], f"Jornada {i}: el costo de herramientas no es válido."
+        if costo_herramientas < 0:
+            return [], f"Jornada {i}: el costo de herramientas no puede ser negativo."
+        if costo_herramientas > 999_999_999_999.99:
+            return [], f"Jornada {i}: el costo de herramientas supera el máximo permitido."
 
         parsed.append(
             {
@@ -2645,6 +2657,7 @@ def _parse_jornadas_json() -> Tuple[list[dict], Optional[str]]:
                 "tarifa_hora_aplicada": float(
                     technician.user.tarifa_hora or 0
                 ) if technician and technician.user else 0.0,
+                "costo_herramientas": costo_herramientas,
                 "tecnico_nombre": nombre if tech_id is None else "",
                 "recibido_por": recibido_por,
                 "requirio_paro": bool(item.get("requirio_paro")),
@@ -2694,6 +2707,7 @@ def _guardar_jornadas_orden(wo: WorkOrder) -> Optional[str]:
                 tarifa_hora_aplicada=tarifas_existentes.get(
                     clave_jornada, s["tarifa_hora_aplicada"]
                 ),
+                costo_herramientas=s["costo_herramientas"],
                 tecnico_nombre=s["tecnico_nombre"],
                 recibido_por=s["recibido_por"],
                 requirio_paro=s["requirio_paro"],
@@ -2784,20 +2798,6 @@ def _parse_costo(raw: str) -> float:
         return max(0.0, round(float(s), 2))
     except ValueError:
         return 0.0
-
-
-def _parse_costo_herramientas(form, empresa: Empresa | None) -> tuple[float, Optional[str]]:
-    raw = (form.get("costo_herramientas") or "").strip()
-    if not raw:
-        return 0.0, None
-    value = parsear_monto_form(raw, empresa.moneda if empresa else "COP")
-    if value is None:
-        return 0.0, "Ingresa un costo de herramientas válido."
-    if value < 0:
-        return 0.0, "El costo de herramientas no puede ser negativo."
-    if value > 999_999_999_999.99:
-        return 0.0, "El costo de herramientas supera el máximo permitido."
-    return round(value, 2), None
 
 
 def _repuesto_linea_a_dict(line: WorkOrderRepuesto) -> dict:
@@ -3187,12 +3187,6 @@ def _orden_form_context(
         "proveedores_ot": proveedores_ot,
         "proveedores_ot_data": [_proveedor_ot_dict(p) for p in proveedores_ot],
         "ejecucion_tipo": ejecucion_tipo,
-        "costo_herramientas_input": formatear_monto_sin_simbolo(
-            wo.costo_herramientas if wo else 0,
-            current_user.empresa.moneda
-            if current_user.is_authenticated and current_user.empresa
-            else "COP",
-        ),
         "simbolo_moneda_ot": simbolo_moneda_input(
             current_user.empresa.moneda
             if current_user.is_authenticated and current_user.empresa
@@ -3971,15 +3965,8 @@ def ordenes_edit(id):
             )
         wo.machine_id = new_mid
         err_ej = _aplicar_ejecucion_desde_form(wo, request.form)
-        costo_herramientas, err_costo_herramientas = _parse_costo_herramientas(
-            request.form, current_user.empresa
-        )
-        if not err_costo_herramientas:
-            wo.costo_herramientas = costo_herramientas
         if err_ej:
             flash(err_ej, "danger")
-        elif err_costo_herramientas:
-            flash(err_costo_herramientas, "danger")
         elif not wo.titulo:
             flash("La actividad es obligatoria.", "danger")
         elif wo.tipo == WorkOrderType.PREVENTIVO.value:

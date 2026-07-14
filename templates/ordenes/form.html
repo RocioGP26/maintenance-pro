@@ -309,6 +309,7 @@
                       <th>Técnico realizador</th>
                       <th>Recibido por</th>
                       <th>Paro</th>
+                      <th class="text-end">Herramientas</th>
                       <th class="col-desc">Descripción</th>
                       <th style="width: 5.5rem;"></th>
                     </tr>
@@ -364,34 +365,28 @@
             <div class="col-12">
               <h6 class="fw-semibold mb-2"><i class="bi bi-cash-stack me-1"></i> Costos de la OT</h6>
               <div class="row g-2">
-                <div class="col-12 col-md-4">
-                  <label class="form-label" for="costoHerramientasOt">Costo de herramientas</label>
-                  <div class="input-group">
-                    <span class="input-group-text">{{ simbolo_moneda_ot }}</span>
-                    <input type="text" name="costo_herramientas" id="costoHerramientasOt"
-                           class="form-control" inputmode="decimal"
-                           value="{{ costo_herramientas_input }}"
-                           {% if solo_lectura|default(false) %}readonly{% endif %}>
-                  </div>
-                  <div class="form-text">Uso, alquiler o desgaste de herramientas asociado a esta orden.</div>
+                <div class="col-6 col-md">
+                  <div class="text-muted small">Herramientas</div>
+                  <div class="fw-semibold">{{ formato_moneda(order.costo_herramientas_total, empresa_actual.moneda) }}</div>
                 </div>
-                <div class="col-6 col-md-2">
+                <div class="col-6 col-md">
                   <div class="text-muted small">Repuestos</div>
                   <div class="fw-semibold">{{ formato_moneda(order.costo_repuestos_total, empresa_actual.moneda) }}</div>
                 </div>
-                <div class="col-6 col-md-2">
+                <div class="col-6 col-md">
                   <div class="text-muted small">Mano de obra</div>
                   <div class="fw-semibold">{{ formato_moneda(order.costo_mano_obra_total, empresa_actual.moneda) }}</div>
                 </div>
-                <div class="col-6 col-md-2">
+                <div class="col-6 col-md">
                   <div class="text-muted small">Servicio externo</div>
                   <div class="fw-semibold">{{ formato_moneda(order.costo_servicio_externo, empresa_actual.moneda) }}</div>
                 </div>
-                <div class="col-6 col-md-2">
+                <div class="col-6 col-md">
                   <div class="text-muted small">Total OT</div>
                   <div class="fw-bold text-primary">{{ formato_moneda(order.costo_total_mantenimiento, empresa_actual.moneda) }}</div>
                 </div>
               </div>
+              <div class="form-text mt-2">Los costos de herramientas, repuestos y mano de obra se acumulan desde las jornadas registradas.</div>
             </div>
 
             <div class="col-md-5">
@@ -532,6 +527,15 @@
           <div class="col-12 col-md-4">
             <label class="form-label fw-semibold" for="jornadaHoraFin">Hora fin</label>
             <input type="time" class="form-control" id="jornadaHoraFin" required>
+          </div>
+          <div class="col-12 col-md-6">
+            <label class="form-label fw-semibold" for="jornadaCostoHerramientas">Costo de herramientas</label>
+            <div class="input-group">
+              <span class="input-group-text">{{ simbolo_moneda_ot }}</span>
+              <input type="number" class="form-control" id="jornadaCostoHerramientas"
+                     min="0" step="0.01" value="0" inputmode="decimal">
+            </div>
+            <div class="form-text">Uso, alquiler o desgaste de herramientas durante esta jornada.</div>
           </div>
           <div class="col-12 col-md-6" id="wrapJornadaTecnico">
             <label class="form-label fw-semibold" for="jornadaTecnico">Técnico realizador (esta jornada)</label>
@@ -675,6 +679,14 @@
     return m + ' min';
   }
 
+  function formatoCostoJornada(valor) {
+    return new Intl.NumberFormat('es-CO', {
+      style: 'currency',
+      currency: {{ (empresa_actual.moneda or 'COP')|tojson }},
+      maximumFractionDigits: 2
+    }).format(parseFloat(valor) || 0);
+  }
+
   function tecnicoLabel(j) {
     if (j.technician_id && j.technician_id !== 'otro') {
       return techById[String(j.technician_id)] || 'Técnico';
@@ -718,6 +730,7 @@
         '<td class="col-tecnico">' + escHtml(tecnicoLabel(j)) + '</td>' +
         '<td>' + escHtml(j.recibido_por || '—') + '</td>' +
         '<td>' + (j.requirio_paro ? 'Sí' : 'No') + '</td>' +
+        '<td class="text-end text-nowrap">' + escHtml(formatoCostoJornada(j.costo_herramientas)) + '</td>' +
         '<td class="col-desc" title="' + escHtml(j.descripcion || '') + '">' + escHtml(j.descripcion || '—') + '</td>' +
         '<td class="text-end text-nowrap">' +
           (soloLectura ? '—' : (
@@ -814,6 +827,7 @@
     document.getElementById('jornadaFecha').value = hoyISO();
     document.getElementById('jornadaHoraInicio').value = '';
     document.getElementById('jornadaHoraFin').value = '';
+    document.getElementById('jornadaCostoHerramientas').value = '0';
     document.getElementById('jornadaTecnico').value = '';
     document.getElementById('jornadaTecnicoNombre').value = '';
     document.getElementById('jornadaRecibidoPor').value = '';
@@ -831,6 +845,7 @@
       document.getElementById('jornadaFecha').value = j.fecha || '';
       document.getElementById('jornadaHoraInicio').value = j.hora_inicio || '';
       document.getElementById('jornadaHoraFin').value = j.hora_fin || '';
+      document.getElementById('jornadaCostoHerramientas').value = parseFloat(j.costo_herramientas) || 0;
       document.getElementById('jornadaTecnico').value = j.technician_id ? String(j.technician_id) : 'otro';
       document.getElementById('jornadaTecnicoNombre').value = j.tecnico_nombre || '';
       document.getElementById('jornadaRecibidoPor').value = j.recibido_por || '';
@@ -865,6 +880,7 @@
     var fecha = document.getElementById('jornadaFecha').value;
     var horaIni = document.getElementById('jornadaHoraInicio').value;
     var horaFin = document.getElementById('jornadaHoraFin').value;
+    var costoHerramientas = parseFloat(document.getElementById('jornadaCostoHerramientas').value || '0');
     var tech = document.getElementById('jornadaTecnico').value;
     var nombre = document.getElementById('jornadaTecnicoNombre').value.trim();
     var ejecucionExterna = document.querySelector('input[name="ejecucion_tipo"]:checked')?.value === 'externo';
@@ -878,6 +894,10 @@
     }
     if (horaFin <= horaIni) {
       alert('La hora fin debe ser posterior a la hora inicio.');
+      return;
+    }
+    if (!Number.isFinite(costoHerramientas) || costoHerramientas < 0) {
+      alert('Ingresa un costo de herramientas válido, igual o mayor a cero.');
       return;
     }
     if (!ejecucionExterna && !tech) {
@@ -899,6 +919,7 @@
       hora_fin: horaFin,
       technician_id: ejecucionExterna ? 'otro' : tech,
       tecnico_nombre: ejecucionExterna ? nombre : '',
+      costo_herramientas: Math.round(costoHerramientas * 100) / 100,
       recibido_por: recibidoPor,
       requirio_paro: requirioParo,
       descripcion: desc

@@ -347,7 +347,7 @@ Cada OT conserva un desglose económico común para el análisis de costos y la 
 
 - **Mano de obra:** horas de las jornadas × tarifa histórica del técnico.
 - **Repuestos:** cantidad consumida × costo unitario fijado al registrar el consumo.
-- **Herramientas:** uso, alquiler o desgaste informado directamente en la OT.
+- **Herramientas:** suma del uso, alquiler o desgaste informado en cada jornada de la OT.
 - **Servicio externo:** costo real del proveedor, únicamente cuando la ejecución es externa.
 
 La tarifa del técnico y el costo unitario del repuesto se guardan como snapshots para que cambios posteriores en usuarios o inventario no modifiquen el costo histórico del activo.
