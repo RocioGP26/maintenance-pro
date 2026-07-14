@@ -1,10 +1,10 @@
 {% extends "base.html" %}
 
-{% block title %}Dashboard — {{ app_name }}{% endblock %}
+{% block title %}Análisis de mantenimiento — {{ app_name }}{% endblock %}
 
 {% block body_class %}theme-dashboard-dark{% endblock %}
 
-{% block page_title %}Dashboard · Mantenimiento{% endblock %}
+{% block page_title %}Análisis · Mantenimiento{% endblock %}
 
 {% macro dash_filtros_hidden() %}
     <input type="hidden" name="periodo" value="{{ periodo }}">
@@ -32,7 +32,7 @@
     </a>
   </div>
   {% if periodo == 'mes' %}
-  <form method="get" action="{{ url_for('main.dashboard') }}" class="dash-period-form">
+  <form method="get" action="{{ url_for(dashboard_endpoint) }}" class="dash-period-form">
     <input type="hidden" name="periodo" value="mes">
     {% if dash_params.get('sector') %}
     <input type="hidden" name="sector" value="{{ dash_params.sector }}">
@@ -54,7 +54,7 @@
     <button type="submit" class="btn btn-sm btn-primary">Ir</button>
   </form>
   {% elif periodo == 'año' %}
-  <form method="get" action="{{ url_for('main.dashboard') }}" class="dash-period-form">
+  <form method="get" action="{{ url_for(dashboard_endpoint) }}" class="dash-period-form">
     <input type="hidden" name="periodo" value="año">
     {% if dash_params.get('sector') %}
     <input type="hidden" name="sector" value="{{ dash_params.sector }}">
@@ -70,7 +70,7 @@
     <button type="submit" class="btn btn-sm btn-primary">Ir</button>
   </form>
   {% elif periodo == 'dia' %}
-  <form method="get" action="{{ url_for('main.dashboard') }}" class="dash-period-form">
+  <form method="get" action="{{ url_for(dashboard_endpoint) }}" class="dash-period-form">
     <input type="hidden" name="periodo" value="dia">
     {% if dash_params.get('sector') %}
     <input type="hidden" name="sector" value="{{ dash_params.sector }}">
@@ -93,7 +93,7 @@
             {{ dash_period_toolbar() }}
           </div>
           <div class="dash-toolbar-divider" aria-hidden="true"></div>
-          <form method="get" action="{{ url_for('main.dashboard') }}" class="dash-asset-filtros-form dash-toolbar-unified-filtros" aria-label="Filtrar por activo y ubicación">
+          <form method="get" action="{{ url_for(dashboard_endpoint) }}" class="dash-asset-filtros-form dash-toolbar-unified-filtros" aria-label="Filtrar por activo y ubicación">
             {{ dash_filtros_hidden() }}
             <span class="dash-asset-filtros-label"><i class="bi bi-funnel me-1" aria-hidden="true"></i>Filtrar</span>
             <label class="visually-hidden" for="dash-equipo">Activo</label>

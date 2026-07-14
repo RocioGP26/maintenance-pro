@@ -1,5 +1,6 @@
 from datetime import date
 import json
+import math
 import os
 import re
 import unicodedata
@@ -1607,7 +1608,10 @@ def recursos():
 
 
 @bp.route("/dashboard")
-def dashboard():
+def dashboard(
+    _template_name: str = "inicio/dashboard.html",
+    _endpoint: str = "main.dashboard",
+):
     from app.modules import empresa_solo_inventario
 
     if current_user.is_authenticated and empresa_solo_inventario(
@@ -1634,20 +1638,20 @@ def dashboard():
         period, ref, sector, sector_locked, dash_filtros
     )
     period_prev_url = url_for(
-        "main.dashboard",
+        _endpoint,
         **_dashboard_query_params(
             period, _shift_period_ref(period, ref, -1), sector, sector_locked, dash_filtros
         ),
     )
     period_next_url = url_for(
-        "main.dashboard",
+        _endpoint,
         **_dashboard_query_params(
             period, _shift_period_ref(period, ref, 1), sector, sector_locked, dash_filtros
         ),
     )
     period_urls = {
         p: url_for(
-            "main.dashboard",
+            _endpoint,
             **_dashboard_query_params(p, ref, sector, sector_locked, dash_filtros),
         )
         for p in ("dia", "semana", "mes", "año")
@@ -1655,7 +1659,7 @@ def dashboard():
     sector_urls = (
         {
             s_key: url_for(
-                "main.dashboard",
+                _endpoint,
                 **_dashboard_query_params(period, ref, s_key, False, dash_filtros),
             )
             for s_key, _ in (
@@ -1668,7 +1672,7 @@ def dashboard():
         else {}
     )
     dash_clear_filtros_url = url_for(
-        "main.dashboard", **_dashboard_query_params(period, ref, sector, sector_locked)
+        _endpoint, **_dashboard_query_params(period, ref, sector, sector_locked)
     )
     hoy = date.today()
     periodo_anios = list(range(hoy.year - 2, hoy.year + 3))
@@ -1863,8 +1867,104 @@ def dashboard():
             "style": "danger" if dash_resumen["repuestos_bajo_minimo"] else "success",
         },
     ]
+
+    # Inicio operativo: responde qué requiere atención hoy, sin mezclar BI histórico.
+    incidentes_q = _incidents_scope_query().filter(
+        Incident.estado.notin_(
+            [
+                IncidentEstado.RESUELTO.value,
+                IncidentEstado.CERRADO.value,
+                IncidentEstado.CANCELADO.value,
+            ]
+        )
+    )
+    incidentes_nuevas = incidentes_q.filter(
+        Incident.estado.in_([IncidentEstado.REPORTADO.value, IncidentEstado.RECIBIDO.value])
+    ).count()
+    incidentes_recientes = (
+        incidentes_q.order_by(Incident.reportado_en.desc()).limit(6).all()
+    )
+    preventivos_hoy_q = _wo_in_period_query(hoy, hoy, sector, machine_ids).filter(
+        func.lower(WorkOrder.tipo) == WorkOrderType.PREVENTIVO.value
+    )
+    preventivos_hoy = preventivos_hoy_q.count()
+    preventivos_hoy_items = (
+        preventivos_hoy_q.order_by(WorkOrder.fecha_programada, WorkOrder.id)
+        .limit(6)
+        .all()
+    )
+    garantias_por_vencer = (
+        machines_q.filter(
+            Machine.garantia_hasta.isnot(None),
+            Machine.garantia_hasta >= hoy,
+            Machine.garantia_hasta <= hoy + timedelta(days=30),
+        )
+        .order_by(Machine.garantia_hasta)
+        .limit(6)
+        .all()
+    )
+    actividad_reciente = (
+        _filter_work_orders_empresa(WorkOrder.query)
+        .order_by(WorkOrder.created_at.desc())
+        .limit(8)
+        .all()
+    )
+    operacion_cards = [
+        {
+            "label": "OT abiertas",
+            "value": dash_resumen["ordenes_abiertas"],
+            "icon": "bi-clipboard2-check",
+            "style": "warning",
+            "href": url_for(
+                "main.ordenes_list", status=WorkOrderStatus.ABIERTA.value
+            ),
+        },
+        {
+            "label": "OT vencidas",
+            "value": dash_resumen["ordenes_vencidas"],
+            "icon": "bi-clock-history",
+            "style": "danger",
+            "href": url_for(
+                "main.ordenes_list", status=WorkOrderStatus.VENCIDA.value
+            ),
+        },
+        {
+            "label": "Incidencias nuevas",
+            "value": incidentes_nuevas,
+            "icon": "bi-exclamation-triangle",
+            "style": "danger",
+            "href": url_for("main.incidencias_list"),
+        },
+        {
+            "label": "Preventivos de hoy",
+            "value": preventivos_hoy,
+            "icon": "bi-calendar2-check",
+            "style": "success",
+            "href": url_for(
+                "main.ordenes_list",
+                tipo=WorkOrderType.PREVENTIVO.value,
+                fecha_desde=hoy.isoformat(),
+                fecha_hasta=hoy.isoformat(),
+            ),
+        },
+        {
+            "label": "Repuestos bajo mínimo",
+            "value": dash_resumen["repuestos_bajo_minimo"],
+            "icon": "bi-box-seam",
+            "style": "warning",
+            "href": url_for("main.inventario_list"),
+        },
+        {
+            "label": "Activos fuera de servicio",
+            "value": mant + falla,
+            "icon": "bi-cone-striped",
+            "style": "danger" if mant + falla else "success",
+            "href": url_for("main.activos_list"),
+        },
+    ]
     return render_template(
-        "dashboard.html",
+        _template_name,
+        dashboard_endpoint=_endpoint,
         periodo=period,
         periodo_ref=ref.isoformat(),
         periodo_label=period_label,
@@ -1917,7 +2017,22 @@ def dashboard():
         ot_en_periodo=ot_en_periodo,
         dash_resumen=dash_resumen,
         dash_resumen_items=dash_resumen_items,
+        operacion_cards=operacion_cards,
+        incidentes_recientes=incidentes_recientes,
+        preventivos_hoy_items=preventivos_hoy_items,
+        garantias_por_vencer=garantias_por_vencer,
+        actividad_reciente=actividad_reciente,
     )
+
+
+@bp.route("/analisis")
+def analisis_resumen():
+    return render_template("analisis/resumen.html")
+
+
+@bp.route("/analisis/mantenimiento")
+def analisis_mantenimiento():
+    return dashboard("dashboard.html", "main.analisis_mantenimiento")
 
 
 # --- Activos ---
@@ -2045,9 +2160,11 @@ def activos_hoja_vida(id):
         incidentes=incidentes,
         total_preventivos=sum(1 for orden in ordenes if orden.tipo == "preventivo"),
         total_correctivos=sum(1 for orden in ordenes if orden.tipo == "correctivo"),
-        costo_repuestos=sum(
-            linea.costo_total_linea for orden in ordenes for linea in orden.repuestos
-        ),
+        costo_repuestos=sum(orden.costo_repuestos_total for orden in ordenes),
+        costo_herramientas=sum(orden.costo_herramientas_total for orden in ordenes),
+        costo_mano_obra=sum(orden.costo_mano_obra_total for orden in ordenes),
+        costo_servicios=sum(orden.costo_servicio_externo for orden in ordenes),
+        costo_total_mantenimiento=sum(orden.costo_total_mantenimiento for orden in ordenes),
         avances_por_ot=_avances_hoja_vida(ordenes),
         status_meta=machine_status_meta(machine.status),
     )
@@ -2581,13 +2698,20 @@ def _jornada_a_dict(j: WorkOrderJornada) -> dict:
         "hora_fin": j.fecha_fin.strftime("%H:%M"),
         "technician_id": str(j.technician_id) if j.technician_id else "otro",
         "tecnico_nombre": j.tecnico_nombre or "",
+        "tarifa_hora_aplicada": j.tarifa_hora_efectiva,
+        "costo_mano_obra_manual": (
+            float(j.costo_mano_obra_manual)
+            if j.costo_mano_obra_manual is not None
+            else None
+        ),
+        "costo_herramientas": j.costo_herramientas_total,
         "recibido_por": j.recibido_por or "",
         "requirio_paro": bool(j.requirio_paro),
         "descripcion": j.descripcion_avance or "",
     }
 
 
-def _parse_jornadas_json() -> Tuple[list[dict], Optional[str]]:
+def _parse_jornadas_json(wo: Optional[WorkOrder] = None) -> Tuple[list[dict], Optional[str]]:
     raw = (request.form.get("jornadas_json") or "[]").strip()
     try:
         items = json.loads(raw) if raw else []
@@ -2620,8 +2744,12 @@ def _parse_jornadas_json() -> Tuple[list[dict], Optional[str]]:
             except (TypeError, ValueError):
                 return [], f"Jornada {i}: técnico no válido."
 
+        technician = None
         if tech_id is not None:
-            if not _filter_empresa(Technician.query.filter_by(id=tech_id), Technician).first():
+            technician = _filter_empresa(
+                Technician.query.filter_by(id=tech_id), Technician
+            ).first()
+            if not technician:
                 return [], f"Jornada {i}: técnico no pertenece a tu empresa."
 
         nombre = (item.get("tecnico_nombre") or "").strip()
@@ -2630,12 +2758,44 @@ def _parse_jornadas_json() -> Tuple[list[dict], Optional[str]]:
         recibido_por = (item.get("recibido_por") or "").strip()
         if not recibido_por:
             return [], f"Jornada {i}: indica quién recibió el avance."
+        try:
+            costo_herramientas = round(float(item.get("costo_herramientas") or 0), 2)
+        except (TypeError, ValueError):
+            return [], f"Jornada {i}: el costo de herramientas no es válido."
+        if not math.isfinite(costo_herramientas):
+            return [], f"Jornada {i}: el costo de herramientas no es válido."
+        if costo_herramientas < 0:
+            return [], f"Jornada {i}: el costo de herramientas no puede ser negativo."
+        if costo_herramientas > 999_999_999_999.99:
+            return [], f"Jornada {i}: el costo de herramientas supera el máximo permitido."
+
+        costo_mano_obra_manual = None
+        permite_mdo_manual = bool(
+            wo
+            and wo.es_ejecucion_externa
+        )
+        if permite_mdo_manual:
+            try:
+                costo_mano_obra_manual = round(
+                    float(item.get("costo_mano_obra_manual") or 0), 2
+                )
+            except (TypeError, ValueError):
+                return [], f"Jornada {i}: el costo MDO no es válido."
+            if not math.isfinite(costo_mano_obra_manual) or costo_mano_obra_manual < 0:
+                return [], f"Jornada {i}: el costo MDO debe ser un valor válido y no negativo."
+            if costo_mano_obra_manual > 999_999_999_999.99:
+                return [], f"Jornada {i}: el costo MDO supera el máximo permitido."
 
         parsed.append(
             {
                 "fecha_inicio": inicio,
                 "fecha_fin": fin,
                 "technician_id": tech_id,
+                "tarifa_hora_aplicada": float(
+                    technician.user.tarifa_hora or 0
+                ) if technician and technician.user else 0.0,
+                "costo_mano_obra_manual": costo_mano_obra_manual,
+                "costo_herramientas": costo_herramientas,
                 "tecnico_nombre": nombre if tech_id is None else "",
                 "recibido_por": recibido_por,
                 "requirio_paro": bool(item.get("requirio_paro")),
@@ -2658,10 +2818,15 @@ def _guardar_jornadas_orden(wo: WorkOrder) -> Optional[str]:
             pass
         return None
 
-    sesiones, err = _parse_jornadas_json()
+    sesiones, err = _parse_jornadas_json(wo)
     if err:
         return err
 
+    tarifas_existentes = {
+        (j.fecha_inicio, j.fecha_fin, j.technician_id): j.tarifa_hora_aplicada
+        for j in wo.jornadas
+        if j.tarifa_hora_aplicada is not None
+    }
     wo.jornadas.clear()
     if not sesiones:
         wo.fecha_inicio = None
@@ -2670,12 +2835,18 @@ def _guardar_jornadas_orden(wo: WorkOrder) -> Optional[str]:
         return None
 
     for n, s in enumerate(sesiones, start=1):
+        clave_jornada = (s["fecha_inicio"], s["fecha_fin"], s["technician_id"])
         wo.jornadas.append(
             WorkOrderJornada(
                 orden=n,
                 fecha_inicio=s["fecha_inicio"],
                 fecha_fin=s["fecha_fin"],
                 technician_id=s["technician_id"],
+                tarifa_hora_aplicada=tarifas_existentes.get(
+                    clave_jornada, s["tarifa_hora_aplicada"]
+                ),
+                costo_mano_obra_manual=s["costo_mano_obra_manual"],
+                costo_herramientas=s["costo_herramientas"],
                 tecnico_nombre=s["tecnico_nombre"],
                 recibido_por=s["recibido_por"],
                 requirio_paro=s["requirio_paro"],
@@ -2844,6 +3015,16 @@ def _guardar_repuestos_orden(wo: WorkOrder) -> Optional[str]:
             _revertir_repuestos_stock(wo)
         return None
 
+    costos_historicos = {
+        (
+            line.spare_part_id,
+            int(line.cantidad or 0),
+            line.jornada_fecha,
+            line.jornada_hora_inicio or "",
+            line.jornada_hora_fin or "",
+        ): line.costo_unitario_linea
+        for line in wo.repuestos
+    }
     _revertir_repuestos_stock(wo)
 
     if request.form.get("usa_repuestos") != "1":
@@ -2879,15 +3060,32 @@ def _guardar_repuestos_orden(wo: WorkOrder) -> Optional[str]:
                 jornada_fecha = None
         if jornada_fecha is None and jornada:
             jornada_fecha = jornada.fecha_inicio.date()
+        jornada_hora_inicio = item["jornada_hora_inicio"] or (
+            jornada.fecha_inicio.strftime("%H:%M") if jornada else ""
+        )
+        jornada_hora_fin = item["jornada_hora_fin"] or (
+            jornada.fecha_fin.strftime("%H:%M") if jornada else ""
+        )
+        costo_aplicado = costos_historicos.get(
+            (
+                part.id,
+                item["cantidad"],
+                jornada_fecha,
+                jornada_hora_inicio,
+                jornada_hora_fin,
+            ),
+            float(part.costo_unitario or 0),
+        )
         part.cantidad = (part.cantidad or 0) - item["cantidad"]
         wo.repuestos.append(
             WorkOrderRepuesto(
                 spare_part_id=part.id,
                 cantidad=item["cantidad"],
+                costo_unitario_aplicado=costo_aplicado,
                 notas=item["notas"],
                 jornada_fecha=jornada_fecha,
-                jornada_hora_inicio=item["jornada_hora_inicio"] or (jornada.fecha_inicio.strftime("%H:%M") if jornada else ""),
-                jornada_hora_fin=item["jornada_hora_fin"] or (jornada.fecha_fin.strftime("%H:%M") if jornada else ""),
+                jornada_hora_inicio=jornada_hora_inicio,
+                jornada_hora_fin=jornada_hora_fin,
                 jornada_tecnico=item["jornada_tecnico"] or (jornada.tecnico_label if jornada else ""),
             )
         )
@@ -3113,7 +3311,14 @@ def _orden_form_context(
         "responsable_activo_nombre": (
             responsables_map.get(wo.machine_id, "") if wo and wo.machine_id else ""
         ),
-        "technicians_data": [{"id": t.id, "nombre": t.nombre} for t in technicians],
+        "technicians_data": [
+            {
+                "id": t.id,
+                "nombre": t.nombre,
+                "tarifa_hora": float(t.user.tarifa_hora or 0) if t.user else 0.0,
+            }
+            for t in technicians
+        ],
         "repuestos_catalog_data": [
             {
                 "id": p.id,
@@ -3128,6 +3333,11 @@ def _orden_form_context(
         "proveedores_ot": proveedores_ot,
         "proveedores_ot_data": [_proveedor_ot_dict(p) for p in proveedores_ot],
         "ejecucion_tipo": ejecucion_tipo,
+        "simbolo_moneda_ot": simbolo_moneda_input(
+            current_user.empresa.moneda
+            if current_user.is_authenticated and current_user.empresa
+            else "COP"
+        ),
         "wo_es_terminal": bool(
             wo and wo.status in WORK_ORDER_TERMINAL_STATUSES
         ),
@@ -3303,15 +3513,22 @@ def mantenimiento_costos():
             joinedload(WorkOrder.machine),
             joinedload(WorkOrder.proveedor),
             joinedload(WorkOrder.repuestos).joinedload(WorkOrderRepuesto.spare_part),
+            joinedload(WorkOrder.jornadas)
+            .joinedload(WorkOrderJornada.technician)
+            .joinedload(Technician.user),
         )
     ).all()
 
     filas = []
     por_tipo = defaultdict(float)
-    por_activo = defaultdict(lambda: {"codigo": "", "nombre": "", "ordenes": 0, "servicios": 0.0, "repuestos": 0.0})
+    por_activo = defaultdict(lambda: {
+        "codigo": "", "nombre": "", "ordenes": 0, "mano_obra": 0.0,
+        "herramientas": 0.0, "servicios": 0.0, "repuestos": 0.0,
+    })
     por_proveedor = defaultdict(lambda: {"nombre": "", "ordenes": 0, "costo": 0.0})
+    por_tecnico = defaultdict(lambda: {"nombre": "", "jornadas": 0, "horas": 0.0, "costo": 0.0})
     por_mes = defaultdict(float)
-    total_servicios = total_repuestos = 0.0
+    total_mano_obra = total_herramientas = total_servicios = total_repuestos = 0.0
 
     for orden in ordenes:
         referencia = (
@@ -3321,9 +3538,13 @@ def mantenimiento_costos():
         )
         if not referencia or referencia < fecha_desde or referencia > fecha_hasta:
             continue
-        costo_servicio = float(orden.costo_real or 0) if orden.es_ejecucion_externa else 0.0
-        costo_repuestos = sum(float(linea.costo_total_linea or 0) for linea in orden.repuestos)
-        costo_total = costo_servicio + costo_repuestos
+        costo_servicio = orden.costo_servicio_externo
+        costo_repuestos = orden.costo_repuestos_total
+        costo_mano_obra = orden.costo_mano_obra_total
+        costo_herramientas = orden.costo_herramientas_total
+        costo_total = orden.costo_total_mantenimiento
+        total_mano_obra += costo_mano_obra
+        total_herramientas += costo_herramientas
         total_servicios += costo_servicio
         total_repuestos += costo_repuestos
         por_tipo[orden.tipo or "otro"] += costo_total
@@ -3335,6 +3556,8 @@ def mantenimiento_costos():
         activo["codigo"] = machine.codigo if machine else "—"
         activo["nombre"] = machine.nombre if machine else "Sin activo"
         activo["ordenes"] += 1
+        activo["mano_obra"] += costo_mano_obra
+        activo["herramientas"] += costo_herramientas
         activo["servicios"] += costo_servicio
         activo["repuestos"] += costo_repuestos
 
@@ -3345,16 +3568,27 @@ def mantenimiento_costos():
             proveedor["ordenes"] += 1
             proveedor["costo"] += costo_servicio
 
+        for jornada in orden.jornadas:
+            if not jornada.technician_id:
+                continue
+            tecnico = por_tecnico[jornada.technician_id]
+            tecnico["nombre"] = jornada.tecnico_label
+            tecnico["jornadas"] += 1
+            tecnico["horas"] += jornada.duracion_minutos / 60
+            tecnico["costo"] += jornada.costo_mano_obra
+
         filas.append({
-            "orden": orden, "fecha": referencia, "servicio": costo_servicio,
+            "orden": orden, "fecha": referencia, "mano_obra": costo_mano_obra,
+            "herramientas": costo_herramientas, "servicio": costo_servicio,
             "repuestos": costo_repuestos, "total": costo_total,
         })
 
     activos = sorted(
-        ({**v, "total": v["servicios"] + v["repuestos"]} for v in por_activo.values()),
+        ({**v, "total": v["mano_obra"] + v["herramientas"] + v["servicios"] + v["repuestos"]} for v in por_activo.values()),
         key=lambda x: x["total"], reverse=True,
     )
     proveedores = sorted(por_proveedor.values(), key=lambda x: x["costo"], reverse=True)
+    tecnicos = sorted(por_tecnico.values(), key=lambda x: x["costo"], reverse=True)
     meses = []
     cursor = date(fecha_desde.year, fecha_desde.month, 1)
     limite = date(fecha_hasta.year, fecha_hasta.month, 1)
@@ -3363,12 +3597,14 @@ def mantenimiento_costos():
         meses.append({"key": key, "label": cursor.strftime("%m/%Y"), "costo": por_mes.get(key, 0.0)})
         cursor = date(cursor.year + (cursor.month == 12), 1 if cursor.month == 12 else cursor.month + 1, 1)
 
-    total = total_servicios + total_repuestos
+    total = total_mano_obra + total_herramientas + total_servicios + total_repuestos
     return render_template(
         "mantenimiento/costos.html",
         fecha_desde=fecha_desde,
         fecha_hasta=fecha_hasta,
         total=total,
+        total_mano_obra=total_mano_obra,
+        total_herramientas=total_herramientas,
         total_servicios=total_servicios,
         total_repuestos=total_repuestos,
         total_ordenes=len(filas),
@@ -3376,6 +3612,7 @@ def mantenimiento_costos():
         por_tipo=por_tipo,
         activos=activos,
         proveedores=proveedores,
+        tecnicos=tecnicos,
         meses=meses,
         filas=sorted(filas, key=lambda x: x["fecha"], reverse=True),
     )
@@ -4439,6 +4676,20 @@ def _parse_sede_equipo(form, empresa_id: int) -> tuple[Optional[int], Optional[s
     return sid, None
 
 
+def _parse_tarifa_hora_equipo(form, empresa: Empresa | None) -> tuple[float, Optional[str]]:
+    raw = (form.get("tarifa_hora") or "").strip()
+    if not raw:
+        return 0.0, None
+    value = parsear_monto_form(raw, empresa.moneda if empresa else "COP")
+    if value is None:
+        return 0.0, "Ingresa una tarifa por hora válida."
+    if value < 0:
+        return 0.0, "La tarifa por hora no puede ser negativa."
+    if value > 999_999_999_999.99:
+        return 0.0, "La tarifa por hora supera el máximo permitido."
+    return round(value, 2), None
+
+
 def _save_user_custom_fields(user: User, form, empresa_id: int, sector: str) -> Optional[str]:
     campos = campos_para_equipo(empresa_id, sector)
     for campo in campos:
@@ -4464,6 +4715,10 @@ def _equipo_form_context(usuario: Optional[User], empresa_id: int) -> dict:
         "sedes": _sedes_empresa(empresa_id) if empresa_id else [],
         "campos_personalizados": campos,
         "valores_campos": valores,
+        "tarifa_hora_valor": formatear_monto_sin_simbolo(
+            usuario.tarifa_hora, emp.moneda
+        ) if usuario and emp else "",
+        "tarifa_hora_simbolo": simbolo_moneda_input(emp.moneda if emp else "COP"),
     }
 
 
@@ -4505,6 +4760,7 @@ def equipo_new():
         password = request.form.get("password", "")
         password2 = request.form.get("password2", "")
         sede_id, err_sede = _parse_sede_equipo(request.form, eid)
+        tarifa_hora, err_tarifa = _parse_tarifa_hora_equipo(request.form, emp)
 
         err_u = _validar_username_equipo(username)
         if err_u:
@@ -4521,6 +4777,8 @@ def equipo_new():
             flash("No puedes asignar ese rol.", "danger")
         elif err_sede:
             flash(err_sede, "danger")
+        elif err_tarifa:
+            flash(err_tarifa, "danger")
         elif err_pwd := validar_password(password):
             flash(err_pwd, "danger")
         elif password != password2:
@@ -4532,6 +4790,7 @@ def equipo_new():
                 nombre_visible=nombre,
                 area=area,
                 cargo=cargo,
+                tarifa_hora=tarifa_hora,
                 sede_id=sede_id,
                 email=email,
                 telefono=telefono,
@@ -4605,6 +4864,7 @@ def equipo_edit(id):
         password = request.form.get("password", "")
         password2 = request.form.get("password2", "")
         sede_id, err_sede = _parse_sede_equipo(request.form, eid)
+        tarifa_hora, err_tarifa = _parse_tarifa_hora_equipo(request.form, emp)
 
         err_u = _validar_username_equipo(username)
         if err_u:
@@ -4623,6 +4883,8 @@ def equipo_edit(id):
             flash("No puedes asignar ese rol.", "danger")
         elif err_sede:
             flash(err_sede, "danger")
+        elif err_tarifa:
+            flash(err_tarifa, "danger")
         elif es_self and not activo:
             flash("No puedes desactivar tu propia cuenta.", "danger")
         elif es_self and rol != normalize_rol(current_user.rol):
@@ -4659,6 +4921,7 @@ def equipo_edit(id):
             usuario.nombre_visible = nombre
             usuario.area = area
             usuario.cargo = cargo
+            usuario.tarifa_hora = tarifa_hora
             usuario.sede_id = sede_id
             usuario.email = email
             usuario.telefono = telefono

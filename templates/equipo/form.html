@@ -71,14 +71,23 @@
               {% endif %}
             </div>
             <div class="col-12 col-md-6 col-xl-4">
-              <label class="form-label" for="password">9. Contraseña{% if not usuario %} *{% endif %}</label>
+              <label class="form-label" for="tarifa_hora">9. Tarifa hora</label>
+              <div class="input-group">
+                <span class="input-group-text">{{ tarifa_hora_simbolo }}</span>
+                <input type="text" inputmode="decimal" name="tarifa_hora" id="tarifa_hora"
+                       class="form-control" value="{{ tarifa_hora_valor }}" placeholder="0">
+              </div>
+              <div class="form-text">Costo interno por hora para calcular la mano de obra en Mantenimiento.</div>
+            </div>
+            <div class="col-12 col-md-6 col-xl-4">
+              <label class="form-label" for="password">10. Contraseña{% if not usuario %} *{% endif %}</label>
               <input type="password" name="password" id="password" class="form-control"
                      autocomplete="new-password" {% if not usuario %}required{% endif %}>
               {% if usuario %}<div class="form-text">Déjala en blanco para no cambiar.</div>
               {% else %}<div class="form-text">{{ password_requirements }}</div>{% endif %}
             </div>
             <div class="col-12 col-md-6 col-xl-4">
-              <label class="form-label" for="password2">10. Confirmar contraseña{% if not usuario %} *{% endif %}</label>
+              <label class="form-label" for="password2">11. Confirmar contraseña{% if not usuario %} *{% endif %}</label>
               <input type="password" name="password2" id="password2" class="form-control"
                      autocomplete="new-password" {% if not usuario %}required{% endif %}>
             </div>

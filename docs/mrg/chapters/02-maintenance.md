@@ -249,6 +249,11 @@ Cada OT puede acumular costos que alimentan indicadores y, en el futuro, el mód
 | **Servicios externos** | Costo estimado / real de OT con proveedor |
 | **Costos adicionales** | Otros conceptos en costo real vs estimado |
 
+La tarifa hora se configura en **Administración → Usuarios y roles**. Al guardar
+una jornada, Maintix conserva la tarifa aplicada en ese momento y calcula
+`duración en horas × tarifa hora`; los cambios futuros de tarifa no modifican
+el costo histórico de la jornada.
+
 Los costos por activo se agregan en el **historial** y conectan Maintenance con reportes (MRG-08) y finanzas (roadmap).
 
 ---
@@ -295,35 +300,41 @@ La prioridad de la incidencia puede interactuar con la **criticidad del activo**
 
 ---
 
-## 10 · Dashboard Mantenimiento · ✅
+## 10 · Inicio · Centro de Operaciones · ✅
 
-Vista conceptual del panel operativo del módulo — conecta con [MRG-08 · Reportes](08-reportes.md):
+Inicio es el panel operativo diario. Su pregunta rectora es **«¿Qué requiere mi atención hoy?»** y no contiene indicadores históricos de BI.
 
 ```
-Dashboard Mantenimiento
+Inicio · Centro de Operaciones
 │
-├── Activos operativos
 ├── OT abiertas
 ├── OT vencidas
-├── Preventivos del mes
-├── Cumplimiento preventivo
-└── Repuestos bajo mínimo
+├── Preventivos de hoy
+├── Incidencias nuevas y abiertas
+├── Repuestos bajo mínimo
+├── Activos fuera de servicio
+├── Garantías por vencer
+└── Actividad reciente
 ```
 
 | Bloque | Qué responde |
 |--------|--------------|
-| **Activos operativos** | Cuántos activos están en servicio vs mantenimiento/falla |
 | **OT abiertas** | Carga de trabajo pendiente |
 | **OT vencidas** | OT fuera de fecha programada |
-| **Preventivos del mes** | Mantenimientos planificados en el período |
-| **Cumplimiento** | % preventivos completados a tiempo |
+| **Preventivos de hoy** | Intervenciones que deben ejecutarse durante la jornada |
+| **Incidencias** | Reportes nuevos y casos aún sin cerrar |
 | **Repuestos bajo mínimo** | Riesgo de paro por falta de piezas |
+| **Activos fuera de servicio** | Equipos en mantenimiento o falla que requieren seguimiento |
+| **Garantías** | Coberturas que vencen en los próximos 30 días |
+| **Actividad reciente** | Últimas OT creadas o actualizadas para recuperar contexto |
 
-El dashboard de planta amplía con KPIs avanzados: disponibilidad, MTBF, MTTR y cumplimiento correctivo.
+Los KPI estratégicos de planta se consultan en **Análisis → Mantenimiento**.
 
 ---
 
 ## 11 · Indicadores (Mantenimiento) · 🟡
+
+La ruta `/analisis/mantenimiento` conserva el panel estratégico con filtros por período, sector, ubicación y activo. La ruta `/analisis` funciona como directorio de inteligencia para mantenimiento, costos, reportes, inventario comercial y Purchasing.
 
 | KPI | Descripción |
 |-----|-------------|
@@ -332,7 +343,26 @@ El dashboard de planta amplía con KPIs avanzados: disponibilidad, MTBF, MTTR y 
 | Cumplimiento preventivo | % OT preventivas en fecha |
 | MTBF / MTTR | Tiempo entre fallas · tiempo de reparación |
 | Repuestos bajo mínimo | Alertas de reposición |
-| Costo por activo / OT | Agregado desde jornadas y repuestos |
+| Costo por activo / OT | Mano de obra + repuestos + herramientas + servicio externo, cuando aplique |
+
+### Costos de la orden de trabajo
+
+Cada OT conserva un desglose económico común para el análisis de costos y la hoja de vida del activo:
+
+`Costo total OT = mano de obra + repuestos + herramientas + servicio externo`
+
+- **Mano de obra:** horas de las jornadas × tarifa histórica del técnico.
+- **Repuestos:** cantidad consumida × costo unitario fijado al registrar el consumo.
+- **Herramientas:** suma del uso, alquiler o desgaste informado en cada jornada de la OT.
+- **Servicio externo:** costo real del proveedor, únicamente cuando la ejecución es externa.
+
+En mantenimientos distintos al correctivo, el modal de jornada presenta el costo de herramientas, calcula la MDO con `duración × tarifa hora` y muestra el total de la jornada como `herramientas + MDO`. Ambos valores calculados son de solo lectura.
+
+Cuando una OT es ejecutada por un proveedor externo, la MDO de la jornada es editable para registrar el valor informado por el proveedor; el total continúa calculándose automáticamente. En la ejecución interna la MDO permanece derivada de la tarifa del usuario técnico.
+
+En las OT correctivas, el modal presenta herramientas, repuestos y MDO. El costo de repuestos se obtiene de las líneas asociadas a la intervención y el total de jornada se calcula como `herramientas + repuestos + MDO`.
+
+La tarifa del técnico y el costo unitario del repuesto se guardan como snapshots para que cambios posteriores en usuarios o inventario no modifiquen el costo histórico del activo.
 
 → Detalle en [MRG-08 · Reportes](08-reportes.md)
 

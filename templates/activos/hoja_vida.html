@@ -22,6 +22,14 @@
   <div class="col-6 col-xl-3"><div class="card h-100"><div class="card-body"><div class="text-muted small">Incidencias</div><div class="fs-3 fw-semibold">{{ incidentes|length }}</div></div></div></div>
 </div>
 
+<div class="row g-3 mb-3">
+  <div class="col-6 col-xl"><div class="card h-100 border-primary"><div class="card-body"><div class="text-muted small">Costo total de mantenimiento</div><div class="fs-5 fw-bold text-primary">{{ formato_moneda(costo_total_mantenimiento, empresa_actual.moneda) }}</div></div></div></div>
+  <div class="col-6 col-xl"><div class="card h-100"><div class="card-body"><div class="text-muted small">Mano de obra</div><div class="fs-5 fw-semibold">{{ formato_moneda(costo_mano_obra, empresa_actual.moneda) }}</div></div></div></div>
+  <div class="col-6 col-xl"><div class="card h-100"><div class="card-body"><div class="text-muted small">Repuestos</div><div class="fs-5 fw-semibold">{{ formato_moneda(costo_repuestos, empresa_actual.moneda) }}</div></div></div></div>
+  <div class="col-6 col-xl"><div class="card h-100"><div class="card-body"><div class="text-muted small">Herramientas</div><div class="fs-5 fw-semibold">{{ formato_moneda(costo_herramientas, empresa_actual.moneda) }}</div></div></div></div>
+  <div class="col-6 col-xl"><div class="card h-100"><div class="card-body"><div class="text-muted small">Servicios externos</div><div class="fs-5 fw-semibold">{{ formato_moneda(costo_servicios, empresa_actual.moneda) }}</div></div></div></div>
+</div>
+
 <div class="card mb-3">
   <div class="card-header fw-semibold"><i class="bi bi-info-circle me-1"></i>Información general</div>
   <div class="card-body">
@@ -63,7 +71,7 @@
 <div class="card mb-3">
   <div class="card-header fw-semibold"><i class="bi bi-tools me-1"></i>Historial de órdenes de trabajo</div>
   <div class="table-responsive"><table class="table table-sm table-hover align-middle mb-0">
-    <thead class="table-light"><tr><th>OT</th><th>Título de la OT</th><th>Fecha</th><th>Tipo</th><th>Estado</th><th>Técnico realizador</th><th>Tiempo</th><th>Repuestos</th><th>Informes</th><th></th></tr></thead>
+    <thead class="table-light"><tr><th>OT</th><th>Título de la OT</th><th>Fecha</th><th>Tipo</th><th>Estado</th><th>Técnico realizador</th><th>Tiempo</th><th>Repuestos</th><th class="text-end">Mano de obra</th><th class="text-end">Herramientas</th><th class="text-end">Costo repuestos</th><th class="text-end">Total OT</th><th>Informes</th><th></th></tr></thead>
     <tbody>{% for orden in ordenes %}<tr>
       <td class="font-monospace">{{ orden.numero or ('#' ~ orden.id) }}</td>
       <td>{{ orden.titulo or '—' }}</td>
@@ -74,15 +82,19 @@
         <span class="d-block">{{ orden.tecnicos_realizadores_label }}</span>
         {% if empresa_realizadora %}<small class="d-block text-muted">{{ empresa_realizadora }}</small>{% endif %}
       </td><td>{{ orden.tiempo_gastado_label }}</td><td>{{ orden.repuestos|length }}</td>
+      <td class="text-end">{{ formato_moneda(orden.costo_mano_obra_total, empresa_actual.moneda) }}</td>
+      <td class="text-end">{{ formato_moneda(orden.costo_herramientas_total, empresa_actual.moneda) }}</td>
+      <td class="text-end">{{ formato_moneda(orden.costo_repuestos_total, empresa_actual.moneda) }}</td>
+      <td class="text-end fw-semibold">{{ formato_moneda(orden.costo_total_mantenimiento, empresa_actual.moneda) }}</td>
       <td>{% for informe in orden.informes %}<div><a href="{{ url_for('main.ordenes_informe_download', id=orden.id, informe_id=informe.id) }}" title="{{ informe.descripcion or informe.nombre_original }}"><i class="bi bi-paperclip"></i> {{ informe.nombre_original }}</a></div>{% else %}<span class="text-muted">—</span>{% endfor %}</td>
       <td><a href="{{ url_for('main.ordenes_edit', id=orden.id) }}" class="btn btn-outline-secondary btn-sm">Ver</a></td>
     </tr>
     {% set avances = avances_por_ot.get(orden.id, []) %}
-    <tr class="table-light"><td colspan="10" class="p-2">
+    <tr class="table-light"><td colspan="14" class="p-2">
       <div class="fw-semibold small mb-2"><i class="bi bi-list-check me-1"></i>Avances de {{ orden.numero or ('OT #' ~ orden.id) }}</div>
       {% if avances %}
       <div class="table-responsive bg-white border rounded"><table class="table table-sm align-middle mb-0">
-        <thead><tr><th>#</th><th>Fecha y horario</th><th>Técnico / proveedor</th><th>Trabajo realizado</th><th>Paro</th><th>Recibido por</th><th>Repuestos instalados</th></tr></thead>
+        <thead><tr><th>#</th><th>Fecha y horario</th><th>Técnico / proveedor</th><th>Trabajo realizado</th><th>Paro</th><th>Recibido por</th><th>Repuestos instalados</th><th class="text-end">Herramientas</th></tr></thead>
         <tbody>{% for avance in avances %}{% set jornada = avance.jornada %}<tr>
           <td>{{ jornada.orden or loop.index }}</td>
           <td class="text-nowrap">{{ avance.fecha.strftime('%d/%m/%Y') if avance.fecha else '—' }}<br><small class="text-muted">{{ avance.hora_inicio or '—' }} - {{ avance.hora_fin or '—' }} · {{ avance.duracion }}</small></td>
@@ -95,11 +107,12 @@
           <td><span class="badge {% if jornada.requirio_paro %}text-bg-danger{% else %}text-bg-success{% endif %}">{{ 'Sí' if jornada.requirio_paro else 'No' }}</span></td>
           <td>{{ jornada.recibido_por or '—' }}</td>
           <td>{% for linea in avance.repuestos %}<div>{{ linea.spare_part.nombre if linea.spare_part else 'Repuesto' }} × {{ linea.cantidad }}</div>{% else %}<span class="text-muted">—</span>{% endfor %}</td>
+          <td class="text-end">{{ formato_moneda(jornada.costo_herramientas_total, empresa_actual.moneda) }}</td>
         </tr>{% endfor %}</tbody>
       </table></div>
       {% else %}<div class="text-muted small">Esta OT todavía no tiene avances registrados.</div>{% endif %}
     </td></tr>
-    {% else %}<tr><td colspan="10" class="text-center text-muted py-3">Sin órdenes de trabajo registradas.</td></tr>{% endfor %}</tbody>
+    {% else %}<tr><td colspan="14" class="text-center text-muted py-3">Sin órdenes de trabajo registradas.</td></tr>{% endfor %}</tbody>
   </table></div>
 </div>
 

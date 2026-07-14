@@ -10,7 +10,21 @@ La suite documental mantiene un ciclo independiente en
 
 ### Added
 
-- Espacio reservado para cambios aún no publicados.
+- Centro de Operaciones en Inicio con OT abiertas y vencidas, preventivos del día, incidencias nuevas, inventario bajo mínimo, activos fuera de servicio, garantías y actividad reciente.
+- Módulo `Análisis` como acceso común a indicadores de mantenimiento, costos, reportes, inventario comercial y Purchasing.
+- Tarifa por hora en usuarios para calcular mano de obra de Mantenimiento.
+- Snapshot de tarifa por jornada para conservar costos históricos de las OT.
+- Mano de obra en indicadores, activos, técnicos y detalle del análisis de costos.
+- Costo de herramientas por jornada y desglose económico acumulado en la OT, análisis de costos y hoja de vida del activo.
+- Cálculo visible de MDO y total de jornada en el modal de OT no correctivas.
+- MDO editable por jornada cuando el mantenimiento lo realiza un proveedor externo.
+- Resumen correctivo por jornada con herramientas, repuestos, MDO y total calculado.
+- Snapshot del costo unitario de cada repuesto consumido para preservar el histórico de mantenimiento.
+
+### Changed
+
+- El antiguo Dashboard estratégico de Mantenimiento se mueve a `Análisis → Mantenimiento`; Inicio queda enfocado exclusivamente en decisiones operativas del día.
+- La navegación principal se organiza en los niveles Operación, Inteligencia y Administración.
 
 ## [1.0.1] - 2026-07-14
 

@@ -431,6 +431,7 @@ class User(UserMixin, db.Model):
     telefono = db.Column(db.String(40), default="")
     area = db.Column(db.String(120), default="")
     cargo = db.Column(db.String(120), default="")
+    tarifa_hora = db.Column(db.Numeric(14, 2), default=0, nullable=False)
     sede_id = db.Column(db.Integer, db.ForeignKey("sedes.id"), nullable=True, index=True)
     rol = db.Column(db.String(32), default=UserRole.ADMIN.value)
     activo = db.Column(db.Boolean, default=True)
@@ -1166,6 +1167,7 @@ class WorkOrder(db.Model):
     numero_cotizacion = db.Column(db.String(64), default="")
     costo_estimado = db.Column(db.Float, nullable=True)
     costo_real = db.Column(db.Float, nullable=True)
+    costo_herramientas = db.Column(db.Numeric(14, 2), default=0, nullable=False)
     proveedor_incluye_insumos = db.Column(db.Boolean, default=False)
     fecha_limite = db.Column(db.Date, nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
@@ -1243,6 +1245,38 @@ class WorkOrder(db.Model):
         key = (self.ejecucion_tipo or WorkOrderEjecucionTipo.INTERNO.value).strip().lower()
         return WORK_ORDER_EJECUCION_LABELS.get(key, key)
 
+    @property
+    def costo_repuestos_total(self) -> float:
+        return round(sum(linea.costo_total_linea for linea in self.repuestos), 2)
+
+    @property
+    def costo_mano_obra_total(self) -> float:
+        return round(sum(jornada.costo_mano_obra for jornada in self.jornadas), 2)
+
+    @property
+    def costo_herramientas_total(self) -> float:
+        # El campo de la OT se conserva para valores legacy registrados antes
+        # de que el costo se trasladara al detalle de cada jornada.
+        return round(
+            float(self.costo_herramientas or 0)
+            + sum(jornada.costo_herramientas_total for jornada in self.jornadas),
+            2,
+        )
+
+    @property
+    def costo_servicio_externo(self) -> float:
+        return round(float(self.costo_real or 0), 2) if self.es_ejecucion_externa else 0.0
+
+    @property
+    def costo_total_mantenimiento(self) -> float:
+        return round(
+            self.costo_repuestos_total
+            + self.costo_herramientas_total
+            + self.costo_mano_obra_total
+            + self.costo_servicio_externo,
+            2,
+        )
+
 
 class WorkOrderJornada(db.Model):
     """Sesión de trabajo en una OT (ej. 3:30–4:30 y luego 17:00–18:30 el mismo día)."""
@@ -1257,6 +1291,9 @@ class WorkOrderJornada(db.Model):
     fecha_inicio = db.Column(db.DateTime, nullable=False)
     fecha_fin = db.Column(db.DateTime, nullable=False)
     technician_id = db.Column(db.Integer, db.ForeignKey("technicians.id"), nullable=True)
+    tarifa_hora_aplicada = db.Column(db.Numeric(14, 2), nullable=True)
+    costo_mano_obra_manual = db.Column(db.Numeric(14, 2), nullable=True)
+    costo_herramientas = db.Column(db.Numeric(14, 2), default=0, nullable=False)
     tecnico_nombre = db.Column(db.String(200), default="")
     recibido_por = db.Column(db.String(200), default="")
     requirio_paro = db.Column(db.Boolean, default=False, nullable=False)
@@ -1277,6 +1314,29 @@ class WorkOrderJornada(db.Model):
             return self.technician.nombre
         return self.tecnico_nombre or "—"
 
+    @property
+    def tarifa_hora_efectiva(self) -> float:
+        """Tarifa histórica; para datos legacy usa temporalmente la tarifa actual."""
+        if self.tarifa_hora_aplicada is not None:
+            return float(self.tarifa_hora_aplicada)
+        if self.technician and self.technician.user:
+            return float(self.technician.user.tarifa_hora or 0)
+        return 0.0
+
+    @property
+    def costo_mano_obra(self) -> float:
+        if self.costo_mano_obra_manual is not None:
+            return round(float(self.costo_mano_obra_manual), 2)
+        return round((self.duracion_minutos / 60) * self.tarifa_hora_efectiva, 2)
+
+    @property
+    def costo_herramientas_total(self) -> float:
+        return round(float(self.costo_herramientas or 0), 2)
+
+    @property
+    def costo_total_jornada(self) -> float:
+        return round(self.costo_mano_obra + self.costo_herramientas_total, 2)
+
 
 class WorkOrderRepuesto(db.Model):
     """Repuesto consumido en una OT correctiva."""
@@ -1289,6 +1349,7 @@ class WorkOrderRepuesto(db.Model):
     )
     spare_part_id = db.Column(db.Integer, db.ForeignKey("spare_parts.id"), nullable=False)
     cantidad = db.Column(db.Integer, nullable=False, default=1)
+    costo_unitario_aplicado = db.Column(db.Numeric(14, 2), nullable=True)
     notas = db.Column(db.String(255), default="")
     jornada_fecha = db.Column(db.Date, nullable=True)
     jornada_hora_inicio = db.Column(db.String(5), default="")
@@ -1300,6 +1361,8 @@ class WorkOrderRepuesto(db.Model):
 
     @property
     def costo_unitario_linea(self) -> float:
+        if self.costo_unitario_aplicado is not None:
+            return float(self.costo_unitario_aplicado)
         if self.spare_part:
             return float(self.spare_part.costo_unitario or 0)
         return 0.0

@@ -45,6 +45,7 @@
           <th>Sede</th>
           <th>Teléfono</th>
           <th>Correo</th>
+          <th class="text-end">Tarifa hora</th>
           <th>Estado</th>
           <th></th>
         </tr>
@@ -63,13 +64,14 @@
           <td>{{ u.sede.nombre if u.sede else '—' }}</td>
           <td>{{ u.telefono or '—' }}</td>
           <td class="small">{{ u.email or '—' }}</td>
+          <td class="text-end text-nowrap">{{ formato_moneda(u.tarifa_hora, empresa_actual.moneda) }}</td>
           <td>{% if u.activo %}<span class="badge text-bg-success">Activo</span>{% else %}<span class="badge text-bg-secondary">Inactivo</span>{% endif %}</td>
           <td class="text-end">
             <a href="{{ url_for('main.equipo_edit', id=u.id) }}" class="btn btn-sm btn-outline-secondary">Editar</a>
           </td>
         </tr>
         {% else %}
-        <tr><td colspan="9" class="text-center text-muted py-4">Aún no hay usuarios. Invita al primero con el botón de arriba.</td></tr>
+        <tr><td colspan="10" class="text-center text-muted py-4">Aún no hay usuarios. Invita al primero con el botón de arriba.</td></tr>
         {% endfor %}
       </tbody>
     </table>

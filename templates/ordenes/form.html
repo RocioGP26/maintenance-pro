@@ -309,6 +309,7 @@
                       <th>Técnico realizador</th>
                       <th>Recibido por</th>
                       <th>Paro</th>
+                      <th class="text-end">Herramientas</th>
                       <th class="col-desc">Descripción</th>
                       <th style="width: 5.5rem;"></th>
                     </tr>
@@ -359,6 +360,33 @@
                   </tbody>
                 </table>
               </div>
+            </div>
+
+            <div class="col-12">
+              <h6 class="fw-semibold mb-2"><i class="bi bi-cash-stack me-1"></i> Costos de la OT</h6>
+              <div class="row g-2">
+                <div class="col-6 col-md">
+                  <div class="text-muted small">Herramientas</div>
+                  <div class="fw-semibold">{{ formato_moneda(order.costo_herramientas_total, empresa_actual.moneda) }}</div>
+                </div>
+                <div class="col-6 col-md">
+                  <div class="text-muted small">Repuestos</div>
+                  <div class="fw-semibold">{{ formato_moneda(order.costo_repuestos_total, empresa_actual.moneda) }}</div>
+                </div>
+                <div class="col-6 col-md">
+                  <div class="text-muted small">Mano de obra</div>
+                  <div class="fw-semibold">{{ formato_moneda(order.costo_mano_obra_total, empresa_actual.moneda) }}</div>
+                </div>
+                <div class="col-6 col-md">
+                  <div class="text-muted small">Servicio externo</div>
+                  <div class="fw-semibold">{{ formato_moneda(order.costo_servicio_externo, empresa_actual.moneda) }}</div>
+                </div>
+                <div class="col-6 col-md">
+                  <div class="text-muted small">Total OT</div>
+                  <div class="fw-bold text-primary">{{ formato_moneda(order.costo_total_mantenimiento, empresa_actual.moneda) }}</div>
+                </div>
+              </div>
+              <div class="form-text mt-2">Los costos de herramientas, repuestos y mano de obra se acumulan desde las jornadas registradas.</div>
             </div>
 
             <div class="col-md-5">
@@ -527,6 +555,43 @@
             <textarea class="form-control" id="jornadaDescripcion" rows="3"
                       placeholder="Ej. Trabajo de 8:00 a 9:30, limpieza y revisión..."></textarea>
           </div>
+          <div class="col-12" id="resumenCostosJornada">
+            <div class="row g-2">
+              <div class="col-12 col-sm-6 col-md-3">
+                <label class="form-label fw-semibold" for="jornadaCostoHerramientas">Costo herramientas</label>
+                <div class="input-group">
+                  <span class="input-group-text">{{ simbolo_moneda_ot }}</span>
+                  <input type="number" class="form-control" id="jornadaCostoHerramientas"
+                         min="0" step="0.01" value="0" inputmode="decimal">
+                </div>
+              </div>
+              <div class="col-12 col-sm-6 col-md-3 {% if order.tipo != 'correctivo' %}d-none{% endif %}" id="grupoCostoRepuestosJornada">
+                <label class="form-label fw-semibold" for="jornadaCostoRepuestos">Costo repuestos</label>
+                <div class="input-group">
+                  <span class="input-group-text">{{ simbolo_moneda_ot }}</span>
+                  <input type="text" class="form-control bg-light" id="jornadaCostoRepuestos" value="0" readonly>
+                </div>
+              </div>
+              <div class="col-12 col-sm-6 col-md-3">
+                <label class="form-label fw-semibold" for="jornadaCostoMdo">Costo MDO</label>
+                <div class="input-group">
+                  <span class="input-group-text">{{ simbolo_moneda_ot }}</span>
+                  <input type="text" class="form-control bg-light" id="jornadaCostoMdo" value="0" readonly>
+                </div>
+              </div>
+              <div class="col-12 col-sm-6 col-md-3">
+                <label class="form-label fw-semibold" for="jornadaCostoTotal">Total jornada</label>
+                <div class="input-group">
+                  <span class="input-group-text">{{ simbolo_moneda_ot }}</span>
+                  <input type="text" class="form-control bg-light fw-bold" id="jornadaCostoTotal" value="0" readonly>
+                </div>
+              </div>
+              <div class="col-12">
+                <div class="form-text">Herramientas: uso, alquiler o desgaste durante esta jornada.</div>
+                <div class="form-text" id="jornadaCostoMdoDetalle">Selecciona un técnico con tarifa para calcular la mano de obra.</div>
+              </div>
+            </div>
+          </div>
           <div class="col-12 border-top pt-3">
             <label class="form-label fw-semibold d-block mb-2">¿Cómo queda la OT tras esta jornada?</label>
             <div class="form-check">
@@ -563,7 +628,11 @@
     document.getElementById('ordenForm').dataset.soloLectura === '1';
   var technicians = {{ technicians_data|tojson }};
   var techById = {};
-  technicians.forEach(function (t) { techById[String(t.id)] = t.nombre; });
+  var tarifaByTechId = {};
+  technicians.forEach(function (t) {
+    techById[String(t.id)] = t.nombre;
+    tarifaByTechId[String(t.id)] = parseFloat(t.tarifa_hora) || 0;
+  });
 
   var ESTADO_META = {
     programada: { label: 'Programada', cls: 'badge-wo-estado badge-wo-programada' },
@@ -642,6 +711,102 @@
     return m + ' min';
   }
 
+  function formatoCostoJornada(valor) {
+    return new Intl.NumberFormat('es-CO', {
+      style: 'currency',
+      currency: {{ (empresa_actual.moneda or 'COP')|tojson }},
+      maximumFractionDigits: 2
+    }).format(parseFloat(valor) || 0);
+  }
+
+  function formatoNumeroCosto(valor) {
+    return new Intl.NumberFormat('es-CO', {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 2
+    }).format(parseFloat(valor) || 0);
+  }
+
+  function parsearNumeroCosto(valor) {
+    var texto = String(valor || '0').trim().replace(/\s/g, '');
+    if (!texto) return 0;
+    if (texto.indexOf(',') >= 0) {
+      return parseFloat(texto.replace(/\./g, '').replace(',', '.'));
+    }
+    var partes = texto.split('.');
+    if (partes.length === 2 && partes[1].length > 0 && partes[1].length <= 2) {
+      return parseFloat(texto);
+    }
+    return parseFloat(texto.replace(/\./g, ''));
+  }
+
+  function mdoManualHabilitado() {
+    var ejecucion = document.querySelector('input[name="ejecucion_tipo"]:checked')?.value || '';
+    return ejecucion === 'externo';
+  }
+
+  function costoRepuestosJornadaActual() {
+    if (typeof repuestos === 'undefined') return 0;
+    if (typeof syncRepFromDom === 'function') syncRepFromDom();
+    var fecha = document.getElementById('jornadaFecha')?.value || '';
+    var inicio = document.getElementById('jornadaHoraInicio')?.value || '';
+    var fin = document.getElementById('jornadaHoraFin')?.value || '';
+    return repuestos.reduce(function (suma, repuesto) {
+      var sinJornada = !repuesto.jornada_fecha;
+      var corresponde = repuesto.jornada_fecha === fecha
+        && (!repuesto.jornada_hora_inicio || repuesto.jornada_hora_inicio === inicio)
+        && (!repuesto.jornada_hora_fin || repuesto.jornada_hora_fin === fin);
+      if (!sinJornada && !corresponde) return suma;
+      var unitario = repuesto.costo_unitario != null
+        ? (parseFloat(repuesto.costo_unitario) || 0)
+        : (typeof costoUnitarioRep === 'function' ? costoUnitarioRep(repuesto.spare_part_id) : 0);
+      return suma + unitario * (parseInt(repuesto.cantidad, 10) || 0);
+    }, 0);
+  }
+
+  function actualizarCostosJornada() {
+    var tipo = document.getElementById('selectTipo');
+    var esCorrectivo = tipo && tipo.value === 'correctivo';
+    var grupoRepuestos = document.getElementById('grupoCostoRepuestosJornada');
+    if (grupoRepuestos) grupoRepuestos.classList.toggle('d-none', !esCorrectivo);
+
+    var tech = document.getElementById('jornadaTecnico')?.value || '';
+    var jornadaEditada = editIndex >= 0 ? jornadas[editIndex] : null;
+    var mismaAsignacion = jornadaEditada && String(jornadaEditada.technician_id || '') === String(tech);
+    var tarifa = mismaAsignacion && jornadaEditada.tarifa_hora_aplicada != null
+      ? (parseFloat(jornadaEditada.tarifa_hora_aplicada) || 0)
+      : (tarifaByTechId[String(tech)] || 0);
+    var minutos = minutosJornada({
+      fecha: document.getElementById('jornadaFecha')?.value || '',
+      hora_inicio: document.getElementById('jornadaHoraInicio')?.value || '',
+      hora_fin: document.getElementById('jornadaHoraFin')?.value || ''
+    });
+    var herramientas = parseFloat(document.getElementById('jornadaCostoHerramientas')?.value || '0') || 0;
+    var costoRepuestos = esCorrectivo ? costoRepuestosJornadaActual() : 0;
+    var costoMdo = Math.round((minutos / 60) * tarifa * 100) / 100;
+    var total = Math.round((costoMdo + herramientas + costoRepuestos) * 100) / 100;
+    var inputRepuestos = document.getElementById('jornadaCostoRepuestos');
+    var inputMdo = document.getElementById('jornadaCostoMdo');
+    var inputTotal = document.getElementById('jornadaCostoTotal');
+    var detalle = document.getElementById('jornadaCostoMdoDetalle');
+    var permiteMdoManual = mdoManualHabilitado();
+    if (inputMdo) {
+      inputMdo.readOnly = !permiteMdoManual;
+      inputMdo.classList.toggle('bg-light', !permiteMdoManual);
+      if (permiteMdoManual) costoMdo = parsearNumeroCosto(inputMdo.value) || 0;
+      else inputMdo.value = formatoNumeroCosto(costoMdo);
+    }
+    if (inputRepuestos) inputRepuestos.value = formatoNumeroCosto(costoRepuestos);
+    total = Math.round((costoMdo + herramientas + costoRepuestos) * 100) / 100;
+    if (inputTotal) inputTotal.value = formatoNumeroCosto(total);
+    if (detalle) {
+      detalle.textContent = permiteMdoManual
+        ? 'Ingresa el costo de mano de obra informado por el proveedor externo.'
+        : (minutos && tarifa
+          ? formatear(minutos) + ' × ' + formatoCostoJornada(tarifa) + '/hora'
+          : 'Selecciona un técnico con tarifa para calcular la mano de obra.');
+    }
+  }
+
   function tecnicoLabel(j) {
     if (j.technician_id && j.technician_id !== 'otro') {
       return techById[String(j.technician_id)] || 'Técnico';
@@ -685,6 +850,7 @@
         '<td class="col-tecnico">' + escHtml(tecnicoLabel(j)) + '</td>' +
         '<td>' + escHtml(j.recibido_por || '—') + '</td>' +
         '<td>' + (j.requirio_paro ? 'Sí' : 'No') + '</td>' +
+        '<td class="text-end text-nowrap">' + escHtml(formatoCostoJornada(j.costo_herramientas)) + '</td>' +
         '<td class="col-desc" title="' + escHtml(j.descripcion || '') + '">' + escHtml(j.descripcion || '—') + '</td>' +
         '<td class="text-end text-nowrap">' +
           (soloLectura ? '—' : (
@@ -781,12 +947,15 @@
     document.getElementById('jornadaFecha').value = hoyISO();
     document.getElementById('jornadaHoraInicio').value = '';
     document.getElementById('jornadaHoraFin').value = '';
+    document.getElementById('jornadaCostoHerramientas').value = '0';
+    document.getElementById('jornadaCostoMdo').value = '0';
     document.getElementById('jornadaTecnico').value = '';
     document.getElementById('jornadaTecnicoNombre').value = '';
     document.getElementById('jornadaRecibidoPor').value = '';
     document.getElementById('jornadaParoNo').checked = true;
     document.getElementById('jornadaDescripcion').value = '';
     toggleTecnicoNombre();
+    actualizarCostosJornada();
   }
 
   function abrirModal(idx) {
@@ -798,12 +967,17 @@
       document.getElementById('jornadaFecha').value = j.fecha || '';
       document.getElementById('jornadaHoraInicio').value = j.hora_inicio || '';
       document.getElementById('jornadaHoraFin').value = j.hora_fin || '';
+      document.getElementById('jornadaCostoHerramientas').value = parseFloat(j.costo_herramientas) || 0;
+      document.getElementById('jornadaCostoMdo').value = j.costo_mano_obra_manual != null
+        ? formatoNumeroCosto(j.costo_mano_obra_manual)
+        : '0';
       document.getElementById('jornadaTecnico').value = j.technician_id ? String(j.technician_id) : 'otro';
       document.getElementById('jornadaTecnicoNombre').value = j.tecnico_nombre || '';
       document.getElementById('jornadaRecibidoPor').value = j.recibido_por || '';
       document.getElementById(j.requirio_paro ? 'jornadaParoSi' : 'jornadaParoNo').checked = true;
       document.getElementById('jornadaDescripcion').value = j.descripcion || '';
       toggleTecnicoNombre();
+      actualizarCostosJornada();
     }
     if (modal) modal.show();
   }
@@ -823,15 +997,35 @@
     });
   }
 
-  document.getElementById('jornadaTecnico').addEventListener('change', toggleTecnicoNombre);
+  document.getElementById('jornadaTecnico').addEventListener('change', function () {
+    toggleTecnicoNombre();
+    actualizarCostosJornada();
+  });
+  ['jornadaFecha', 'jornadaHoraInicio', 'jornadaHoraFin', 'jornadaCostoHerramientas', 'jornadaCostoMdo'].forEach(function (id) {
+    var input = document.getElementById(id);
+    if (input) input.addEventListener('input', actualizarCostosJornada);
+  });
+  var tipoCostoJornada = document.getElementById('selectTipo');
+  if (tipoCostoJornada) tipoCostoJornada.addEventListener('change', function () {
+    if (mdoManualHabilitado() && editIndex < 0) document.getElementById('jornadaCostoMdo').value = '0';
+    actualizarCostosJornada();
+  });
   document.querySelectorAll('input[name="ejecucion_tipo"]').forEach(function (radio) {
-    radio.addEventListener('change', toggleTecnicoNombre);
+    radio.addEventListener('change', function () {
+      toggleTecnicoNombre();
+      if (mdoManualHabilitado() && editIndex < 0) document.getElementById('jornadaCostoMdo').value = '0';
+      actualizarCostosJornada();
+    });
   });
 
   if (!soloLectura) document.getElementById('btnGuardarJornada').addEventListener('click', function () {
     var fecha = document.getElementById('jornadaFecha').value;
     var horaIni = document.getElementById('jornadaHoraInicio').value;
     var horaFin = document.getElementById('jornadaHoraFin').value;
+    var costoHerramientas = parseFloat(document.getElementById('jornadaCostoHerramientas').value || '0');
+    var costoMdoManual = mdoManualHabilitado()
+      ? parsearNumeroCosto(document.getElementById('jornadaCostoMdo').value)
+      : null;
     var tech = document.getElementById('jornadaTecnico').value;
     var nombre = document.getElementById('jornadaTecnicoNombre').value.trim();
     var ejecucionExterna = document.querySelector('input[name="ejecucion_tipo"]:checked')?.value === 'externo';
@@ -845,6 +1039,14 @@
     }
     if (horaFin <= horaIni) {
       alert('La hora fin debe ser posterior a la hora inicio.');
+      return;
+    }
+    if (!Number.isFinite(costoHerramientas) || costoHerramientas < 0) {
+      alert('Ingresa un costo de herramientas válido, igual o mayor a cero.');
+      return;
+    }
+    if (costoMdoManual != null && (!Number.isFinite(costoMdoManual) || costoMdoManual < 0)) {
+      alert('Ingresa un costo MDO válido, igual o mayor a cero.');
       return;
     }
     if (!ejecucionExterna && !tech) {
@@ -866,6 +1068,9 @@
       hora_fin: horaFin,
       technician_id: ejecucionExterna ? 'otro' : tech,
       tecnico_nombre: ejecucionExterna ? nombre : '',
+      tarifa_hora_aplicada: ejecucionExterna ? 0 : (tarifaByTechId[String(tech)] || 0),
+      costo_mano_obra_manual: costoMdoManual,
+      costo_herramientas: Math.round(costoHerramientas * 100) / 100,
       recibido_por: recibidoPor,
       requirio_paro: requirioParo,
       descripcion: desc
@@ -1087,6 +1292,7 @@
         repCostoTotalEl.classList.add('d-none');
       }
     }
+    if (typeof actualizarCostosJornada === 'function') actualizarCostosJornada();
   }
 
   function syncRepHidden() {
@@ -1103,10 +1309,17 @@
       var notas = tr.querySelector('.rep-notas');
       if (!sel || !sel.value) return;
       var anterior = anteriores[idx] || {};
+      var cantidad = parseInt(qty && qty.value, 10) || 1;
+      var costoUnitario = String(anterior.spare_part_id || '') === String(sel.value)
+        && anterior.cantidad === cantidad && anterior.costo_unitario != null
+        ? (parseFloat(anterior.costo_unitario) || 0)
+        : costoUnitarioRep(sel.value);
       repuestos.push({
         spare_part_id: parseInt(sel.value, 10),
-        cantidad: parseInt(qty && qty.value, 10) || 1,
+        cantidad: cantidad,
         notas: notas ? notas.value.trim() : '',
+        costo_unitario: costoUnitario,
+        costo_total: costoUnitario * cantidad,
         jornada_fecha: anterior.jornada_fecha || '',
         jornada_hora_inicio: anterior.jornada_hora_inicio || '',
         jornada_hora_fin: anterior.jornada_hora_fin || '',
