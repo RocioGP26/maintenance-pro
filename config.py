@@ -5,6 +5,8 @@ from __future__ import annotations
 import os
 from pathlib import Path
 
+from app.version import __version__
+
 BASE_DIR = Path(__file__).resolve().parent
 
 
@@ -55,6 +57,7 @@ class Config:
     SESSION_COOKIE_HTTPONLY = True
     SESSION_COOKIE_SAMESITE = "Lax"
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+    APP_VERSION = __version__
 
     # Logging estructurado
     LOG_LEVEL = os.environ.get("LOG_LEVEL", "INFO").upper()

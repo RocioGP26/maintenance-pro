@@ -9,6 +9,7 @@ from flask import current_app
 from flask.cli import with_appcontext
 
 from app.startup import run_legacy_schema_migrations, run_maintenance_tasks
+from app.version import __version__, get_build_commit
 
 
 @click.group()
@@ -45,6 +46,14 @@ def backup_db():
     click.echo(f"Backup guardado en: {path}")
 
 
+@click.command("version")
+def version_command():
+    """Muestra la versión SemVer y el build Git de Maintix."""
+    click.echo(f"Maintix v{__version__}")
+    click.echo(f"Build: {get_build_commit() or 'local'}")
+
+
 def register_cli(app) -> None:
     app.cli.add_command(maintenance)
     app.cli.add_command(backup_db)
+    app.cli.add_command(version_command)

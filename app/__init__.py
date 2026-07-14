@@ -195,6 +195,7 @@ def create_app(config_name: str | None = None):
         multimoneda = empresa_actual.multimoneda if empresa_actual else False
         return {
             "app_name": APP_NAME,
+            "app_version": app.config["APP_VERSION"],
             "app_tagline": APP_TAGLINE,
             "app_logo_path": APP_LOGO_PATH,
             "empresa_actual": empresa_actual,

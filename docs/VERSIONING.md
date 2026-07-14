@@ -1,5 +1,9 @@
 # Política de versionado · Maintix Documentation Suite
 
+> Esta política cubre la documentación. Para la aplicación Flask, consultar
+> [APP_VERSIONING.md](APP_VERSIONING.md); su fuente canónica es
+> `app/version.py` y sus tags usan `vX.Y.Z`.
+
 ## Documentación como producto independiente
 
 La documentación tiene **releases propios**, distintos del software de aplicación.

@@ -8,6 +8,8 @@ import sys
 from datetime import datetime, timezone
 from typing import Any
 
+from app.version import __version__, get_build_commit
+
 
 class JsonFormatter(logging.Formatter):
     """Emite cada registro como una línea JSON (ideal para producción / agregadores)."""
@@ -21,7 +23,16 @@ class JsonFormatter(logging.Formatter):
         }
         if record.exc_info:
             payload["exception"] = self.formatException(record.exc_info)
-        for key in ("request_id", "empresa_id", "user_id", "path", "method", "status_code"):
+        for key in (
+            "request_id",
+            "empresa_id",
+            "user_id",
+            "path",
+            "method",
+            "status_code",
+            "app_version",
+            "build_commit",
+        ):
             if hasattr(record, key):
                 payload[key] = getattr(record, key)
         return json.dumps(payload, ensure_ascii=False)
@@ -51,4 +62,12 @@ def setup_logging(app) -> None:
     for noisy in ("werkzeug", "sqlalchemy.engine"):
         logging.getLogger(noisy).setLevel(logging.WARNING)
 
-    app.logger.info("Logging configurado (level=%s, json=%s)", level_name, use_json)
+    build_commit = get_build_commit()
+    app.logger.info(
+        "Maintix v%s iniciando (build=%s, level=%s, json=%s)",
+        __version__,
+        build_commit or "local",
+        level_name,
+        use_json,
+        extra={"app_version": __version__, "build_commit": build_commit or "local"},
+    )
