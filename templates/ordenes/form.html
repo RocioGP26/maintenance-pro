@@ -528,15 +528,6 @@
             <label class="form-label fw-semibold" for="jornadaHoraFin">Hora fin</label>
             <input type="time" class="form-control" id="jornadaHoraFin" required>
           </div>
-          <div class="col-12 col-md-6">
-            <label class="form-label fw-semibold" for="jornadaCostoHerramientas">Costo de herramientas</label>
-            <div class="input-group">
-              <span class="input-group-text">{{ simbolo_moneda_ot }}</span>
-              <input type="number" class="form-control" id="jornadaCostoHerramientas"
-                     min="0" step="0.01" value="0" inputmode="decimal">
-            </div>
-            <div class="form-text">Uso, alquiler o desgaste de herramientas durante esta jornada.</div>
-          </div>
           <div class="col-12 col-md-6" id="wrapJornadaTecnico">
             <label class="form-label fw-semibold" for="jornadaTecnico">Técnico realizador (esta jornada)</label>
             <select class="form-select" id="jornadaTecnico">
@@ -563,6 +554,15 @@
             <label class="form-label fw-semibold" for="jornadaDescripcion">Descripción del avance</label>
             <textarea class="form-control" id="jornadaDescripcion" rows="3"
                       placeholder="Ej. Trabajo de 8:00 a 9:30, limpieza y revisión..."></textarea>
+          </div>
+          <div class="col-12 col-md-6">
+            <label class="form-label fw-semibold" for="jornadaCostoHerramientas">Costo de herramientas</label>
+            <div class="input-group">
+              <span class="input-group-text">{{ simbolo_moneda_ot }}</span>
+              <input type="number" class="form-control" id="jornadaCostoHerramientas"
+                     min="0" step="0.01" value="0" inputmode="decimal">
+            </div>
+            <div class="form-text">Uso, alquiler o desgaste de herramientas durante esta jornada.</div>
           </div>
           <div class="col-12 border-top pt-3">
             <label class="form-label fw-semibold d-block mb-2">¿Cómo queda la OT tras esta jornada?</label>
