@@ -154,7 +154,8 @@ class TestEmailVerification(unittest.TestCase):
         self.assertEqual(response.status_code, 302)
         self.assertTrue(response.location.endswith("/dashboard?welcome=1"))
         with client.session_transaction() as session:
-            self.assertEqual(session["_user_id"], str(self.user.id))
+            self.assertEqual(session["_user_id"], self.user.get_id())
+            self.assertIn("managed_session_key", session)
             self.assertNotIn("pending_email_verification_user_id", session)
         self.assertIsNotNone(self.empresa.email_verified_at)
         self.assertEqual(len(self.app.extensions["mail_outbox"]), 2)

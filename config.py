@@ -4,6 +4,13 @@ from __future__ import annotations
 
 import os
 from pathlib import Path
+from datetime import timedelta
+
+from dotenv import load_dotenv
+
+# Debe ejecutarse antes de construir las clases Config: sus atributos leen os.environ
+# durante la importación del módulo.
+load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent
 
@@ -61,6 +68,11 @@ class Config:
     MAX_CONTENT_LENGTH = 5 * 1024 * 1024
     SESSION_COOKIE_HTTPONLY = True
     SESSION_COOKIE_SAMESITE = "Lax"
+    REMEMBER_COOKIE_HTTPONLY = True
+    REMEMBER_COOKIE_SAMESITE = "Lax"
+    REMEMBER_COOKIE_DURATION = timedelta(days=14)
+    PERMANENT_SESSION_LIFETIME = timedelta(days=14)
+    SESSION_REFRESH_EACH_REQUEST = True
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
     # Correo transaccional. Gmail SMTP funciona con una contraseña de aplicación.
@@ -114,6 +126,7 @@ class DevelopmentConfig(Config):
 class ProductionConfig(Config):
     DEBUG = False
     SESSION_COOKIE_SECURE = True
+    REMEMBER_COOKIE_SECURE = True
     LOG_JSON = True
     SQLALCHEMY_DATABASE_URI = normalize_database_url(
         os.environ.get("DATABASE_URL", _default_sqlite_uri())

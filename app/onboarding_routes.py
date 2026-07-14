@@ -318,6 +318,9 @@ def verify_email():
         return redirect(url_for("main.login"))
     if user.empresa.email_verificado:
         login_user(user)
+        from app.session_management import start_managed_session
+
+        start_managed_session(user)
         session.pop("pending_email_verification_user_id", None)
         return _verified_destination(user)
 
@@ -325,6 +328,9 @@ def verify_email():
         status = verify_code(user, request.form.get("code", ""))
         if status == VerificationStatus.VERIFIED:
             login_user(user)
+            from app.session_management import start_managed_session
+
+            start_managed_session(user)
             session.pop("pending_email_verification_user_id", None)
             session["show_welcome"] = True
             session["show_tour"] = True

@@ -1,4 +1,3 @@
-from dotenv import load_dotenv
 from flask import Flask
 from flask_login import LoginManager, current_user
 from flask_migrate import Migrate
@@ -24,7 +23,6 @@ def _is_production_env() -> bool:
 
 
 def create_app(config_name: str | None = None):
-    load_dotenv()
     app = Flask(
         __name__,
         template_folder="../templates",
@@ -71,6 +69,10 @@ def create_app(config_name: str | None = None):
     login_manager.init_app(app)
     csrf.init_app(app)
     limiter.init_app(app)
+
+    from app.session_management import register_session_management
+
+    register_session_management(app)
 
     @app.after_request
     def _security_headers(response):
@@ -129,7 +131,7 @@ def create_app(config_name: str | None = None):
             return None
         if request.method in ("GET", "HEAD", "OPTIONS"):
             return None
-        if request.endpoint in ("main.logout", "main.mi_perfil"):
+        if request.endpoint in ("main.logout", "main.mi_perfil", "main.session_status"):
             return None
         flash("Tu rol de usuario solo permite consultar información.", "warning")
         return redirect(request.referrer or url_for("main.dashboard"))
@@ -186,6 +188,11 @@ def create_app(config_name: str | None = None):
         mods = modulos_activos_de(empresa_actual)
         monedas_act = empresa_actual.monedas_activas if empresa_actual else ["COP"]
         multimoneda = empresa_actual.multimoneda if empresa_actual else False
+        session_security = None
+        if current_user.is_authenticated:
+            from app.session_management import policy_for
+
+            session_security = policy_for(current_user)
         return {
             "app_name": APP_NAME,
             "app_tagline": APP_TAGLINE,
@@ -206,6 +213,7 @@ def create_app(config_name: str | None = None):
             "mod_inventario": MODULO_INVENTARIO in mods,
             "monedas_activas": monedas_act,
             "multimoneda": multimoneda,
+            "session_security": session_security,
         }
 
     from app import models  # noqa: F401
@@ -216,7 +224,11 @@ def create_app(config_name: str | None = None):
         if user_id is None:
             return None
         try:
-            return db.session.get(User, int(user_id))
+            raw_id, raw_version = str(user_id).split(":", 1)
+            user = db.session.get(User, int(raw_id))
+            if user is None or int(raw_version) != int(user.auth_version or 1):
+                return None
+            return user
         except (TypeError, ValueError):
             return None
 
