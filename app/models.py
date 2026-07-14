@@ -1292,6 +1292,7 @@ class WorkOrderJornada(db.Model):
     fecha_fin = db.Column(db.DateTime, nullable=False)
     technician_id = db.Column(db.Integer, db.ForeignKey("technicians.id"), nullable=True)
     tarifa_hora_aplicada = db.Column(db.Numeric(14, 2), nullable=True)
+    costo_mano_obra_manual = db.Column(db.Numeric(14, 2), nullable=True)
     costo_herramientas = db.Column(db.Numeric(14, 2), default=0, nullable=False)
     tecnico_nombre = db.Column(db.String(200), default="")
     recibido_por = db.Column(db.String(200), default="")
@@ -1324,6 +1325,8 @@ class WorkOrderJornada(db.Model):
 
     @property
     def costo_mano_obra(self) -> float:
+        if self.costo_mano_obra_manual is not None:
+            return round(float(self.costo_mano_obra_manual), 2)
         return round((self.duracion_minutos / 60) * self.tarifa_hora_efectiva, 2)
 
     @property

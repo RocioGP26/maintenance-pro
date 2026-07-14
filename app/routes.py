@@ -2585,6 +2585,11 @@ def _jornada_a_dict(j: WorkOrderJornada) -> dict:
         "technician_id": str(j.technician_id) if j.technician_id else "otro",
         "tecnico_nombre": j.tecnico_nombre or "",
         "tarifa_hora_aplicada": j.tarifa_hora_efectiva,
+        "costo_mano_obra_manual": (
+            float(j.costo_mano_obra_manual)
+            if j.costo_mano_obra_manual is not None
+            else None
+        ),
         "costo_herramientas": j.costo_herramientas_total,
         "recibido_por": j.recibido_por or "",
         "requirio_paro": bool(j.requirio_paro),
@@ -2592,7 +2597,7 @@ def _jornada_a_dict(j: WorkOrderJornada) -> dict:
     }
 
 
-def _parse_jornadas_json() -> Tuple[list[dict], Optional[str]]:
+def _parse_jornadas_json(wo: Optional[WorkOrder] = None) -> Tuple[list[dict], Optional[str]]:
     raw = (request.form.get("jornadas_json") or "[]").strip()
     try:
         items = json.loads(raw) if raw else []
@@ -2650,6 +2655,24 @@ def _parse_jornadas_json() -> Tuple[list[dict], Optional[str]]:
         if costo_herramientas > 999_999_999_999.99:
             return [], f"Jornada {i}: el costo de herramientas supera el máximo permitido."
 
+        costo_mano_obra_manual = None
+        permite_mdo_manual = bool(
+            wo
+            and wo.tipo == WorkOrderType.PREVENTIVO.value
+            and wo.es_ejecucion_externa
+        )
+        if permite_mdo_manual:
+            try:
+                costo_mano_obra_manual = round(
+                    float(item.get("costo_mano_obra_manual") or 0), 2
+                )
+            except (TypeError, ValueError):
+                return [], f"Jornada {i}: el costo MDO no es válido."
+            if not math.isfinite(costo_mano_obra_manual) or costo_mano_obra_manual < 0:
+                return [], f"Jornada {i}: el costo MDO debe ser un valor válido y no negativo."
+            if costo_mano_obra_manual > 999_999_999_999.99:
+                return [], f"Jornada {i}: el costo MDO supera el máximo permitido."
+
         parsed.append(
             {
                 "fecha_inicio": inicio,
@@ -2658,6 +2681,7 @@ def _parse_jornadas_json() -> Tuple[list[dict], Optional[str]]:
                 "tarifa_hora_aplicada": float(
                     technician.user.tarifa_hora or 0
                 ) if technician and technician.user else 0.0,
+                "costo_mano_obra_manual": costo_mano_obra_manual,
                 "costo_herramientas": costo_herramientas,
                 "tecnico_nombre": nombre if tech_id is None else "",
                 "recibido_por": recibido_por,
@@ -2681,7 +2705,7 @@ def _guardar_jornadas_orden(wo: WorkOrder) -> Optional[str]:
             pass
         return None
 
-    sesiones, err = _parse_jornadas_json()
+    sesiones, err = _parse_jornadas_json(wo)
     if err:
         return err
 
@@ -2708,6 +2732,7 @@ def _guardar_jornadas_orden(wo: WorkOrder) -> Optional[str]:
                 tarifa_hora_aplicada=tarifas_existentes.get(
                     clave_jornada, s["tarifa_hora_aplicada"]
                 ),
+                costo_mano_obra_manual=s["costo_mano_obra_manual"],
                 costo_herramientas=s["costo_herramientas"],
                 tecnico_nombre=s["tecnico_nombre"],
                 recibido_por=s["recibido_por"],

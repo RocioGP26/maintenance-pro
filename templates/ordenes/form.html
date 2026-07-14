@@ -717,6 +717,25 @@
     }).format(parseFloat(valor) || 0);
   }
 
+  function parsearNumeroCosto(valor) {
+    var texto = String(valor || '0').trim().replace(/\s/g, '');
+    if (!texto) return 0;
+    if (texto.indexOf(',') >= 0) {
+      return parseFloat(texto.replace(/\./g, '').replace(',', '.'));
+    }
+    var partes = texto.split('.');
+    if (partes.length === 2 && partes[1].length > 0 && partes[1].length <= 2) {
+      return parseFloat(texto);
+    }
+    return parseFloat(texto.replace(/\./g, ''));
+  }
+
+  function mdoManualHabilitado() {
+    var tipo = document.getElementById('selectTipo')?.value || '';
+    var ejecucion = document.querySelector('input[name="ejecucion_tipo"]:checked')?.value || '';
+    return tipo === 'preventivo' && ejecucion === 'externo';
+  }
+
   function actualizarCostosJornada() {
     var resumen = document.getElementById('resumenCostosJornada');
     var tipo = document.getElementById('selectTipo');
@@ -740,12 +759,21 @@
     var inputMdo = document.getElementById('jornadaCostoMdo');
     var inputTotal = document.getElementById('jornadaCostoTotal');
     var detalle = document.getElementById('jornadaCostoMdoDetalle');
-    if (inputMdo) inputMdo.value = formatoNumeroCosto(costoMdo);
+    var permiteMdoManual = mdoManualHabilitado();
+    if (inputMdo) {
+      inputMdo.readOnly = !permiteMdoManual;
+      inputMdo.classList.toggle('bg-light', !permiteMdoManual);
+      if (permiteMdoManual) costoMdo = parsearNumeroCosto(inputMdo.value) || 0;
+      else inputMdo.value = formatoNumeroCosto(costoMdo);
+    }
+    total = Math.round((costoMdo + herramientas) * 100) / 100;
     if (inputTotal) inputTotal.value = formatoNumeroCosto(total);
     if (detalle) {
-      detalle.textContent = minutos && tarifa
-        ? formatear(minutos) + ' × ' + formatoCostoJornada(tarifa) + '/hora'
-        : 'Selecciona un técnico con tarifa y un horario válido para calcular la mano de obra.';
+      detalle.textContent = permiteMdoManual
+        ? 'Ingresa el costo de mano de obra informado por el proveedor externo.'
+        : (minutos && tarifa
+          ? formatear(minutos) + ' × ' + formatoCostoJornada(tarifa) + '/hora'
+          : 'Selecciona un técnico con tarifa y un horario válido para calcular la mano de obra.');
     }
   }
 
@@ -890,6 +918,7 @@
     document.getElementById('jornadaHoraInicio').value = '';
     document.getElementById('jornadaHoraFin').value = '';
     document.getElementById('jornadaCostoHerramientas').value = '0';
+    document.getElementById('jornadaCostoMdo').value = '0';
     document.getElementById('jornadaTecnico').value = '';
     document.getElementById('jornadaTecnicoNombre').value = '';
     document.getElementById('jornadaRecibidoPor').value = '';
@@ -909,6 +938,9 @@
       document.getElementById('jornadaHoraInicio').value = j.hora_inicio || '';
       document.getElementById('jornadaHoraFin').value = j.hora_fin || '';
       document.getElementById('jornadaCostoHerramientas').value = parseFloat(j.costo_herramientas) || 0;
+      document.getElementById('jornadaCostoMdo').value = j.costo_mano_obra_manual != null
+        ? formatoNumeroCosto(j.costo_mano_obra_manual)
+        : '0';
       document.getElementById('jornadaTecnico').value = j.technician_id ? String(j.technician_id) : 'otro';
       document.getElementById('jornadaTecnicoNombre').value = j.tecnico_nombre || '';
       document.getElementById('jornadaRecibidoPor').value = j.recibido_por || '';
@@ -939,15 +971,19 @@
     toggleTecnicoNombre();
     actualizarCostosJornada();
   });
-  ['jornadaFecha', 'jornadaHoraInicio', 'jornadaHoraFin', 'jornadaCostoHerramientas'].forEach(function (id) {
+  ['jornadaFecha', 'jornadaHoraInicio', 'jornadaHoraFin', 'jornadaCostoHerramientas', 'jornadaCostoMdo'].forEach(function (id) {
     var input = document.getElementById(id);
     if (input) input.addEventListener('input', actualizarCostosJornada);
   });
   var tipoCostoJornada = document.getElementById('selectTipo');
-  if (tipoCostoJornada) tipoCostoJornada.addEventListener('change', actualizarCostosJornada);
+  if (tipoCostoJornada) tipoCostoJornada.addEventListener('change', function () {
+    if (mdoManualHabilitado() && editIndex < 0) document.getElementById('jornadaCostoMdo').value = '0';
+    actualizarCostosJornada();
+  });
   document.querySelectorAll('input[name="ejecucion_tipo"]').forEach(function (radio) {
     radio.addEventListener('change', function () {
       toggleTecnicoNombre();
+      if (mdoManualHabilitado() && editIndex < 0) document.getElementById('jornadaCostoMdo').value = '0';
       actualizarCostosJornada();
     });
   });
@@ -957,6 +993,9 @@
     var horaIni = document.getElementById('jornadaHoraInicio').value;
     var horaFin = document.getElementById('jornadaHoraFin').value;
     var costoHerramientas = parseFloat(document.getElementById('jornadaCostoHerramientas').value || '0');
+    var costoMdoManual = mdoManualHabilitado()
+      ? parsearNumeroCosto(document.getElementById('jornadaCostoMdo').value)
+      : null;
     var tech = document.getElementById('jornadaTecnico').value;
     var nombre = document.getElementById('jornadaTecnicoNombre').value.trim();
     var ejecucionExterna = document.querySelector('input[name="ejecucion_tipo"]:checked')?.value === 'externo';
@@ -974,6 +1013,10 @@
     }
     if (!Number.isFinite(costoHerramientas) || costoHerramientas < 0) {
       alert('Ingresa un costo de herramientas válido, igual o mayor a cero.');
+      return;
+    }
+    if (costoMdoManual != null && (!Number.isFinite(costoMdoManual) || costoMdoManual < 0)) {
+      alert('Ingresa un costo MDO válido, igual o mayor a cero.');
       return;
     }
     if (!ejecucionExterna && !tech) {
@@ -996,6 +1039,7 @@
       technician_id: ejecucionExterna ? 'otro' : tech,
       tecnico_nombre: ejecucionExterna ? nombre : '',
       tarifa_hora_aplicada: ejecucionExterna ? 0 : (tarifaByTechId[String(tech)] || 0),
+      costo_mano_obra_manual: costoMdoManual,
       costo_herramientas: Math.round(costoHerramientas * 100) / 100,
       recibido_por: recibidoPor,
       requirio_paro: requirioParo,

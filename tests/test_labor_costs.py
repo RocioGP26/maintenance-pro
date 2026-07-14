@@ -1,5 +1,6 @@
 from datetime import date, datetime
 from decimal import Decimal
+import json
 import unittest
 
 from app import create_app, db
@@ -15,7 +16,7 @@ from app.models import (
     WorkOrderJornada,
     WorkOrderRepuesto,
 )
-from app.routes import _parse_tarifa_hora_equipo
+from app.routes import _parse_jornadas_json, _parse_tarifa_hora_equipo
 
 
 class TestLaborCosts(unittest.TestCase):
@@ -82,6 +83,44 @@ class TestLaborCosts(unittest.TestCase):
         )
 
         self.assertEqual(line.costo_total_linea, 22500.0)
+
+    def test_manual_external_labor_overrides_hourly_calculation(self):
+        journey = WorkOrderJornada(
+            fecha_inicio=datetime(2026, 7, 14, 8, 0),
+            fecha_fin=datetime(2026, 7, 14, 10, 0),
+            tarifa_hora_aplicada=Decimal("25000.00"),
+            costo_mano_obra_manual=Decimal("90000.00"),
+            costo_herramientas=Decimal("10000.00"),
+        )
+
+        self.assertEqual(journey.costo_mano_obra, 90000.0)
+        self.assertEqual(journey.costo_total_jornada, 100000.0)
+
+    def test_preventive_external_journey_accepts_manual_labor(self):
+        app = create_app("testing")
+        order = WorkOrder(
+            titulo="Preventiva externa",
+            machine_id=1,
+            tipo="preventivo",
+            ejecucion_tipo=WorkOrderEjecucionTipo.EXTERNO.value,
+        )
+        payload = [{
+            "fecha": "2026-07-14",
+            "hora_inicio": "08:00",
+            "hora_fin": "10:00",
+            "technician_id": "otro",
+            "tecnico_nombre": "Técnico proveedor",
+            "recibido_por": "Supervisor",
+            "costo_herramientas": 10000,
+            "costo_mano_obra_manual": 90000,
+        }]
+        with app.test_request_context(
+            method="POST", data={"jornadas_json": json.dumps(payload)}
+        ):
+            parsed, error = _parse_jornadas_json(order)
+
+        self.assertIsNone(error)
+        self.assertEqual(parsed[0]["costo_mano_obra_manual"], 90000.0)
 
     def test_rate_parser_respects_company_currency_format(self):
         empresa = type("EmpresaStub", (), {"moneda": "COP"})()
@@ -215,6 +254,7 @@ class TestLaborCostReport(unittest.TestCase):
         self.assertIn('id="jornadaCostoMdo"', html)
         self.assertIn('id="jornadaCostoTotal"', html)
         self.assertIn('id="resumenCostosJornada"', html)
+        self.assertIn("mdoManualHabilitado", html)
         self.assertNotIn('name="costo_herramientas"', html)
         self.assertIn("se acumulan desde las jornadas", html)
 
