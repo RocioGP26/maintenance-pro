@@ -588,7 +588,7 @@
               </div>
               <div class="col-12">
                 <div class="form-text">Herramientas: uso, alquiler o desgaste durante esta jornada.</div>
-                <div class="form-text" id="jornadaCostoMdoDetalle">Selecciona técnico y horario para calcular la mano de obra.</div>
+                <div class="form-text" id="jornadaCostoMdoDetalle">Selecciona un técnico con tarifa para calcular la mano de obra.</div>
               </div>
             </div>
           </div>
@@ -803,7 +803,7 @@
         ? 'Ingresa el costo de mano de obra informado por el proveedor externo.'
         : (minutos && tarifa
           ? formatear(minutos) + ' × ' + formatoCostoJornada(tarifa) + '/hora'
-          : 'Selecciona un técnico con tarifa y un horario válido para calcular la mano de obra.');
+          : 'Selecciona un técnico con tarifa para calcular la mano de obra.');
     }
   }
 
