@@ -1,0 +1,7 @@
+Hola {{ user.etiqueta() }},
+
+Usa este código para confirmar el correo de {{ empresa.razon_social }} en Maintix:
+
+{{ code }}
+
+El código vence en {{ ttl_minutes }} minutos. Si no solicitaste esta cuenta, ignora este mensaje.

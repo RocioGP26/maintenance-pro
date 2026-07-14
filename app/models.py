@@ -169,12 +169,23 @@ class Empresa(db.Model):
     jornada_hora_fin = db.Column(db.String(5), default="17:00")
     jornada_dias = db.Column(db.String(32), default="0,1,2,3,4")
     fecha_registro = db.Column(db.DateTime, default=datetime.utcnow)
+    email_verified_at = db.Column(db.DateTime, nullable=True)
     suspendida = db.Column(db.Boolean, default=False, nullable=False)
     modulos_activos_json = db.Column(db.Text, default='["mantenimiento"]')
 
     sedes = db.relationship("Sede", back_populates="empresa", lazy="dynamic")
     usuarios = db.relationship("User", back_populates="empresa", lazy="dynamic")
     planes = db.relationship("PlanSuscripcion", back_populates="empresa", lazy="dynamic")
+    verificaciones_email = db.relationship(
+        "EmailVerification",
+        back_populates="empresa",
+        lazy="dynamic",
+        cascade="all, delete-orphan",
+    )
+
+    @property
+    def email_verificado(self) -> bool:
+        return self.email_verified_at is not None
 
     @property
     def sector_label(self) -> str:
@@ -445,6 +456,39 @@ class User(UserMixin, db.Model):
 
     valores_campos = db.relationship(
         "UsuarioCampoValor", back_populates="user", lazy="dynamic", cascade="all, delete-orphan"
+    )
+
+
+class EmailVerification(db.Model):
+    """Desafío de verificación; el código nunca se persiste en texto plano."""
+
+    __tablename__ = "email_verifications"
+
+    id = db.Column(db.Integer, primary_key=True)
+    empresa_id = db.Column(
+        db.Integer,
+        db.ForeignKey("empresas.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    user_id = db.Column(
+        db.Integer,
+        db.ForeignKey("users.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    email = db.Column(db.String(120), nullable=False, index=True)
+    code_hash = db.Column(db.String(256), nullable=False)
+    expires_at = db.Column(db.DateTime, nullable=False, index=True)
+    attempts = db.Column(db.Integer, default=0, nullable=False)
+    sent_at = db.Column(db.DateTime, nullable=True)
+    used_at = db.Column(db.DateTime, nullable=True, index=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+
+    empresa = db.relationship("Empresa", back_populates="verificaciones_email")
+    user = db.relationship(
+        "User",
+        backref=db.backref("verificaciones_email", lazy="dynamic", cascade="all, delete-orphan"),
     )
 
 
@@ -2423,6 +2467,7 @@ def migrate_legacy_tenant():
         nit="",
         ciudad="",
         sector=IndustrialSector.MANUFACTURA.value,
+        email_verified_at=datetime.utcnow(),
     )
     db.session.add(emp)
     db.session.flush()

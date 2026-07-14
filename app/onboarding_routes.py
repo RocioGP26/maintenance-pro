@@ -11,7 +11,7 @@ from flask import (
 )
 from flask_login import current_user, login_user
 
-from app import db
+from app import db, limiter
 from app.models import User
 from app.landing_service import formato_precio_landing
 from app.platform_config_service import planes_para_registro, sectores_para_registro
@@ -36,6 +36,16 @@ from app.onboarding_service import completar_onboarding
 from app.onboarding_session import clear_onboarding_password, pop_onboarding_password, store_onboarding_password
 from app.password_policy import validar_password
 from app.user_service import normalizar_username
+from app.email_service import EmailDeliveryError
+from app.email_verification_service import (
+    ResendCooldown,
+    VerificationStatus,
+    is_valid_email,
+    issue_verification,
+    masked_email,
+    send_welcome_email,
+    verify_code,
+)
 
 onboarding_bp = Blueprint("onboarding", __name__)
 
@@ -138,6 +148,9 @@ def wizard():
             if not username or not password:
                 flash("Usuario y contraseña son obligatorios.", "danger")
                 return redirect(url_for("onboarding.wizard"))
+            if not is_valid_email(email):
+                flash("Indica un correo válido para confirmar la cuenta empresarial.", "danger")
+                return redirect(url_for("onboarding.wizard"))
             if len(username) < 3:
                 flash("El usuario debe tener al menos 3 caracteres.", "danger")
                 return redirect(url_for("onboarding.wizard"))
@@ -190,6 +203,8 @@ def wizard():
                 session["onboarding_step"] = 2
                 return redirect(url_for("onboarding.wizard"))
             admin_data["password"] = password
+            if not data["empresa"].get("email"):
+                data["empresa"]["email"] = admin_data.get("email", "")
             try:
                 user, empresa = completar_onboarding(
                     data["empresa"],
@@ -217,20 +232,20 @@ def wizard():
                 return redirect(url_for("onboarding.wizard"))
 
             _clear_wizard()
-            login_user(user)
-            session["show_welcome"] = True
-            session["show_tour"] = True
-            flash(
-                f"¡Bienvenido a {APP_NAME}, {user.etiqueta()}! "
-                f"Tu prueba gratuita de {public_page_context()['trial_dias']} días comenzó.",
-                "success",
-            )
-            from app.modules import MODULO_INVENTARIO, MODULO_MANTENIMIENTO
+            session["pending_email_verification_user_id"] = user.id
+            try:
+                issue_verification(user)
+                flash("Te enviamos un código de verificación de 6 dígitos.", "info")
+            except EmailDeliveryError:
+                import logging
 
-            mods = data.get("modulos") or []
-            if MODULO_INVENTARIO in mods and MODULO_MANTENIMIENTO not in mods:
-                return redirect(url_for("inv_comercial.dashboard_inventario", welcome=1))
-            return redirect(url_for("main.dashboard", welcome=1))
+                logging.getLogger(__name__).exception("No se pudo enviar el código de verificación")
+                flash(
+                    "La cuenta fue creada, pero no pudimos enviar el correo. "
+                    "Revisa la configuración SMTP y usa Reenviar código.",
+                    "warning",
+                )
+            return redirect(url_for("onboarding.verify_email"))
 
         session.modified = True
         return redirect(url_for("onboarding.wizard"))
@@ -270,6 +285,95 @@ def wizard():
         cta_final=pub["cta_final"],
         brand_slogan=pub["brand_slogan"],
     )
+
+
+def _pending_verification_user() -> User | None:
+    raw_id = session.get("pending_email_verification_user_id")
+    if raw_id is None and current_user.is_authenticated:
+        raw_id = current_user.id
+    try:
+        user = db.session.get(User, int(raw_id))
+    except (TypeError, ValueError):
+        return None
+    if user is None or user.empresa is None:
+        return None
+    return user
+
+
+def _verified_destination(user: User):
+    from app.modules import MODULO_INVENTARIO, MODULO_MANTENIMIENTO, modulos_activos_de
+
+    mods = modulos_activos_de(user.empresa)
+    if MODULO_INVENTARIO in mods and MODULO_MANTENIMIENTO not in mods:
+        return redirect(url_for("inv_comercial.dashboard_inventario", welcome=1))
+    return redirect(url_for("main.dashboard", welcome=1))
+
+
+@onboarding_bp.route("/onboarding/verificar-correo", methods=["GET", "POST"])
+@limiter.limit("10 per 15 minutes", methods=["POST"])
+def verify_email():
+    user = _pending_verification_user()
+    if user is None:
+        flash("Inicia sesión para continuar con la verificación.", "warning")
+        return redirect(url_for("main.login"))
+    if user.empresa.email_verificado:
+        login_user(user)
+        session.pop("pending_email_verification_user_id", None)
+        return _verified_destination(user)
+
+    if request.method == "POST":
+        status = verify_code(user, request.form.get("code", ""))
+        if status == VerificationStatus.VERIFIED:
+            login_user(user)
+            session.pop("pending_email_verification_user_id", None)
+            session["show_welcome"] = True
+            session["show_tour"] = True
+            try:
+                send_welcome_email(user)
+            except EmailDeliveryError:
+                import logging
+
+                logging.getLogger(__name__).exception("No se pudo enviar el correo de bienvenida")
+            flash(
+                f"¡Correo confirmado! Bienvenido a {APP_NAME}, {user.etiqueta()}.",
+                "success",
+            )
+            return _verified_destination(user)
+        if status == VerificationStatus.EXPIRED:
+            flash("El código expiró. Solicita uno nuevo.", "warning")
+        elif status == VerificationStatus.LOCKED:
+            flash("Se agotaron los intentos. Solicita un código nuevo.", "danger")
+        elif status == VerificationStatus.MISSING:
+            flash("No hay un código activo. Solicita uno nuevo.", "warning")
+        else:
+            flash("Código incorrecto.", "danger")
+
+    return render_template(
+        "onboarding/verify_email.html",
+        masked_email=masked_email(user.email),
+    )
+
+
+@onboarding_bp.route("/onboarding/reenviar-codigo", methods=["POST"])
+@limiter.limit("3 per 15 minutes")
+def resend_verification():
+    user = _pending_verification_user()
+    if user is None:
+        flash("Inicia sesión para solicitar un código nuevo.", "warning")
+        return redirect(url_for("main.login"))
+    if user.empresa.email_verificado:
+        return redirect(url_for("main.login"))
+    try:
+        issue_verification(user, enforce_cooldown=True)
+        flash("Enviamos un código nuevo. Revisa también la carpeta de spam.", "info")
+    except ResendCooldown as exc:
+        flash(f"Espera {exc.seconds} segundos antes de reenviar.", "warning")
+    except (EmailDeliveryError, ValueError):
+        import logging
+
+        logging.getLogger(__name__).exception("No se pudo reenviar el código de verificación")
+        flash("No pudimos enviar el código. Intenta nuevamente más tarde.", "danger")
+    return redirect(url_for("onboarding.verify_email"))
 
 
 @onboarding_bp.route("/onboarding/reiniciar")

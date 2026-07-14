@@ -63,6 +63,12 @@ def empresa_puede_operar(empresa: Empresa | None) -> tuple[bool, str, str]:
         return True, "", ""
     if session.get("platform_impersonating"):
         return True, "", ""
+    if not empresa.email_verificado:
+        return (
+            False,
+            "email_no_verificado",
+            "Confirma el correo de la empresa antes de acceder a Maintix.",
+        )
     if empresa.suspendida:
         return (
             False,

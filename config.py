@@ -46,6 +46,13 @@ def _env_flag(name: str, default: bool = False) -> bool:
     return os.environ.get(name, str(default)).strip().lower() in ("1", "true", "yes")
 
 
+def _env_int(name: str, default: int) -> int:
+    try:
+        return int(os.environ.get(name, str(default)).strip())
+    except (TypeError, ValueError):
+        return default
+
+
 class Config:
     """Valores compartidos entre entornos."""
 
@@ -55,6 +62,20 @@ class Config:
     SESSION_COOKIE_HTTPONLY = True
     SESSION_COOKIE_SAMESITE = "Lax"
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+
+    # Correo transaccional. Gmail SMTP funciona con una contraseña de aplicación.
+    MAIL_SERVER = os.environ.get("MAIL_SERVER", "smtp.gmail.com").strip()
+    MAIL_PORT = _env_int("MAIL_PORT", 587)
+    MAIL_USE_TLS = _env_flag("MAIL_USE_TLS", True)
+    MAIL_USERNAME = os.environ.get("MAIL_USERNAME", "").strip()
+    MAIL_PASSWORD = os.environ.get("MAIL_PASSWORD", "")
+    MAIL_DEFAULT_SENDER = os.environ.get("MAIL_DEFAULT_SENDER", "").strip()
+    MAIL_TIMEOUT_SECONDS = _env_int("MAIL_TIMEOUT_SECONDS", 10)
+    MAIL_SUPPRESS_SEND = _env_flag("MAIL_SUPPRESS_SEND", False)
+
+    EMAIL_VERIFICATION_TTL_MINUTES = _env_int("EMAIL_VERIFICATION_TTL_MINUTES", 10)
+    EMAIL_VERIFICATION_MAX_ATTEMPTS = _env_int("EMAIL_VERIFICATION_MAX_ATTEMPTS", 5)
+    EMAIL_VERIFICATION_RESEND_SECONDS = _env_int("EMAIL_VERIFICATION_RESEND_SECONDS", 60)
 
     # Logging estructurado
     LOG_LEVEL = os.environ.get("LOG_LEVEL", "INFO").upper()
@@ -121,6 +142,7 @@ class TestingConfig(Config):
     SQLALCHEMY_ENGINE_OPTIONS = {}
     RUN_STARTUP_TASKS = False
     RUN_LEGACY_SCHEMA_MIGRATIONS = False
+    MAIL_SUPPRESS_SEND = True
 
 
 config_by_name: dict[str, type[Config]] = {

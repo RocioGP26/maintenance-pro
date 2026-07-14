@@ -323,6 +323,21 @@ def login():
             if user.bloqueado or not user.activo:
                 flash("Usuario o contraseña incorrectos.", "danger")
             else:
+                if user.empresa and not user.empresa.email_verificado:
+                    from app.email_service import EmailDeliveryError
+                    from app.email_verification_service import ensure_verification
+
+                    session["pending_email_verification_user_id"] = user.id
+                    try:
+                        ensure_verification(user)
+                    except (EmailDeliveryError, ValueError):
+                        import logging
+
+                        logging.getLogger(__name__).exception(
+                            "No se pudo asegurar el código de verificación durante login"
+                        )
+                    flash("Confirma el correo de la empresa antes de ingresar.", "warning")
+                    return redirect(url_for("onboarding.verify_email"))
                 login_user(user, remember=remember)
                 if user.empresa_id:
                     from app.tenant_activity import registrar_actividad_tenant
