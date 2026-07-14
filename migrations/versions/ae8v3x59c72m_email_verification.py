@@ -1,6 +1,6 @@
 """Agrega verificación segura de correo para tenants.
 
-Revision ID: s6i9k37q40t8
+Revision ID: ae8v3x59c72m
 Revises: r5h8j26p39s7
 """
 
@@ -8,7 +8,7 @@ from alembic import op
 import sqlalchemy as sa
 
 
-revision = "s6i9k37q40t8"
+revision = "ae8v3x59c72m"
 down_revision = "r5h8j26p39s7"
 branch_labels = None
 depends_on = None

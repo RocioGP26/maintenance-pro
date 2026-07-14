@@ -1,7 +1,7 @@
 """Gestión de sesiones y política de seguridad por tenant.
 
 Revision ID: t7j0l48r51u9
-Revises: s6i9k37q40t8
+Revises: ae8v3x59c72m
 """
 
 from alembic import op
@@ -9,7 +9,7 @@ import sqlalchemy as sa
 
 
 revision = "t7j0l48r51u9"
-down_revision = "s6i9k37q40t8"
+down_revision = "ae8v3x59c72m"
 branch_labels = None
 depends_on = None
 
