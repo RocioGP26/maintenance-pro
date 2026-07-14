@@ -16,6 +16,7 @@ from reportlab.lib.units import mm
 from reportlab.platypus import Image, Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
 
 from app.models import machine_status_meta, wo_status_meta, wo_tipo_meta
+from app.money import formato_moneda
 from app.text_encoding import texto_legible
 
 
@@ -163,6 +164,22 @@ def export_asset_life_pdf(
         datos += [[_p(c.nombre, normal), _p(valores.get(c.id) or "-", normal)] for c in campos]
         story.extend([tabla(datos, [70 * mm, 116 * mm]), Spacer(1, 3 * mm)])
 
+    moneda = getattr(empresa, "moneda", None) or "COP"
+    costo_repuestos = sum(o.costo_repuestos_total for o in ordenes)
+    costo_herramientas = sum(o.costo_herramientas_total for o in ordenes)
+    costo_mano_obra = sum(o.costo_mano_obra_total for o in ordenes)
+    costo_servicios = sum(o.costo_servicio_externo for o in ordenes)
+    costo_total = sum(o.costo_total_mantenimiento for o in ordenes)
+    story.append(_p("RESUMEN DE COSTOS DE MANTENIMIENTO", subtitle))
+    resumen_costos = [[_p(x, header) for x in ["Mano de obra", "Repuestos", "Herramientas", "Servicios externos", "Total"]], [
+        _p(formato_moneda(costo_mano_obra, moneda), center),
+        _p(formato_moneda(costo_repuestos, moneda), center),
+        _p(formato_moneda(costo_herramientas, moneda), center),
+        _p(formato_moneda(costo_servicios, moneda), center),
+        _p(formato_moneda(costo_total, moneda), center),
+    ]]
+    story.extend([tabla(resumen_costos, [37.2 * mm] * 5), Spacer(1, 3 * mm)])
+
     story.append(_p("HISTORIAL DE ÓRDENES DE TRABAJO", subtitle))
     datos_ot = [[_p(x, header) for x in ["OT", "Título de la OT", "Fecha", "Tipo", "Estado", "Técnico", "Tiempo", "Repuestos"]]]
     for o in ordenes:
@@ -182,6 +199,21 @@ def export_asset_life_pdf(
     if not ordenes:
         datos_ot.append([_p("Sin órdenes registradas", normal)] + [""] * 7)
     story.append(tabla(datos_ot, [18*mm, 38*mm, 20*mm, 22*mm, 22*mm, 34*mm, 17*mm, 15*mm]))
+
+    story.extend([Spacer(1, 3 * mm), _p("COSTOS POR ORDEN DE TRABAJO", subtitle)])
+    datos_costos = [[_p(x, header) for x in ["OT", "Mano de obra", "Repuestos", "Herramientas", "Servicio externo", "Total OT"]]]
+    for o in ordenes:
+        datos_costos.append([
+            _p(o.numero or f"#{o.id}", normal),
+            _p(formato_moneda(o.costo_mano_obra_total, moneda), normal),
+            _p(formato_moneda(o.costo_repuestos_total, moneda), normal),
+            _p(formato_moneda(o.costo_herramientas_total, moneda), normal),
+            _p(formato_moneda(o.costo_servicio_externo, moneda), normal),
+            _p(formato_moneda(o.costo_total_mantenimiento, moneda), label),
+        ])
+    if not ordenes:
+        datos_costos.append([_p("Sin órdenes registradas", normal)] + [""] * 5)
+    story.append(tabla(datos_costos, [26 * mm, 32 * mm, 32 * mm, 32 * mm, 32 * mm, 32 * mm]))
 
     avances_por_ot = avances_por_ot or {}
     story.extend([Spacer(1, 3 * mm), _p("AVANCES REALIZADOS EN LAS OT", subtitle)])

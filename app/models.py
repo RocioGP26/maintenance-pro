@@ -1167,6 +1167,7 @@ class WorkOrder(db.Model):
     numero_cotizacion = db.Column(db.String(64), default="")
     costo_estimado = db.Column(db.Float, nullable=True)
     costo_real = db.Column(db.Float, nullable=True)
+    costo_herramientas = db.Column(db.Numeric(14, 2), default=0, nullable=False)
     proveedor_incluye_insumos = db.Column(db.Boolean, default=False)
     fecha_limite = db.Column(db.Date, nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
@@ -1244,6 +1245,32 @@ class WorkOrder(db.Model):
         key = (self.ejecucion_tipo or WorkOrderEjecucionTipo.INTERNO.value).strip().lower()
         return WORK_ORDER_EJECUCION_LABELS.get(key, key)
 
+    @property
+    def costo_repuestos_total(self) -> float:
+        return round(sum(linea.costo_total_linea for linea in self.repuestos), 2)
+
+    @property
+    def costo_mano_obra_total(self) -> float:
+        return round(sum(jornada.costo_mano_obra for jornada in self.jornadas), 2)
+
+    @property
+    def costo_herramientas_total(self) -> float:
+        return round(float(self.costo_herramientas or 0), 2)
+
+    @property
+    def costo_servicio_externo(self) -> float:
+        return round(float(self.costo_real or 0), 2) if self.es_ejecucion_externa else 0.0
+
+    @property
+    def costo_total_mantenimiento(self) -> float:
+        return round(
+            self.costo_repuestos_total
+            + self.costo_herramientas_total
+            + self.costo_mano_obra_total
+            + self.costo_servicio_externo,
+            2,
+        )
+
 
 class WorkOrderJornada(db.Model):
     """Sesión de trabajo en una OT (ej. 3:30–4:30 y luego 17:00–18:30 el mismo día)."""
@@ -1304,6 +1331,7 @@ class WorkOrderRepuesto(db.Model):
     )
     spare_part_id = db.Column(db.Integer, db.ForeignKey("spare_parts.id"), nullable=False)
     cantidad = db.Column(db.Integer, nullable=False, default=1)
+    costo_unitario_aplicado = db.Column(db.Numeric(14, 2), nullable=True)
     notas = db.Column(db.String(255), default="")
     jornada_fecha = db.Column(db.Date, nullable=True)
     jornada_hora_inicio = db.Column(db.String(5), default="")
@@ -1315,6 +1343,8 @@ class WorkOrderRepuesto(db.Model):
 
     @property
     def costo_unitario_linea(self) -> float:
+        if self.costo_unitario_aplicado is not None:
+            return float(self.costo_unitario_aplicado)
         if self.spare_part:
             return float(self.spare_part.costo_unitario or 0)
         return 0.0

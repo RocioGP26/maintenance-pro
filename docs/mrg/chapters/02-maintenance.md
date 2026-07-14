@@ -337,7 +337,20 @@ El dashboard de planta amplía con KPIs avanzados: disponibilidad, MTBF, MTTR y 
 | Cumplimiento preventivo | % OT preventivas en fecha |
 | MTBF / MTTR | Tiempo entre fallas · tiempo de reparación |
 | Repuestos bajo mínimo | Alertas de reposición |
-| Costo por activo / OT | Agregado desde jornadas y repuestos |
+| Costo por activo / OT | Mano de obra + repuestos + herramientas + servicio externo, cuando aplique |
+
+### Costos de la orden de trabajo
+
+Cada OT conserva un desglose económico común para el análisis de costos y la hoja de vida del activo:
+
+`Costo total OT = mano de obra + repuestos + herramientas + servicio externo`
+
+- **Mano de obra:** horas de las jornadas × tarifa histórica del técnico.
+- **Repuestos:** cantidad consumida × costo unitario fijado al registrar el consumo.
+- **Herramientas:** uso, alquiler o desgaste informado directamente en la OT.
+- **Servicio externo:** costo real del proveedor, únicamente cuando la ejecución es externa.
+
+La tarifa del técnico y el costo unitario del repuesto se guardan como snapshots para que cambios posteriores en usuarios o inventario no modifiquen el costo histórico del activo.
 
 → Detalle en [MRG-08 · Reportes](08-reportes.md)
 

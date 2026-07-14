@@ -11,9 +11,11 @@ from app.models import (
     Technician,
     User,
     WorkOrder,
+    WorkOrderEjecucionTipo,
     WorkOrderJornada,
+    WorkOrderRepuesto,
 )
-from app.routes import _parse_tarifa_hora_equipo
+from app.routes import _parse_costo_herramientas, _parse_tarifa_hora_equipo
 
 
 class TestLaborCosts(unittest.TestCase):
@@ -42,6 +44,44 @@ class TestLaborCosts(unittest.TestCase):
 
         self.assertEqual(journey.costo_mano_obra, 50000.0)
 
+    def test_work_order_total_combines_all_cost_components(self):
+        order = WorkOrder(
+            titulo="Costo completo",
+            machine_id=1,
+            ejecucion_tipo=WorkOrderEjecucionTipo.EXTERNO.value,
+            costo_real=30000,
+            costo_herramientas=Decimal("12000.00"),
+        )
+        order.jornadas.append(
+            WorkOrderJornada(
+                fecha_inicio=datetime(2026, 7, 14, 8, 0),
+                fecha_fin=datetime(2026, 7, 14, 10, 0),
+                tarifa_hora_aplicada=Decimal("25000.00"),
+            )
+        )
+        order.repuestos.append(
+            WorkOrderRepuesto(
+                spare_part_id=1,
+                cantidad=2,
+                costo_unitario_aplicado=Decimal("8000.00"),
+            )
+        )
+
+        self.assertEqual(order.costo_mano_obra_total, 50000.0)
+        self.assertEqual(order.costo_repuestos_total, 16000.0)
+        self.assertEqual(order.costo_herramientas_total, 12000.0)
+        self.assertEqual(order.costo_servicio_externo, 30000.0)
+        self.assertEqual(order.costo_total_mantenimiento, 108000.0)
+
+    def test_spare_part_snapshot_preserves_historical_cost(self):
+        line = WorkOrderRepuesto(
+            spare_part_id=1,
+            cantidad=3,
+            costo_unitario_aplicado=Decimal("7500.00"),
+        )
+
+        self.assertEqual(line.costo_total_linea, 22500.0)
+
     def test_rate_parser_respects_company_currency_format(self):
         empresa = type("EmpresaStub", (), {"moneda": "COP"})()
         value, error = _parse_tarifa_hora_equipo({"tarifa_hora": "25.500,50"}, empresa)
@@ -52,6 +92,15 @@ class TestLaborCosts(unittest.TestCase):
         empresa = type("EmpresaStub", (), {"moneda": "USD"})()
         _, error = _parse_tarifa_hora_equipo({"tarifa_hora": "-5"}, empresa)
         self.assertIsNotNone(error)
+
+    def test_tool_cost_parser_respects_company_currency_format(self):
+        empresa = type("EmpresaStub", (), {"moneda": "COP"})()
+        value, error = _parse_costo_herramientas(
+            {"costo_herramientas": "18.500,75"}, empresa
+        )
+
+        self.assertIsNone(error)
+        self.assertEqual(value, 18500.75)
 
 
 class TestLaborCostReport(unittest.TestCase):
@@ -104,6 +153,7 @@ class TestLaborCostReport(unittest.TestCase):
             titulo="OT con mano de obra",
             machine_id=machine.id,
             fecha_programada=date.today(),
+            costo_herramientas=Decimal("12000.00"),
         )
         order.jornadas.append(
             WorkOrderJornada(
@@ -151,6 +201,31 @@ class TestLaborCostReport(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIn("Mano de obra", response.get_data(as_text=True))
         self.assertIn("$50.000", response.get_data(as_text=True))
+        self.assertIn("Herramientas", response.get_data(as_text=True))
+        self.assertIn("$12.000", response.get_data(as_text=True))
+        self.assertIn("$62.000", response.get_data(as_text=True))
+
+    def test_asset_life_includes_cost_breakdown(self):
+        self.client.post(
+            "/login",
+            data={
+                "username": "admincostos",
+                "empresa_slug": "costos-sas",
+                "password": "Clave-Segura-123!",
+            },
+        )
+        machine = Machine.query.filter_by(codigo="CT-001").one()
+        response = self.client.get(f"/activos/{machine.id}/hoja-vida")
+
+        self.assertEqual(response.status_code, 200)
+        html = response.get_data(as_text=True)
+        self.assertIn("Costo total de mantenimiento", html)
+        self.assertIn("Costo repuestos", html)
+        self.assertIn("$62.000", html)
+
+        pdf_response = self.client.get(f"/activos/{machine.id}/hoja-vida/pdf")
+        self.assertEqual(pdf_response.status_code, 200)
+        self.assertTrue(pdf_response.data.startswith(b"%PDF"))
 
 
 if __name__ == "__main__":

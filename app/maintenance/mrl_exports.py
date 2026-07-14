@@ -160,6 +160,18 @@ def export_orden_trabajo_pdf(
     prioridad = dict(WORK_ORDER_PRIORITIES).get(work_order.prioridad, work_order.prioridad or "—")
     machine = work_order.machine
     currency = (getattr(empresa, "moneda", None) or "COP").upper()
+    costo_mano_obra = float(getattr(work_order, "costo_mano_obra_total", 0) or 0)
+    costo_repuestos = float(getattr(work_order, "costo_repuestos_total", 0) or 0)
+    costo_herramientas = float(getattr(work_order, "costo_herramientas_total", 0) or 0)
+    costo_servicio = float(getattr(work_order, "costo_servicio_externo", 0) or 0)
+    costo_total = float(
+        getattr(
+            work_order,
+            "costo_total_mantenimiento",
+            costo_mano_obra + costo_repuestos + costo_herramientas + costo_servicio,
+        )
+        or 0
+    )
 
     exporter.add_title(work_order.titulo or "Orden de Trabajo")
     exporter.add_kpis([
@@ -209,6 +221,18 @@ def export_orden_trabajo_pdf(
             ["SKU", "Repuesto", "Cantidad", "Costo unitario", "Total"],
             [[r.spare_part.sku if r.spare_part else "—", r.spare_part.nombre if r.spare_part else "—", r.cantidad, _money(r.costo_unitario_linea, currency), _money(r.costo_total_linea, currency)] for r in work_order.repuestos],
         )
+    exporter.add_spacer()
+    exporter.add_titled_table(
+        "Costos de la orden",
+        ["Mano de obra", "Repuestos", "Herramientas", "Servicio externo", "Total OT"],
+        [[
+            _money(costo_mano_obra, currency),
+            _money(costo_repuestos, currency),
+            _money(costo_herramientas, currency),
+            _money(costo_servicio, currency),
+            _money(costo_total, currency),
+        ]],
+    )
     exporter.add_spacer(8)
     exporter.add_table(
         ["Autorizado por", "Recibido por", "Supervisor"],

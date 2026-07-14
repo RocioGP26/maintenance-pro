@@ -2045,9 +2045,11 @@ def activos_hoja_vida(id):
         incidentes=incidentes,
         total_preventivos=sum(1 for orden in ordenes if orden.tipo == "preventivo"),
         total_correctivos=sum(1 for orden in ordenes if orden.tipo == "correctivo"),
-        costo_repuestos=sum(
-            linea.costo_total_linea for orden in ordenes for linea in orden.repuestos
-        ),
+        costo_repuestos=sum(orden.costo_repuestos_total for orden in ordenes),
+        costo_herramientas=sum(orden.costo_herramientas_total for orden in ordenes),
+        costo_mano_obra=sum(orden.costo_mano_obra_total for orden in ordenes),
+        costo_servicios=sum(orden.costo_servicio_externo for orden in ordenes),
+        costo_total_mantenimiento=sum(orden.costo_total_mantenimiento for orden in ordenes),
         avances_por_ot=_avances_hoja_vida(ordenes),
         status_meta=machine_status_meta(machine.status),
     )
@@ -2784,6 +2786,20 @@ def _parse_costo(raw: str) -> float:
         return 0.0
 
 
+def _parse_costo_herramientas(form, empresa: Empresa | None) -> tuple[float, Optional[str]]:
+    raw = (form.get("costo_herramientas") or "").strip()
+    if not raw:
+        return 0.0, None
+    value = parsear_monto_form(raw, empresa.moneda if empresa else "COP")
+    if value is None:
+        return 0.0, "Ingresa un costo de herramientas válido."
+    if value < 0:
+        return 0.0, "El costo de herramientas no puede ser negativo."
+    if value > 999_999_999_999.99:
+        return 0.0, "El costo de herramientas supera el máximo permitido."
+    return round(value, 2), None
+
+
 def _repuesto_linea_a_dict(line: WorkOrderRepuesto) -> dict:
     p = line.spare_part
     cu = line.costo_unitario_linea
@@ -2860,6 +2876,16 @@ def _guardar_repuestos_orden(wo: WorkOrder) -> Optional[str]:
             _revertir_repuestos_stock(wo)
         return None
 
+    costos_historicos = {
+        (
+            line.spare_part_id,
+            int(line.cantidad or 0),
+            line.jornada_fecha,
+            line.jornada_hora_inicio or "",
+            line.jornada_hora_fin or "",
+        ): line.costo_unitario_linea
+        for line in wo.repuestos
+    }
     _revertir_repuestos_stock(wo)
 
     if request.form.get("usa_repuestos") != "1":
@@ -2895,15 +2921,32 @@ def _guardar_repuestos_orden(wo: WorkOrder) -> Optional[str]:
                 jornada_fecha = None
         if jornada_fecha is None and jornada:
             jornada_fecha = jornada.fecha_inicio.date()
+        jornada_hora_inicio = item["jornada_hora_inicio"] or (
+            jornada.fecha_inicio.strftime("%H:%M") if jornada else ""
+        )
+        jornada_hora_fin = item["jornada_hora_fin"] or (
+            jornada.fecha_fin.strftime("%H:%M") if jornada else ""
+        )
+        costo_aplicado = costos_historicos.get(
+            (
+                part.id,
+                item["cantidad"],
+                jornada_fecha,
+                jornada_hora_inicio,
+                jornada_hora_fin,
+            ),
+            float(part.costo_unitario or 0),
+        )
         part.cantidad = (part.cantidad or 0) - item["cantidad"]
         wo.repuestos.append(
             WorkOrderRepuesto(
                 spare_part_id=part.id,
                 cantidad=item["cantidad"],
+                costo_unitario_aplicado=costo_aplicado,
                 notas=item["notas"],
                 jornada_fecha=jornada_fecha,
-                jornada_hora_inicio=item["jornada_hora_inicio"] or (jornada.fecha_inicio.strftime("%H:%M") if jornada else ""),
-                jornada_hora_fin=item["jornada_hora_fin"] or (jornada.fecha_fin.strftime("%H:%M") if jornada else ""),
+                jornada_hora_inicio=jornada_hora_inicio,
+                jornada_hora_fin=jornada_hora_fin,
                 jornada_tecnico=item["jornada_tecnico"] or (jornada.tecnico_label if jornada else ""),
             )
         )
@@ -3144,6 +3187,17 @@ def _orden_form_context(
         "proveedores_ot": proveedores_ot,
         "proveedores_ot_data": [_proveedor_ot_dict(p) for p in proveedores_ot],
         "ejecucion_tipo": ejecucion_tipo,
+        "costo_herramientas_input": formatear_monto_sin_simbolo(
+            wo.costo_herramientas if wo else 0,
+            current_user.empresa.moneda
+            if current_user.is_authenticated and current_user.empresa
+            else "COP",
+        ),
+        "simbolo_moneda_ot": simbolo_moneda_input(
+            current_user.empresa.moneda
+            if current_user.is_authenticated and current_user.empresa
+            else "COP"
+        ),
         "wo_es_terminal": bool(
             wo and wo.status in WORK_ORDER_TERMINAL_STATUSES
         ),
@@ -3327,11 +3381,14 @@ def mantenimiento_costos():
 
     filas = []
     por_tipo = defaultdict(float)
-    por_activo = defaultdict(lambda: {"codigo": "", "nombre": "", "ordenes": 0, "mano_obra": 0.0, "servicios": 0.0, "repuestos": 0.0})
+    por_activo = defaultdict(lambda: {
+        "codigo": "", "nombre": "", "ordenes": 0, "mano_obra": 0.0,
+        "herramientas": 0.0, "servicios": 0.0, "repuestos": 0.0,
+    })
     por_proveedor = defaultdict(lambda: {"nombre": "", "ordenes": 0, "costo": 0.0})
     por_tecnico = defaultdict(lambda: {"nombre": "", "jornadas": 0, "horas": 0.0, "costo": 0.0})
     por_mes = defaultdict(float)
-    total_mano_obra = total_servicios = total_repuestos = 0.0
+    total_mano_obra = total_herramientas = total_servicios = total_repuestos = 0.0
 
     for orden in ordenes:
         referencia = (
@@ -3341,11 +3398,13 @@ def mantenimiento_costos():
         )
         if not referencia or referencia < fecha_desde or referencia > fecha_hasta:
             continue
-        costo_servicio = float(orden.costo_real or 0) if orden.es_ejecucion_externa else 0.0
-        costo_repuestos = sum(float(linea.costo_total_linea or 0) for linea in orden.repuestos)
-        costo_mano_obra = sum(jornada.costo_mano_obra for jornada in orden.jornadas)
-        costo_total = costo_mano_obra + costo_servicio + costo_repuestos
+        costo_servicio = orden.costo_servicio_externo
+        costo_repuestos = orden.costo_repuestos_total
+        costo_mano_obra = orden.costo_mano_obra_total
+        costo_herramientas = orden.costo_herramientas_total
+        costo_total = orden.costo_total_mantenimiento
         total_mano_obra += costo_mano_obra
+        total_herramientas += costo_herramientas
         total_servicios += costo_servicio
         total_repuestos += costo_repuestos
         por_tipo[orden.tipo or "otro"] += costo_total
@@ -3358,6 +3417,7 @@ def mantenimiento_costos():
         activo["nombre"] = machine.nombre if machine else "Sin activo"
         activo["ordenes"] += 1
         activo["mano_obra"] += costo_mano_obra
+        activo["herramientas"] += costo_herramientas
         activo["servicios"] += costo_servicio
         activo["repuestos"] += costo_repuestos
 
@@ -3378,12 +3438,13 @@ def mantenimiento_costos():
             tecnico["costo"] += jornada.costo_mano_obra
 
         filas.append({
-            "orden": orden, "fecha": referencia, "mano_obra": costo_mano_obra, "servicio": costo_servicio,
+            "orden": orden, "fecha": referencia, "mano_obra": costo_mano_obra,
+            "herramientas": costo_herramientas, "servicio": costo_servicio,
             "repuestos": costo_repuestos, "total": costo_total,
         })
 
     activos = sorted(
-        ({**v, "total": v["mano_obra"] + v["servicios"] + v["repuestos"]} for v in por_activo.values()),
+        ({**v, "total": v["mano_obra"] + v["herramientas"] + v["servicios"] + v["repuestos"]} for v in por_activo.values()),
         key=lambda x: x["total"], reverse=True,
     )
     proveedores = sorted(por_proveedor.values(), key=lambda x: x["costo"], reverse=True)
@@ -3396,13 +3457,14 @@ def mantenimiento_costos():
         meses.append({"key": key, "label": cursor.strftime("%m/%Y"), "costo": por_mes.get(key, 0.0)})
         cursor = date(cursor.year + (cursor.month == 12), 1 if cursor.month == 12 else cursor.month + 1, 1)
 
-    total = total_mano_obra + total_servicios + total_repuestos
+    total = total_mano_obra + total_herramientas + total_servicios + total_repuestos
     return render_template(
         "mantenimiento/costos.html",
         fecha_desde=fecha_desde,
         fecha_hasta=fecha_hasta,
         total=total,
         total_mano_obra=total_mano_obra,
+        total_herramientas=total_herramientas,
         total_servicios=total_servicios,
         total_repuestos=total_repuestos,
         total_ordenes=len(filas),
@@ -3909,8 +3971,15 @@ def ordenes_edit(id):
             )
         wo.machine_id = new_mid
         err_ej = _aplicar_ejecucion_desde_form(wo, request.form)
+        costo_herramientas, err_costo_herramientas = _parse_costo_herramientas(
+            request.form, current_user.empresa
+        )
+        if not err_costo_herramientas:
+            wo.costo_herramientas = costo_herramientas
         if err_ej:
             flash(err_ej, "danger")
+        elif err_costo_herramientas:
+            flash(err_costo_herramientas, "danger")
         elif not wo.titulo:
             flash("La actividad es obligatoria.", "danger")
         elif wo.tipo == WorkOrderType.PREVENTIVO.value:
