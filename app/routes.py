@@ -1608,7 +1608,10 @@ def recursos():
 
 
 @bp.route("/dashboard")
-def dashboard():
+def dashboard(
+    _template_name: str = "inicio/dashboard.html",
+    _endpoint: str = "main.dashboard",
+):
     from app.modules import empresa_solo_inventario
 
     if current_user.is_authenticated and empresa_solo_inventario(
@@ -1635,20 +1638,20 @@ def dashboard():
         period, ref, sector, sector_locked, dash_filtros
     )
     period_prev_url = url_for(
-        "main.dashboard",
+        _endpoint,
         **_dashboard_query_params(
             period, _shift_period_ref(period, ref, -1), sector, sector_locked, dash_filtros
         ),
     )
     period_next_url = url_for(
-        "main.dashboard",
+        _endpoint,
         **_dashboard_query_params(
             period, _shift_period_ref(period, ref, 1), sector, sector_locked, dash_filtros
         ),
     )
     period_urls = {
         p: url_for(
-            "main.dashboard",
+            _endpoint,
             **_dashboard_query_params(p, ref, sector, sector_locked, dash_filtros),
         )
         for p in ("dia", "semana", "mes", "año")
@@ -1656,7 +1659,7 @@ def dashboard():
     sector_urls = (
         {
             s_key: url_for(
-                "main.dashboard",
+                _endpoint,
                 **_dashboard_query_params(period, ref, s_key, False, dash_filtros),
             )
             for s_key, _ in (
@@ -1669,7 +1672,7 @@ def dashboard():
         else {}
     )
     dash_clear_filtros_url = url_for(
-        "main.dashboard", **_dashboard_query_params(period, ref, sector, sector_locked)
+        _endpoint, **_dashboard_query_params(period, ref, sector, sector_locked)
     )
     hoy = date.today()
     periodo_anios = list(range(hoy.year - 2, hoy.year + 3))
@@ -1864,8 +1867,104 @@ def dashboard():
             "style": "danger" if dash_resumen["repuestos_bajo_minimo"] else "success",
         },
     ]
+
+    # Inicio operativo: responde qué requiere atención hoy, sin mezclar BI histórico.
+    incidentes_q = _incidents_scope_query().filter(
+        Incident.estado.notin_(
+            [
+                IncidentEstado.RESUELTO.value,
+                IncidentEstado.CERRADO.value,
+                IncidentEstado.CANCELADO.value,
+            ]
+        )
+    )
+    incidentes_nuevas = incidentes_q.filter(
+        Incident.estado.in_([IncidentEstado.REPORTADO.value, IncidentEstado.RECIBIDO.value])
+    ).count()
+    incidentes_recientes = (
+        incidentes_q.order_by(Incident.reportado_en.desc()).limit(6).all()
+    )
+    preventivos_hoy_q = _wo_in_period_query(hoy, hoy, sector, machine_ids).filter(
+        func.lower(WorkOrder.tipo) == WorkOrderType.PREVENTIVO.value
+    )
+    preventivos_hoy = preventivos_hoy_q.count()
+    preventivos_hoy_items = (
+        preventivos_hoy_q.order_by(WorkOrder.fecha_programada, WorkOrder.id)
+        .limit(6)
+        .all()
+    )
+    garantias_por_vencer = (
+        machines_q.filter(
+            Machine.garantia_hasta.isnot(None),
+            Machine.garantia_hasta >= hoy,
+            Machine.garantia_hasta <= hoy + timedelta(days=30),
+        )
+        .order_by(Machine.garantia_hasta)
+        .limit(6)
+        .all()
+    )
+    actividad_reciente = (
+        _filter_work_orders_empresa(WorkOrder.query)
+        .order_by(WorkOrder.created_at.desc())
+        .limit(8)
+        .all()
+    )
+    operacion_cards = [
+        {
+            "label": "OT abiertas",
+            "value": dash_resumen["ordenes_abiertas"],
+            "icon": "bi-clipboard2-check",
+            "style": "warning",
+            "href": url_for(
+                "main.ordenes_list", status=WorkOrderStatus.ABIERTA.value
+            ),
+        },
+        {
+            "label": "OT vencidas",
+            "value": dash_resumen["ordenes_vencidas"],
+            "icon": "bi-clock-history",
+            "style": "danger",
+            "href": url_for(
+                "main.ordenes_list", status=WorkOrderStatus.VENCIDA.value
+            ),
+        },
+        {
+            "label": "Incidencias nuevas",
+            "value": incidentes_nuevas,
+            "icon": "bi-exclamation-triangle",
+            "style": "danger",
+            "href": url_for("main.incidencias_list"),
+        },
+        {
+            "label": "Preventivos de hoy",
+            "value": preventivos_hoy,
+            "icon": "bi-calendar2-check",
+            "style": "success",
+            "href": url_for(
+                "main.ordenes_list",
+                tipo=WorkOrderType.PREVENTIVO.value,
+                fecha_desde=hoy.isoformat(),
+                fecha_hasta=hoy.isoformat(),
+            ),
+        },
+        {
+            "label": "Repuestos bajo mínimo",
+            "value": dash_resumen["repuestos_bajo_minimo"],
+            "icon": "bi-box-seam",
+            "style": "warning",
+            "href": url_for("main.inventario_list"),
+        },
+        {
+            "label": "Activos fuera de servicio",
+            "value": mant + falla,
+            "icon": "bi-cone-striped",
+            "style": "danger" if mant + falla else "success",
+            "href": url_for("main.activos_list"),
+        },
+    ]
     return render_template(
-        "dashboard.html",
+        _template_name,
+        dashboard_endpoint=_endpoint,
         periodo=period,
         periodo_ref=ref.isoformat(),
         periodo_label=period_label,
@@ -1918,7 +2017,22 @@ def dashboard():
         ot_en_periodo=ot_en_periodo,
         dash_resumen=dash_resumen,
         dash_resumen_items=dash_resumen_items,
+        operacion_cards=operacion_cards,
+        incidentes_recientes=incidentes_recientes,
+        preventivos_hoy_items=preventivos_hoy_items,
+        garantias_por_vencer=garantias_por_vencer,
+        actividad_reciente=actividad_reciente,
     )
+
+
+@bp.route("/analisis")
+def analisis_resumen():
+    return render_template("analisis/resumen.html")
+
+
+@bp.route("/analisis/mantenimiento")
+def analisis_mantenimiento():
+    return dashboard("dashboard.html", "main.analisis_mantenimiento")
 
 
 # --- Activos ---

@@ -300,35 +300,41 @@ La prioridad de la incidencia puede interactuar con la **criticidad del activo**
 
 ---
 
-## 10 · Dashboard Mantenimiento · ✅
+## 10 · Inicio · Centro de Operaciones · ✅
 
-Vista conceptual del panel operativo del módulo — conecta con [MRG-08 · Reportes](08-reportes.md):
+Inicio es el panel operativo diario. Su pregunta rectora es **«¿Qué requiere mi atención hoy?»** y no contiene indicadores históricos de BI.
 
 ```
-Dashboard Mantenimiento
+Inicio · Centro de Operaciones
 │
-├── Activos operativos
 ├── OT abiertas
 ├── OT vencidas
-├── Preventivos del mes
-├── Cumplimiento preventivo
-└── Repuestos bajo mínimo
+├── Preventivos de hoy
+├── Incidencias nuevas y abiertas
+├── Repuestos bajo mínimo
+├── Activos fuera de servicio
+├── Garantías por vencer
+└── Actividad reciente
 ```
 
 | Bloque | Qué responde |
 |--------|--------------|
-| **Activos operativos** | Cuántos activos están en servicio vs mantenimiento/falla |
 | **OT abiertas** | Carga de trabajo pendiente |
 | **OT vencidas** | OT fuera de fecha programada |
-| **Preventivos del mes** | Mantenimientos planificados en el período |
-| **Cumplimiento** | % preventivos completados a tiempo |
+| **Preventivos de hoy** | Intervenciones que deben ejecutarse durante la jornada |
+| **Incidencias** | Reportes nuevos y casos aún sin cerrar |
 | **Repuestos bajo mínimo** | Riesgo de paro por falta de piezas |
+| **Activos fuera de servicio** | Equipos en mantenimiento o falla que requieren seguimiento |
+| **Garantías** | Coberturas que vencen en los próximos 30 días |
+| **Actividad reciente** | Últimas OT creadas o actualizadas para recuperar contexto |
 
-El dashboard de planta amplía con KPIs avanzados: disponibilidad, MTBF, MTTR y cumplimiento correctivo.
+Los KPI estratégicos de planta se consultan en **Análisis → Mantenimiento**.
 
 ---
 
 ## 11 · Indicadores (Mantenimiento) · 🟡
+
+La ruta `/analisis/mantenimiento` conserva el panel estratégico con filtros por período, sector, ubicación y activo. La ruta `/analisis` funciona como directorio de inteligencia para mantenimiento, costos, reportes, inventario comercial y Purchasing.
 
 | KPI | Descripción |
 |-----|-------------|

@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block title %}Análisis — {{ app_name }}{% endblock %}
+{% block page_title %}Análisis{% endblock %}
+
+{% block content %}
+<div class="card border-0 bg-primary-subtle mb-4">
+  <div class="card-body p-4">
+    <div class="text-primary text-uppercase small fw-semibold mb-1">Inteligencia de negocio</div>
+    <h2 class="h4 mb-2">De la operación diaria a decisiones con evidencia</h2>
+    <p class="text-muted mb-0">Consulta desempeño, costos, cumplimiento y tendencias sin mezclar estos indicadores con las prioridades del día.</p>
+  </div>
+</div>
+
+<div class="row g-4">
+  {% if mod_mant and perm.acceso_mantenimiento %}
+  <div class="col-md-6 col-xl-4">
+    <a href="{{ url_for('main.analisis_mantenimiento') }}" class="card card-dashboard h-100 text-decoration-none text-body shadow-sm">
+      <div class="card-body p-4"><i class="bi bi-graph-up-arrow fs-2 text-primary"></i><h2 class="h5 mt-3">Mantenimiento</h2><p class="text-muted mb-0">Disponibilidad, cumplimiento, MTBF, MTTR, carga técnica y Pareto.</p></div>
+    </a>
+  </div>
+  <div class="col-md-6 col-xl-4">
+    <a href="{{ url_for('main.mantenimiento_costos') }}" class="card card-dashboard h-100 text-decoration-none text-body shadow-sm">
+      <div class="card-body p-4"><i class="bi bi-cash-coin fs-2 text-success"></i><h2 class="h5 mt-3">Costos de mantenimiento</h2><p class="text-muted mb-0">Mano de obra, herramientas, repuestos y servicios externos por OT y activo.</p></div>
+    </a>
+  </div>
+  <div class="col-md-6 col-xl-4">
+    <a href="{{ url_for('main.reportes') }}" class="card card-dashboard h-100 text-decoration-none text-body shadow-sm">
+      <div class="card-body p-4"><i class="bi bi-file-earmark-bar-graph fs-2 text-info"></i><h2 class="h5 mt-3">Reportes y exportaciones</h2><p class="text-muted mb-0">Salidas operativas y documentos para seguimiento y auditoría.</p></div>
+    </a>
+  </div>
+  {% endif %}
+  {% if mod_inv and perm.acceso_inventario %}
+  <div class="col-md-6 col-xl-4">
+    <a href="{{ url_for('inv_comercial.dashboard_inventario') }}" class="card card-dashboard h-100 text-decoration-none text-body shadow-sm">
+      <div class="card-body p-4"><i class="bi bi-boxes fs-2 text-warning"></i><h2 class="h5 mt-3">Inventario comercial</h2><p class="text-muted mb-0">Existencias, rotación y comportamiento del inventario.</p></div>
+    </a>
+  </div>
+  <div class="col-md-6 col-xl-4">
+    <a href="{{ url_for('purchasing.dashboard') }}" class="card card-dashboard h-100 text-decoration-none text-body shadow-sm">
+      <div class="card-body p-4"><i class="bi bi-bag-check fs-2 text-danger"></i><h2 class="h5 mt-3">Purchasing</h2><p class="text-muted mb-0">Compras, recepciones, cuentas por pagar y vencimientos.</p></div>
+    </a>
+  </div>
+  {% endif %}
+  <div class="col-md-6 col-xl-4">
+    <div class="card h-100 border-dashed bg-body-tertiary">
+      <div class="card-body p-4"><i class="bi bi-stars fs-2 text-secondary"></i><h2 class="h5 mt-3">Analítica avanzada</h2><p class="text-muted mb-2">Tendencias, confiabilidad y análisis de incidencias.</p><span class="badge text-bg-secondary">Próximamente</span></div>
+    </div>
+  </div>
+</div>
+{% endblock %}

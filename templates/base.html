@@ -52,8 +52,8 @@
           <i class="bi bi-person-circle me-2"></i> Mi perfil
         </a>
         {% else %}
-        <a id="tour-nav-dashboard" class="nav-link {% if request.endpoint in ['main.dashboard', 'inv_comercial.dashboard_inventario'] %}active{% endif %}" href="{{ dash_url }}">
-          <i class="bi bi-house-door me-2"></i> Dashboard
+        <a id="tour-nav-dashboard" class="nav-link {% if request.endpoint == 'main.dashboard' %}active{% endif %}" href="{{ dash_url }}">
+          <i class="bi bi-house-door me-2"></i> Inicio
         </a>
         {% if mod_mant and perm.acceso_mantenimiento %}
         <p class="sidebar-module-label px-3 small text-uppercase text-white-50 mb-1 mt-2">Mantenimiento</p>
@@ -78,9 +78,8 @@
           </div>
         </div>
         {% set es_submenu_ot_lista = ep in ['main.ordenes_list', 'main.ordenes_new', 'main.ordenes_edit'] %}
-        {% set es_submenu_costos = ep == 'main.mantenimiento_costos' %}
         {% set es_submenu_ot_planeacion = ep == 'main.ordenes_planeacion' %}
-        {% set menu_ordenes_abierto = es_submenu_ot_lista or es_submenu_ot_planeacion or es_submenu_costos %}
+        {% set menu_ordenes_abierto = es_submenu_ot_lista or es_submenu_ot_planeacion %}
         <div class="sidebar-nav-group">
           <button type="button" id="tour-nav-ordenes" class="nav-link sidebar-nav-toggle w-100 text-start {% if menu_ordenes_abierto %}active-parent{% endif %}"
              data-bs-toggle="collapse" data-bs-target="#submenuOrdenes"
@@ -95,9 +94,6 @@
                data-sidebar-group="programador" data-sidebar-in-section="{{ '1' if menu_ordenes_abierto else '0' }}">
             <a class="nav-link nav-link-sub {% if es_submenu_ot_lista %}active{% endif %}" href="{{ url_for('main.ordenes_list') }}">
               <i class="bi bi-list-ul me-2"></i> Listado de OT
-            </a>
-            <a class="nav-link nav-link-sub {% if es_submenu_costos %}active{% endif %}" href="{{ url_for('main.mantenimiento_costos') }}">
-              <i class="bi bi-cash-coin me-2"></i> Análisis de costos
             </a>
             <a class="nav-link nav-link-sub {% if es_submenu_ot_planeacion %}active{% endif %}" href="{{ url_for('main.ordenes_planeacion') }}">
               <i class="bi bi-calendar2-range me-2"></i> Planeación mensual
@@ -116,35 +112,6 @@
         <a class="nav-link {% if request.endpoint and (request.endpoint.startswith('main.incidencias') or request.endpoint == 'main.incidencia') %}active{% endif %}" href="{{ url_for('main.incidencias_list') }}">
           <i class="bi bi-exclamation-triangle me-2"></i> Incidencias
         </a>
-        {% if mod_inv and perm.acceso_inventario %}
-        {% set es_submenu_rep_mant = ep == 'main.reportes' %}
-        {% set es_submenu_rep_com = ep == 'inv_comercial.dashboard_inventario' %}
-        {% set menu_indicadores_abierto = es_submenu_rep_mant or es_submenu_rep_com %}
-        <div class="sidebar-nav-group">
-          <button type="button" class="nav-link sidebar-nav-toggle w-100 text-start {% if menu_indicadores_abierto %}active-parent{% endif %}"
-             data-bs-toggle="collapse" data-bs-target="#submenuIndicadores"
-             aria-expanded="{{ 'true' if menu_indicadores_abierto else 'false' }}"
-             aria-controls="submenuIndicadores">
-            <span class="d-flex align-items-center justify-content-between w-100">
-              <span><i class="bi bi-bar-chart-line me-2"></i> Indicadores</span>
-              <i class="bi bi-chevron-down small sidebar-chevron"></i>
-            </span>
-          </button>
-          <div class="collapse {% if menu_indicadores_abierto %}show{% endif %}" id="submenuIndicadores"
-               data-sidebar-group="indicadores" data-sidebar-in-section="{{ '1' if menu_indicadores_abierto else '0' }}">
-            <a class="nav-link nav-link-sub {% if es_submenu_rep_mant %}active{% endif %}" href="{{ url_for('main.reportes') }}">
-              <i class="bi bi-wrench-adjustable me-2"></i> Mantenimiento
-            </a>
-            <a class="nav-link nav-link-sub {% if es_submenu_rep_com %}active{% endif %}" href="{{ url_for('inv_comercial.dashboard_inventario') }}">
-              <i class="bi bi-graph-up-arrow me-2"></i> Inventario comercial
-            </a>
-          </div>
-        </div>
-        {% else %}
-        <a class="nav-link {% if request.endpoint == 'main.reportes' %}active{% endif %}" href="{{ url_for('main.reportes') }}">
-          <i class="bi bi-bar-chart-line me-2"></i> Reportes
-        </a>
-        {% endif %}
         {% endif %}
         {% if mod_inv and perm.acceso_inventario %}
         <p class="sidebar-module-label px-3 small text-uppercase text-white-50 mb-1 mt-2">Inventario comercial</p>
@@ -221,6 +188,52 @@
         <a class="nav-link {% if ep == 'inv_comercial.proveedores_list' or ep and ep.startswith('inv_comercial.proveedores') %}active{% endif %}" href="{{ url_for('inv_comercial.proveedores_list') }}">
           <i class="bi bi-truck me-2"></i> Proveedores comerciales
         </a>
+        {% endif %}
+        {% if (mod_mant and perm.acceso_mantenimiento) or (mod_inv and perm.acceso_inventario) %}
+        {% set es_analisis_resumen = ep == 'main.analisis_resumen' %}
+        {% set es_analisis_mantenimiento = ep == 'main.analisis_mantenimiento' %}
+        {% set es_analisis_costos = ep == 'main.mantenimiento_costos' %}
+        {% set es_analisis_reportes = ep == 'main.reportes' %}
+        {% set es_analisis_inventario = ep == 'inv_comercial.dashboard_inventario' %}
+        {% set es_analisis_purchasing = ep == 'purchasing.dashboard' %}
+        {% set menu_analisis_abierto = es_analisis_resumen or es_analisis_mantenimiento or es_analisis_costos or es_analisis_reportes or es_analisis_inventario or es_analisis_purchasing %}
+        <p class="sidebar-module-label px-3 small text-uppercase text-white-50 mb-1 mt-2">Inteligencia</p>
+        <div class="sidebar-nav-group">
+          <button type="button" class="nav-link sidebar-nav-toggle w-100 text-start {% if menu_analisis_abierto %}active-parent{% endif %}"
+             data-bs-toggle="collapse" data-bs-target="#submenuAnalisis"
+             aria-expanded="{{ 'true' if menu_analisis_abierto else 'false' }}"
+             aria-controls="submenuAnalisis">
+            <span class="d-flex align-items-center justify-content-between w-100">
+              <span><i class="bi bi-graph-up-arrow me-2"></i> Análisis</span>
+              <i class="bi bi-chevron-down small sidebar-chevron"></i>
+            </span>
+          </button>
+          <div class="collapse {% if menu_analisis_abierto %}show{% endif %}" id="submenuAnalisis"
+               data-sidebar-group="analisis" data-sidebar-in-section="{{ '1' if menu_analisis_abierto else '0' }}">
+            <a class="nav-link nav-link-sub {% if es_analisis_resumen %}active{% endif %}" href="{{ url_for('main.analisis_resumen') }}">
+              <i class="bi bi-grid me-2"></i> Resumen
+            </a>
+            {% if mod_mant and perm.acceso_mantenimiento %}
+            <a class="nav-link nav-link-sub {% if es_analisis_mantenimiento %}active{% endif %}" href="{{ url_for('main.analisis_mantenimiento') }}">
+              <i class="bi bi-wrench-adjustable me-2"></i> Mantenimiento
+            </a>
+            <a class="nav-link nav-link-sub {% if es_analisis_costos %}active{% endif %}" href="{{ url_for('main.mantenimiento_costos') }}">
+              <i class="bi bi-cash-coin me-2"></i> Costos
+            </a>
+            <a class="nav-link nav-link-sub {% if es_analisis_reportes %}active{% endif %}" href="{{ url_for('main.reportes') }}">
+              <i class="bi bi-file-earmark-bar-graph me-2"></i> Reportes
+            </a>
+            {% endif %}
+            {% if mod_inv and perm.acceso_inventario %}
+            <a class="nav-link nav-link-sub {% if es_analisis_inventario %}active{% endif %}" href="{{ url_for('inv_comercial.dashboard_inventario') }}">
+              <i class="bi bi-boxes me-2"></i> Inventario comercial
+            </a>
+            <a class="nav-link nav-link-sub {% if es_analisis_purchasing %}active{% endif %}" href="{{ url_for('purchasing.dashboard') }}">
+              <i class="bi bi-bag-check me-2"></i> Purchasing
+            </a>
+            {% endif %}
+          </div>
+        </div>
         {% endif %}
         {% if empresa_actual and (perm.equipo or perm.config) %}
         {% set es_submenu_usuarios = ep and (ep.startswith('main.equipo') or ep == 'main.mi_perfil') %}

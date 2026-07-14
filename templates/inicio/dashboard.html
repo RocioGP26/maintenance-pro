@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+
+{% block title %}Inicio — {{ app_name }}{% endblock %}
+{% block page_title %}Inicio · Centro de Operaciones{% endblock %}
+
+{% block head_extra %}
+<style>
+  .ops-hero { background: linear-gradient(135deg, #0b2948, #155ea8); color: #fff; border: 0; }
+  .ops-metric { border: 0; border-left: .3rem solid var(--metric-color, #0d6efd); transition: transform .15s ease, box-shadow .15s ease; }
+  .ops-metric:hover { transform: translateY(-2px); box-shadow: 0 .5rem 1rem rgba(15, 23, 42, .09); }
+  .ops-metric--danger { --metric-color: #dc3545; }
+  .ops-metric--warning { --metric-color: #f59e0b; }
+  .ops-metric--success { --metric-color: #198754; }
+  .ops-metric--primary { --metric-color: #0d6efd; }
+  .ops-metric__icon { width: 2.6rem; height: 2.6rem; display: grid; place-items: center; border-radius: .75rem; background: #eef4fb; color: var(--metric-color); font-size: 1.25rem; }
+  .ops-empty { min-height: 9rem; display: grid; place-items: center; color: #6c757d; text-align: center; }
+  .ops-section-title { font-size: 1rem; font-weight: 700; margin: 0; }
+</style>
+{% endblock %}
+
+{% block header_toolbar %}
+<div class="d-flex flex-wrap gap-2">
+  <a class="btn btn-primary btn-sm" href="{{ url_for('main.ordenes_new') }}"><i class="bi bi-plus-lg me-1"></i>Nueva OT</a>
+  <a class="btn btn-outline-primary btn-sm" href="{{ url_for('main.incidencia') }}"><i class="bi bi-exclamation-circle me-1"></i>Reportar incidencia</a>
+</div>
+{% endblock %}
+
+{% block content %}
+{% if show_welcome %}
+<div class="alert alert-success alert-dismissible fade show" role="alert">
+  <strong>¡Tu empresa está lista!</strong> Desde este centro puedes priorizar el trabajo diario de mantenimiento.
+  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+</div>
+{% endif %}
+
+<section class="card ops-hero shadow-sm mb-4">
+  <div class="card-body p-4 d-flex flex-column flex-lg-row align-items-lg-center justify-content-between gap-3">
+    <div>
+      <div class="small text-uppercase opacity-75 fw-semibold mb-1">Operación de hoy</div>
+      <h2 class="h4 mb-1">¿Qué requiere tu atención hoy?</h2>
+      <p class="mb-0 opacity-75">Alertas, trabajo pendiente y actividad reciente en un solo lugar.</p>
+    </div>
+    <div class="d-flex flex-wrap gap-2">
+      <a class="btn btn-light btn-sm" href="{{ url_for('main.calendario') }}"><i class="bi bi-calendar3 me-1"></i>Calendario</a>
+      <a class="btn btn-outline-light btn-sm" href="{{ url_for('main.analisis_resumen') }}"><i class="bi bi-graph-up-arrow me-1"></i>Ir a Análisis</a>
+    </div>
+  </div>
+</section>
+
+<div class="row g-3 mb-4">
+  {% for card in operacion_cards %}
+  <div class="col-sm-6 col-xl-4">
+    <a href="{{ card.href }}" class="card ops-metric ops-metric--{{ card.style }} h-100 text-decoration-none text-body shadow-sm">
+      <div class="card-body d-flex align-items-center justify-content-between gap-3">
+        <div><div class="text-muted small">{{ card.label }}</div><div class="h3 mb-0 fw-bold">{{ card.value }}</div></div>
+        <span class="ops-metric__icon"><i class="bi {{ card.icon }}"></i></span>
+      </div>
+    </a>
+  </div>
+  {% endfor %}
+</div>
+
+<div class="row g-4 mb-4">
+  <div class="col-xl-7">
+    <div class="card card-dashboard h-100 shadow-sm">
+      <div class="card-header bg-transparent d-flex justify-content-between align-items-center">
+        <h2 class="ops-section-title"><i class="bi bi-calendar2-check text-success me-2"></i>Preventivos de hoy</h2>
+        <a href="{{ url_for('main.calendario') }}" class="btn btn-sm btn-outline-secondary">Ver calendario</a>
+      </div>
+      {% if preventivos_hoy_items %}
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead><tr><th>OT</th><th>Activo</th><th>Actividad</th><th>Estado</th><th></th></tr></thead>
+          <tbody>
+          {% for orden in preventivos_hoy_items %}
+          <tr>
+            <td><span class="fw-semibold">{{ orden.numero or ('#' ~ orden.id) }}</span></td>
+            <td>{{ orden.machine.codigo if orden.machine else '—' }}<small class="d-block text-muted">{{ orden.machine.nombre if orden.machine else '' }}</small></td>
+            <td>{{ orden.titulo }}</td>
+            <td><span class="badge {{ orden.status_meta.badge_class }}">{{ orden.status_meta.label }}</span></td>
+            <td class="text-end"><a href="{{ url_for('main.ordenes_edit', id=orden.id) }}" class="btn btn-sm btn-outline-primary">Abrir</a></td>
+          </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}<div class="ops-empty"><div><i class="bi bi-check2-circle fs-2 d-block mb-2"></i>No hay preventivos programados para hoy.</div></div>{% endif %}
+    </div>
+  </div>
+  <div class="col-xl-5">
+    <div class="card card-dashboard h-100 shadow-sm">
+      <div class="card-header bg-transparent d-flex justify-content-between align-items-center">
+        <h2 class="ops-section-title"><i class="bi bi-exclamation-triangle text-danger me-2"></i>Incidencias abiertas</h2>
+        <a href="{{ url_for('main.incidencias_list') }}" class="btn btn-sm btn-outline-secondary">Ver todas</a>
+      </div>
+      <div class="list-group list-group-flush">
+      {% for incidente in incidentes_recientes %}
+        <a href="{{ url_for('main.incidencias_detail', id=incidente.id) }}" class="list-group-item list-group-item-action py-3">
+          <div class="d-flex justify-content-between gap-3"><span class="fw-semibold text-truncate">{{ incidente.numero or ('INC-' ~ incidente.id) }} · {{ incidente.titulo }}</span><span class="badge text-bg-light">{{ incidente.prioridad_label }}</span></div>
+          <div class="small text-muted mt-1">{{ incidente.machine.nombre if incidente.machine else (incidente.ubicacion or 'Sin activo asociado') }} · {{ incidente.estado_label }}</div>
+        </a>
+      {% else %}<div class="ops-empty"><div><i class="bi bi-shield-check fs-2 d-block mb-2"></i>No hay incidencias abiertas.</div></div>{% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-4">
+  <div class="col-lg-5">
+    <div class="card card-dashboard h-100 shadow-sm">
+      <div class="card-header bg-transparent"><h2 class="ops-section-title"><i class="bi bi-shield-exclamation text-warning me-2"></i>Garantías por vencer · 30 días</h2></div>
+      <div class="list-group list-group-flush">
+      {% for activo in garantias_por_vencer %}
+        <a href="{{ url_for('main.activos_edit', id=activo.id) }}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center gap-3">
+          <div><span class="fw-semibold">{{ activo.codigo }}</span><small class="d-block text-muted">{{ activo.nombre }}</small></div>
+          <span class="badge text-bg-warning">{{ activo.garantia_hasta.strftime('%d/%m/%Y') }}</span>
+        </a>
+      {% else %}<div class="ops-empty"><div><i class="bi bi-check2-circle fs-2 d-block mb-2"></i>Sin garantías próximas a vencer.</div></div>{% endfor %}
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-7">
+    <div class="card card-dashboard h-100 shadow-sm">
+      <div class="card-header bg-transparent d-flex justify-content-between align-items-center">
+        <h2 class="ops-section-title"><i class="bi bi-activity text-primary me-2"></i>Actividad reciente</h2>
+        <a href="{{ url_for('main.ordenes_list') }}" class="btn btn-sm btn-outline-secondary">Ver OT</a>
+      </div>
+      <div class="list-group list-group-flush">
+      {% for orden in actividad_reciente %}
+        <a href="{{ url_for('main.ordenes_edit', id=orden.id) }}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center gap-3 py-3">
+          <div><span class="fw-semibold">{{ orden.numero or ('#' ~ orden.id) }} · {{ orden.titulo }}</span><small class="d-block text-muted">{{ orden.machine.nombre if orden.machine else 'Sin activo' }} · creada {{ orden.created_at.strftime('%d/%m/%Y %H:%M') if orden.created_at else '—' }}</small></div>
+          <span class="badge {{ orden.status_meta.badge_class }}">{{ orden.status_meta.label }}</span>
+        </a>
+      {% else %}<div class="ops-empty">Aún no hay actividad registrada.</div>{% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
