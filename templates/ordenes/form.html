@@ -740,9 +740,8 @@
   }
 
   function mdoManualHabilitado() {
-    var tipo = document.getElementById('selectTipo')?.value || '';
     var ejecucion = document.querySelector('input[name="ejecucion_tipo"]:checked')?.value || '';
-    return tipo === 'preventivo' && ejecucion === 'externo';
+    return ejecucion === 'externo';
   }
 
   function costoRepuestosJornadaActual() {

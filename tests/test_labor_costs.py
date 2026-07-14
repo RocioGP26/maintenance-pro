@@ -96,12 +96,12 @@ class TestLaborCosts(unittest.TestCase):
         self.assertEqual(journey.costo_mano_obra, 90000.0)
         self.assertEqual(journey.costo_total_jornada, 100000.0)
 
-    def test_preventive_external_journey_accepts_manual_labor(self):
+    def test_external_corrective_journey_accepts_manual_labor(self):
         app = create_app("testing")
         order = WorkOrder(
-            titulo="Preventiva externa",
+            titulo="Correctiva externa",
             machine_id=1,
-            tipo="preventivo",
+            tipo="correctivo",
             ejecucion_tipo=WorkOrderEjecucionTipo.EXTERNO.value,
         )
         payload = [{

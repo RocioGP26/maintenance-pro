@@ -2658,7 +2658,6 @@ def _parse_jornadas_json(wo: Optional[WorkOrder] = None) -> Tuple[list[dict], Op
         costo_mano_obra_manual = None
         permite_mdo_manual = bool(
             wo
-            and wo.tipo == WorkOrderType.PREVENTIVO.value
             and wo.es_ejecucion_externa
         )
         if permite_mdo_manual:

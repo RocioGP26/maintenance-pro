@@ -15,7 +15,7 @@ La suite documental mantiene un ciclo independiente en
 - Mano de obra en indicadores, activos, técnicos y detalle del análisis de costos.
 - Costo de herramientas por jornada y desglose económico acumulado en la OT, análisis de costos y hoja de vida del activo.
 - Cálculo visible de MDO y total de jornada en el modal de OT no correctivas.
-- MDO editable por jornada cuando el mantenimiento preventivo lo realiza un proveedor externo.
+- MDO editable por jornada cuando el mantenimiento lo realiza un proveedor externo.
 - Resumen correctivo por jornada con herramientas, repuestos, MDO y total calculado.
 - Snapshot del costo unitario de cada repuesto consumido para preservar el histórico de mantenimiento.
 

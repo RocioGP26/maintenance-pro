@@ -352,7 +352,7 @@ Cada OT conserva un desglose económico común para el análisis de costos y la 
 
 En mantenimientos distintos al correctivo, el modal de jornada presenta el costo de herramientas, calcula la MDO con `duración × tarifa hora` y muestra el total de la jornada como `herramientas + MDO`. Ambos valores calculados son de solo lectura.
 
-Cuando una OT preventiva es ejecutada por un proveedor externo, la MDO de la jornada es editable para registrar el valor informado por el proveedor; el total continúa calculándose automáticamente. En los demás escenarios la MDO permanece derivada de la tarifa del usuario técnico.
+Cuando una OT es ejecutada por un proveedor externo, la MDO de la jornada es editable para registrar el valor informado por el proveedor; el total continúa calculándose automáticamente. En la ejecución interna la MDO permanece derivada de la tarifa del usuario técnico.
 
 En las OT correctivas, el modal presenta herramientas, repuestos y MDO. El costo de repuestos se obtiene de las líneas asociadas a la intervención y el total de jornada se calcula como `herramientas + repuestos + MDO`.
 
