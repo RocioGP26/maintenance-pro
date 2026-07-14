@@ -718,6 +718,7 @@ class Machine(db.Model):
     vida_util_anios = db.Column(db.Integer, nullable=True)
     horas_operacion = db.Column(db.Float, nullable=True)
     fecha_compra = db.Column(db.Date, nullable=True)
+    numero_factura = db.Column(db.String(80), default="")
     valor_compra = db.Column(db.Float, nullable=True)
     moneda_compra = db.Column(db.String(8), default="")
     proveedor = db.Column(db.String(200), default="")
@@ -735,6 +736,7 @@ class Machine(db.Model):
     responsable_technician_id = db.Column(
         db.Integer, db.ForeignKey("technicians.id"), nullable=True, index=True
     )
+    responsable_user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=True, index=True)
     responsable_area = db.Column(db.String(120), default="")
     responsable_cargo = db.Column(db.String(120), default="")
     status = db.Column(db.String(32), default=MachineStatus.OPERATIVO.value)
@@ -749,6 +751,7 @@ class Machine(db.Model):
         foreign_keys=[responsable_technician_id],
         backref="activos_responsable",
     )
+    responsable_usuario = db.relationship("User", foreign_keys=[responsable_user_id])
     proveedor_relacionado = db.relationship(
         "Proveedor",
         foreign_keys=[proveedor_id],
@@ -758,6 +761,8 @@ class Machine(db.Model):
     @property
     def responsable_nombre(self) -> str:
         """Nombre del técnico responsable en ficha de mantenimiento (respaldo si no hay campo personalizado)."""
+        if self.responsable_usuario:
+            return self.responsable_usuario.etiqueta()
         if self.responsable and self.responsable.nombre:
             return self.responsable.nombre
         if not self.responsable_technician_id:
@@ -1186,6 +1191,12 @@ class WorkOrder(db.Model):
         back_populates="work_order",
         cascade="all, delete-orphan",
     )
+    informes = db.relationship(
+        "WorkOrderInforme",
+        back_populates="work_order",
+        cascade="all, delete-orphan",
+        order_by="WorkOrderInforme.created_at.desc()",
+    )
 
     @property
     def usa_repuestos(self) -> bool:
@@ -1200,6 +1211,20 @@ class WorkOrder(db.Model):
     @property
     def num_jornadas(self) -> int:
         return len(self.jornadas)
+
+    @property
+    def tecnicos_realizadores_label(self) -> str:
+        """Técnicos que ejecutaron jornadas, sin repetir nombres."""
+        nombres = []
+        vistos = set()
+        for jornada in self.jornadas:
+            nombre = (jornada.tecnico_label or "").strip()
+            if nombre and nombre != "—" and nombre.lower() not in vistos:
+                nombres.append(nombre)
+                vistos.add(nombre.lower())
+        if nombres:
+            return ", ".join(nombres)
+        return self.technician.nombre if self.technician else "—"
 
     @property
     def status_meta(self) -> dict:
@@ -1233,6 +1258,8 @@ class WorkOrderJornada(db.Model):
     fecha_fin = db.Column(db.DateTime, nullable=False)
     technician_id = db.Column(db.Integer, db.ForeignKey("technicians.id"), nullable=True)
     tecnico_nombre = db.Column(db.String(200), default="")
+    recibido_por = db.Column(db.String(200), default="")
+    requirio_paro = db.Column(db.Boolean, default=False, nullable=False)
     descripcion_avance = db.Column(db.Text, default="")
 
     work_order = db.relationship("WorkOrder", back_populates="jornadas")
@@ -1263,6 +1290,10 @@ class WorkOrderRepuesto(db.Model):
     spare_part_id = db.Column(db.Integer, db.ForeignKey("spare_parts.id"), nullable=False)
     cantidad = db.Column(db.Integer, nullable=False, default=1)
     notas = db.Column(db.String(255), default="")
+    jornada_fecha = db.Column(db.Date, nullable=True)
+    jornada_hora_inicio = db.Column(db.String(5), default="")
+    jornada_hora_fin = db.Column(db.String(5), default="")
+    jornada_tecnico = db.Column(db.String(200), default="")
 
     work_order = db.relationship("WorkOrder", back_populates="repuestos")
     spare_part = db.relationship("SparePart", backref="usos_en_ordenes")
@@ -1276,6 +1307,26 @@ class WorkOrderRepuesto(db.Model):
     @property
     def costo_total_linea(self) -> float:
         return round(self.costo_unitario_linea * int(self.cantidad or 0), 2)
+
+
+class WorkOrderInforme(db.Model):
+    """Informe o soporte documental entregado por el técnico de una OT."""
+
+    __tablename__ = "work_order_informes"
+
+    id = db.Column(db.Integer, primary_key=True)
+    empresa_id = db.Column(db.Integer, db.ForeignKey("empresas.id"), nullable=False, index=True)
+    work_order_id = db.Column(
+        db.Integer, db.ForeignKey("work_orders.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    nombre_original = db.Column(db.String(255), nullable=False)
+    ruta_archivo = db.Column(db.String(500), nullable=False)
+    descripcion = db.Column(db.String(255), default="")
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+
+    work_order = db.relationship("WorkOrder", back_populates="informes")
+    usuario = db.relationship("User")
 
 
 class SparePart(db.Model):
@@ -1296,6 +1347,29 @@ class SparePart(db.Model):
     @property
     def costo_total(self) -> float:
         return round(float(self.costo_unitario or 0) * int(self.cantidad or 0), 2)
+
+
+class SparePartEntry(db.Model):
+    """Compra o entrada de existencias de un repuesto técnico."""
+
+    __tablename__ = "spare_part_entries"
+
+    id = db.Column(db.Integer, primary_key=True)
+    empresa_id = db.Column(db.Integer, db.ForeignKey("empresas.id"), nullable=False, index=True)
+    spare_part_id = db.Column(db.Integer, db.ForeignKey("spare_parts.id"), nullable=False, index=True)
+    cantidad = db.Column(db.Integer, nullable=False)
+    costo_unitario = db.Column(db.Float, nullable=False, default=0.0)
+    fecha_compra = db.Column(db.Date, nullable=False, default=date.today)
+    proveedor_id = db.Column(db.Integer, db.ForeignKey("proveedores.id"), nullable=True)
+    numero_requisicion = db.Column(db.String(80), default="")
+    numero_factura = db.Column(db.String(80), default="")
+    notas = db.Column(db.Text, default="")
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    spare_part = db.relationship("SparePart", backref=db.backref("entradas", lazy="dynamic"))
+    proveedor = db.relationship("Proveedor")
+    usuario = db.relationship("User")
 
 
 # --- Módulo inventario comercial (prefijo inv_, sin FK cruzadas a mantenimiento) ---
@@ -1767,6 +1841,7 @@ class Incident(db.Model):
     __tablename__ = "incidents"
 
     id = db.Column(db.Integer, primary_key=True)
+    idempotency_key = db.Column(db.String(36), nullable=True, unique=True, index=True)
     numero = db.Column(db.String(32), nullable=True, index=True)
     titulo = db.Column(db.String(200), nullable=False)
     descripcion = db.Column(db.Text, default="")
@@ -2241,6 +2316,7 @@ def ensure_saas_schema():
         _add_column_if_missing("machines", "vida_util_anios", "vida_util_anios INTEGER")
         _add_column_if_missing("machines", "horas_operacion", "horas_operacion REAL")
         _add_column_if_missing("machines", "valor_compra", "valor_compra REAL")
+        _add_column_if_missing("machines", "numero_factura", "numero_factura VARCHAR(80)")
         _add_column_if_missing("machines", "proveedor_id", "proveedor_id INTEGER")
         _add_column_if_missing("machines", "responsable_area", "responsable_area VARCHAR(120)")
         _add_column_if_missing("machines", "responsable_cargo", "responsable_cargo VARCHAR(120)")
@@ -2403,6 +2479,12 @@ def ensure_saas_schema():
         _add_column_if_missing("users", "bloqueado", "bloqueado BOOLEAN DEFAULT 0")
         _add_column_if_missing("users", "bloqueado_en", "bloqueado_en DATETIME")
         _add_column_if_missing("incidents", "empresa_id", "empresa_id INTEGER")
+        _add_column_if_missing("incidents", "idempotency_key", "idempotency_key VARCHAR(36)")
+        with db.engine.begin() as conn:
+            conn.execute(text(
+                "CREATE UNIQUE INDEX IF NOT EXISTS ix_incidents_idempotency_key "
+                "ON incidents (idempotency_key)"
+            ))
         _add_column_if_missing("incidents", "numero", "numero VARCHAR(32)")
         _add_column_if_missing("incidents", "user_id", "user_id INTEGER")
         _add_column_if_missing("incidents", "reportado_por", "reportado_por VARCHAR(200)")

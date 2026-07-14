@@ -121,6 +121,16 @@ SAMPLE_ASSETS_UNIVERSAL: dict[str, tuple[tuple[str, str, str], ...]] = {
         ("sistemas_ti", "Sala de cómputo B", "operativo"),
         ("equipos", "HVAC biblioteca", "operativo"),
     ),
+    "hoteleria": (
+        ("infraestructura", "Habitación 101", "operativo"),
+        ("equipos", "Aire acondicionado piso 2", "operativo"),
+        ("equipos", "Lavadora industrial", "mantenimiento"),
+    ),
+    "transporte": (
+        ("vehiculos", "Camión de reparto 01", "operativo"),
+        ("vehiculos", "Bus de operación 02", "operativo"),
+        ("sistemas_ti", "GPS flota principal", "operativo"),
+    ),
 }
 
 

@@ -2,6 +2,16 @@
 
 **Fuente única de verdad** para versiones de cada manual y de la suite.
 
+## Versión del software
+
+| Producto | Versión actual | Fuente canónica | Changelog | Tag Git |
+|---|---:|---|---|---|
+| **Aplicación Flask** | **v1.0.0** | [`app/version.py`](../app/version.py) | [`CHANGELOG.md`](../CHANGELOG.md) | `v1.0.0` *(pendiente de publicar)* |
+| **Suite documental** | **v1.17.0** | Este archivo | [changelog.md](changelog.md) | `docs-vX.Y` |
+
+La aplicación y la documentación son productos versionados de forma
+independiente. Flujo de release del software: [APP_VERSIONING.md](APP_VERSIONING.md).
+
 **Suite actual:** **v1.17.0** (Sprint 16 completo · Purchasing operativo)
 **Últimos tags:** `docs-v1.0` · `docs-foundation-1.0` (recomendado)
 

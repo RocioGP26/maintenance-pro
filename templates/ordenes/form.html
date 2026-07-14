@@ -219,10 +219,6 @@
                 <p class="form-text small mb-0" id="estadoPrevistoAyuda">Según la fecha programada al guardar.</p>
                 {% endif %}
               </div>
-              {% if not order %}
-              <input type="hidden" name="empresa_tercerizada" value="">
-              <input type="hidden" name="maquina_requirio_paro" value="0">
-              {% endif %}
             </div>
           </div>
 
@@ -240,7 +236,9 @@
                 <input type="text" name="recibido_por" id="recibido_por" class="form-control"
                        placeholder="Nombre o cargo" value="{{ order.recibido_por if order else '' }}">
               </div>
-              {% include 'ordenes/_ejecucion_ot.html' %}
+              <div id="asignacionEjecucionCampos" class="d-none">
+                {% include 'ordenes/_ejecucion_ot.html' %}
+              </div>
 
             <div class="col-md-6">
               <label class="form-label" for="selectEstadoManual">Acción manual</label>
@@ -252,30 +250,6 @@
                 Para marcar la OT como completada, indícalo al registrar una jornada. Use esta acción solo para cerrar la orden.
               </p>
               <input type="hidden" name="jornada_estado_ot" id="jornadaEstadoOtHidden" value="{{ jornada_estado_inicial or '' }}">
-            </div>
-
-            <div class="col-12 d-none" id="seccionParoMaquina">
-              <label class="form-label">¿Requirió parar el activo?</label>
-              <div class="border rounded p-3 bg-light">
-                {% set paro = order.maquina_requirio_paro %}
-                <div class="form-check">
-                  <input class="form-check-input" type="radio" name="maquina_requirio_paro" value="1" id="paroMaquinaSi"
-                         {% if paro %}checked{% endif %}>
-                  <label class="form-check-label" for="paroMaquinaSi">
-                    Sí, el activo estuvo parado
-                  </label>
-                </div>
-                <div class="form-check">
-                  <input class="form-check-input" type="radio" name="maquina_requirio_paro" value="0" id="paroMaquinaNo"
-                         {% if not paro %}checked{% endif %}>
-                  <label class="form-check-label" for="paroMaquinaNo">
-                    No, no se requirió parar el activo
-                  </label>
-                </div>
-                <p class="form-text small mb-0 mt-2">
-                  Solo las OT correctivas con paro del activo cuentan para el indicador MTTR del dashboard.
-                </p>
-              </div>
             </div>
 
             <div class="col-12 d-none" id="seccionRepuestos">
@@ -333,11 +307,56 @@
                       <th>Fin</th>
                       <th>Duración</th>
                       <th>Técnico realizador</th>
+                      <th>Recibido por</th>
+                      <th>Paro</th>
                       <th class="col-desc">Descripción</th>
                       <th style="width: 5.5rem;"></th>
                     </tr>
                   </thead>
                   <tbody id="jornadasTbody"></tbody>
+                </table>
+              </div>
+            </div>
+
+            <div class="col-12">
+              <h6 class="fw-semibold mb-2"><i class="bi bi-box-seam me-1"></i> Repuestos instalados</h6>
+              <div class="table-responsive border rounded">
+                <table class="table table-sm align-middle mb-0">
+                  <thead class="table-light">
+                    <tr>
+                      <th>Código</th>
+                      <th>Repuesto</th>
+                      <th class="text-center">Cantidad</th>
+                      <th>Jornada de instalación</th>
+                      <th>Técnico</th>
+                      <th class="text-end">Costo unitario</th>
+                      <th class="text-end">Costo total</th>
+                      <th>Notas</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% if repuestos_inicial %}
+                    {% for repuesto in repuestos_inicial %}
+                    <tr>
+                      <td>{{ repuesto.sku or '—' }}</td>
+                      <td>{{ repuesto.nombre or '—' }}</td>
+                      <td class="text-center">{{ repuesto.cantidad }}</td>
+                      <td class="text-nowrap">
+                        {% if repuesto.jornada_fecha %}{{ repuesto.jornada_fecha }}{% else %}—{% endif %}
+                        {% if repuesto.jornada_hora_inicio or repuesto.jornada_hora_fin %}<br><small class="text-muted">{{ repuesto.jornada_hora_inicio or '—' }} – {{ repuesto.jornada_hora_fin or '—' }}</small>{% endif %}
+                      </td>
+                      <td>{{ repuesto.jornada_tecnico or '—' }}</td>
+                      <td class="text-end">${{ '{:,.2f}'.format(repuesto.costo_unitario or 0) }}</td>
+                      <td class="text-end fw-semibold">${{ '{:,.2f}'.format(repuesto.costo_total or 0) }}</td>
+                      <td>{{ repuesto.notas or '—' }}</td>
+                    </tr>
+                    {% endfor %}
+                    {% else %}
+                    <tr>
+                      <td colspan="8" class="text-center text-muted py-3">No hay repuestos instalados en esta OT.</td>
+                    </tr>
+                    {% endif %}
+                  </tbody>
                 </table>
               </div>
             </div>
@@ -390,6 +409,54 @@
             <a href="{{ url_for('main.ordenes_list') }}" class="btn btn-outline-secondary">{% if solo_lectura|default(false) %}Volver{% else %}Cancelar{% endif %}</a>
           </div>
         </form>
+        {% if order %}
+        <section class="card border-0 shadow-sm mt-3" id="informes-tecnicos">
+          <div class="card-header bg-white d-flex align-items-center justify-content-between gap-2">
+            <h2 class="h6 mb-0"><i class="bi bi-paperclip me-1"></i>Informes técnicos de la OT</h2>
+            <span class="badge text-bg-light">{{ order.informes|length }} archivo(s)</span>
+          </div>
+          <div class="card-body">
+            {% if perm.editar %}
+            <form action="{{ url_for('main.ordenes_informe_upload', id=order.id) }}" method="post" enctype="multipart/form-data" class="row g-2 align-items-end mb-3">
+              {% include '_csrf.html' %}
+              <div class="col-12 col-md-5">
+                <label for="informe_archivo" class="form-label">Archivo del informe</label>
+                <input type="file" name="informe_archivo" id="informe_archivo" class="form-control" accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg,.webp" required>
+              </div>
+              <div class="col-12 col-md-5">
+                <label for="informe_descripcion" class="form-label">Descripción</label>
+                <input type="text" name="informe_descripcion" id="informe_descripcion" class="form-control" maxlength="255" placeholder="Ej. Informe final del mantenimiento">
+              </div>
+              <div class="col-12 col-md-2 d-grid">
+                <button type="submit" class="btn btn-outline-primary"><i class="bi bi-upload me-1"></i>Cargar</button>
+              </div>
+              <div class="col-12"><div class="form-text">Formatos permitidos: PDF, Word, Excel e imágenes.</div></div>
+            </form>
+            {% endif %}
+            <div class="list-group list-group-flush border rounded">
+              {% for informe in order.informes %}
+              <div class="list-group-item d-flex flex-wrap align-items-center justify-content-between gap-2">
+                <div>
+                  <a href="{{ url_for('main.ordenes_informe_download', id=order.id, informe_id=informe.id) }}" class="fw-semibold text-decoration-none">
+                    <i class="bi bi-file-earmark-arrow-down me-1"></i>{{ informe.nombre_original }}
+                  </a>
+                  {% if informe.descripcion %}<div class="small text-muted">{{ informe.descripcion }}</div>{% endif %}
+                  <div class="small text-muted">Cargado {{ informe.created_at|formato_fecha_hora if informe.created_at else '' }}{% if informe.usuario %} por {{ informe.usuario.etiqueta() }}{% endif %}</div>
+                </div>
+                {% if perm.editar %}
+                <form action="{{ url_for('main.ordenes_informe_delete', id=order.id, informe_id=informe.id) }}" method="post" onsubmit="return confirm('¿Eliminar este informe técnico?');">
+                  {% include '_csrf.html' %}
+                  <button type="submit" class="btn btn-outline-danger btn-sm" title="Eliminar informe"><i class="bi bi-trash"></i></button>
+                </form>
+                {% endif %}
+              </div>
+              {% else %}
+              <div class="list-group-item text-muted text-center py-3">No hay informes técnicos cargados en esta OT.</div>
+              {% endfor %}
+            </div>
+          </div>
+        </section>
+        {% endif %}
       </div>
     </div>
       </div>
@@ -415,18 +482,25 @@
       <div class="modal-body">
         <div class="row g-3">
           <div class="col-12">
+            <div class="border rounded p-3 bg-light">
+              <h6 class="fw-semibold mb-3">Quién realiza esta intervención</h6>
+              <div class="row g-3" id="ejecucionModalDestino"></div>
+            </div>
+          </div>
+          <div class="col-12" id="repuestosModalDestino"></div>
+          <div class="col-12 col-md-4">
             <label class="form-label fw-semibold" for="jornadaFecha">Fecha</label>
             <input type="date" class="form-control" id="jornadaFecha" required>
           </div>
-          <div class="col-md-6">
+          <div class="col-12 col-md-4">
             <label class="form-label fw-semibold" for="jornadaHoraInicio">Hora inicio</label>
             <input type="time" class="form-control" id="jornadaHoraInicio" required>
           </div>
-          <div class="col-md-6">
+          <div class="col-12 col-md-4">
             <label class="form-label fw-semibold" for="jornadaHoraFin">Hora fin</label>
             <input type="time" class="form-control" id="jornadaHoraFin" required>
           </div>
-          <div class="col-12">
+          <div class="col-12 col-md-6" id="wrapJornadaTecnico">
             <label class="form-label fw-semibold" for="jornadaTecnico">Técnico realizador (esta jornada)</label>
             <select class="form-select" id="jornadaTecnico">
               <option value="">— Seleccionar —</option>
@@ -436,9 +510,17 @@
               <option value="otro">Otro</option>
             </select>
           </div>
-          <div class="col-12" id="wrapTecnicoNombre">
-            <label class="form-label fw-semibold" for="jornadaTecnicoNombre">Nombre técnico o empresa</label>
-            <input type="text" class="form-control" id="jornadaTecnicoNombre" placeholder="Nombre del técnico o empresa externa">
+          <div class="col-12 col-md-6" id="wrapJornadaRecibido">
+            <label class="form-label fw-semibold" for="jornadaRecibidoPor">Recibido por *</label>
+            <input type="text" class="form-control" id="jornadaRecibidoPor" required
+                   placeholder="Nombre de quien recibe o valida el avance">
+          </div>
+          <div class="col-12">
+            <label class="form-label fw-semibold d-block">¿Esta jornada requirió parar el activo?</label>
+            <div class="d-flex gap-4">
+              <div class="form-check"><input class="form-check-input" type="radio" name="jornadaRequirioParo" id="jornadaParoNo" value="0" checked><label class="form-check-label" for="jornadaParoNo">No</label></div>
+              <div class="form-check"><input class="form-check-input" type="radio" name="jornadaRequirioParo" id="jornadaParoSi" value="1"><label class="form-check-label" for="jornadaParoSi">Sí</label></div>
+            </div>
           </div>
           <div class="col-12">
             <label class="form-label fw-semibold" for="jornadaDescripcion">Descripción del avance</label>
@@ -601,6 +683,8 @@
         '<td class="text-nowrap">' + escHtml(j.hora_fin || '—') + '</td>' +
         '<td class="text-nowrap">' + escHtml(formatear(mins)) + '</td>' +
         '<td class="col-tecnico">' + escHtml(tecnicoLabel(j)) + '</td>' +
+        '<td>' + escHtml(j.recibido_por || '—') + '</td>' +
+        '<td>' + (j.requirio_paro ? 'Sí' : 'No') + '</td>' +
         '<td class="col-desc" title="' + escHtml(j.descripcion || '') + '">' + escHtml(j.descripcion || '—') + '</td>' +
         '<td class="text-end text-nowrap">' +
           (soloLectura ? '—' : (
@@ -657,11 +741,40 @@
 
   function toggleTecnicoNombre() {
     var sel = document.getElementById('jornadaTecnico');
+    var wrapSel = document.getElementById('wrapJornadaTecnico');
     var wrap = document.getElementById('wrapTecnicoNombre');
     var inp = document.getElementById('jornadaTecnicoNombre');
-    var esOtro = sel && sel.value === 'otro';
-    if (wrap) wrap.style.display = esOtro || !sel.value ? '' : 'none';
-    if (inp) inp.required = esOtro;
+    var recibido = document.getElementById('wrapJornadaRecibido');
+    var recibidoExterno = document.getElementById('recibidoExternoDestino');
+    var externo = document.querySelector('input[name="ejecucion_tipo"]:checked')?.value === 'externo';
+    if (wrapSel) {
+      wrapSel.classList.toggle('d-none', externo);
+      wrapSel.style.display = '';
+    }
+    if (wrap) {
+      wrap.classList.toggle('d-none', !externo);
+      wrap.style.display = '';
+    }
+    if (sel) {
+      sel.required = !externo;
+      if (externo) sel.value = 'otro';
+      else if (sel.value === 'otro') sel.value = '';
+    }
+    if (inp) {
+      inp.required = externo;
+      if (!externo) inp.value = '';
+    }
+    if (recibido) {
+      if (externo && recibidoExterno) {
+        recibido.className = '';
+        recibidoExterno.appendChild(recibido);
+      } else if (!externo && wrapSel) {
+        recibido.className = 'col-12 col-md-6';
+        wrapSel.insertAdjacentElement('afterend', recibido);
+      }
+    }
+    var recibidoInput = document.getElementById('jornadaRecibidoPor');
+    if (recibidoInput) recibidoInput.disabled = false;
   }
 
   function limpiarModal() {
@@ -670,6 +783,8 @@
     document.getElementById('jornadaHoraFin').value = '';
     document.getElementById('jornadaTecnico').value = '';
     document.getElementById('jornadaTecnicoNombre').value = '';
+    document.getElementById('jornadaRecibidoPor').value = '';
+    document.getElementById('jornadaParoNo').checked = true;
     document.getElementById('jornadaDescripcion').value = '';
     toggleTecnicoNombre();
   }
@@ -685,6 +800,8 @@
       document.getElementById('jornadaHoraFin').value = j.hora_fin || '';
       document.getElementById('jornadaTecnico').value = j.technician_id ? String(j.technician_id) : 'otro';
       document.getElementById('jornadaTecnicoNombre').value = j.tecnico_nombre || '';
+      document.getElementById('jornadaRecibidoPor').value = j.recibido_por || '';
+      document.getElementById(j.requirio_paro ? 'jornadaParoSi' : 'jornadaParoNo').checked = true;
       document.getElementById('jornadaDescripcion').value = j.descripcion || '';
       toggleTecnicoNombre();
     }
@@ -696,11 +813,20 @@
       if (e.relatedTarget && e.relatedTarget.id === 'btnAbrirModalJornada') {
         editIndex = -1;
         limpiarModal();
+        // En jornadas adicionales los repuestos ya instalados se consultan
+        // únicamente en la tabla principal de la OT.
+        if (typeof seccionRep !== 'undefined' && seccionRep) {
+          var esCorrectivo = selectTipo && selectTipo.value === 'correctivo';
+          seccionRep.classList.toggle('d-none', !esCorrectivo || jornadas.length > 0);
+        }
       }
     });
   }
 
   document.getElementById('jornadaTecnico').addEventListener('change', toggleTecnicoNombre);
+  document.querySelectorAll('input[name="ejecucion_tipo"]').forEach(function (radio) {
+    radio.addEventListener('change', toggleTecnicoNombre);
+  });
 
   if (!soloLectura) document.getElementById('btnGuardarJornada').addEventListener('click', function () {
     var fecha = document.getElementById('jornadaFecha').value;
@@ -708,6 +834,9 @@
     var horaFin = document.getElementById('jornadaHoraFin').value;
     var tech = document.getElementById('jornadaTecnico').value;
     var nombre = document.getElementById('jornadaTecnicoNombre').value.trim();
+    var ejecucionExterna = document.querySelector('input[name="ejecucion_tipo"]:checked')?.value === 'externo';
+    var recibidoPor = document.getElementById('jornadaRecibidoPor').value.trim();
+    var requirioParo = document.querySelector('input[name="jornadaRequirioParo"]:checked')?.value === '1';
     var desc = document.getElementById('jornadaDescripcion').value.trim();
 
     if (!fecha || !horaIni || !horaFin) {
@@ -718,12 +847,16 @@
       alert('La hora fin debe ser posterior a la hora inicio.');
       return;
     }
-    if (!tech) {
+    if (!ejecucionExterna && !tech) {
       alert('Selecciona el técnico realizador.');
       return;
     }
-    if (tech === 'otro' && !nombre) {
-      alert('Indica el nombre del técnico o empresa.');
+    if (ejecucionExterna && !nombre) {
+      alert('Indica el nombre del técnico enviado por el proveedor.');
+      return;
+    }
+    if (!recibidoPor) {
+      alert('Indica quién recibió el avance.');
       return;
     }
 
@@ -731,8 +864,10 @@
       fecha: fecha,
       hora_inicio: horaIni,
       hora_fin: horaFin,
-      technician_id: tech,
-      tecnico_nombre: tech === 'otro' ? nombre : '',
+      technician_id: ejecucionExterna ? 'otro' : tech,
+      tecnico_nombre: ejecucionExterna ? nombre : '',
+      recibido_por: recibidoPor,
+      requirio_paro: requirioParo,
       descripcion: desc
     };
 
@@ -740,6 +875,18 @@
       jornadas[editIndex] = item;
     } else {
       jornadas.push(item);
+    }
+    // Los repuestos nuevos del modal pertenecen a la jornada que se está guardando.
+    if (typeof syncRepFromDom === 'function') syncRepFromDom();
+    if (typeof repuestos !== 'undefined') {
+      repuestos.forEach(function (r) {
+        if (r.jornada_fecha) return;
+        r.jornada_fecha = item.fecha;
+        r.jornada_hora_inicio = item.hora_inicio;
+        r.jornada_hora_fin = item.hora_fin;
+        r.jornada_tecnico = tecnicoLabel(item);
+      });
+      if (typeof syncRepHidden === 'function') syncRepHidden();
     }
     var picked = document.querySelector('input[name="jornadaEstadoOt"]:checked');
     var accion = picked ? picked.value : 'en_proceso';
@@ -749,6 +896,8 @@
     syncHidden();
     renderLista();
     if (modal) modal.hide();
+    var ordenForm = document.getElementById('ordenForm');
+    if (ordenForm && typeof ordenForm.requestSubmit === 'function') ordenForm.requestSubmit();
   });
 
   function toggleManual() {
@@ -945,17 +1094,23 @@
   }
 
   function syncRepFromDom() {
+    var anteriores = repuestos.slice();
     repuestos = [];
     if (!repuestosTbody) return;
-    repuestosTbody.querySelectorAll('tr').forEach(function (tr) {
+    repuestosTbody.querySelectorAll('tr').forEach(function (tr, idx) {
       var sel = tr.querySelector('.rep-spare');
       var qty = tr.querySelector('.rep-qty');
       var notas = tr.querySelector('.rep-notas');
       if (!sel || !sel.value) return;
+      var anterior = anteriores[idx] || {};
       repuestos.push({
         spare_part_id: parseInt(sel.value, 10),
         cantidad: parseInt(qty && qty.value, 10) || 1,
-        notas: notas ? notas.value.trim() : ''
+        notas: notas ? notas.value.trim() : '',
+        jornada_fecha: anterior.jornada_fecha || '',
+        jornada_hora_inicio: anterior.jornada_hora_inicio || '',
+        jornada_hora_fin: anterior.jornada_hora_fin || '',
+        jornada_tecnico: anterior.jornada_tecnico || ''
       });
     });
   }
@@ -1032,10 +1187,34 @@
   actualizarSeccionRepuestos();
   togglePanelRep();
   renderRepuestos();
+  var ordenFormRepuestos = document.getElementById('ordenForm');
+  if (ordenFormRepuestos && !soloLectura) {
+    ordenFormRepuestos.addEventListener('submit', function () {
+      syncRepFromDom();
+      syncRepHidden();
+    });
+  }
 })();
 
 {% if order %}
 (function () {
+  var ejecucionCampos = document.getElementById('asignacionEjecucionCampos');
+  var ejecucionDestino = document.getElementById('ejecucionModalDestino');
+  if (ejecucionCampos && ejecucionDestino) {
+    while (ejecucionCampos.firstChild) ejecucionDestino.appendChild(ejecucionCampos.firstChild);
+    ejecucionCampos.remove();
+    ejecucionDestino.querySelectorAll('input[name], select[name], textarea[name]').forEach(function (el) {
+      el.setAttribute('form', 'ordenForm');
+    });
+  }
+  var repuestosCampos = document.getElementById('seccionRepuestos');
+  var repuestosDestino = document.getElementById('repuestosModalDestino');
+  if (repuestosCampos && repuestosDestino) {
+    repuestosDestino.appendChild(repuestosCampos);
+    repuestosCampos.querySelectorAll('input[name], select[name], textarea[name]').forEach(function (el) {
+      el.setAttribute('form', 'ordenForm');
+    });
+  }
   function escHtml(s) {
     if (!s) return '';
     return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -1045,12 +1224,12 @@
   var radiosEj = document.querySelectorAll('.ot-ejec-radio');
   var panelInt = document.getElementById('panelEjecucionInterno');
   var panelExt = document.getElementById('panelEjecucionExterno');
+  var panelProveedorExt = document.getElementById('panelProveedorExternoJornada');
   var buscarProv = document.getElementById('buscarProveedorOt');
   var listaProv = document.getElementById('listaProveedorOt');
   var provHidden = document.getElementById('proveedorIdHidden');
   var tarjetaProv = document.getElementById('tarjetaProveedorOt');
   var btnCambiar = document.getElementById('btnCambiarProveedor');
-  var contactoProv = document.getElementById('contactoProveedorOt');
   var selectEquipo = document.getElementById('selectEquipo');
   var inputFechaProg = document.getElementById('inputFechaProgramada');
   var selectTipo = document.getElementById('selectTipo');
@@ -1137,6 +1316,7 @@
     var esExt = document.querySelector('.ot-ejec-radio[value="externo"]')?.checked;
     if (panelInt) panelInt.classList.toggle('d-none', !!esExt);
     if (panelExt) panelExt.classList.toggle('d-none', !esExt);
+    if (panelProveedorExt) panelProveedorExt.classList.toggle('d-none', !esExt);
     var techSel = document.getElementById('selectTecnicoAsignado');
     if (techSel) techSel.disabled = !!esExt;
     if (panelExt) {
@@ -1145,6 +1325,7 @@
         else el.disabled = !esExt;
       });
     }
+    if (provHidden) provHidden.disabled = !esExt;
     actualizarResumenSidebar();
   }
 
@@ -1163,7 +1344,6 @@
     if (elTipo) { elTipo.textContent = p.tipo_label; elTipo.className = 'badge ' + p.badge_class; }
     if (elAv) { elAv.textContent = p.iniciales; elAv.className = 'prov-avatar ' + (p.tipo === 'insumos' ? 'prov-avatar--insumos' : (p.tipo === 'ambos' ? 'prov-avatar--ambos' : 'prov-avatar--servicio')); }
     if (elCon) elCon.textContent = p.contacto_nombre || '';
-    if (contactoProv && !contactoProv.value) contactoProv.value = p.contacto_nombre || '';
     if (listaProv) listaProv.classList.add('d-none');
     actualizarResumenSidebar();
   }
@@ -1190,6 +1370,16 @@
   }
 
   radiosEj.forEach(function (r) { r.addEventListener('change', toggleEjecucion); });
+  if (provHidden) {
+    provHidden.addEventListener('change', function () {
+      var p = catalogoProv.find(function (x) { return String(x.id) === String(provHidden.value); });
+      if (p) seleccionarProveedor(p);
+      else {
+        if (tarjetaProv) tarjetaProv.classList.add('d-none');
+        actualizarResumenSidebar();
+      }
+    });
+  }
   if (buscarProv) {
     buscarProv.addEventListener('input', function () { filtrarProveedores(buscarProv.value); });
     buscarProv.addEventListener('focus', function () { filtrarProveedores(buscarProv.value); });

@@ -103,7 +103,20 @@
     <div class="card card-dashboard mb-3"><div class="card-body">
       <h6 class="fw-semibold">Siguiente acción operativa</h6>
       {% if inc.estado in ('reportado','reasignado') %}
-      <form method="post" action="{{ url_for('main.incidencias_accion', id=inc.id) }}">{% include '_csrf.html' %}<input type="hidden" name="accion" value="recibir"><textarea name="comentario" class="form-control mb-2" placeholder="Clasificación u observación inicial"></textarea><button class="btn btn-primary">Recibir incidente</button></form>
+      <form method="post" action="{{ url_for('main.incidencias_accion', id=inc.id) }}" class="mb-3">
+        {% include '_csrf.html' %}<input type="hidden" name="accion" value="asignar">
+        <label class="form-label">Asignar técnico directamente</label>
+        <select name="tecnico_id" class="form-select mb-2" required>
+          <option value="">Seleccionar técnico…</option>
+          {% for t in tecnicos %}<option value="{{ t.id }}">{{ t.nombre }}</option>{% endfor %}
+        </select>
+        <textarea name="comentario" class="form-control mb-2" placeholder="Clasificación u observación inicial"></textarea>
+        <button class="btn btn-primary">Recibir y asignar técnico</button>
+      </form>
+      <form method="post" action="{{ url_for('main.incidencias_accion', id=inc.id) }}">
+        {% include '_csrf.html' %}<input type="hidden" name="accion" value="recibir">
+        <button class="btn btn-outline-secondary btn-sm">Recibir sin asignar todavía</button>
+      </form>
       {% elif inc.estado == 'recibido' %}
       <form method="post" action="{{ url_for('main.incidencias_accion', id=inc.id) }}">{% include '_csrf.html' %}<input type="hidden" name="accion" value="asignar"><select name="tecnico_id" class="form-select mb-2" required><option value="">Seleccionar técnico…</option>{% for t in tecnicos %}<option value="{{ t.id }}">{{ t.nombre }}</option>{% endfor %}</select><button class="btn btn-primary">Asignar técnico</button></form>
       {% elif inc.estado == 'asignado' %}
@@ -174,14 +187,21 @@
       {% if puede_crear_ot and inc.estado == 'diagnosticado' and not inc.work_order_id %}
       <form method="post" action="{{ url_for('main.incidencias_crear_ot', id=inc.id) }}">
         {% include "_csrf.html" %}
+        <label class="form-label small" for="tipoOtTicketDesktop">Tipo de OT</label>
+        <select name="tipo_ot" id="tipoOtTicketDesktop" class="form-select form-select-sm mb-2" required>
+          <option value="">Seleccionar…</option>
+          <option value="preventivo">Preventiva</option>
+          <option value="correctivo">Correctiva</option>
+          <option value="emergencia">Emergencia</option>
+        </select>
         <button type="submit" class="btn btn-primary w-100" {% if not inc.machine_id %}disabled title="Sin activo relacionado"{% endif %}>
           <i class="bi bi-wrench"></i> Crear OT
         </button>
       </form>
       {% endif %}
       {% if inc.work_order %}
-      <a href="{{ url_for('main.ordenes_edit', id=inc.work_order.id) }}" class="btn btn-outline-primary w-100">
-        <i class="bi bi-box-arrow-up-right"></i> Ver OT {{ inc.work_order.numero }}
+      <a href="{{ url_for('main.ordenes_pdf', id=inc.work_order.id, inline=1) }}" class="btn btn-outline-primary w-100" target="_blank" rel="noopener">
+        <i class="bi bi-file-earmark-pdf"></i> Ver PDF OT {{ inc.work_order.numero }}
       </a>
       {% endif %}
     </div>
@@ -194,16 +214,22 @@
         <i class="bi bi-arrow-left"></i> Volver al listado
       </a>
       {% if puede_crear_ot and inc.estado == 'diagnosticado' and not inc.work_order_id %}
-      <form method="post" action="{{ url_for('main.incidencias_crear_ot', id=inc.id) }}" class="d-inline">
+      <form method="post" action="{{ url_for('main.incidencias_crear_ot', id=inc.id) }}" class="d-flex gap-2 flex-wrap">
         {% include "_csrf.html" %}
+        <select name="tipo_ot" class="form-select" style="width:auto" required>
+          <option value="">Tipo de OT…</option>
+          <option value="preventivo">Preventiva</option>
+          <option value="correctivo">Correctiva</option>
+          <option value="emergencia">Emergencia</option>
+        </select>
         <button type="submit" class="btn btn-primary" {% if not inc.machine_id %}disabled title="Sin activo relacionado"{% endif %}>
           <i class="bi bi-wrench"></i> Crear OT
         </button>
       </form>
       {% endif %}
       {% if inc.work_order %}
-      <a href="{{ url_for('main.ordenes_edit', id=inc.work_order.id) }}" class="btn btn-outline-primary">
-        <i class="bi bi-box-arrow-up-right"></i> Ver OT {{ inc.work_order.numero }}
+      <a href="{{ url_for('main.ordenes_pdf', id=inc.work_order.id, inline=1) }}" class="btn btn-outline-primary" target="_blank" rel="noopener">
+        <i class="bi bi-file-earmark-pdf"></i> Ver PDF OT {{ inc.work_order.numero }}
       </a>
       {% endif %}
     </div>

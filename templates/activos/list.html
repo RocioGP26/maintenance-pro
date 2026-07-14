@@ -160,6 +160,11 @@
             </td>
             <td class="text-end text-nowrap col-acciones">
               <div class="d-inline-flex gap-1 acciones-activos-list">
+                <a href="{{ url_for('main.activos_hoja_vida', id=item.id) }}" class="btn btn-outline-primary btn-sm py-0 px-2"
+                   title="Ver Hoja de Vida" aria-label="Ver Hoja de Vida">
+                  <i class="bi bi-file-earmark-medical"></i>
+                </a>
+                <a href="{{ url_for('main.activos_ficha_tecnica', id=item.id) }}" class="btn btn-outline-info btn-sm py-0 px-2" title="Ver Ficha Técnica" aria-label="Ver Ficha Técnica"><i class="bi bi-file-earmark-text"></i></a>
                 {% if perm.editar or perm.solo_lectura %}
                 <a href="{{ item.href }}" class="btn btn-outline-secondary btn-sm py-0 px-2"
                    title="{% if perm.editar %}Editar{% else %}Ver{% endif %}">
@@ -227,6 +232,8 @@
                   </button>
                 </div>
                 <div class="activos-grid-actions acciones-activos-list">
+                  <a href="{{ url_for('main.activos_hoja_vida', id=item.id) }}" class="btn btn-outline-primary btn-sm py-0 px-2" title="Ver Hoja de Vida" aria-label="Ver Hoja de Vida"><i class="bi bi-file-earmark-medical"></i></a>
+                  <a href="{{ url_for('main.activos_ficha_tecnica', id=item.id) }}" class="btn btn-outline-info btn-sm py-0 px-2" title="Ver Ficha Técnica" aria-label="Ver Ficha Técnica"><i class="bi bi-file-earmark-text"></i></a>
                   {% if perm.editar or perm.solo_lectura %}
                   <a href="{{ item.href }}" class="btn btn-outline-secondary btn-sm py-0 px-2"><i class="bi bi-{% if perm.editar %}pencil{% else %}eye{% endif %}"></i></a>
                   {% endif %}

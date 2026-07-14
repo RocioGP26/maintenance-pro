@@ -10,7 +10,7 @@ from flask_login import current_user
 from sqlalchemy import or_
 
 from app import db
-from app.models import InvVenta, Machine, WorkOrder, WorkOrderStatus
+from app.models import Incident, InvVenta, Machine, WorkOrder, WorkOrderStatus
 
 
 def _current_empresa_id() -> int | None:
@@ -105,6 +105,20 @@ def _resumen_alertas_mantenimiento(hoy: date) -> dict[str, Any]:
     vencimientos = aplicar_filtro_alerta_orden(base, "vencimientos", hoy).count()
     programados_hoy = aplicar_filtro_alerta_orden(base, "programados_hoy", hoy).count()
     en_proceso = aplicar_filtro_alerta_orden(base, "en_proceso", hoy).count()
+    eid = _current_empresa_id()
+    tickets_q = Incident.query.filter(Incident.resuelto.is_(False))
+    if eid:
+        tickets_q = tickets_q.filter(
+            or_(
+                Incident.empresa_id == eid,
+                Incident.machine_id.in_(_machine_ids_for_empresa()),
+            )
+        )
+    from app.permissions import is_read_only, is_requester
+
+    if is_read_only(current_user) or is_requester(current_user):
+        tickets_q = tickets_q.filter(Incident.user_id == current_user.id)
+    tickets_pendientes = tickets_q.count()
 
     return _empacar_alertas(
         modulo="mantenimiento",
@@ -128,6 +142,12 @@ def _resumen_alertas_mantenimiento(hoy: date) -> dict[str, Any]:
                 "count": en_proceso,
                 "url": url_for("main.ordenes_list", alerta="en_proceso"),
                 "tone": "warn",
+            },
+            {
+                "label": "Tickets pendientes",
+                "count": tickets_pendientes,
+                "url": url_for("main.incidencias_list", estado="pendiente"),
+                "tone": "danger",
             },
         ],
     )

@@ -31,7 +31,12 @@ from app.models import (
     PlantillaDashboard,
     Sede,
 )
-from app.sector_templates import dashboard_config_for_sector, normalizar_sector
+from app.sector_templates import (
+    SECTOR_CUSTOM_FIELDS,
+    SECTOR_CUSTOM_FIELD_SECTIONS,
+    dashboard_config_for_sector,
+    normalizar_sector,
+)
 
 
 def _clave_tipo_empresa(empresa_id: int, base: str) -> str:
@@ -114,6 +119,40 @@ def crear_categorias_universales(empresa_id: int, sector: str) -> dict[str, Mach
     return tipos
 
 
+def crear_campos_hoja_vida_sector(empresa_id: int, sector: str) -> list[CampoPersonalizado]:
+    """Aprovisiona los campos sectoriales sin modificar campos creados por la empresa."""
+    sector = normalizar_sector(sector)
+    creados: list[CampoPersonalizado] = []
+    for orden, (clave, nombre, tipo, obligatorio, _categoria) in enumerate(
+        SECTOR_CUSTOM_FIELDS.get(sector, ())
+    ):
+        existente = CampoPersonalizado.query.filter_by(
+            empresa_id=empresa_id,
+            sector=sector,
+            entidad=CAMPO_ENTIDAD_ACTIVO,
+            clave=clave,
+        ).first()
+        if existente:
+            continue
+        campo = CampoPersonalizado(
+            empresa_id=empresa_id,
+            sector=sector,
+            entidad=CAMPO_ENTIDAD_ACTIVO,
+            clave=clave,
+            nombre=nombre,
+            seccion=SECTOR_CUSTOM_FIELD_SECTIONS.get(clave, "tecnica"),
+            tipo=tipo,
+            texto_tamano="corto" if tipo == "text" else "",
+            obligatorio=obligatorio,
+            orden=orden,
+            activo=True,
+        )
+        db.session.add(campo)
+        creados.append(campo)
+    db.session.flush()
+    return creados
+
+
 def crear_plantilla_sector(empresa_id: int, sector: str) -> dict[str, Any]:
     """
     Al registrar una empresa: categorías universales + plantilla de dashboard.
@@ -121,6 +160,7 @@ def crear_plantilla_sector(empresa_id: int, sector: str) -> dict[str, Any]:
     """
     sector = normalizar_sector(sector)
     tipos = crear_categorias_universales(empresa_id, sector)
+    crear_campos_hoja_vida_sector(empresa_id, sector)
 
     config = dashboard_config_for_sector(sector)
     plantilla = PlantillaDashboard.query.filter_by(empresa_id=empresa_id).first()
@@ -187,6 +227,7 @@ def ensure_empresa_sector_setup(empresa) -> None:
         return
     sector = normalizar_sector(empresa.sector or "manufactura")
     crear_categorias_universales(empresa.id, sector)
+    crear_campos_hoja_vida_sector(empresa.id, sector)
     if not PlantillaDashboard.query.filter_by(empresa_id=empresa.id).first():
         config = dashboard_config_for_sector(sector)
         db.session.add(
@@ -447,7 +488,7 @@ def responsables_display_por_maquinas(
                 if texto:
                     custom[fila.machine_id] = texto
     for m in machines:
-        resultado[m.id] = custom.get(m.id, "")
+        resultado[m.id] = custom.get(m.id, "") or m.responsable_nombre
     return resultado
 
 

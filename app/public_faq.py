@@ -47,7 +47,8 @@ FAQ_SECTIONS: tuple[dict, ...] = (
                 "q": "¿Cuánto cuesta?",
                 "a": (
                     "SaaS mensual por plan: Start · Grow · Scale · Enterprise. "
-                    "Consulta precios actuales en la landing o al registrarte."
+                    "Los precios definitivos estarán disponibles próximamente. "
+                    "Contacta al equipo Maintix para recibir información comercial."
                 ),
             },
             {

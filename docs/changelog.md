@@ -1,5 +1,8 @@
 # Changelog · Maintix Documentation Suite
 
+> Este changelog pertenece a la documentación. Los cambios de la aplicación se
+> registran por separado en [`/CHANGELOG.md`](../CHANGELOG.md).
+
 ## [1.17.0] — 2026-07-11 · Sprint 16.5 · Purchasing cierre
 
 ### Added

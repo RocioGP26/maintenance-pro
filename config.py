@@ -12,6 +12,8 @@ from dotenv import load_dotenv
 # durante la importación del módulo.
 load_dotenv()
 
+from app.version import __version__
+
 BASE_DIR = Path(__file__).resolve().parent
 
 
@@ -74,6 +76,7 @@ class Config:
     PERMANENT_SESSION_LIFETIME = timedelta(days=14)
     SESSION_REFRESH_EACH_REQUEST = True
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+    APP_VERSION = __version__
 
     # Correo transaccional. Gmail SMTP funciona con una contraseña de aplicación.
     MAIL_SERVER = os.environ.get("MAIL_SERVER", "smtp.gmail.com").strip()

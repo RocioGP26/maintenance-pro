@@ -6,6 +6,10 @@ Plataforma web para operación empresarial: activos, órdenes de trabajo, invent
 
 > **Toda la operación. Una sola plataforma.**
 
+**Versión de la aplicación:** `v1.0.0` — fuente canónica:
+[`app/version.py`](app/version.py). Política y releases:
+[`docs/APP_VERSIONING.md`](docs/APP_VERSIONING.md).
+
 ## Filosofía de desarrollo
 
 Cada nueva funcionalidad desarrollada para Maintix deberá cumplir las **cinco UX Laws** (MUX) antes de ser considerada lista para producción.
@@ -91,6 +95,14 @@ Documentación de backups Neon: `docs/backup-neon.md`.
 |----------|-----|
 | `GET /health/live` | Liveness (app responde) |
 | `GET /health` | Readiness (BD + revisión Alembic) |
+| `GET /version` | Versión SemVer y build público seguro |
+| `GET /api/v1/version` | Alias estable para integraciones |
+
+Consulta local por CLI:
+
+```powershell
+flask --app run:app version
+```
 
 **Render:** importa `render.yaml` o conecta el repo; configura `DATABASE_URL` (Neon) y `PLATFORM_ADMIN_KEY`.
 

@@ -1,15 +1,18 @@
 from datetime import date
+import json
 import os
 import re
 import unicodedata
 from calendar import monthrange
 from datetime import date, datetime, timedelta
 from typing import Any, List, Optional, Tuple
+from uuid import UUID, uuid4
 
 from flask import Blueprint, abort, current_app, flash, jsonify, redirect, render_template, request, session, url_for
 from werkzeug.utils import secure_filename
 from flask_login import current_user, login_required, login_user, logout_user
 from sqlalchemy import and_, false, func, or_
+from sqlalchemy.exc import IntegrityError
 
 from app import db, limiter
 from app.url_utils import is_safe_redirect
@@ -33,6 +36,8 @@ from app.permissions import (
     can_manage_config,
     can_manage_equipo,
     can_manage_incidents,
+    can_report_incident,
+    is_requester,
     normalize_rol,
     roles_for_select,
     role_help_map,
@@ -80,6 +85,7 @@ from app.models import (
     Sede,
     MachineMonthlyPlan,
     SparePart,
+    SparePartEntry,
     Proveedor,
     PROVEEDOR_TIPOS_VALIDOS,
     ProveedorTipo,
@@ -90,6 +96,7 @@ from app.models import (
     WorkOrder,
     WorkOrderEjecucionTipo,
     WorkOrderJornada,
+    WorkOrderInforme,
     WorkOrderRepuesto,
     WorkOrderStatus,
     WorkOrderType,
@@ -171,6 +178,7 @@ from app.work_time import (
 )
 
 EMPRESA_LOGO_EXTENSIONS = {"png", "jpg", "jpeg", "webp"}
+ACTIVO_IMAGE_EXTENSIONS = {"png", "jpg", "jpeg", "webp"}
 ZONAS_EMPRESA = (
     ("America/Bogota", "América / Bogotá"),
     ("America/Mexico_City", "América / Ciudad de México"),
@@ -276,6 +284,11 @@ def _enforce_role_permissions():
         return
 
     if ep in USUARIO_POST_ENDPOINTS:
+        return
+
+    # Reportar una incidencia es una creación autorizada para Solicitantes y
+    # demás roles operativos; no concede permiso para modificar otros registros.
+    if ep == "main.incidencia" and can_report_incident(current_user):
         return
 
     if normalize_rol(current_user.rol) == UserRole.USUARIO.value:
@@ -944,7 +957,13 @@ def _dashboard_kpis(
     ]
     repair_hours = []
     for wo in mttr_wos:
-        mins = wo_tiempo_gastado_minutos(wo, emp)
+        jornadas_paro = [j for j in wo.jornadas if bool(j.requirio_paro)]
+        if jornadas_paro:
+            mins = sum(j.duracion_minutos for j in jornadas_paro)
+        else:
+            # Compatibilidad con OT históricas: antes el paro se registraba
+            # globalmente y no existía la marca por jornada.
+            mins = wo_tiempo_gastado_minutos(wo, emp)
         if mins is not None:
             repair_hours.append(mins / 60.0)
         elif wo.fecha_inicio and wo.fecha_cierre:
@@ -1124,6 +1143,17 @@ def _dashboard_resumen_operativo(
         .filter(func.lower(WorkOrder.tipo) == WorkOrderType.PREVENTIVO.value)
         .count()
     )
+    correctivos = (
+        _wo_in_period_query(start, end, sector, machine_ids)
+        .filter(func.lower(WorkOrder.tipo) == WorkOrderType.CORRECTIVO.value)
+        .all()
+    )
+    minutos_correctivos_con_paro = sum(
+        jornada.duracion_minutos
+        for orden in correctivos
+        for jornada in orden.jornadas
+        if bool(jornada.requirio_paro)
+    )
     sp_q = _filter_empresa(SparePart.query, SparePart)
     repuestos_bajo_minimo = sp_q.filter(SparePart.cantidad < SparePart.stock_minimo).count()
 
@@ -1132,6 +1162,11 @@ def _dashboard_resumen_operativo(
         "ordenes_abiertas": ordenes_abiertas,
         "ordenes_vencidas": ordenes_vencidas,
         "preventivos_mes": preventivos_mes,
+        "total_correctivos": len(correctivos),
+        "minutos_correctivos_con_paro": minutos_correctivos_con_paro,
+        "horas_correctivos_con_paro_label": formatear_duracion(
+            minutos_correctivos_con_paro
+        ),
         "repuestos_bajo_minimo": repuestos_bajo_minimo,
     }
 
@@ -1193,34 +1228,75 @@ def _apply_machine_base_fields(machine: Machine, form) -> Optional[str]:
     machine.vida_util_anios = _parse_int_form(form.get("vida_util_anios"))
     machine.horas_operacion = _parse_float_form(form.get("horas_operacion"))
     machine.fecha_compra = _parse_form_date(form.get("fecha_compra"))
+    machine.numero_factura = (form.get("numero_factura") or "").strip()
     moneda_emp = _moneda_empresa_activo(machine)
     machine.moneda_compra = normalizar_moneda(form.get("moneda_compra"), moneda_emp)
     machine.valor_compra = parsear_monto_form(form.get("valor_compra"), machine.moneda_compra)
     machine.proveedor = form.get("proveedor", "").strip()
+    raw_proveedor = (form.get("proveedor_id") or "").strip()
+    machine.proveedor_id = int(raw_proveedor) if raw_proveedor.isdigit() else None
+    if machine.proveedor_id:
+        proveedor = _filter_empresa(
+            Proveedor.query.filter_by(id=machine.proveedor_id, activo=True), Proveedor
+        ).first()
+        if proveedor is None:
+            return "Selecciona un proveedor activo de tu empresa."
+        # Conserva el campo textual para exportaciones y registros antiguos.
+        machine.proveedor = proveedor.nombre
     machine.tiempo_garantia_meses = _parse_int_form(form.get("tiempo_garantia_meses"))
     machine.garantia_hasta = calcular_garantia_hasta(
         machine.fecha_compra, machine.tiempo_garantia_meses
     )
     machine.manual_url = form.get("manual_url", "").strip()
     machine.ficha_tecnica_url = form.get("ficha_tecnica_url", "").strip()
-    machine.foto_url = form.get("foto_url", "").strip()
+    foto_url = form.get("foto_url", "").strip()
+    if foto_url:
+        machine.foto_url = foto_url
     machine.requiere_mantenimiento = bool(form.get("requiere_mantenimiento"))
     machine.tipos_mantenimiento = tipos_mantenimiento_from_form(form)
     machine.frecuencia_mantenimiento = (form.get("frecuencia_mantenimiento") or "").strip()
-    raw_resp = (form.get("responsable_technician_id") or "").strip()
-    if raw_resp.isdigit():
-        tid = int(raw_resp)
-        err = _validar_technician_id_tenant(tid, "responsable")
-        if err:
-            return err
-        machine.responsable_technician_id = tid
-    else:
-        machine.responsable_technician_id = None
+    raw_resp = (form.get("responsable_user_id") or "").strip()
+    machine.responsable_user_id = int(raw_resp) if raw_resp.isdigit() else None
+    if machine.responsable_user_id:
+        responsable = User.query.filter_by(
+            id=machine.responsable_user_id,
+            empresa_id=machine.empresa_id,
+            activo=True,
+        ).first()
+        if responsable is None:
+            return "Selecciona un responsable activo de tu empresa."
+        machine.responsable_area = responsable.area or ""
+        machine.responsable_cargo = responsable.cargo or ""
     machine.criticidad = form.get("criticidad") or "media"
     machine.status = form.get("status") or MachineStatus.OPERATIVO.value
     machine.notas = form.get("notas", "").strip()
     machine.sync_criticidad_critico()
     return None
+
+
+def _guardar_imagen_activo(machine: Machine, archivo) -> None:
+    """Guarda la fotografía del activo dentro del espacio de su empresa."""
+    if not archivo or not getattr(archivo, "filename", None):
+        return
+    if not machine.id or not machine.empresa_id:
+        raise ValueError("El activo debe estar guardado antes de cargar la imagen.")
+    nombre = secure_filename(archivo.filename)
+    ext = nombre.rsplit(".", 1)[-1].lower() if "." in nombre else ""
+    if ext not in ACTIVO_IMAGE_EXTENSIONS:
+        raise ValueError("Formato de imagen no permitido. Use PNG, JPG o WEBP.")
+    carpeta = os.path.join(
+        current_app.static_folder, "uploads", "empresas", str(machine.empresa_id), "activos"
+    )
+    os.makedirs(carpeta, exist_ok=True)
+    for old_ext in ACTIVO_IMAGE_EXTENSIONS:
+        old_path = os.path.join(carpeta, f"{machine.id}.{old_ext}")
+        if os.path.isfile(old_path) and old_ext != ext:
+            try:
+                os.remove(old_path)
+            except OSError:
+                pass
+    archivo.save(os.path.join(carpeta, f"{machine.id}.{ext}"))
+    machine.foto_url = f"uploads/empresas/{machine.empresa_id}/activos/{machine.id}.{ext}"
 
 
 def _save_machine_custom_fields(
@@ -1291,6 +1367,14 @@ def _activos_form_context(
         if eid
         else []
     )
+    proveedores_activo = (
+        _filter_empresa(
+            Proveedor.query.filter(Proveedor.activo.is_(True)).order_by(Proveedor.nombre),
+            Proveedor,
+        ).all()
+        if eid
+        else []
+    )
     campos_estandar, _secciones_legacy = (
         campos_por_seccion_estructurado(eid, sector, preview_id) if eid else ({}, {})
     )
@@ -1326,6 +1410,8 @@ def _activos_form_context(
         "sector_label": SECTOR_LABELS.get(sector, sector),
         "sedes": sedes,
         "technicians": technicians,
+        "usuarios_responsables": _equipo_usuarios_query().filter(User.activo.is_(True)).all() if eid else [],
+        "proveedores_activo": proveedores_activo,
         "mantenimiento_tipos": MANTENIMIENTO_TIPOS,
         "frecuencia_choices": FRECUENCIA_BASE_CHOICES,
         "tipos_mant_sel": tipos_mantenimiento_list(machine.tipos_mantenimiento if machine else ""),
@@ -1622,9 +1708,12 @@ def dashboard():
     else:
         prev_msg = prev_data["prev_msg"]
 
-    criticos_q = machines_q.filter(Machine.es_critico.is_(True)).order_by(Machine.nombre).limit(5)
+    criticos_all = (
+        machines_q.filter(Machine.es_critico.is_(True)).order_by(Machine.nombre).all()
+    )
+    limite_criticos = max(1, (len(criticos_all) + 4) // 5) if criticos_all else 0
     critico_items = []
-    for m in criticos_q.all():
+    for m in criticos_all[:limite_criticos]:
         st = machine_status_meta(m.status)
         critico_items.append(
             {
@@ -1654,6 +1743,37 @@ def dashboard():
 
     workload_empty = sum(workload_values) == 0
     workload_total = sum(workload_values)
+
+    pareto_rows = (
+        _wo_in_period_query(start, end, sector, machine_ids)
+        .join(Machine, Machine.id == WorkOrder.machine_id)
+        .filter(func.lower(WorkOrder.tipo) == WorkOrderType.CORRECTIVO.value)
+        .with_entities(
+            Machine.codigo,
+            Machine.nombre,
+            func.count(WorkOrder.id).label("total"),
+        )
+        .group_by(Machine.id, Machine.codigo, Machine.nombre)
+        .order_by(func.count(WorkOrder.id).desc(), Machine.nombre.asc())
+        .all()
+    )
+    pareto_items = [
+        {"label": codigo, "total": int(total)}
+        for codigo, _nombre, total in pareto_rows[:10]
+    ]
+    if len(pareto_rows) > 10:
+        pareto_items.append(
+            {"label": "Otros", "total": sum(int(row.total) for row in pareto_rows[10:])}
+        )
+    pareto_total = sum(item["total"] for item in pareto_items)
+    pareto_acumulado = 0
+    pareto_porcentajes = []
+    for item in pareto_items:
+        pareto_acumulado += item["total"]
+        pareto_porcentajes.append(
+            round(100.0 * pareto_acumulado / pareto_total, 1) if pareto_total else 0
+        )
+
     machines = machines_q.all()
     kpis = _dashboard_kpis(start, end, total_m, op, sector, machine_ids)
     kpis = _attach_plant_kpi_cards(
@@ -1716,6 +1836,26 @@ def dashboard():
             "style": "primary",
         },
         {
+            "key": "correctivos",
+            "label": "Total correctivos",
+            "value": dash_resumen["total_correctivos"],
+            "href": url_for(
+                "main.ordenes_list", tipo=WorkOrderType.CORRECTIVO.value
+            ),
+            "style": "warning" if dash_resumen["total_correctivos"] else "neutral",
+        },
+        {
+            "key": "horas_correctivos_paro",
+            "label": "Horas en correctivos con paro",
+            "value": dash_resumen["horas_correctivos_con_paro_label"],
+            "href": url_for(
+                "main.ordenes_list", tipo=WorkOrderType.CORRECTIVO.value
+            ),
+            "style": "danger"
+            if dash_resumen["minutos_correctivos_con_paro"]
+            else "neutral",
+        },
+        {
             "key": "repuestos",
             "label": "Repuestos bajo mínimo",
             "value": dash_resumen["repuestos_bajo_minimo"],
@@ -1770,6 +1910,10 @@ def dashboard():
         workload_values=workload_values,
         workload_total=workload_total,
         workload_empty=workload_empty,
+        pareto_labels=[item["label"] for item in pareto_items],
+        pareto_values=[item["total"] for item in pareto_items],
+        pareto_percentages=pareto_porcentajes,
+        pareto_total=pareto_total,
         ot_en_periodo=ot_en_periodo,
         dash_resumen=dash_resumen,
         dash_resumen_items=dash_resumen_items,
@@ -1860,6 +2004,184 @@ def activos_list():
         activos_items=items,
         activos_kpis=kpis,
         machine_types=tipos,
+    )
+
+
+@bp.route("/activos/<int:id>/hoja-vida")
+def activos_hoja_vida(id):
+    """Ficha consolidada y de solo consulta del activo."""
+    from sqlalchemy.orm import joinedload
+
+    machine = _filter_empresa(
+        Machine.query.options(
+            joinedload(Machine.responsable),
+            joinedload(Machine.responsable_usuario),
+            joinedload(Machine.proveedor_relacionado),
+        ).filter_by(id=id),
+        Machine,
+    ).first_or_404()
+    tipos = _machine_types_para_formulario(machine)
+    ctx = _activos_form_context(machine, tipos, machine.machine_type_id)
+    ordenes = (
+        _filter_work_orders_empresa(
+            WorkOrder.query.options(
+                joinedload(WorkOrder.technician),
+                joinedload(WorkOrder.jornadas).joinedload(WorkOrderJornada.technician),
+                joinedload(WorkOrder.repuestos).joinedload(WorkOrderRepuesto.spare_part),
+                joinedload(WorkOrder.informes),
+            ).filter(WorkOrder.machine_id == machine.id)
+        )
+        .order_by(WorkOrder.created_at.desc())
+        .all()
+    )
+    incidentes = (
+        _incidents_scope_query()
+        .filter(Incident.machine_id == machine.id)
+        .order_by(Incident.reportado_en.desc())
+        .all()
+    )
+    ctx.update(
+        ordenes=ordenes,
+        incidentes=incidentes,
+        total_preventivos=sum(1 for orden in ordenes if orden.tipo == "preventivo"),
+        total_correctivos=sum(1 for orden in ordenes if orden.tipo == "correctivo"),
+        costo_repuestos=sum(
+            linea.costo_total_linea for orden in ordenes for linea in orden.repuestos
+        ),
+        avances_por_ot=_avances_hoja_vida(ordenes),
+        status_meta=machine_status_meta(machine.status),
+    )
+    return render_template("activos/hoja_vida.html", **ctx)
+
+
+@bp.route("/activos/<int:id>/ficha-tecnica")
+def activos_ficha_tecnica(id):
+    machine = _filter_empresa(Machine.query.filter_by(id=id), Machine).first_or_404()
+    tipos = _machine_types_para_formulario(machine)
+    ctx = _activos_form_context(machine, tipos, machine.machine_type_id)
+    ctx["status_meta"] = machine_status_meta(machine.status)
+    return render_template("activos/ficha_tecnica.html", **ctx)
+
+
+@bp.route("/activos/<int:id>/ficha-tecnica/pdf")
+def activos_ficha_tecnica_pdf(id):
+    from io import BytesIO
+
+    from flask import send_file
+
+    from app.maintenance.asset_technical_pdf import export_asset_technical_pdf
+
+    machine = _filter_empresa(Machine.query.filter_by(id=id), Machine).first_or_404()
+    tipos = _machine_types_para_formulario(machine)
+    ctx = _activos_form_context(machine, tipos, machine.machine_type_id)
+    contenido, nombre = export_asset_technical_pdf(
+        current_user.empresa,
+        machine,
+        ctx["campos_personalizados"],
+        ctx["valores_campos"],
+        ctx["sector_label"],
+    )
+    return send_file(
+        BytesIO(contenido),
+        mimetype="application/pdf",
+        as_attachment=True,
+        download_name=nombre,
+    )
+
+
+def _avances_hoja_vida(ordenes):
+    """Organiza cada jornada y los repuestos instalados en ella."""
+    resultado = {}
+    for orden in ordenes:
+        jornadas = list(orden.jornadas or [])
+        avances = []
+        for jornada in jornadas:
+            fecha = jornada.fecha_inicio.date() if jornada.fecha_inicio else None
+            inicio = jornada.fecha_inicio.strftime("%H:%M") if jornada.fecha_inicio else ""
+            fin = jornada.fecha_fin.strftime("%H:%M") if jornada.fecha_fin else ""
+            repuestos = [
+                linea
+                for linea in orden.repuestos
+                if (
+                    linea.jornada_fecha == fecha
+                    and (not linea.jornada_hora_inicio or linea.jornada_hora_inicio == inicio)
+                    and (not linea.jornada_hora_fin or linea.jornada_hora_fin == fin)
+                )
+                or (
+                    len(jornadas) == 1
+                    and not linea.jornada_fecha
+                    and not linea.jornada_hora_inicio
+                    and not linea.jornada_hora_fin
+                )
+            ]
+            horas = jornada.duracion_minutos / 60
+            avances.append(
+                {
+                    "jornada": jornada,
+                    "fecha": fecha,
+                    "hora_inicio": inicio,
+                    "hora_fin": fin,
+                    "duracion": f"{horas:.2f} h".replace(".00", ""),
+                    "repuestos": repuestos,
+                }
+            )
+        resultado[orden.id] = avances
+    return resultado
+
+
+@bp.route("/activos/<int:id>/hoja-vida/pdf")
+def activos_hoja_vida_pdf(id):
+    from io import BytesIO
+
+    from flask import send_file
+    from sqlalchemy.orm import joinedload
+
+    from app.maintenance.asset_life_pdf import export_asset_life_pdf
+
+    machine = _filter_empresa(
+        Machine.query.options(
+            joinedload(Machine.responsable),
+            joinedload(Machine.responsable_usuario),
+            joinedload(Machine.proveedor_relacionado),
+        ).filter_by(id=id),
+        Machine,
+    ).first_or_404()
+    empresa = current_user.empresa
+    tipos = _machine_types_para_formulario(machine)
+    ctx = _activos_form_context(machine, tipos, machine.machine_type_id)
+    ordenes = (
+        _filter_work_orders_empresa(
+            WorkOrder.query.options(
+                joinedload(WorkOrder.technician),
+                joinedload(WorkOrder.jornadas).joinedload(WorkOrderJornada.technician),
+                joinedload(WorkOrder.repuestos).joinedload(WorkOrderRepuesto.spare_part),
+                joinedload(WorkOrder.informes),
+            ).filter(WorkOrder.machine_id == machine.id)
+        )
+        .order_by(WorkOrder.created_at.desc())
+        .all()
+    )
+    incidentes = (
+        _incidents_scope_query()
+        .filter(Incident.machine_id == machine.id)
+        .order_by(Incident.reportado_en.desc())
+        .all()
+    )
+    contenido, nombre = export_asset_life_pdf(
+        empresa,
+        machine,
+        ctx["campos_personalizados"],
+        ctx["valores_campos"],
+        ordenes,
+        incidentes,
+        ctx["sector_label"],
+        _avances_hoja_vida(ordenes),
+    )
+    return send_file(
+        BytesIO(contenido),
+        mimetype="application/pdf",
+        as_attachment=True,
+        download_name=nombre,
     )
 
 
@@ -1974,9 +2296,13 @@ def activos_new():
                     flash(err_campo, "danger")
                 else:
                     try:
+                        _guardar_imagen_activo(m, request.files.get("foto_archivo"))
                         db.session.commit()
                         flash(f"Activo registrado con código {m.codigo}.", "success")
                         return redirect(url_for("main.activos_list"))
+                    except ValueError as exc:
+                        db.session.rollback()
+                        flash(str(exc), "danger")
                     except Exception:
                         db.session.rollback()
                         flash("No se pudo guardar (¿código duplicado?).", "danger")
@@ -2032,9 +2358,13 @@ def activos_edit(id):
                 flash(err_campo, "danger")
             else:
                 try:
+                    _guardar_imagen_activo(m, request.files.get("foto_archivo"))
                     db.session.commit()
                     flash("Activo actualizado.", "success")
                     return redirect(url_for("main.activos_list"))
+                except ValueError as exc:
+                    db.session.rollback()
+                    flash(str(exc), "danger")
                 except Exception:
                     db.session.rollback()
                     flash("No se pudo guardar.", "danger")
@@ -2251,6 +2581,8 @@ def _jornada_a_dict(j: WorkOrderJornada) -> dict:
         "hora_fin": j.fecha_fin.strftime("%H:%M"),
         "technician_id": str(j.technician_id) if j.technician_id else "otro",
         "tecnico_nombre": j.tecnico_nombre or "",
+        "recibido_por": j.recibido_por or "",
+        "requirio_paro": bool(j.requirio_paro),
         "descripcion": j.descripcion_avance or "",
     }
 
@@ -2295,6 +2627,9 @@ def _parse_jornadas_json() -> Tuple[list[dict], Optional[str]]:
         nombre = (item.get("tecnico_nombre") or "").strip()
         if tech_id is None and not nombre:
             return [], f"Jornada {i}: indica el técnico realizador o su nombre."
+        recibido_por = (item.get("recibido_por") or "").strip()
+        if not recibido_por:
+            return [], f"Jornada {i}: indica quién recibió el avance."
 
         parsed.append(
             {
@@ -2302,6 +2637,8 @@ def _parse_jornadas_json() -> Tuple[list[dict], Optional[str]]:
                 "fecha_fin": fin,
                 "technician_id": tech_id,
                 "tecnico_nombre": nombre if tech_id is None else "",
+                "recibido_por": recibido_por,
+                "requirio_paro": bool(item.get("requirio_paro")),
                 "descripcion_avance": (item.get("descripcion") or "").strip(),
             }
         )
@@ -2340,12 +2677,15 @@ def _guardar_jornadas_orden(wo: WorkOrder) -> Optional[str]:
                 fecha_fin=s["fecha_fin"],
                 technician_id=s["technician_id"],
                 tecnico_nombre=s["tecnico_nombre"],
+                recibido_por=s["recibido_por"],
+                requirio_paro=s["requirio_paro"],
                 descripcion_avance=s["descripcion_avance"],
             )
         )
     wo.fecha_inicio = sesiones[0]["fecha_inicio"]
     wo.fecha_cierre = sesiones[-1]["fecha_fin"]
     wo.tiempo_gastado_minutos = total_minutos_jornadas(wo.jornadas)
+    wo.maquina_requirio_paro = any(bool(j.requirio_paro) for j in wo.jornadas)
     return None
 
 
@@ -2361,6 +2701,36 @@ def _aplicar_estado_orden_desde_formulario(wo: WorkOrder) -> None:
         status_manual=request.form.get("status_manual"),
         jornada_estado_ot=jornada_estado or None,
         tiene_jornadas=tiene_jornadas,
+    )
+    _cerrar_incidente_vinculado_si_ot_terminal(wo)
+
+
+def _cerrar_incidente_vinculado_si_ot_terminal(wo: WorkOrder) -> None:
+    """Cierra el incidente de origen cuando su OT queda completada o cerrada."""
+    if (wo.status or "").strip().lower() not in WORK_ORDER_TERMINAL_STATUSES:
+        return
+    incidente = getattr(wo, "incidencia_origen", None)
+    if not incidente or incidente.estado in (
+        IncidentEstado.CERRADO.value,
+        IncidentEstado.CANCELADO.value,
+    ):
+        return
+
+    ahora = datetime.utcnow()
+    detalle = f"Cierre automático por finalización de la OT {wo.numero or wo.id}."
+    incidente.resuelto = True
+    incidente.resuelto_en = incidente.resuelto_en or ahora
+    incidente.cerrado_en = ahora
+    incidente.resuelto_por_id = (
+        current_user.id if current_user.is_authenticated else incidente.resuelto_por_id
+    )
+    incidente.notas_resolucion = incidente.notas_resolucion or detalle
+    incidente.motivo_cierre = detalle
+    _cambiar_estado(
+        incidente,
+        IncidentEstado.CERRADO.value,
+        "cerrado_por_ot",
+        detalle,
     )
 
 
@@ -2409,6 +2779,10 @@ def _repuesto_linea_a_dict(line: WorkOrderRepuesto) -> dict:
         "nombre": p.nombre if p else "",
         "costo_unitario": cu,
         "costo_total": line.costo_total_linea,
+        "jornada_fecha": line.jornada_fecha.isoformat() if line.jornada_fecha else "",
+        "jornada_hora_inicio": line.jornada_hora_inicio or "",
+        "jornada_hora_fin": line.jornada_hora_fin or "",
+        "jornada_tecnico": line.jornada_tecnico or "",
     }
 
 
@@ -2454,6 +2828,10 @@ def _parse_repuestos_json() -> Tuple[list[dict], Optional[str]]:
                 "spare_part_id": part_id,
                 "cantidad": qty,
                 "notas": (item.get("notas") or "").strip()[:255],
+                "jornada_fecha": (item.get("jornada_fecha") or "").strip(),
+                "jornada_hora_inicio": (item.get("jornada_hora_inicio") or "").strip()[:5],
+                "jornada_hora_fin": (item.get("jornada_hora_fin") or "").strip()[:5],
+                "jornada_tecnico": (item.get("jornada_tecnico") or "").strip()[:200],
             }
         )
     return parsed, None
@@ -2492,12 +2870,25 @@ def _guardar_repuestos_orden(wo: WorkOrder) -> Optional[str]:
 
     for item in items:
         part = db.session.get(SparePart, item["spare_part_id"])
+        jornada = wo.jornadas[-1] if wo.jornadas else None
+        jornada_fecha = None
+        if item["jornada_fecha"]:
+            try:
+                jornada_fecha = datetime.strptime(item["jornada_fecha"], "%Y-%m-%d").date()
+            except ValueError:
+                jornada_fecha = None
+        if jornada_fecha is None and jornada:
+            jornada_fecha = jornada.fecha_inicio.date()
         part.cantidad = (part.cantidad or 0) - item["cantidad"]
         wo.repuestos.append(
             WorkOrderRepuesto(
                 spare_part_id=part.id,
                 cantidad=item["cantidad"],
                 notas=item["notas"],
+                jornada_fecha=jornada_fecha,
+                jornada_hora_inicio=item["jornada_hora_inicio"] or (jornada.fecha_inicio.strftime("%H:%M") if jornada else ""),
+                jornada_hora_fin=item["jornada_hora_fin"] or (jornada.fecha_fin.strftime("%H:%M") if jornada else ""),
+                jornada_tecnico=item["jornada_tecnico"] or (jornada.tecnico_label if jornada else ""),
             )
         )
     return None
@@ -2896,6 +3287,100 @@ def _ordenes_filtros_desde_request() -> dict[str, str]:
     }
 
 
+@bp.route("/mantenimiento/analisis-costos")
+def mantenimiento_costos():
+    from collections import defaultdict
+    from sqlalchemy.orm import joinedload
+
+    hoy = date.today()
+    fecha_desde = _parse_fecha_filtro(request.args.get("fecha_desde", "")) or date(hoy.year, 1, 1)
+    fecha_hasta = _parse_fecha_filtro(request.args.get("fecha_hasta", "")) or hoy
+    if fecha_desde > fecha_hasta:
+        fecha_desde, fecha_hasta = fecha_hasta, fecha_desde
+
+    ordenes = _filter_work_orders_empresa(
+        WorkOrder.query.options(
+            joinedload(WorkOrder.machine),
+            joinedload(WorkOrder.proveedor),
+            joinedload(WorkOrder.repuestos).joinedload(WorkOrderRepuesto.spare_part),
+        )
+    ).all()
+
+    filas = []
+    por_tipo = defaultdict(float)
+    por_activo = defaultdict(lambda: {"codigo": "", "nombre": "", "ordenes": 0, "servicios": 0.0, "repuestos": 0.0})
+    por_proveedor = defaultdict(lambda: {"nombre": "", "ordenes": 0, "costo": 0.0})
+    por_mes = defaultdict(float)
+    total_servicios = total_repuestos = 0.0
+
+    for orden in ordenes:
+        referencia = (
+            orden.fecha_cierre.date() if orden.fecha_cierre else
+            orden.fecha_programada if orden.fecha_programada else
+            orden.created_at.date() if orden.created_at else None
+        )
+        if not referencia or referencia < fecha_desde or referencia > fecha_hasta:
+            continue
+        costo_servicio = float(orden.costo_real or 0) if orden.es_ejecucion_externa else 0.0
+        costo_repuestos = sum(float(linea.costo_total_linea or 0) for linea in orden.repuestos)
+        costo_total = costo_servicio + costo_repuestos
+        total_servicios += costo_servicio
+        total_repuestos += costo_repuestos
+        por_tipo[orden.tipo or "otro"] += costo_total
+        por_mes[referencia.strftime("%Y-%m")] += costo_total
+
+        machine = orden.machine
+        activo_key = machine.id if machine else f"sin-{orden.id}"
+        activo = por_activo[activo_key]
+        activo["codigo"] = machine.codigo if machine else "—"
+        activo["nombre"] = machine.nombre if machine else "Sin activo"
+        activo["ordenes"] += 1
+        activo["servicios"] += costo_servicio
+        activo["repuestos"] += costo_repuestos
+
+        if orden.es_ejecucion_externa:
+            proveedor_nombre = orden.proveedor.nombre if orden.proveedor else (orden.empresa_tercerizada or "Sin proveedor")
+            proveedor = por_proveedor[proveedor_nombre]
+            proveedor["nombre"] = proveedor_nombre
+            proveedor["ordenes"] += 1
+            proveedor["costo"] += costo_servicio
+
+        filas.append({
+            "orden": orden, "fecha": referencia, "servicio": costo_servicio,
+            "repuestos": costo_repuestos, "total": costo_total,
+        })
+
+    activos = sorted(
+        ({**v, "total": v["servicios"] + v["repuestos"]} for v in por_activo.values()),
+        key=lambda x: x["total"], reverse=True,
+    )
+    proveedores = sorted(por_proveedor.values(), key=lambda x: x["costo"], reverse=True)
+    meses = []
+    cursor = date(fecha_desde.year, fecha_desde.month, 1)
+    limite = date(fecha_hasta.year, fecha_hasta.month, 1)
+    while cursor <= limite:
+        key = cursor.strftime("%Y-%m")
+        meses.append({"key": key, "label": cursor.strftime("%m/%Y"), "costo": por_mes.get(key, 0.0)})
+        cursor = date(cursor.year + (cursor.month == 12), 1 if cursor.month == 12 else cursor.month + 1, 1)
+
+    total = total_servicios + total_repuestos
+    return render_template(
+        "mantenimiento/costos.html",
+        fecha_desde=fecha_desde,
+        fecha_hasta=fecha_hasta,
+        total=total,
+        total_servicios=total_servicios,
+        total_repuestos=total_repuestos,
+        total_ordenes=len(filas),
+        costo_promedio=(total / len(filas)) if filas else 0,
+        por_tipo=por_tipo,
+        activos=activos,
+        proveedores=proveedores,
+        meses=meses,
+        filas=sorted(filas, key=lambda x: x["fecha"], reverse=True),
+    )
+
+
 def _parse_mes_anio_filtro(mes_s: str, anio_s: str) -> Optional[tuple[date, date]]:
     """Rango [inicio, fin] por mes/año de fecha programada; None si no aplica."""
     mes_s = (mes_s or "").strip()
@@ -2925,9 +3410,10 @@ def _ordenes_list_query(filtros: Optional[dict[str, str]] = None):
     filtros = filtros if filtros is not None else _ordenes_filtros_desde_request()
     q = _filter_work_orders_empresa(
         WorkOrder.query.options(
-            joinedload(WorkOrder.jornadas),
+            joinedload(WorkOrder.jornadas).joinedload(WorkOrderJornada.technician),
             joinedload(WorkOrder.machine),
             joinedload(WorkOrder.technician),
+            joinedload(WorkOrder.proveedor),
         )
     )
 
@@ -3141,6 +3627,44 @@ def ordenes_export():
     )
 
 
+@bp.route("/ordenes/export/pdf")
+@login_required
+def ordenes_export_pdf():
+    from io import BytesIO
+    from flask import send_file
+    from app.maintenance.control_actividades_pdf import export_control_actividades_pdf
+
+    empresa = current_user.empresa
+    if not empresa:
+        return redirect(url_for("main.ordenes_list"))
+    filtros = _ordenes_filtros_desde_request()
+    orders = _ordenes_list_query(filtros).all()
+    mes = filtros.get("mes", "")
+    anio = filtros.get("anio", "")
+    meses = dict(MESES_PLANEACION)
+    if mes.isdigit() and int(mes) in meses:
+        periodo_label = f"{meses[int(mes)]} {anio or date.today().year}"
+    elif anio:
+        periodo_label = anio
+    elif filtros.get("fecha_desde") or filtros.get("fecha_hasta"):
+        periodo_label = " - ".join(
+            value
+            for value in (filtros.get("fecha_desde"), filtros.get("fecha_hasta"))
+            if value
+        )
+    else:
+        periodo_label = "Listado filtrado"
+    content, name = export_control_actividades_pdf(
+        empresa, orders, periodo_label=periodo_label
+    )
+    return send_file(
+        BytesIO(content),
+        mimetype="application/pdf",
+        as_attachment=True,
+        download_name=name,
+    )
+
+
 @bp.route("/ordenes/nueva", methods=["GET", "POST"])
 def ordenes_new():
     from sqlalchemy.orm import joinedload
@@ -3268,21 +3792,11 @@ def ordenes_new():
             db.session.add(wo)
             db.session.flush()
             numero = asignar_numero_ot(wo)
-            err = _guardar_jornadas_orden(wo)
-            if err:
-                db.session.rollback()
-                flash(err, "danger")
-            else:
-                _aplicar_estado_orden_desde_formulario(wo)
-                _aplicar_fecha_cierre_si_terminal(wo)
-                err_rep = _guardar_repuestos_orden(wo)
-                if err_rep:
-                    db.session.rollback()
-                    flash(err_rep, "danger")
-                else:
-                    db.session.commit()
-                    flash(f"Orden {numero} creada.", "success")
-                    return redirect(url_for("main.ordenes_list"))
+            # La creación solo planifica la OT. Jornadas, repuestos, tiempos y
+            # decisiones de ejecución se registran al abrir la orden guardada.
+            db.session.commit()
+            flash(f"Orden {numero} creada. Ábrela para iniciar su ejecución.", "success")
+            return redirect(url_for("main.ordenes_list"))
     return render_template(
         "ordenes/form.html",
         order=None,
@@ -3374,12 +3888,14 @@ def ordenes_edit(id):
             else:
                 err = _guardar_jornadas_orden(wo)
                 if err:
+                    db.session.rollback()
                     flash(err, "danger")
                 else:
                     _aplicar_estado_orden_desde_formulario(wo)
                     _aplicar_fecha_cierre_si_terminal(wo)
                     err_rep = _guardar_repuestos_orden(wo)
                     if err_rep:
+                        db.session.rollback()
                         flash(err_rep, "danger")
                     else:
                         db.session.commit()
@@ -3391,12 +3907,14 @@ def ordenes_edit(id):
             wo.frecuencia_unidad = None
             err = _guardar_jornadas_orden(wo)
             if err:
+                db.session.rollback()
                 flash(err, "danger")
             else:
                 _aplicar_estado_orden_desde_formulario(wo)
                 _aplicar_fecha_cierre_si_terminal(wo)
                 err_rep = _guardar_repuestos_orden(wo)
                 if err_rep:
+                    db.session.rollback()
                     flash(err_rep, "danger")
                 else:
                     db.session.commit()
@@ -3411,6 +3929,82 @@ def ordenes_edit(id):
         solo_lectura=solo_lectura,
         **_orden_form_context(wo, technicians, machines),
     )
+
+
+INFORME_OT_EXTENSIONES = {"pdf", "doc", "docx", "xls", "xlsx", "png", "jpg", "jpeg", "webp"}
+
+
+def _ruta_informe_ot(informe: WorkOrderInforme) -> str:
+    raiz = os.path.abspath(current_app.static_folder)
+    ruta = os.path.abspath(os.path.join(raiz, informe.ruta_archivo.replace("/", os.sep)))
+    if os.path.commonpath([raiz, ruta]) != raiz:
+        abort(404)
+    return ruta
+
+
+@bp.route("/ordenes/<int:id>/informes", methods=["POST"])
+def ordenes_informe_upload(id):
+    if not can_edit(current_user):
+        abort(403)
+    wo = _get_work_order_or_404(id)
+    archivo = request.files.get("informe_archivo")
+    if not archivo or not archivo.filename:
+        flash("Selecciona el informe técnico que deseas cargar.", "warning")
+        return redirect(url_for("main.ordenes_edit", id=wo.id) + "#informes-tecnicos")
+    original = secure_filename(archivo.filename)
+    extension = original.rsplit(".", 1)[-1].lower() if "." in original else ""
+    if extension not in INFORME_OT_EXTENSIONES:
+        flash("Formato no permitido. Usa PDF, Word, Excel o una imagen.", "danger")
+        return redirect(url_for("main.ordenes_edit", id=wo.id) + "#informes-tecnicos")
+    empresa_id = wo.empresa_id or _current_empresa_id()
+    carpeta_rel = f"uploads/empresas/{empresa_id}/ordenes/{wo.id}/informes"
+    carpeta_abs = os.path.join(current_app.static_folder, *carpeta_rel.split("/"))
+    os.makedirs(carpeta_abs, exist_ok=True)
+    nombre_guardado = f"{uuid4().hex}.{extension}"
+    archivo.save(os.path.join(carpeta_abs, nombre_guardado))
+    informe = WorkOrderInforme(
+        empresa_id=empresa_id,
+        work_order_id=wo.id,
+        nombre_original=original,
+        ruta_archivo=f"{carpeta_rel}/{nombre_guardado}",
+        descripcion=(request.form.get("informe_descripcion") or "").strip()[:255],
+        user_id=current_user.id,
+    )
+    db.session.add(informe)
+    db.session.commit()
+    flash("Informe técnico cargado.", "success")
+    return redirect(url_for("main.ordenes_edit", id=wo.id) + "#informes-tecnicos")
+
+
+@bp.route("/ordenes/<int:id>/informes/<int:informe_id>/descargar")
+def ordenes_informe_download(id, informe_id):
+    from flask import send_file
+
+    wo = _get_work_order_or_404(id)
+    informe = WorkOrderInforme.query.filter_by(
+        id=informe_id, work_order_id=wo.id, empresa_id=wo.empresa_id
+    ).first_or_404()
+    ruta = _ruta_informe_ot(informe)
+    if not os.path.isfile(ruta):
+        abort(404)
+    return send_file(ruta, as_attachment=True, download_name=informe.nombre_original)
+
+
+@bp.route("/ordenes/<int:id>/informes/<int:informe_id>/eliminar", methods=["POST"])
+def ordenes_informe_delete(id, informe_id):
+    if not can_edit(current_user):
+        abort(403)
+    wo = _get_work_order_or_404(id)
+    informe = WorkOrderInforme.query.filter_by(
+        id=informe_id, work_order_id=wo.id, empresa_id=wo.empresa_id
+    ).first_or_404()
+    ruta = _ruta_informe_ot(informe)
+    db.session.delete(informe)
+    db.session.commit()
+    if os.path.isfile(ruta):
+        os.remove(ruta)
+    flash("Informe técnico eliminado.", "success")
+    return redirect(url_for("main.ordenes_edit", id=wo.id) + "#informes-tecnicos")
 
 
 @bp.route("/ordenes/<int:id>/pdf")
@@ -3440,7 +4034,7 @@ def ordenes_pdf(id):
     return send_file(
         BytesIO(contenido),
         mimetype="application/pdf",
-        as_attachment=True,
+        as_attachment=request.args.get("inline") != "1",
         download_name=nombre,
     )
 
@@ -3697,6 +4291,83 @@ def inventario_edit(id):
     return render_template("inventario/form.html", item=p)
 
 
+@bp.route("/inventario/<int:id>/entrada", methods=["GET", "POST"])
+def inventario_entrada(id):
+    p = _get_spare_part_or_404(id)
+    proveedores = _filter_empresa(
+        Proveedor.query.filter(Proveedor.activo.is_(True)).order_by(Proveedor.nombre),
+        Proveedor,
+    ).all()
+    if request.method == "POST":
+        try:
+            cantidad = int(request.form.get("cantidad") or 0)
+        except ValueError:
+            cantidad = 0
+        costo = _parse_costo(request.form.get("costo_unitario", ""))
+        fecha = _parse_form_date(request.form.get("fecha_compra"))
+        proveedor_raw = (request.form.get("proveedor_id") or "").strip()
+        proveedor_id = int(proveedor_raw) if proveedor_raw.isdigit() else None
+        proveedor = None
+        if proveedor_id:
+            proveedor = _filter_empresa(
+                Proveedor.query.filter_by(id=proveedor_id, activo=True), Proveedor
+            ).first()
+        nuevo_proveedor = (request.form.get("nuevo_proveedor_nombre") or "").strip()
+        if cantidad <= 0:
+            flash("La cantidad recibida debe ser mayor que cero.", "danger")
+        elif costo < 0:
+            flash("El costo unitario no puede ser negativo.", "danger")
+        elif not fecha:
+            flash("La fecha de compra es obligatoria.", "danger")
+        elif proveedor_id and not proveedor:
+            flash("Selecciona un proveedor activo de tu empresa.", "danger")
+        elif proveedor_raw == "__nuevo__" and not nuevo_proveedor:
+            flash("Indica el nombre del nuevo proveedor.", "danger")
+        else:
+            if proveedor_raw == "__nuevo__":
+                proveedor = Proveedor(
+                    empresa_id=p.empresa_id,
+                    nombre=nuevo_proveedor,
+                    nit=(request.form.get("nuevo_proveedor_nit") or "").strip(),
+                    contacto_nombre=(request.form.get("nuevo_proveedor_contacto") or "").strip(),
+                    contacto_telefono=(request.form.get("nuevo_proveedor_telefono") or "").strip(),
+                    contacto_email=(request.form.get("nuevo_proveedor_email") or "").strip(),
+                    tipo=ProveedorTipo.INSUMOS.value,
+                    activo=True,
+                )
+                db.session.add(proveedor)
+                db.session.flush()
+            stock_anterior = int(p.cantidad or 0)
+            costo_anterior = float(p.costo_unitario or 0)
+            nuevo_stock = stock_anterior + cantidad
+            p.costo_unitario = (
+                ((stock_anterior * costo_anterior) + (cantidad * costo)) / nuevo_stock
+                if nuevo_stock else costo
+            )
+            p.cantidad = nuevo_stock
+            db.session.add(SparePartEntry(
+                empresa_id=p.empresa_id,
+                spare_part_id=p.id,
+                cantidad=cantidad,
+                costo_unitario=costo,
+                fecha_compra=fecha,
+                proveedor_id=proveedor.id if proveedor else None,
+                numero_requisicion=(request.form.get("numero_requisicion") or "").strip(),
+                numero_factura=(request.form.get("numero_factura") or "").strip(),
+                notas=(request.form.get("notas") or "").strip(),
+                user_id=current_user.id,
+            ))
+            db.session.commit()
+            flash(f"Entrada registrada: {cantidad} {p.unidad} de {p.nombre}.", "success")
+            return redirect(url_for("main.inventario_list"))
+    return render_template(
+        "inventario/entrada.html",
+        item=p,
+        proveedores=proveedores,
+        hoy=date.today().isoformat(),
+    )
+
+
 # --- Equipo de trabajo (usuarios de la empresa) ---
 def _equipo_usuarios_query():
     eid = _current_empresa_id()
@@ -3826,6 +4497,7 @@ def equipo_new():
         username = (request.form.get("username") or "").strip().lower()
         nombre = request.form.get("nombre_visible", "").strip()
         area = request.form.get("area", "").strip()
+        cargo = request.form.get("cargo", "").strip()
         email = request.form.get("email", "").strip()
         telefono = request.form.get("telefono", "").strip()
         rol = (request.form.get("rol") or UserRole.TECNICO.value).strip().lower()
@@ -3841,6 +4513,8 @@ def equipo_new():
             flash("Ese nombre de usuario ya está en uso en tu empresa.", "danger")
         elif not nombre:
             flash("El nombre es obligatorio.", "danger")
+        elif not area:
+            flash("El área es obligatoria.", "danger")
         elif rol not in USER_ROLE_LABELS:
             flash("Selecciona un rol válido.", "danger")
         elif not can_assign_role(current_user, rol):
@@ -3857,6 +4531,7 @@ def equipo_new():
                 username=username,
                 nombre_visible=nombre,
                 area=area,
+                cargo=cargo,
                 sede_id=sede_id,
                 email=email,
                 telefono=telefono,
@@ -3918,6 +4593,7 @@ def equipo_edit(id):
         username = (request.form.get("username") or "").strip().lower()
         nombre = request.form.get("nombre_visible", "").strip()
         area = request.form.get("area", "").strip()
+        cargo = request.form.get("cargo", "").strip()
         email = request.form.get("email", "").strip()
         telefono = request.form.get("telefono", "").strip()
         if es_self:
@@ -3939,6 +4615,8 @@ def equipo_edit(id):
             flash("Ese nombre de usuario ya está en uso en tu empresa.", "danger")
         elif not nombre:
             flash("El nombre es obligatorio.", "danger")
+        elif not area:
+            flash("El área es obligatoria.", "danger")
         elif rol not in USER_ROLE_LABELS:
             flash("Selecciona un rol válido.", "danger")
         elif not es_self and not can_assign_role(current_user, rol):
@@ -3980,6 +4658,7 @@ def equipo_edit(id):
             usuario.username = username
             usuario.nombre_visible = nombre
             usuario.area = area
+            usuario.cargo = cargo
             usuario.sede_id = sede_id
             usuario.email = email
             usuario.telefono = telefono
@@ -4634,7 +5313,7 @@ def _incidencia_form_defaults() -> dict:
     area = (getattr(u, "area", None) or "").strip() if u else ""
     return {
         "reportado_por": u.etiqueta() if u else "",
-        "cargo_reportante": u.rol_label if u else "",
+        "cargo_reportante": (getattr(u, "cargo", None) or "").strip() if u else "",
         "telefono_contacto": tel,
         "area": area,
         "area_responsable": "",
@@ -4739,8 +5418,21 @@ def incidencia():
     form_data = _incidencia_form_defaults()
     ahora = datetime.now()
     preview_numero = _incidencia_preview_numero(eid)
+    idempotency_key = str(uuid4())
 
     if request.method == "POST":
+        submitted_key = (request.form.get("idempotency_key") or "").strip()
+        try:
+            idempotency_key = str(UUID(submitted_key))
+        except (ValueError, AttributeError):
+            flash("El formulario expiró. Recarga la página e intenta nuevamente.", "danger")
+            return redirect(url_for("main.incidencia"))
+
+        existing = Incident.query.filter_by(idempotency_key=idempotency_key).first()
+        if existing is not None:
+            flash(f"La incidencia {existing.numero} ya había sido registrada.", "info")
+            return redirect(url_for("main.incidencias_detail", id=existing.id))
+
         form_data, err = _incidencia_desde_form(request.form)
         if err:
             flash(err, "danger")
@@ -4763,11 +5455,13 @@ def incidencia():
                         prioridades_incidencia=INCIDENT_PRIORIDADES,
                         preview_numero=preview_numero,
                         ahora=ahora,
+                        idempotency_key=idempotency_key,
                     )
             fecha_ev = None
             if form_data["fecha_evento"]:
                 fecha_ev = datetime.strptime(form_data["fecha_evento"], "%Y-%m-%d").date()
             inc = Incident(
+                idempotency_key=idempotency_key,
                 titulo=form_data["titulo"],
                 descripcion=form_data["descripcion"],
                 machine_id=machine.id if machine else None,
@@ -4790,7 +5484,15 @@ def incidencia():
             numero = _asignar_numero_incidencia(inc)
             _registrar_historial(inc, "reportado", "", IncidentEstado.REPORTADO.value,
                                 f"Asignado al área {inc.area_responsable}")
-            db.session.commit()
+            try:
+                db.session.commit()
+            except IntegrityError:
+                db.session.rollback()
+                existing = Incident.query.filter_by(idempotency_key=idempotency_key).first()
+                if existing is None:
+                    raise
+                flash(f"La incidencia {existing.numero} ya había sido registrada.", "info")
+                return redirect(url_for("main.incidencias_detail", id=existing.id))
             flash(f"Incidencia {numero} registrada. El supervisor será notificado.", "success")
             return redirect(url_for("main.incidencias_detail", id=inc.id))
 
@@ -4803,6 +5505,7 @@ def incidencia():
         prioridades_incidencia=INCIDENT_PRIORIDADES,
         preview_numero=preview_numero,
         ahora=ahora,
+        idempotency_key=idempotency_key,
     )
 
 
@@ -4820,7 +5523,7 @@ def _filter_incidents_empresa(q):
 
 def _incidents_scope_query():
     q = _filter_incidents_empresa(Incident.query)
-    if normalize_rol(current_user.rol) == UserRole.USUARIO.value:
+    if normalize_rol(current_user.rol) == UserRole.USUARIO.value or is_requester(current_user):
         q = q.filter(Incident.user_id == current_user.id)
     return q
 
@@ -4881,7 +5584,7 @@ def _incidentes_kpis(base_q) -> dict:
 
 
 def _usuario_solo_mis_incidencias() -> bool:
-    return normalize_rol(current_user.rol) == UserRole.USUARIO.value
+    return normalize_rol(current_user.rol) == UserRole.USUARIO.value or is_requester(current_user)
 
 
 @bp.route("/incidencias")
@@ -4965,18 +5668,23 @@ def incidencias_accion(id):
     elif not can_manage_incidents(current_user):
         abort(403)
 
+
     ahora = datetime.utcnow()
     if accion == "recibir" and inc.estado in ("reportado", "reasignado"):
         inc.responsable_area_id = current_user.id
         inc.recibido_en = ahora
         inc.prioridad_confirmada = (request.form.get("prioridad_confirmada") or inc.prioridad).strip()
         _cambiar_estado(inc, "recibido", "recibido", comentario)
-    elif accion == "asignar" and inc.estado in ("recibido", "asignado"):
+    elif accion == "asignar" and inc.estado in ("reportado", "reasignado", "recibido", "asignado"):
         tid = request.form.get("tecnico_id", type=int)
         tecnico = _filter_empresa(Technician.query.filter_by(id=tid, activo=True), Technician).first() if tid else None
         if not tecnico:
             flash("Selecciona un técnico válido.", "danger")
             return redirect(url_for("main.incidencias_detail", id=id))
+        if inc.estado in ("reportado", "reasignado"):
+            inc.responsable_area_id = current_user.id
+            inc.recibido_en = ahora
+            inc.prioridad_confirmada = inc.prioridad
         inc.tecnico_asignado_id, inc.asignado_en = tecnico.id, ahora
         _cambiar_estado(inc, "asignado", "tecnico_asignado", f"{tecnico.nombre}. {comentario}".strip())
     elif accion == "iniciar" and inc.estado == "asignado":
@@ -5062,11 +5770,15 @@ def incidencias_crear_ot(id):
     prio = (inc.prioridad or "media").strip().lower()
     if prio not in {p[0] for p in WORK_ORDER_PRIORITIES}:
         prio = "media"
-    wo_tipo = (
-        WorkOrderType.EMERGENCIA.value
-        if prio == IncidentPrioridad.CRITICA.value
-        else WorkOrderType.CORRECTIVO.value
-    )
+    wo_tipo = (request.form.get("tipo_ot") or "").strip().lower()
+    tipos_ot_validos = {
+        WorkOrderType.PREVENTIVO.value,
+        WorkOrderType.CORRECTIVO.value,
+        WorkOrderType.EMERGENCIA.value,
+    }
+    if wo_tipo not in tipos_ot_validos:
+        flash("Selecciona el tipo de orden de trabajo.", "danger")
+        return redirect(url_for("main.incidencias_detail", id=inc.id))
     desc = (inc.descripcion or "").strip()
     if inc.numero:
         desc = f"{desc}\n\n[Origen: incidencia {inc.numero}]".strip()
@@ -5079,9 +5791,10 @@ def incidencias_crear_ot(id):
         empresa_id=inc.empresa_id or _current_empresa_id(),
         fecha_programada=hoy,
         machine_id=inc.machine_id,
+        technician_id=inc.tecnico_asignado_id,
         area=inc.area or "",
         ubicacion=inc.ubicacion or "",
-        maquina_requirio_paro=bool(inc.equipo_detenido),
+        maquina_requirio_paro=False,
     )
     db.session.add(wo)
     db.session.flush()
@@ -5089,5 +5802,8 @@ def incidencias_crear_ot(id):
     inc.work_order_id = wo.id
     _cambiar_estado(inc, IncidentEstado.PENDIENTE_OT.value, "ot_creada", f"OT {numero} vinculada")
     db.session.commit()
-    flash(f"OT {numero} creada desde la incidencia {inc.numero}.", "success")
-    return redirect(url_for("main.ordenes_edit", id=wo.id))
+    flash(
+        f"OT {numero} creada desde la incidencia {inc.numero}. Ábrela cuando vayas a iniciar su ejecución.",
+        "success",
+    )
+    return redirect(url_for("main.ordenes_list"))

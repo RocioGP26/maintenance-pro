@@ -45,6 +45,7 @@
         </a>
       </nav>
       <div class="mt-auto px-3 pt-3">
+        <p class="text-secondary small text-center mb-2">v{{ app_version }}</p>
         <form method="post" action="{{ url_for('platform.logout') }}" class="m-0">
           {% include "_csrf.html" %}
           <button type="submit" class="nav-link text-danger-emphasis border-0 bg-transparent w-100 text-start px-0">

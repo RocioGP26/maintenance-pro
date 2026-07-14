@@ -2,15 +2,24 @@
 
 from __future__ import annotations
 
-import os
 from datetime import datetime, timezone
 
 from flask import Blueprint, jsonify
 from sqlalchemy import text
 
 from app import db
+from app.version import __version__, get_version_info
 
 health_bp = Blueprint("health", __name__)
+
+
+@health_bp.get("/version")
+@health_bp.get("/api/v1/version")
+def version():
+    """Versión pública segura de la aplicación y del build desplegado."""
+    response = jsonify(get_version_info())
+    response.headers["Cache-Control"] = "no-store"
+    return response, 200
 
 
 def _check_database() -> tuple[bool, str | None]:
@@ -49,7 +58,7 @@ def ready():
     payload = {
         "status": "ok" if db_ok and migration else "degraded",
         "timestamp": datetime.now(timezone.utc).isoformat(),
-        "version": os.environ.get("APP_VERSION", "dev"),
+        "version": __version__,
         "checks": {
             "database": {"ok": db_ok, "error": db_error},
             "migrations": {"ok": bool(migration), "revision": migration, "error": migration_error},

@@ -1,0 +1,51 @@
+============================= test session starts =============================
+platform win32 -- Python 3.12.10, pytest-9.1.1, pluggy-1.6.0 -- C:\maintenance_pro\.venv\Scripts\python.exe
+cachedir: .pytest_cache
+rootdir: C:\maintenance_pro
+collecting ... collected 32 items
+
+tests/test_mrl_doc001.py::TestDoc001::test_adapter_does_not_put_business_imports_in_mrl_engine PASSED [  3%]
+tests/test_mrl_doc001.py::TestDoc001::test_generates_work_order_pdf_without_flask_context PASSED [  6%]
+tests/test_mrl_excel.py::TestMRLEngine::test_create_factory PASSED       [  9%]
+tests/test_mrl_excel.py::TestMRLEngine::test_engine_has_no_business_imports PASSED [ 12%]
+tests/test_mrl_excel.py::TestMRLEngine::test_generates_valid_xlsx_bytes PASSED [ 15%]
+tests/test_mrl_excel.py::TestMRLEngine::test_multiple_sheets PASSED      [ 18%]
+tests/test_mrl_excel.py::TestMaintenanceActivosExport::test_activos_table_rows_structure PASSED [ 21%]
+tests/test_mrl_integrations.py::TestMRLIntegrations::test_orders_export PASSED [ 25%]
+tests/test_mrl_integrations.py::TestMRLIntegrations::test_purchases_export PASSED [ 28%]
+tests/test_mrl_integrations.py::TestMRLIntegrations::test_sales_export PASSED [ 31%]
+tests/test_mrl_pdf.py::TestMRLPdfEngine::test_engine_has_no_business_imports PASSED [ 34%]
+tests/test_mrl_pdf.py::TestMRLPdfEngine::test_generates_valid_pdf_with_all_base_blocks PASSED [ 37%]
+tests/test_mrl_pdf.py::TestMRLPdfEngine::test_public_alias PASSED        [ 40%]
+tests/test_mrl_smoke.py::TestMRLSmoke::test_colors_official_tokens PASSED [ 43%]
+tests/test_mrl_smoke.py::TestMRLSmoke::test_constants_layout PASSED      [ 46%]
+tests/test_mrl_smoke.py::TestMRLSmoke::test_format_datetime_latam PASSED [ 50%]
+tests/test_mrl_smoke.py::TestMRLSmoke::test_import_public_api PASSED     [ 53%]
+tests/test_mrl_smoke.py::TestMRLSmoke::test_metadata_creation_and_fields PASSED [ 56%]
+tests/test_mrl_smoke.py::TestMRLSmoke::test_metadata_rejects_invalid_doc PASSED [ 59%]
+tests/test_mrl_smoke.py::TestMRLSmoke::test_mrl_style_blocks_load PASSED [ 62%]
+tests/test_mrl_smoke.py::TestMRLSmoke::test_no_business_module_imports PASSED [ 65%]
+tests/test_mrl_smoke.py::TestMRLSmoke::test_semantic_status_colors PASSED [ 68%]
+tests/test_mrl_smoke.py::TestMRLSmoke::test_typography_families PASSED   [ 71%]
+tests/test_purchasing_migration.py::TestPurchasingMigration::test_dry_run_apply_and_idempotency_without_stock_change PASSED [ 75%]
+tests/test_purchasing_orders.py::TestPurchasingOrders::test_conversion_totals_state_and_unique_source PASSED [ 78%]
+tests/test_purchasing_orders.py::TestPurchasingOrders::test_partial_then_total_receipt_updates_stock_once PASSED [ 81%]
+tests/test_purchasing_orders.py::TestPurchasingOrders::test_rejection_requires_reason_and_does_not_touch_stock PASSED [ 84%]
+tests/test_purchasing_orders.py::TestPurchasingOrders::test_transitions_and_doc006_pdf PASSED [ 87%]
+tests/test_purchasing_requests.py::TestPurchasingRequests::test_invalid_state_jump_is_rejected PASSED [ 90%]
+tests/test_purchasing_requests.py::TestPurchasingRequests::test_permission_contract PASSED [ 93%]
+tests/test_purchasing_requests.py::TestPurchasingRequests::test_rejection_requires_reason PASSED [ 96%]
+tests/test_purchasing_requests.py::TestPurchasingRequests::test_transition_happy_path_and_audit PASSED [100%]
+
+============================== warnings summary ===============================
+.venv\Lib\site-packages\reportlab\lib\rl_safe_eval.py:12
+  C:\maintenance_pro\.venv\Lib\site-packages\reportlab\lib\rl_safe_eval.py:12: DeprecationWarning: ast.NameConstant is deprecated and will be removed in Python 3.14; use ast.Constant instead
+    haveNameConstant = hasattr(ast,'NameConstant')
+
+tests/test_purchasing_migration.py: 12 warnings
+tests/test_purchasing_orders.py: 66 warnings
+  C:\maintenance_pro\.venv\Lib\site-packages\sqlalchemy\sql\schema.py:3596: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    return util.wrap_callable(lambda ctx: fn(), fn)  # type: ignore
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+======================= 32 passed, 79 warnings in 2.47s =======================

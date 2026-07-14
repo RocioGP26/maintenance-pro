@@ -268,7 +268,8 @@
               <h3 class="onboarding-section-title">Plan comercial</h3>
             <p class="text-muted small mb-3">
               Comienza con la prueba gratuita de {{ trial_dias }} días o elige un plan de pago.
-              Los precios siguen el catálogo oficial Maintix (MCM-04).
+              Los precios definitivos se publicarán próximamente; puedes seleccionar el plan
+              que mejor se ajuste a tu operación sin modificar su configuración interna.
             </p>
             {% if sales_prompt %}
             <div class="alert alert-light border small py-2 mb-3">
@@ -287,8 +288,10 @@
                   <strong>{{ meta.short_label or meta.label }}</strong>
                   {% if plan_key == 'trial' %}
                   <span class="onboarding-plan-price">Gratis · {{ meta.dias }} días</span>
+                  {% elif plan_key == 'enterprise' %}
+                  <span class="onboarding-plan-price">Contactar para conocer el precio</span>
                   {% else %}
-                  <span class="onboarding-plan-price">{{ formato_precio_landing(meta.precio_mensual) }} <small>COP/mes</small></span>
+                  <span class="onboarding-plan-price">Precio disponible próximamente</span>
                   {% endif %}
                 </div>
                 <p class="small text-muted mb-2">{{ meta.descripcion }}</p>

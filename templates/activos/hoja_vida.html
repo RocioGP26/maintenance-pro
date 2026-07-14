@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+{% block title %}Hoja de Vida · {{ machine.codigo }}{% endblock %}
+{% block page_title %}Hoja de Vida del Activo{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+  <div>
+    <div class="text-muted small">{{ sector_label }} · {{ machine.tipo_etiqueta }}</div>
+    <h2 class="h4 mb-0">{{ machine.codigo }} · {{ machine.nombre }}</h2>
+  </div>
+  <div class="d-flex gap-2">
+    <a href="{{ url_for('main.activos_list') }}" class="btn btn-outline-secondary"><i class="bi bi-arrow-left me-1"></i>Activos</a>
+    <a href="{{ url_for('main.activos_hoja_vida_pdf', id=machine.id) }}" class="btn btn-outline-danger"><i class="bi bi-file-earmark-pdf me-1"></i>PDF</a>
+    {% if perm.editar %}<a href="{{ url_for('main.activos_edit', id=machine.id) }}" class="btn btn-primary"><i class="bi bi-pencil me-1"></i>Editar activo</a>{% endif %}
+  </div>
+</div>
+
+<div class="row g-3 mb-3">
+  <div class="col-6 col-xl-3"><div class="card h-100"><div class="card-body"><div class="text-muted small">Órdenes de trabajo</div><div class="fs-3 fw-semibold">{{ ordenes|length }}</div></div></div></div>
+  <div class="col-6 col-xl-3"><div class="card h-100"><div class="card-body"><div class="text-muted small">Preventivos</div><div class="fs-3 fw-semibold">{{ total_preventivos }}</div></div></div></div>
+  <div class="col-6 col-xl-3"><div class="card h-100"><div class="card-body"><div class="text-muted small">Correctivos</div><div class="fs-3 fw-semibold">{{ total_correctivos }}</div></div></div></div>
+  <div class="col-6 col-xl-3"><div class="card h-100"><div class="card-body"><div class="text-muted small">Incidencias</div><div class="fs-3 fw-semibold">{{ incidentes|length }}</div></div></div></div>
+</div>
+
+<div class="card mb-3">
+  <div class="card-header fw-semibold"><i class="bi bi-info-circle me-1"></i>Información general</div>
+  <div class="card-body">
+    <div class="row g-3 align-items-start">
+      {% if machine.foto_url %}<div class="col-12 col-lg-3"><img src="{{ machine.foto_url if machine.foto_url.startswith('http') else url_for('static', filename=machine.foto_url) }}" class="img-fluid rounded border" alt="Imagen de {{ machine.nombre }}"></div>{% endif %}
+      <div class="col">
+        <div class="row g-3">
+          {% set base = [
+            ('Código', machine.codigo), ('Nombre', machine.nombre), ('Estado', status_meta.label),
+            ('Tipo de activo', machine.tipo_etiqueta), ('Sector', sector_label), ('Criticidad', machine.criticidad),
+            ('Marca', machine.marca), ('Modelo', machine.modelo), ('Serie', machine.numero_serie),
+            ('Fabricante', machine.fabricante), ('Sede', machine.sede.nombre if machine.sede else ''),
+            ('Área', machine.area), ('Ubicación', machine.ubicacion), ('Responsable', machine.responsable_nombre),
+            ('Proveedor', machine.proveedor_relacionado.nombre if machine.proveedor_relacionado else machine.proveedor),
+            ('Factura', machine.numero_factura), ('Fecha de compra', machine.fecha_compra.strftime('%d/%m/%Y') if machine.fecha_compra else ''),
+            ('Valor de compra', valor_compra_texto), ('Garantía hasta', machine.garantia_hasta.strftime('%d/%m/%Y') if machine.garantia_hasta else '')
+          ] %}
+          {% for etiqueta, valor in base %}
+          <div class="col-12 col-md-6 col-xl-4"><div class="text-muted small">{{ etiqueta }}</div><div class="fw-medium">{{ valor or '—' }}</div></div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% if campos_personalizados %}
+<div class="card mb-3">
+  <div class="card-header fw-semibold"><i class="bi bi-ui-checks-grid me-1"></i>Información específica del sector</div>
+  <div class="card-body"><div class="row g-3">
+    {% for campo in campos_personalizados %}
+      {% set valor = valores_campos.get(campo.id, '') %}
+      <div class="col-12 col-md-6 col-xl-4"><div class="text-muted small">{{ campo.nombre }}</div><div class="fw-medium">{{ valor or '—' }}</div></div>
+    {% endfor %}
+  </div></div>
+</div>
+{% endif %}
+
+<div class="card mb-3">
+  <div class="card-header fw-semibold"><i class="bi bi-tools me-1"></i>Historial de órdenes de trabajo</div>
+  <div class="table-responsive"><table class="table table-sm table-hover align-middle mb-0">
+    <thead class="table-light"><tr><th>OT</th><th>Título de la OT</th><th>Fecha</th><th>Tipo</th><th>Estado</th><th>Técnico realizador</th><th>Tiempo</th><th>Repuestos</th><th>Informes</th><th></th></tr></thead>
+    <tbody>{% for orden in ordenes %}<tr>
+      <td class="font-monospace">{{ orden.numero or ('#' ~ orden.id) }}</td>
+      <td>{{ orden.titulo or '—' }}</td>
+      <td>{{ orden.fecha_programada.strftime('%d/%m/%Y') if orden.fecha_programada else '—' }}</td>
+      <td>{{ wo_tipo_meta(orden.tipo).label }}</td><td><span class="{{ wo_status_meta(orden.status).badge_class }}">{{ wo_status_meta(orden.status).label }}</span></td>
+      <td>
+        {% set empresa_realizadora = (orden.proveedor.nombre if orden.proveedor else orden.empresa_tercerizada) if orden.es_ejecucion_externa else (empresa_actual.razon_social if empresa_actual else '') %}
+        <span class="d-block">{{ orden.tecnicos_realizadores_label }}</span>
+        {% if empresa_realizadora %}<small class="d-block text-muted">{{ empresa_realizadora }}</small>{% endif %}
+      </td><td>{{ orden.tiempo_gastado_label }}</td><td>{{ orden.repuestos|length }}</td>
+      <td>{% for informe in orden.informes %}<div><a href="{{ url_for('main.ordenes_informe_download', id=orden.id, informe_id=informe.id) }}" title="{{ informe.descripcion or informe.nombre_original }}"><i class="bi bi-paperclip"></i> {{ informe.nombre_original }}</a></div>{% else %}<span class="text-muted">—</span>{% endfor %}</td>
+      <td><a href="{{ url_for('main.ordenes_edit', id=orden.id) }}" class="btn btn-outline-secondary btn-sm">Ver</a></td>
+    </tr>
+    {% set avances = avances_por_ot.get(orden.id, []) %}
+    <tr class="table-light"><td colspan="10" class="p-2">
+      <div class="fw-semibold small mb-2"><i class="bi bi-list-check me-1"></i>Avances de {{ orden.numero or ('OT #' ~ orden.id) }}</div>
+      {% if avances %}
+      <div class="table-responsive bg-white border rounded"><table class="table table-sm align-middle mb-0">
+        <thead><tr><th>#</th><th>Fecha y horario</th><th>Técnico / proveedor</th><th>Trabajo realizado</th><th>Paro</th><th>Recibido por</th><th>Repuestos instalados</th></tr></thead>
+        <tbody>{% for avance in avances %}{% set jornada = avance.jornada %}<tr>
+          <td>{{ jornada.orden or loop.index }}</td>
+          <td class="text-nowrap">{{ avance.fecha.strftime('%d/%m/%Y') if avance.fecha else '—' }}<br><small class="text-muted">{{ avance.hora_inicio or '—' }} - {{ avance.hora_fin or '—' }} · {{ avance.duracion }}</small></td>
+          <td>
+            {% set empresa_avance = (orden.proveedor.nombre if orden.proveedor else orden.empresa_tercerizada) if orden.es_ejecucion_externa else (empresa_actual.razon_social if empresa_actual else '') %}
+            <span class="d-block">{{ jornada.tecnico_label }}</span>
+            {% if empresa_avance %}<small class="d-block text-muted">{{ empresa_avance }}</small>{% endif %}
+          </td>
+          <td style="min-width:220px">{{ jornada.descripcion_avance or '—' }}</td>
+          <td><span class="badge {% if jornada.requirio_paro %}text-bg-danger{% else %}text-bg-success{% endif %}">{{ 'Sí' if jornada.requirio_paro else 'No' }}</span></td>
+          <td>{{ jornada.recibido_por or '—' }}</td>
+          <td>{% for linea in avance.repuestos %}<div>{{ linea.spare_part.nombre if linea.spare_part else 'Repuesto' }} × {{ linea.cantidad }}</div>{% else %}<span class="text-muted">—</span>{% endfor %}</td>
+        </tr>{% endfor %}</tbody>
+      </table></div>
+      {% else %}<div class="text-muted small">Esta OT todavía no tiene avances registrados.</div>{% endif %}
+    </td></tr>
+    {% else %}<tr><td colspan="10" class="text-center text-muted py-3">Sin órdenes de trabajo registradas.</td></tr>{% endfor %}</tbody>
+  </table></div>
+</div>
+
+<div class="card">
+  <div class="card-header fw-semibold"><i class="bi bi-exclamation-triangle me-1"></i>Historial de incidencias</div>
+  <div class="table-responsive"><table class="table table-sm table-hover align-middle mb-0">
+    <thead class="table-light"><tr><th>Reporte</th><th>Fecha</th><th>Descripción</th><th>Prioridad</th><th>Estado</th><th></th></tr></thead>
+    <tbody>{% for inc in incidentes %}<tr>
+      <td class="font-monospace">{{ inc.numero or ('#' ~ inc.id) }}</td><td>{{ inc.reportado_en.strftime('%d/%m/%Y') if inc.reportado_en else '—' }}</td>
+      <td>{{ inc.titulo }}</td><td><span class="badge {{ inc.prioridad_meta.badge_class }}">{{ inc.prioridad_meta.label }}</span></td><td>{{ inc.estado_label }}</td>
+      <td><a href="{{ url_for('main.incidencias_detail', id=inc.id) }}" class="btn btn-outline-secondary btn-sm">Ver</a></td>
+    </tr>{% else %}<tr><td colspan="6" class="text-center text-muted py-3">Sin incidencias registradas.</td></tr>{% endfor %}</tbody>
+  </table></div>
+</div>
+{% endblock %}

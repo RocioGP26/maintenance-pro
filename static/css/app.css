@@ -106,6 +106,8 @@ body {
 
 .sidebar {
   background-color: var(--sidebar-bg);
+  height: 100vh;
+  height: 100dvh;
   min-height: 100vh;
   width: 280px;
   position: fixed;
@@ -114,6 +116,14 @@ body {
   z-index: 1000;
   display: flex;
   flex-direction: column;
+  overflow-x: hidden;
+  overflow-y: auto;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.sidebar::-webkit-scrollbar {
+  display: none;
 }
 
 .sidebar-brand {
@@ -270,6 +280,7 @@ button.sidebar-nav-toggle:focus {
   font-weight: 600;
   margin: 1rem;
   padding: 0.75rem 1rem;
+  width: calc(100% - 2rem) !important;
 }
 
 .btn-report-incident:hover {
@@ -1921,6 +1932,8 @@ a.header-user-name:hover {
 
 @media (max-width: 991.98px) {
   .sidebar {
+    height: auto;
+    overflow: visible;
     position: relative;
     width: 100%;
     min-height: auto;

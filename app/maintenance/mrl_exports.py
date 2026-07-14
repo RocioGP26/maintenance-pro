@@ -204,12 +204,11 @@ def export_orden_trabajo_pdf(
 
     if work_order.repuestos:
         exporter.add_spacer()
-        exporter.add_title("Repuestos utilizados")
-        exporter.add_table(
+        exporter.add_titled_table(
+            "Repuestos utilizados",
             ["SKU", "Repuesto", "Cantidad", "Costo unitario", "Total"],
             [[r.spare_part.sku if r.spare_part else "—", r.spare_part.nombre if r.spare_part else "—", r.cantidad, _money(r.costo_unitario_linea, currency), _money(r.costo_total_linea, currency)] for r in work_order.repuestos],
         )
-
     exporter.add_spacer(8)
     exporter.add_table(
         ["Autorizado por", "Recibido por", "Supervisor"],

@@ -22,6 +22,8 @@ security:
   - bearerAuth: []
 
 tags:
+  - name: System
+    description: Metadatos públicos y seguros de la aplicación
   - name: Authentication
     description: JWT · MAG-02
   - name: Maintenance
@@ -38,6 +40,20 @@ tags:
     description: Administración del tenant
 
 paths:
+  /version:
+    get:
+      tags: [System]
+      summary: Consultar versión de Maintix
+      operationId: systemVersion
+      security: []
+      responses:
+        "200":
+          description: Versión SemVer y build desplegado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VersionResponse"
+
   /auth/login:
     post:
       tags: [Authentication]
@@ -411,6 +427,25 @@ components:
           type: integer
         total:
           type: integer
+
+    VersionResponse:
+      type: object
+      required: [application, version, release]
+      properties:
+        application:
+          type: string
+          const: Maintix
+        version:
+          type: string
+          pattern: '^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)'
+          example: 1.0.0
+        release:
+          type: string
+          example: v1.0.0
+        commit:
+          type: string
+          description: SHA Git abreviado; solo aparece cuando la plataforma lo suministra.
+          example: ea86634abc12
 
     ResourceCreatedResponse:
       type: object

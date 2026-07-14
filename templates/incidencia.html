@@ -38,6 +38,7 @@
   <div class="col-lg-8">
     <form method="post" id="formIncidencia">
       {% include "_csrf.html" %}
+      <input type="hidden" name="idempotency_key" value="{{ idempotency_key }}">
       <div class="card card-dashboard mb-3">
         <div class="card-body">
           {% with titulo='Quién reporta', icono='bi-person-badge' %}{% include 'ordenes/_seccion_encabezado.html' %}{% endwith %}
@@ -182,7 +183,7 @@
       </div>
 
       <div class="d-flex gap-2 d-lg-none">
-        <button type="submit" class="btn btn-danger"><i class="bi bi-send"></i> Enviar reporte</button>
+        <button type="submit" class="btn btn-danger js-submit-incidencia"><i class="bi bi-send"></i> Enviar reporte</button>
         <a href="{{ url_for('main.dashboard') }}" class="btn btn-outline-secondary">Volver al dashboard</a>
       </div>
     </form>
@@ -235,7 +236,7 @@
       </div>
 
       <div class="d-none d-lg-flex flex-column gap-2">
-        <button type="submit" form="formIncidencia" class="btn btn-danger w-100">
+        <button type="submit" form="formIncidencia" class="btn btn-danger w-100 js-submit-incidencia">
           <i class="bi bi-send"></i> Enviar reporte
         </button>
         <a href="{{ url_for('main.incidencias_list') }}" class="btn btn-outline-primary w-100">
@@ -246,4 +247,22 @@
     </div>
   </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+  (() => {
+    const form = document.getElementById('formIncidencia');
+    if (!form) return;
+    form.addEventListener('submit', () => {
+      if (!form.checkValidity()) return;
+      document.querySelectorAll('.js-submit-incidencia').forEach((button) => {
+        button.disabled = true;
+        button.setAttribute('aria-disabled', 'true');
+        button.innerHTML = '<span class="spinner-border spinner-border-sm me-1" aria-hidden="true"></span> Enviando…';
+      });
+    });
+  })();
+</script>
 {% endblock %}

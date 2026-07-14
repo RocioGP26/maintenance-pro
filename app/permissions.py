@@ -280,6 +280,7 @@ CREATE_GET_ENDPOINTS = frozenset(
         "main.activos_tipo_new",
         "main.ordenes_new",
         "main.inventario_new",
+        "main.inventario_entrada",
         "main.equipo_new",
         "main.configuracion_campos_new",
     }

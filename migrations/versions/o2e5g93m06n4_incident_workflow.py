@@ -41,7 +41,7 @@ def upgrade():
         sa.Column("user_id", sa.Integer(), sa.ForeignKey("users.id")), sa.Column("accion", sa.String(80), nullable=False),
         sa.Column("estado_anterior", sa.String(32)), sa.Column("estado_nuevo", sa.String(32)),
         sa.Column("comentario", sa.Text()), sa.Column("created_at", sa.DateTime(), nullable=False))
-    op.execute("UPDATE incidents SET estado = CASE WHEN resuelto = 1 THEN 'resuelto' ELSE 'reportado' END")
+    op.execute("UPDATE incidents SET estado = CASE WHEN resuelto = true THEN 'resuelto' ELSE 'reportado' END")
 
 
 def downgrade():
