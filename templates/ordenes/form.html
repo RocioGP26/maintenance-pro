@@ -564,16 +564,23 @@
             </div>
             <div class="form-text">Uso, alquiler o desgaste de herramientas durante esta jornada.</div>
           </div>
-          <div class="col-12 col-md-6 {% if order.tipo == 'correctivo' %}d-none{% endif %}" id="resumenCostosJornada">
+          <div class="col-12 col-md-6" id="resumenCostosJornada">
             <div class="row g-2">
-              <div class="col-12 col-sm-6">
+              <div class="col-12 col-sm {% if order.tipo != 'correctivo' %}d-none{% endif %}" id="grupoCostoRepuestosJornada">
+                <label class="form-label fw-semibold" for="jornadaCostoRepuestos">Costo repuestos</label>
+                <div class="input-group">
+                  <span class="input-group-text">{{ simbolo_moneda_ot }}</span>
+                  <input type="text" class="form-control bg-light" id="jornadaCostoRepuestos" value="0" readonly>
+                </div>
+              </div>
+              <div class="col-12 col-sm">
                 <label class="form-label fw-semibold" for="jornadaCostoMdo">Costo MDO</label>
                 <div class="input-group">
                   <span class="input-group-text">{{ simbolo_moneda_ot }}</span>
                   <input type="text" class="form-control bg-light" id="jornadaCostoMdo" value="0" readonly>
                 </div>
               </div>
-              <div class="col-12 col-sm-6">
+              <div class="col-12 col-sm">
                 <label class="form-label fw-semibold" for="jornadaCostoTotal">Total jornada</label>
                 <div class="input-group">
                   <span class="input-group-text">{{ simbolo_moneda_ot }}</span>
@@ -736,11 +743,30 @@
     return tipo === 'preventivo' && ejecucion === 'externo';
   }
 
+  function costoRepuestosJornadaActual() {
+    if (typeof repuestos === 'undefined') return 0;
+    if (typeof syncRepFromDom === 'function') syncRepFromDom();
+    var fecha = document.getElementById('jornadaFecha')?.value || '';
+    var inicio = document.getElementById('jornadaHoraInicio')?.value || '';
+    var fin = document.getElementById('jornadaHoraFin')?.value || '';
+    return repuestos.reduce(function (suma, repuesto) {
+      var sinJornada = !repuesto.jornada_fecha;
+      var corresponde = repuesto.jornada_fecha === fecha
+        && (!repuesto.jornada_hora_inicio || repuesto.jornada_hora_inicio === inicio)
+        && (!repuesto.jornada_hora_fin || repuesto.jornada_hora_fin === fin);
+      if (!sinJornada && !corresponde) return suma;
+      var unitario = repuesto.costo_unitario != null
+        ? (parseFloat(repuesto.costo_unitario) || 0)
+        : (typeof costoUnitarioRep === 'function' ? costoUnitarioRep(repuesto.spare_part_id) : 0);
+      return suma + unitario * (parseInt(repuesto.cantidad, 10) || 0);
+    }, 0);
+  }
+
   function actualizarCostosJornada() {
-    var resumen = document.getElementById('resumenCostosJornada');
     var tipo = document.getElementById('selectTipo');
-    var mostrar = !tipo || tipo.value !== 'correctivo';
-    if (resumen) resumen.classList.toggle('d-none', !mostrar);
+    var esCorrectivo = tipo && tipo.value === 'correctivo';
+    var grupoRepuestos = document.getElementById('grupoCostoRepuestosJornada');
+    if (grupoRepuestos) grupoRepuestos.classList.toggle('d-none', !esCorrectivo);
 
     var tech = document.getElementById('jornadaTecnico')?.value || '';
     var jornadaEditada = editIndex >= 0 ? jornadas[editIndex] : null;
@@ -754,8 +780,10 @@
       hora_fin: document.getElementById('jornadaHoraFin')?.value || ''
     });
     var herramientas = parseFloat(document.getElementById('jornadaCostoHerramientas')?.value || '0') || 0;
+    var costoRepuestos = esCorrectivo ? costoRepuestosJornadaActual() : 0;
     var costoMdo = Math.round((minutos / 60) * tarifa * 100) / 100;
-    var total = Math.round((costoMdo + herramientas) * 100) / 100;
+    var total = Math.round((costoMdo + herramientas + costoRepuestos) * 100) / 100;
+    var inputRepuestos = document.getElementById('jornadaCostoRepuestos');
     var inputMdo = document.getElementById('jornadaCostoMdo');
     var inputTotal = document.getElementById('jornadaCostoTotal');
     var detalle = document.getElementById('jornadaCostoMdoDetalle');
@@ -766,7 +794,8 @@
       if (permiteMdoManual) costoMdo = parsearNumeroCosto(inputMdo.value) || 0;
       else inputMdo.value = formatoNumeroCosto(costoMdo);
     }
-    total = Math.round((costoMdo + herramientas) * 100) / 100;
+    if (inputRepuestos) inputRepuestos.value = formatoNumeroCosto(costoRepuestos);
+    total = Math.round((costoMdo + herramientas + costoRepuestos) * 100) / 100;
     if (inputTotal) inputTotal.value = formatoNumeroCosto(total);
     if (detalle) {
       detalle.textContent = permiteMdoManual
@@ -1262,6 +1291,7 @@
         repCostoTotalEl.classList.add('d-none');
       }
     }
+    if (typeof actualizarCostosJornada === 'function') actualizarCostosJornada();
   }
 
   function syncRepHidden() {
@@ -1278,10 +1308,17 @@
       var notas = tr.querySelector('.rep-notas');
       if (!sel || !sel.value) return;
       var anterior = anteriores[idx] || {};
+      var cantidad = parseInt(qty && qty.value, 10) || 1;
+      var costoUnitario = String(anterior.spare_part_id || '') === String(sel.value)
+        && anterior.cantidad === cantidad && anterior.costo_unitario != null
+        ? (parseFloat(anterior.costo_unitario) || 0)
+        : costoUnitarioRep(sel.value);
       repuestos.push({
         spare_part_id: parseInt(sel.value, 10),
-        cantidad: parseInt(qty && qty.value, 10) || 1,
+        cantidad: cantidad,
         notas: notas ? notas.value.trim() : '',
+        costo_unitario: costoUnitario,
+        costo_total: costoUnitario * cantidad,
         jornada_fecha: anterior.jornada_fecha || '',
         jornada_hora_inicio: anterior.jornada_hora_inicio || '',
         jornada_hora_fin: anterior.jornada_hora_fin || '',

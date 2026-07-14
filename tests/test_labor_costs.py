@@ -258,6 +258,30 @@ class TestLaborCostReport(unittest.TestCase):
         self.assertNotIn('name="costo_herramientas"', html)
         self.assertIn("se acumulan desde las jornadas", html)
 
+    def test_corrective_modal_exposes_parts_labor_and_total_costs(self):
+        self.client.post(
+            "/login",
+            data={
+                "username": "admincostos",
+                "empresa_slug": "costos-sas",
+                "password": "Clave-Segura-123!",
+            },
+        )
+        order = WorkOrder.query.filter_by(titulo="OT con mano de obra").one()
+        order.tipo = "correctivo"
+        db.session.commit()
+
+        response = self.client.get(f"/ordenes/{order.id}/editar")
+
+        self.assertEqual(response.status_code, 200)
+        html = response.get_data(as_text=True)
+        self.assertIn('id="jornadaCostoHerramientas"', html)
+        self.assertIn('id="jornadaCostoRepuestos"', html)
+        self.assertIn('id="jornadaCostoMdo"', html)
+        self.assertIn('id="jornadaCostoTotal"', html)
+        self.assertNotIn('col-12 col-sm d-none" id="grupoCostoRepuestosJornada"', html)
+        self.assertIn("costoMdo + herramientas + costoRepuestos", html)
+
     def test_asset_life_includes_cost_breakdown(self):
         self.client.post(
             "/login",
