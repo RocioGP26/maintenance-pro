@@ -10,7 +10,9 @@ La suite documental mantiene un ciclo independiente en
 
 ### Added
 
-- Espacio reservado para cambios aún no publicados.
+- Tarifa por hora en usuarios para calcular mano de obra de Mantenimiento.
+- Snapshot de tarifa por jornada para conservar costos históricos de las OT.
+- Mano de obra en indicadores, activos, técnicos y detalle del análisis de costos.
 
 ## [1.0.1] - 2026-07-14
 

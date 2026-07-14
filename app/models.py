@@ -431,6 +431,7 @@ class User(UserMixin, db.Model):
     telefono = db.Column(db.String(40), default="")
     area = db.Column(db.String(120), default="")
     cargo = db.Column(db.String(120), default="")
+    tarifa_hora = db.Column(db.Numeric(14, 2), default=0, nullable=False)
     sede_id = db.Column(db.Integer, db.ForeignKey("sedes.id"), nullable=True, index=True)
     rol = db.Column(db.String(32), default=UserRole.ADMIN.value)
     activo = db.Column(db.Boolean, default=True)
@@ -1257,6 +1258,7 @@ class WorkOrderJornada(db.Model):
     fecha_inicio = db.Column(db.DateTime, nullable=False)
     fecha_fin = db.Column(db.DateTime, nullable=False)
     technician_id = db.Column(db.Integer, db.ForeignKey("technicians.id"), nullable=True)
+    tarifa_hora_aplicada = db.Column(db.Numeric(14, 2), nullable=True)
     tecnico_nombre = db.Column(db.String(200), default="")
     recibido_por = db.Column(db.String(200), default="")
     requirio_paro = db.Column(db.Boolean, default=False, nullable=False)
@@ -1276,6 +1278,19 @@ class WorkOrderJornada(db.Model):
         if self.technician_id and self.technician:
             return self.technician.nombre
         return self.tecnico_nombre or "—"
+
+    @property
+    def tarifa_hora_efectiva(self) -> float:
+        """Tarifa histórica; para datos legacy usa temporalmente la tarifa actual."""
+        if self.tarifa_hora_aplicada is not None:
+            return float(self.tarifa_hora_aplicada)
+        if self.technician and self.technician.user:
+            return float(self.technician.user.tarifa_hora or 0)
+        return 0.0
+
+    @property
+    def costo_mano_obra(self) -> float:
+        return round((self.duracion_minutos / 60) * self.tarifa_hora_efectiva, 2)
 
 
 class WorkOrderRepuesto(db.Model):

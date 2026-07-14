@@ -2620,8 +2620,12 @@ def _parse_jornadas_json() -> Tuple[list[dict], Optional[str]]:
             except (TypeError, ValueError):
                 return [], f"Jornada {i}: técnico no válido."
 
+        technician = None
         if tech_id is not None:
-            if not _filter_empresa(Technician.query.filter_by(id=tech_id), Technician).first():
+            technician = _filter_empresa(
+                Technician.query.filter_by(id=tech_id), Technician
+            ).first()
+            if not technician:
                 return [], f"Jornada {i}: técnico no pertenece a tu empresa."
 
         nombre = (item.get("tecnico_nombre") or "").strip()
@@ -2636,6 +2640,9 @@ def _parse_jornadas_json() -> Tuple[list[dict], Optional[str]]:
                 "fecha_inicio": inicio,
                 "fecha_fin": fin,
                 "technician_id": tech_id,
+                "tarifa_hora_aplicada": float(
+                    technician.user.tarifa_hora or 0
+                ) if technician and technician.user else 0.0,
                 "tecnico_nombre": nombre if tech_id is None else "",
                 "recibido_por": recibido_por,
                 "requirio_paro": bool(item.get("requirio_paro")),
@@ -2662,6 +2669,11 @@ def _guardar_jornadas_orden(wo: WorkOrder) -> Optional[str]:
     if err:
         return err
 
+    tarifas_existentes = {
+        (j.fecha_inicio, j.fecha_fin, j.technician_id): j.tarifa_hora_aplicada
+        for j in wo.jornadas
+        if j.tarifa_hora_aplicada is not None
+    }
     wo.jornadas.clear()
     if not sesiones:
         wo.fecha_inicio = None
@@ -2670,12 +2682,16 @@ def _guardar_jornadas_orden(wo: WorkOrder) -> Optional[str]:
         return None
 
     for n, s in enumerate(sesiones, start=1):
+        clave_jornada = (s["fecha_inicio"], s["fecha_fin"], s["technician_id"])
         wo.jornadas.append(
             WorkOrderJornada(
                 orden=n,
                 fecha_inicio=s["fecha_inicio"],
                 fecha_fin=s["fecha_fin"],
                 technician_id=s["technician_id"],
+                tarifa_hora_aplicada=tarifas_existentes.get(
+                    clave_jornada, s["tarifa_hora_aplicada"]
+                ),
                 tecnico_nombre=s["tecnico_nombre"],
                 recibido_por=s["recibido_por"],
                 requirio_paro=s["requirio_paro"],
@@ -3303,15 +3319,19 @@ def mantenimiento_costos():
             joinedload(WorkOrder.machine),
             joinedload(WorkOrder.proveedor),
             joinedload(WorkOrder.repuestos).joinedload(WorkOrderRepuesto.spare_part),
+            joinedload(WorkOrder.jornadas)
+            .joinedload(WorkOrderJornada.technician)
+            .joinedload(Technician.user),
         )
     ).all()
 
     filas = []
     por_tipo = defaultdict(float)
-    por_activo = defaultdict(lambda: {"codigo": "", "nombre": "", "ordenes": 0, "servicios": 0.0, "repuestos": 0.0})
+    por_activo = defaultdict(lambda: {"codigo": "", "nombre": "", "ordenes": 0, "mano_obra": 0.0, "servicios": 0.0, "repuestos": 0.0})
     por_proveedor = defaultdict(lambda: {"nombre": "", "ordenes": 0, "costo": 0.0})
+    por_tecnico = defaultdict(lambda: {"nombre": "", "jornadas": 0, "horas": 0.0, "costo": 0.0})
     por_mes = defaultdict(float)
-    total_servicios = total_repuestos = 0.0
+    total_mano_obra = total_servicios = total_repuestos = 0.0
 
     for orden in ordenes:
         referencia = (
@@ -3323,7 +3343,9 @@ def mantenimiento_costos():
             continue
         costo_servicio = float(orden.costo_real or 0) if orden.es_ejecucion_externa else 0.0
         costo_repuestos = sum(float(linea.costo_total_linea or 0) for linea in orden.repuestos)
-        costo_total = costo_servicio + costo_repuestos
+        costo_mano_obra = sum(jornada.costo_mano_obra for jornada in orden.jornadas)
+        costo_total = costo_mano_obra + costo_servicio + costo_repuestos
+        total_mano_obra += costo_mano_obra
         total_servicios += costo_servicio
         total_repuestos += costo_repuestos
         por_tipo[orden.tipo or "otro"] += costo_total
@@ -3335,6 +3357,7 @@ def mantenimiento_costos():
         activo["codigo"] = machine.codigo if machine else "—"
         activo["nombre"] = machine.nombre if machine else "Sin activo"
         activo["ordenes"] += 1
+        activo["mano_obra"] += costo_mano_obra
         activo["servicios"] += costo_servicio
         activo["repuestos"] += costo_repuestos
 
@@ -3345,16 +3368,26 @@ def mantenimiento_costos():
             proveedor["ordenes"] += 1
             proveedor["costo"] += costo_servicio
 
+        for jornada in orden.jornadas:
+            if not jornada.technician_id:
+                continue
+            tecnico = por_tecnico[jornada.technician_id]
+            tecnico["nombre"] = jornada.tecnico_label
+            tecnico["jornadas"] += 1
+            tecnico["horas"] += jornada.duracion_minutos / 60
+            tecnico["costo"] += jornada.costo_mano_obra
+
         filas.append({
-            "orden": orden, "fecha": referencia, "servicio": costo_servicio,
+            "orden": orden, "fecha": referencia, "mano_obra": costo_mano_obra, "servicio": costo_servicio,
             "repuestos": costo_repuestos, "total": costo_total,
         })
 
     activos = sorted(
-        ({**v, "total": v["servicios"] + v["repuestos"]} for v in por_activo.values()),
+        ({**v, "total": v["mano_obra"] + v["servicios"] + v["repuestos"]} for v in por_activo.values()),
         key=lambda x: x["total"], reverse=True,
     )
     proveedores = sorted(por_proveedor.values(), key=lambda x: x["costo"], reverse=True)
+    tecnicos = sorted(por_tecnico.values(), key=lambda x: x["costo"], reverse=True)
     meses = []
     cursor = date(fecha_desde.year, fecha_desde.month, 1)
     limite = date(fecha_hasta.year, fecha_hasta.month, 1)
@@ -3363,12 +3396,13 @@ def mantenimiento_costos():
         meses.append({"key": key, "label": cursor.strftime("%m/%Y"), "costo": por_mes.get(key, 0.0)})
         cursor = date(cursor.year + (cursor.month == 12), 1 if cursor.month == 12 else cursor.month + 1, 1)
 
-    total = total_servicios + total_repuestos
+    total = total_mano_obra + total_servicios + total_repuestos
     return render_template(
         "mantenimiento/costos.html",
         fecha_desde=fecha_desde,
         fecha_hasta=fecha_hasta,
         total=total,
+        total_mano_obra=total_mano_obra,
         total_servicios=total_servicios,
         total_repuestos=total_repuestos,
         total_ordenes=len(filas),
@@ -3376,6 +3410,7 @@ def mantenimiento_costos():
         por_tipo=por_tipo,
         activos=activos,
         proveedores=proveedores,
+        tecnicos=tecnicos,
         meses=meses,
         filas=sorted(filas, key=lambda x: x["fecha"], reverse=True),
     )
@@ -4439,6 +4474,20 @@ def _parse_sede_equipo(form, empresa_id: int) -> tuple[Optional[int], Optional[s
     return sid, None
 
 
+def _parse_tarifa_hora_equipo(form, empresa: Empresa | None) -> tuple[float, Optional[str]]:
+    raw = (form.get("tarifa_hora") or "").strip()
+    if not raw:
+        return 0.0, None
+    value = parsear_monto_form(raw, empresa.moneda if empresa else "COP")
+    if value is None:
+        return 0.0, "Ingresa una tarifa por hora válida."
+    if value < 0:
+        return 0.0, "La tarifa por hora no puede ser negativa."
+    if value > 999_999_999_999.99:
+        return 0.0, "La tarifa por hora supera el máximo permitido."
+    return round(value, 2), None
+
+
 def _save_user_custom_fields(user: User, form, empresa_id: int, sector: str) -> Optional[str]:
     campos = campos_para_equipo(empresa_id, sector)
     for campo in campos:
@@ -4464,6 +4513,10 @@ def _equipo_form_context(usuario: Optional[User], empresa_id: int) -> dict:
         "sedes": _sedes_empresa(empresa_id) if empresa_id else [],
         "campos_personalizados": campos,
         "valores_campos": valores,
+        "tarifa_hora_valor": formatear_monto_sin_simbolo(
+            usuario.tarifa_hora, emp.moneda
+        ) if usuario and emp else "",
+        "tarifa_hora_simbolo": simbolo_moneda_input(emp.moneda if emp else "COP"),
     }
 
 
@@ -4505,6 +4558,7 @@ def equipo_new():
         password = request.form.get("password", "")
         password2 = request.form.get("password2", "")
         sede_id, err_sede = _parse_sede_equipo(request.form, eid)
+        tarifa_hora, err_tarifa = _parse_tarifa_hora_equipo(request.form, emp)
 
         err_u = _validar_username_equipo(username)
         if err_u:
@@ -4521,6 +4575,8 @@ def equipo_new():
             flash("No puedes asignar ese rol.", "danger")
         elif err_sede:
             flash(err_sede, "danger")
+        elif err_tarifa:
+            flash(err_tarifa, "danger")
         elif err_pwd := validar_password(password):
             flash(err_pwd, "danger")
         elif password != password2:
@@ -4532,6 +4588,7 @@ def equipo_new():
                 nombre_visible=nombre,
                 area=area,
                 cargo=cargo,
+                tarifa_hora=tarifa_hora,
                 sede_id=sede_id,
                 email=email,
                 telefono=telefono,
@@ -4605,6 +4662,7 @@ def equipo_edit(id):
         password = request.form.get("password", "")
         password2 = request.form.get("password2", "")
         sede_id, err_sede = _parse_sede_equipo(request.form, eid)
+        tarifa_hora, err_tarifa = _parse_tarifa_hora_equipo(request.form, emp)
 
         err_u = _validar_username_equipo(username)
         if err_u:
@@ -4623,6 +4681,8 @@ def equipo_edit(id):
             flash("No puedes asignar ese rol.", "danger")
         elif err_sede:
             flash(err_sede, "danger")
+        elif err_tarifa:
+            flash(err_tarifa, "danger")
         elif es_self and not activo:
             flash("No puedes desactivar tu propia cuenta.", "danger")
         elif es_self and rol != normalize_rol(current_user.rol):
@@ -4659,6 +4719,7 @@ def equipo_edit(id):
             usuario.nombre_visible = nombre
             usuario.area = area
             usuario.cargo = cargo
+            usuario.tarifa_hora = tarifa_hora
             usuario.sede_id = sede_id
             usuario.email = email
             usuario.telefono = telefono

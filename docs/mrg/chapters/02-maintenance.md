@@ -249,6 +249,11 @@ Cada OT puede acumular costos que alimentan indicadores y, en el futuro, el mód
 | **Servicios externos** | Costo estimado / real de OT con proveedor |
 | **Costos adicionales** | Otros conceptos en costo real vs estimado |
 
+La tarifa hora se configura en **Administración → Usuarios y roles**. Al guardar
+una jornada, Maintix conserva la tarifa aplicada en ese momento y calcula
+`duración en horas × tarifa hora`; los cambios futuros de tarifa no modifican
+el costo histórico de la jornada.
+
 Los costos por activo se agregan en el **historial** y conectan Maintenance con reportes (MRG-08) y finanzas (roadmap).
 
 ---
