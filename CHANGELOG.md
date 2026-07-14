@@ -10,6 +10,12 @@ La suite documental mantiene un ciclo independiente en
 
 ### Added
 
+- Espacio reservado para cambios aún no publicados.
+
+## [1.0.2] - 2026-07-14
+
+### Added
+
 - Centro de Operaciones en Inicio con OT abiertas y vencidas, preventivos del día, incidencias nuevas, inventario bajo mínimo, activos fuera de servicio, garantías y actividad reciente.
 - Módulo `Análisis` como acceso común a indicadores de mantenimiento, costos, reportes, inventario comercial y Purchasing.
 - Tarifa por hora en usuarios para calcular mano de obra de Mantenimiento.
@@ -25,6 +31,10 @@ La suite documental mantiene un ciclo independiente en
 
 - El antiguo Dashboard estratégico de Mantenimiento se mueve a `Análisis → Mantenimiento`; Inicio queda enfocado exclusivamente en decisiones operativas del día.
 - La navegación principal se organiza en los niveles Operación, Inteligencia y Administración.
+
+### Notes
+
+- Actualizar main con Inicio operativo y módulo Análisis (#3).
 
 ## [1.0.1] - 2026-07-14
 
@@ -49,6 +59,7 @@ La suite documental mantiene un ciclo independiente en
 
 - Este release formaliza el versionado; no modifica funcionalidades de negocio.
 
-[Unreleased]: https://github.com/RocioGP26/maintenance-pro/compare/v1.0.1...HEAD
+[Unreleased]: https://github.com/RocioGP26/maintenance-pro/compare/v1.0.2...HEAD
 [1.0.0]: https://github.com/RocioGP26/maintenance-pro/releases/tag/v1.0.0
 [1.0.1]: https://github.com/RocioGP26/maintenance-pro/compare/v1.0.0...v1.0.1
+[1.0.2]: https://github.com/RocioGP26/maintenance-pro/compare/v1.0.1...v1.0.2
