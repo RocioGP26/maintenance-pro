@@ -42,7 +42,32 @@ Una migración de base de datos no obliga por sí sola a subir MAJOR: si es
 aditiva y compatible puede ser MINOR o PATCH. Una migración destructiva o un
 cambio que exige intervención del cliente sí requiere evaluar MAJOR.
 
-## Flujo de release
+## Release automático en GitHub
+
+Al fusionar un Pull Request hacia `main`, `.github/workflows/release.yml`:
+
+1. Ejecuta la suite completa.
+2. Incrementa la versión en `app/version.py`.
+3. Actualiza `CHANGELOG.md` y la fila de aplicación en `docs/VERSIONS.md`.
+4. Crea el commit `chore(release): vX.Y.Z` y el tag anotado.
+5. Publica la GitHub Release con notas generadas.
+
+La política predeterminada es **PATCH**. Antes de fusionar, puede añadirse una
+de estas etiquetas al Pull Request:
+
+| Etiqueta | Resultado |
+|---|---|
+| Sin etiqueta o `release:patch` | `1.0.0` → `1.0.1` |
+| `release:minor` | `1.0.0` → `1.1.0` |
+| `release:major` | `1.0.0` → `2.0.0` |
+
+El workflow también puede ejecutarse manualmente desde `Actions → Automated
+Release`, seleccionando PATCH, MINOR o MAJOR. El repositorio debe permitir a
+GitHub Actions escribir contenidos mediante `GITHUB_TOKEN`.
+
+## Flujo de release manual de contingencia
+
+Usar solamente si GitHub Actions está temporalmente inhabilitado.
 
 1. Partir de `main` actualizado y con el árbol de trabajo limpio.
 2. Elegir PATCH, MINOR o MAJOR según la tabla anterior.

@@ -1,0 +1,110 @@
+name: Automated Release
+
+on:
+  pull_request:
+    branches: [main]
+    types: [closed]
+  workflow_dispatch:
+    inputs:
+      bump:
+        description: Incremento SemVer
+        required: true
+        default: patch
+        type: choice
+        options: [patch, minor, major]
+      summary:
+        description: Resumen del release
+        required: false
+        default: Release manual automatizado
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-main
+  cancel-in-progress: false
+
+jobs:
+  release:
+    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Instalar dependencias
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Ejecutar pruebas
+        env:
+          FLASK_CONFIG: testing
+        run: python -m unittest discover -s tests -q
+
+      - name: Elegir incremento
+        id: policy
+        shell: bash
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          MANUAL_BUMP: ${{ inputs.bump }}
+          MANUAL_SUMMARY: ${{ inputs.summary }}
+          PR_LABELS: ${{ join(github.event.pull_request.labels.*.name, ',') }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          if [ "$EVENT_NAME" = "workflow_dispatch" ]; then
+            BUMP="${MANUAL_BUMP:-patch}"
+            SUMMARY="${MANUAL_SUMMARY:-Release manual automatizado}"
+          elif [[ ",$PR_LABELS," == *",release:major,"* ]]; then
+            BUMP="major"
+            SUMMARY="$PR_TITLE (#$PR_NUMBER)"
+          elif [[ ",$PR_LABELS," == *",release:minor,"* ]]; then
+            BUMP="minor"
+            SUMMARY="$PR_TITLE (#$PR_NUMBER)"
+          else
+            BUMP="patch"
+            SUMMARY="$PR_TITLE (#$PR_NUMBER)"
+          fi
+          echo "bump=$BUMP" >> "$GITHUB_OUTPUT"
+          echo "summary=$SUMMARY" >> "$GITHUB_OUTPUT"
+
+      - name: Actualizar versión y changelog
+        id: version
+        shell: bash
+        env:
+          RELEASE_SUMMARY: ${{ steps.policy.outputs.summary }}
+        run: |
+          VERSION=$(python scripts/release_version.py \
+            --bump "${{ steps.policy.outputs.bump }}" \
+            --summary "$RELEASE_SUMMARY")
+          echo "number=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "tag=v$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Crear commit y tag
+        env:
+          VERSION: ${{ steps.version.outputs.number }}
+          TAG: ${{ steps.version.outputs.tag }}
+        run: |
+          git config user.name "maintix-release-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add app/version.py CHANGELOG.md docs/VERSIONS.md
+          git commit -m "chore(release): $TAG"
+          git tag -a "$TAG" -m "Maintix $TAG"
+          git push origin HEAD:main
+          git push origin "$TAG"
+
+      - name: Publicar GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.version.outputs.tag }}
+        run: gh release create "$TAG" --generate-notes --title "Maintix $TAG"
