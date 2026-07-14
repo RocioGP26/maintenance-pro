@@ -129,6 +129,13 @@ def _login_impl():
         return jsonify({"error": "Credenciales inválidas"}), 401
     if not user.empresa_id or not user.empresa:
         return jsonify({"error": "Usuario sin empresa asignada"}), 403
+    if not user.empresa.email_verificado:
+        return jsonify(
+            {
+                "error": "Confirma el correo de la empresa antes de ingresar.",
+                "codigo": "email_no_verificado",
+            }
+        ), 403
     if not user.empresa.slug:
         return jsonify({"error": "Empresa sin slug configurado"}), 503
 

@@ -226,7 +226,8 @@
         {% set es_submenu_usuarios = ep and (ep.startswith('main.equipo') or ep == 'main.mi_perfil') %}
         {% set es_submenu_config_empresa = ep == 'main.configuracion_empresa' %}
         {% set es_submenu_campos = ep and ep.startswith('main.configuracion_campos') %}
-        {% set menu_admin_abierto = es_submenu_usuarios or es_submenu_config_empresa or es_submenu_campos %}
+        {% set es_submenu_seguridad = ep == 'main.seguridad_sesiones' %}
+        {% set menu_admin_abierto = es_submenu_usuarios or es_submenu_config_empresa or es_submenu_campos or es_submenu_seguridad %}
         <p class="sidebar-module-label px-3 small text-uppercase text-white-50 mb-1 mt-2">Administración</p>
         <div class="sidebar-nav-group">
           <button type="button" class="nav-link sidebar-nav-toggle w-100 text-start {% if menu_admin_abierto %}active-parent{% endif %}"
@@ -243,6 +244,12 @@
             {% if perm.equipo %}
             <a class="nav-link nav-link-sub {% if es_submenu_usuarios %}active{% endif %}" href="{{ url_for('main.equipo_list') }}">
               <i class="bi bi-people me-2"></i> Usuarios y roles
+            </a>
+            {% endif %}
+            {% if perm.equipo %}
+            <a class="nav-link nav-link-sub {% if es_submenu_seguridad %}active{% endif %}"
+               href="{{ url_for('main.seguridad_sesiones') }}">
+              <i class="bi bi-shield-check me-2"></i> Seguridad y sesiones
             </a>
             {% endif %}
             {% if perm.config %}
@@ -359,6 +366,29 @@
     </div>
   </div>
 
+  {% if current_user.is_authenticated and session_security and session_security.warning_enabled %}
+  <div class="modal fade" id="sessionWarningModal" tabindex="-1" aria-labelledby="sessionWarningTitle" aria-hidden="true" data-bs-backdrop="static">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="sessionWarningTitle"><i class="bi bi-shield-exclamation me-2"></i>Tu sesión está por expirar</h5>
+        </div>
+        <div class="modal-body">
+          <p class="mb-1">Por seguridad, tu sesión expirará por inactividad.</p>
+          <p class="fw-semibold mb-0" id="sessionWarningCountdown"></p>
+        </div>
+        <div class="modal-footer">
+          <form method="post" action="{{ url_for('main.logout') }}" class="mb-0">
+            {% include "_csrf.html" %}
+            <button type="submit" class="btn btn-outline-secondary">Cerrar sesión</button>
+          </form>
+          <button type="button" class="btn btn-primary" id="sessionContinueButton">Continuar trabajando</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
   {{ bootstrap_js() }}
   <script>
   (function () {
@@ -398,6 +428,65 @@
     });
   })();
   </script>
+  {% if current_user.is_authenticated and session_security %}
+  <script>
+  (function () {
+    var statusUrl = {{ url_for('main.session_status')|tojson }};
+    var loginUrl = {{ url_for('main.login')|tojson }};
+    var csrf = document.querySelector('meta[name="csrf-token"]');
+    var remaining = {{ (session_security.idle_minutes * 60)|int }};
+    var warningAt = {{ (session_security.warning_minutes * 60)|int }};
+    var warningEnabled = {{ session_security.warning_enabled|tojson }};
+    var lastPing = 0;
+    var modalEl = document.getElementById('sessionWarningModal');
+    var modal = modalEl && window.bootstrap ? bootstrap.Modal.getOrCreateInstance(modalEl) : null;
+    var countdown = document.getElementById('sessionWarningCountdown');
+
+    function render() {
+      if (remaining <= 0) {
+        window.location.assign(loginUrl + '?expired=idle_timeout');
+        return;
+      }
+      if (warningEnabled && remaining <= warningAt && modal) modal.show();
+      if (countdown) {
+        var minutes = Math.floor(remaining / 60);
+        var seconds = remaining % 60;
+        countdown.textContent = 'Tiempo restante: ' + minutes + ':' + String(seconds).padStart(2, '0');
+      }
+    }
+
+    function sync(active) {
+      var now = Date.now();
+      if (active && now - lastPing < 60000) return;
+      if (active) lastPing = now;
+      var headers = {'X-Requested-With': 'XMLHttpRequest'};
+      var tokenInput = document.querySelector('input[name="csrf_token"]');
+      if (tokenInput) headers['X-CSRFToken'] = tokenInput.value;
+      fetch(statusUrl, {method: active ? 'POST' : 'GET', headers: headers, credentials: 'same-origin'})
+        .then(function (response) {
+          if (response.status === 401) throw new Error('expired');
+          return response.json();
+        })
+        .then(function (data) {
+          remaining = data.seconds_remaining;
+          warningAt = data.warning_seconds;
+          warningEnabled = data.warning_enabled;
+          if (remaining > warningAt && modal) modal.hide();
+          render();
+        })
+        .catch(function () { window.location.assign(loginUrl + '?expired=1'); });
+    }
+
+    ['click', 'keydown', 'touchstart'].forEach(function (eventName) {
+      document.addEventListener(eventName, function () { sync(true); }, {passive: true});
+    });
+    var continueButton = document.getElementById('sessionContinueButton');
+    if (continueButton) continueButton.addEventListener('click', function () { lastPing = 0; sync(true); });
+    window.setInterval(function () { remaining -= 1; render(); }, 1000);
+    sync(false);
+  })();
+  </script>
+  {% endif %}
   {% block scripts %}{% endblock %}
 </body>
 </html>

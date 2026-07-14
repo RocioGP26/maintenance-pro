@@ -317,6 +317,9 @@ def empresa_pagar_factura(id: int, factura_id: int):
 def empresa_suspender(id: int):
     empresa = Empresa.query.get_or_404(id)
     empresa.suspendida = True
+    from app.session_management import revoke_company_sessions
+
+    revoke_company_sessions(empresa.id, reason="empresa_suspendida")
     db.session.commit()
     flash(f"{empresa.razon_social} suspendida.", "warning")
     return redirect(url_for("platform.empresa_detail", id=id))
@@ -393,6 +396,10 @@ def usuario_reset_password(user_id: int):
     user = User.query.get_or_404(user_id)
     temp = generar_password_temporal()
     user.set_password(temp)
+    user.auth_version = int(user.auth_version or 1) + 1
+    from app.session_management import revoke_user_sessions
+
+    revoke_user_sessions(user.id, reason="password_reset_platform")
     registrar_auditoria_plataforma(
         "reset_password",
         empresa_id=user.empresa_id,
@@ -418,6 +425,10 @@ def usuario_bloquear(user_id: int):
     user = User.query.get_or_404(user_id)
     motivo = (request.form.get("motivo") or "").strip()
     bloquear_usuario(user)
+    user.auth_version = int(user.auth_version or 1) + 1
+    from app.session_management import revoke_user_sessions
+
+    revoke_user_sessions(user.id, reason="usuario_bloqueado")
     registrar_auditoria_plataforma(
         "block_user",
         empresa_id=user.empresa_id,

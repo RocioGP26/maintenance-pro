@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import os
+from datetime import datetime
 
 from flask import Blueprint, jsonify, request
 
@@ -50,6 +51,8 @@ def crear_empresa():
         telefono=data.get("telefono", ""),
         moneda=data.get("moneda", "COP"),
         zona_horaria=data.get("zona_horaria", "America/Bogota"),
+        # Las altas autenticadas de plataforma no son auto-registros públicos.
+        email_verified_at=datetime.utcnow(),
     )
     db.session.add(empresa)
     db.session.flush()

@@ -79,6 +79,7 @@ def completar_onboarding(
         email=empresa_data.get("email", ""),
         moneda=empresa_data.get("moneda", "COP"),
         zona_horaria=empresa_data.get("zona_horaria", "America/Bogota"),
+        email_verified_at=None,
     )
     set_modulos_activos(empresa, modulos_norm)
     from app.currency import set_monedas_empresa

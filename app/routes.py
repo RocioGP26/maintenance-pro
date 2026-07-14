@@ -323,7 +323,7 @@ def login():
         username = request.form.get("username", "").strip()
         empresa_slug = request.form.get("empresa_slug", "").strip()
         password = request.form.get("password", "")
-        remember = bool(request.form.get("remember"))
+        remember_requested = bool(request.form.get("remember"))
         from app.user_service import buscar_usuario_login, mensaje_login_ambiguo
 
         user = buscar_usuario_login(username, empresa_slug=empresa_slug or None)
@@ -336,7 +336,26 @@ def login():
             if user.bloqueado or not user.activo:
                 flash("Usuario o contraseña incorrectos.", "danger")
             else:
+                if user.empresa and not user.empresa.email_verificado:
+                    from app.email_service import EmailDeliveryError
+                    from app.email_verification_service import ensure_verification
+
+                    session["pending_email_verification_user_id"] = user.id
+                    try:
+                        ensure_verification(user)
+                    except (EmailDeliveryError, ValueError):
+                        import logging
+
+                        logging.getLogger(__name__).exception(
+                            "No se pudo asegurar el código de verificación durante login"
+                        )
+                    flash("Confirma el correo de la empresa antes de ingresar.", "warning")
+                    return redirect(url_for("onboarding.verify_email"))
+                from app.session_management import policy_for, start_managed_session
+
+                remember = remember_requested and bool(policy_for(user)["remember_enabled"])
                 login_user(user, remember=remember)
+                start_managed_session(user, remember=remember)
                 if user.empresa_id:
                     from app.tenant_activity import registrar_actividad_tenant
 
@@ -347,6 +366,14 @@ def login():
                         username=user.username,
                         detalle="Inicio de sesión web",
                     )
+                    if remember:
+                        registrar_actividad_tenant(
+                            user.empresa_id,
+                            "remember_login",
+                            user_id=user.id,
+                            username=user.username,
+                            detalle="Recordarme activado por el usuario",
+                        )
                     db.session.commit()
                 flash("Sesión iniciada correctamente.", "success")
                 if not user.onboarding_completado:
@@ -371,9 +398,112 @@ def logout():
             username=current_user.username,
         )
         db.session.commit()
+    from app.session_management import current_managed_session, revoke_session
+
+    revoke_session(current_managed_session(), reason="logout")
+    db.session.commit()
     logout_user()
+    session.clear()
     flash("Sesión cerrada.", "info")
     return redirect(url_for("main.index"))
+
+
+@bp.route("/sesion/estado", methods=["GET", "POST"])
+def session_status():
+    """Estado ligero para advertencia y renovación por interacción real."""
+    from app.session_management import current_managed_session, session_payload
+
+    item = current_managed_session()
+    if not current_user.is_authenticated or item is None:
+        return jsonify({"authenticated": False}), 401
+    return jsonify(session_payload(item, current_user))
+
+
+@bp.route("/administracion/seguridad", methods=["GET", "POST"])
+def seguridad_sesiones():
+    emp = _empresa_del_usuario()
+    if emp is None or not can_manage_equipo(current_user):
+        flash("Solo los administradores pueden gestionar las sesiones.", "warning")
+        return redirect(url_for("main.dashboard"))
+    from app.models import ActiveSession
+    from app.session_management import SESSION_KEY, describe_user_agent, revoke_session
+
+    if request.method == "POST":
+        action = request.form.get("accion", "guardar")
+        if action == "guardar":
+            try:
+                idle = int(request.form.get("idle_minutes", "30"))
+                absolute = int(request.form.get("absolute_minutes", "480"))
+                warning = int(request.form.get("warning_minutes", "2"))
+            except ValueError:
+                flash("Los tiempos de sesión deben ser números enteros.", "danger")
+            else:
+                if not 10 <= idle <= 60:
+                    flash("La inactividad debe estar entre 10 y 60 minutos.", "danger")
+                elif not 60 <= absolute <= 720:
+                    flash("El tiempo máximo debe estar entre 1 y 12 horas.", "danger")
+                elif not 1 <= warning < idle:
+                    flash("La advertencia debe ser menor que el tiempo de inactividad.", "danger")
+                else:
+                    emp.session_idle_minutes = idle
+                    emp.session_absolute_minutes = absolute
+                    emp.session_warning_minutes = warning
+                    emp.session_remember_enabled = bool(request.form.get("remember_enabled"))
+                    emp.session_warning_enabled = bool(request.form.get("warning_enabled"))
+                    emp.session_revoke_on_password = bool(request.form.get("revoke_on_password"))
+                    emp.session_allow_multiple = bool(request.form.get("allow_multiple"))
+                    db.session.commit()
+                    flash("Política de seguridad actualizada.", "success")
+                    return redirect(url_for("main.seguridad_sesiones"))
+        elif action == "revocar":
+            item = ActiveSession.query.filter_by(
+                id=request.form.get("session_id", type=int), empresa_id=emp.id
+            ).first_or_404()
+            if item.session_key == session.get(SESSION_KEY):
+                flash("Usa Cerrar sesión para finalizar la sesión actual.", "warning")
+            else:
+                revoke_session(item, reason="revocacion_admin")
+                from app.tenant_activity import registrar_actividad_tenant
+
+                registrar_actividad_tenant(
+                    emp.id,
+                    "session_revoked",
+                    user_id=item.user_id,
+                    username=item.user.username if item.user else "",
+                    detalle=f"Sesión finalizada por {current_user.username}",
+                )
+                db.session.commit()
+                flash("Sesión finalizada remotamente.", "success")
+            return redirect(url_for("main.seguridad_sesiones"))
+        elif action == "revocar_otras":
+            from app.session_management import revoke_user_sessions
+
+            total = revoke_user_sessions(
+                current_user.id,
+                reason="cerrar_otras",
+                except_key=session.get(SESSION_KEY),
+            )
+            db.session.commit()
+            flash(f"Se finalizaron {total} sesiones adicionales.", "success")
+            return redirect(url_for("main.seguridad_sesiones"))
+
+    now = datetime.utcnow()
+    items = (
+        ActiveSession.query.filter_by(empresa_id=emp.id, revoked_at=None)
+        .filter(ActiveSession.absolute_expires_at > now)
+        .order_by(ActiveSession.last_activity_at.desc())
+        .all()
+    )
+    rows = [
+        {
+            "item": item,
+            "browser": describe_user_agent(item.user_agent)[0],
+            "system": describe_user_agent(item.user_agent)[1],
+            "current": item.session_key == session.get(SESSION_KEY),
+        }
+        for item in items
+    ]
+    return render_template("configuracion/seguridad.html", empresa=emp, sesiones=rows)
 
 
 @bp.route("/cuenta-suspendida")
@@ -4458,6 +4588,8 @@ def equipo_edit(id):
     ctx = _equipo_form_context(usuario, eid)
 
     if request.method == "POST":
+        email_anterior = usuario.email or ""
+        activo_anterior = bool(usuario.activo)
         username = (request.form.get("username") or "").strip().lower()
         nombre = request.form.get("nombre_visible", "").strip()
         area = request.form.get("area", "").strip()
@@ -4541,7 +4673,32 @@ def equipo_edit(id):
             else:
                 _sync_technician_for_user(usuario)
                 try:
+                    revocar_por_password = bool(password) and bool(
+                        getattr(emp, "session_revoke_on_password", True)
+                    )
+                    cambio_sensible = revocar_por_password or email != email_anterior or (
+                        activo_anterior and not bool(usuario.activo)
+                    )
+                    if cambio_sensible:
+                        from app.session_management import revoke_user_sessions
+
+                        usuario.auth_version = int(usuario.auth_version or 1) + 1
+                        revoke_user_sessions(usuario.id, reason="credenciales_actualizadas")
+                        from app.tenant_activity import registrar_actividad_tenant
+
+                        registrar_actividad_tenant(
+                            eid,
+                            "password_changed" if password else "session_revoked",
+                            user_id=usuario.id,
+                            username=usuario.username,
+                            detalle="Sesiones revocadas por cambio de credenciales o estado",
+                        )
                     db.session.commit()
+                    if cambio_sensible and es_self:
+                        logout_user()
+                        session.clear()
+                        flash("Tus credenciales cambiaron. Inicia sesión nuevamente.", "info")
+                        return redirect(url_for("main.login"))
                     flash("Perfil actualizado." if es_self else "Miembro actualizado.", "success")
                     return redirect(url_for("main.equipo_list"))
                 except Exception:

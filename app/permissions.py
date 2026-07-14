@@ -258,12 +258,14 @@ USUARIO_POST_ENDPOINTS = frozenset(
     {
         "main.logout",
         "main.mi_perfil",
+        "main.session_status",
     }
 )
 
 SOLICITANTE_ENDPOINTS = frozenset(
     {
         "main.logout",
+        "main.session_status",
         "main.incidencia",
         "main.incidencias_list",
         "main.incidencias_detail",

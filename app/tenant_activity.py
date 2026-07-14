@@ -13,6 +13,11 @@ from app.platform_service import estado_ciclo_empresa
 ACTIVITY_LABELS = {
     "login": "Inicio de sesión",
     "logout": "Cierre de sesión",
+    "session_expired": "Sesión expirada",
+    "session_revoked": "Sesión revocada",
+    "session_reauthenticated": "Reautenticación",
+    "remember_login": "Recordarme",
+    "password_changed": "Cambio de contraseña",
     "impersonate_start": "Impersonación (soporte)",
     "impersonate_end": "Fin impersonación",
     "factura_pagada": "Pago registrado",
@@ -63,6 +68,12 @@ def empresa_puede_operar(empresa: Empresa | None) -> tuple[bool, str, str]:
         return True, "", ""
     if session.get("platform_impersonating"):
         return True, "", ""
+    if not empresa.email_verificado:
+        return (
+            False,
+            "email_no_verificado",
+            "Confirma el correo de la empresa antes de acceder a Maintix.",
+        )
     if empresa.suspendida:
         return (
             False,

@@ -145,6 +145,12 @@ def _verificar_bloqueo_tenant(endpoint: str):
         return None
     if request.path.startswith("/api/"):
         return jsonify({"error": mensaje, "codigo": codigo}), 403
+    if codigo == "email_no_verificado":
+        if current_user.is_authenticated:
+            from flask import session
+
+            session["pending_email_verification_user_id"] = current_user.id
+        return redirect(url_for("onboarding.verify_email"))
     if endpoint == "main.cuenta_suspendida":
         return None
     return redirect(url_for("main.cuenta_suspendida", motivo=codigo))
