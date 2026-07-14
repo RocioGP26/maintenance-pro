@@ -279,7 +279,7 @@ class TestLaborCostReport(unittest.TestCase):
         self.assertIn('id="jornadaCostoRepuestos"', html)
         self.assertIn('id="jornadaCostoMdo"', html)
         self.assertIn('id="jornadaCostoTotal"', html)
-        self.assertNotIn('col-12 col-sm d-none" id="grupoCostoRepuestosJornada"', html)
+        self.assertGreaterEqual(html.count("col-12 col-sm-6 col-md-3"), 4)
         self.assertIn("costoMdo + herramientas + costoRepuestos", html)
 
     def test_asset_life_includes_cost_breakdown(self):
