@@ -14,6 +14,7 @@ La suite documental mantiene un ciclo independiente en
 - Snapshot de tarifa por jornada para conservar costos históricos de las OT.
 - Mano de obra en indicadores, activos, técnicos y detalle del análisis de costos.
 - Costo de herramientas por jornada y desglose económico acumulado en la OT, análisis de costos y hoja de vida del activo.
+- Cálculo visible de MDO y total de jornada en el modal de OT no correctivas.
 - Snapshot del costo unitario de cada repuesto consumido para preservar el histórico de mantenimiento.
 
 ## [1.0.1] - 2026-07-14

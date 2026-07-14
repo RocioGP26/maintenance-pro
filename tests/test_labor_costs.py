@@ -70,6 +70,7 @@ class TestLaborCosts(unittest.TestCase):
         self.assertEqual(order.costo_mano_obra_total, 50000.0)
         self.assertEqual(order.costo_repuestos_total, 16000.0)
         self.assertEqual(order.costo_herramientas_total, 12000.0)
+        self.assertEqual(order.jornadas[0].costo_total_jornada, 62000.0)
         self.assertEqual(order.costo_servicio_externo, 30000.0)
         self.assertEqual(order.costo_total_mantenimiento, 108000.0)
 
@@ -142,6 +143,7 @@ class TestLaborCostReport(unittest.TestCase):
             empresa_id=empresa.id,
             titulo="OT con mano de obra",
             machine_id=machine.id,
+            tipo="preventivo",
             fecha_programada=date.today(),
         )
         order.jornadas.append(
@@ -210,6 +212,9 @@ class TestLaborCostReport(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         html = response.get_data(as_text=True)
         self.assertIn('id="jornadaCostoHerramientas"', html)
+        self.assertIn('id="jornadaCostoMdo"', html)
+        self.assertIn('id="jornadaCostoTotal"', html)
+        self.assertIn('id="resumenCostosJornada"', html)
         self.assertNotIn('name="costo_herramientas"', html)
         self.assertIn("se acumulan desde las jornadas", html)
 

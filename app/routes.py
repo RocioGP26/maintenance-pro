@@ -2584,6 +2584,7 @@ def _jornada_a_dict(j: WorkOrderJornada) -> dict:
         "hora_fin": j.fecha_fin.strftime("%H:%M"),
         "technician_id": str(j.technician_id) if j.technician_id else "otro",
         "tecnico_nombre": j.tecnico_nombre or "",
+        "tarifa_hora_aplicada": j.tarifa_hora_efectiva,
         "costo_herramientas": j.costo_herramientas_total,
         "recibido_por": j.recibido_por or "",
         "requirio_paro": bool(j.requirio_paro),
@@ -3172,7 +3173,14 @@ def _orden_form_context(
         "responsable_activo_nombre": (
             responsables_map.get(wo.machine_id, "") if wo and wo.machine_id else ""
         ),
-        "technicians_data": [{"id": t.id, "nombre": t.nombre} for t in technicians],
+        "technicians_data": [
+            {
+                "id": t.id,
+                "nombre": t.nombre,
+                "tarifa_hora": float(t.user.tarifa_hora or 0) if t.user else 0.0,
+            }
+            for t in technicians
+        ],
         "repuestos_catalog_data": [
             {
                 "id": p.id,

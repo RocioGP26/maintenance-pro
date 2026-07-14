@@ -350,6 +350,8 @@ Cada OT conserva un desglose económico común para el análisis de costos y la 
 - **Herramientas:** suma del uso, alquiler o desgaste informado en cada jornada de la OT.
 - **Servicio externo:** costo real del proveedor, únicamente cuando la ejecución es externa.
 
+En mantenimientos distintos al correctivo, el modal de jornada presenta el costo de herramientas, calcula la MDO con `duración × tarifa hora` y muestra el total de la jornada como `herramientas + MDO`. Ambos valores calculados son de solo lectura.
+
 La tarifa del técnico y el costo unitario del repuesto se guardan como snapshots para que cambios posteriores en usuarios o inventario no modifiquen el costo histórico del activo.
 
 → Detalle en [MRG-08 · Reportes](08-reportes.md)

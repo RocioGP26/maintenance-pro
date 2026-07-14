@@ -1330,6 +1330,10 @@ class WorkOrderJornada(db.Model):
     def costo_herramientas_total(self) -> float:
         return round(float(self.costo_herramientas or 0), 2)
 
+    @property
+    def costo_total_jornada(self) -> float:
+        return round(self.costo_mano_obra + self.costo_herramientas_total, 2)
+
 
 class WorkOrderRepuesto(db.Model):
     """Repuesto consumido en una OT correctiva."""

@@ -564,6 +564,25 @@
             </div>
             <div class="form-text">Uso, alquiler o desgaste de herramientas durante esta jornada.</div>
           </div>
+          <div class="col-12 col-md-6 {% if order.tipo == 'correctivo' %}d-none{% endif %}" id="resumenCostosJornada">
+            <div class="row g-2">
+              <div class="col-12 col-sm-6">
+                <label class="form-label fw-semibold" for="jornadaCostoMdo">Costo MDO</label>
+                <div class="input-group">
+                  <span class="input-group-text">{{ simbolo_moneda_ot }}</span>
+                  <input type="text" class="form-control bg-light" id="jornadaCostoMdo" value="0" readonly>
+                </div>
+              </div>
+              <div class="col-12 col-sm-6">
+                <label class="form-label fw-semibold" for="jornadaCostoTotal">Total jornada</label>
+                <div class="input-group">
+                  <span class="input-group-text">{{ simbolo_moneda_ot }}</span>
+                  <input type="text" class="form-control bg-light fw-bold" id="jornadaCostoTotal" value="0" readonly>
+                </div>
+              </div>
+              <div class="col-12"><div class="form-text" id="jornadaCostoMdoDetalle">Selecciona técnico y horario para calcular la mano de obra.</div></div>
+            </div>
+          </div>
           <div class="col-12 border-top pt-3">
             <label class="form-label fw-semibold d-block mb-2">¿Cómo queda la OT tras esta jornada?</label>
             <div class="form-check">
@@ -600,7 +619,11 @@
     document.getElementById('ordenForm').dataset.soloLectura === '1';
   var technicians = {{ technicians_data|tojson }};
   var techById = {};
-  technicians.forEach(function (t) { techById[String(t.id)] = t.nombre; });
+  var tarifaByTechId = {};
+  technicians.forEach(function (t) {
+    techById[String(t.id)] = t.nombre;
+    tarifaByTechId[String(t.id)] = parseFloat(t.tarifa_hora) || 0;
+  });
 
   var ESTADO_META = {
     programada: { label: 'Programada', cls: 'badge-wo-estado badge-wo-programada' },
@@ -685,6 +708,45 @@
       currency: {{ (empresa_actual.moneda or 'COP')|tojson }},
       maximumFractionDigits: 2
     }).format(parseFloat(valor) || 0);
+  }
+
+  function formatoNumeroCosto(valor) {
+    return new Intl.NumberFormat('es-CO', {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 2
+    }).format(parseFloat(valor) || 0);
+  }
+
+  function actualizarCostosJornada() {
+    var resumen = document.getElementById('resumenCostosJornada');
+    var tipo = document.getElementById('selectTipo');
+    var mostrar = !tipo || tipo.value !== 'correctivo';
+    if (resumen) resumen.classList.toggle('d-none', !mostrar);
+
+    var tech = document.getElementById('jornadaTecnico')?.value || '';
+    var jornadaEditada = editIndex >= 0 ? jornadas[editIndex] : null;
+    var mismaAsignacion = jornadaEditada && String(jornadaEditada.technician_id || '') === String(tech);
+    var tarifa = mismaAsignacion && jornadaEditada.tarifa_hora_aplicada != null
+      ? (parseFloat(jornadaEditada.tarifa_hora_aplicada) || 0)
+      : (tarifaByTechId[String(tech)] || 0);
+    var minutos = minutosJornada({
+      fecha: document.getElementById('jornadaFecha')?.value || '',
+      hora_inicio: document.getElementById('jornadaHoraInicio')?.value || '',
+      hora_fin: document.getElementById('jornadaHoraFin')?.value || ''
+    });
+    var herramientas = parseFloat(document.getElementById('jornadaCostoHerramientas')?.value || '0') || 0;
+    var costoMdo = Math.round((minutos / 60) * tarifa * 100) / 100;
+    var total = Math.round((costoMdo + herramientas) * 100) / 100;
+    var inputMdo = document.getElementById('jornadaCostoMdo');
+    var inputTotal = document.getElementById('jornadaCostoTotal');
+    var detalle = document.getElementById('jornadaCostoMdoDetalle');
+    if (inputMdo) inputMdo.value = formatoNumeroCosto(costoMdo);
+    if (inputTotal) inputTotal.value = formatoNumeroCosto(total);
+    if (detalle) {
+      detalle.textContent = minutos && tarifa
+        ? formatear(minutos) + ' × ' + formatoCostoJornada(tarifa) + '/hora'
+        : 'Selecciona un técnico con tarifa y un horario válido para calcular la mano de obra.';
+    }
   }
 
   function tecnicoLabel(j) {
@@ -834,6 +896,7 @@
     document.getElementById('jornadaParoNo').checked = true;
     document.getElementById('jornadaDescripcion').value = '';
     toggleTecnicoNombre();
+    actualizarCostosJornada();
   }
 
   function abrirModal(idx) {
@@ -852,6 +915,7 @@
       document.getElementById(j.requirio_paro ? 'jornadaParoSi' : 'jornadaParoNo').checked = true;
       document.getElementById('jornadaDescripcion').value = j.descripcion || '';
       toggleTecnicoNombre();
+      actualizarCostosJornada();
     }
     if (modal) modal.show();
   }
@@ -871,9 +935,21 @@
     });
   }
 
-  document.getElementById('jornadaTecnico').addEventListener('change', toggleTecnicoNombre);
+  document.getElementById('jornadaTecnico').addEventListener('change', function () {
+    toggleTecnicoNombre();
+    actualizarCostosJornada();
+  });
+  ['jornadaFecha', 'jornadaHoraInicio', 'jornadaHoraFin', 'jornadaCostoHerramientas'].forEach(function (id) {
+    var input = document.getElementById(id);
+    if (input) input.addEventListener('input', actualizarCostosJornada);
+  });
+  var tipoCostoJornada = document.getElementById('selectTipo');
+  if (tipoCostoJornada) tipoCostoJornada.addEventListener('change', actualizarCostosJornada);
   document.querySelectorAll('input[name="ejecucion_tipo"]').forEach(function (radio) {
-    radio.addEventListener('change', toggleTecnicoNombre);
+    radio.addEventListener('change', function () {
+      toggleTecnicoNombre();
+      actualizarCostosJornada();
+    });
   });
 
   if (!soloLectura) document.getElementById('btnGuardarJornada').addEventListener('click', function () {
@@ -919,6 +995,7 @@
       hora_fin: horaFin,
       technician_id: ejecucionExterna ? 'otro' : tech,
       tecnico_nombre: ejecucionExterna ? nombre : '',
+      tarifa_hora_aplicada: ejecucionExterna ? 0 : (tarifaByTechId[String(tech)] || 0),
       costo_herramientas: Math.round(costoHerramientas * 100) / 100,
       recibido_por: recibidoPor,
       requirio_paro: requirioParo,
