@@ -15,7 +15,7 @@ from app.models import (
     IncidentNotification,
     User,
 )
-from app.permissions import can_receive_incident_notification
+from app.permissions import can_receive_incident_notification, is_technician
 
 
 AUDIENCE_AREA = "area"
@@ -131,6 +131,41 @@ def create_reporter_status_notification(
     return item
 
 
+def create_technician_assignment_notification(
+    incident: Incident, *, technician_user: User
+) -> IncidentNotification | None:
+    """Notifica al tecnico concreto cuando una incidencia queda a su cargo."""
+    if (
+        not incident.id
+        or not incident.empresa_id
+        or technician_user is None
+        or technician_user.empresa_id != incident.empresa_id
+        or not technician_user.activo
+        or technician_user.bloqueado
+    ):
+        return None
+    existing = IncidentNotification.query.filter_by(
+        incident_id=incident.id,
+        user_id=technician_user.id,
+        event_key=f"technician_assigned:{incident.tecnico_asignado_id}",
+    ).first()
+    if existing:
+        return existing
+    item = IncidentNotification(
+        empresa_id=incident.empresa_id,
+        incident_id=incident.id,
+        user=technician_user,
+        audience=AUDIENCE_AREA,
+        event_key=f"technician_assigned:{incident.tecnico_asignado_id}",
+        event_type="technician_assigned",
+        title="Nueva incidencia asignada",
+        message=f"{incident.numero or ('INC-' + str(incident.id))} fue asignada a tu bandeja.",
+        status_snapshot=incident.estado or "asignado",
+    )
+    db.session.add(item)
+    return item
+
+
 def can_access_notification(user: User, item: IncidentNotification) -> bool:
     if (
         user is None
@@ -142,6 +177,12 @@ def can_access_notification(user: User, item: IncidentNotification) -> bool:
         return False
     if item.audience == AUDIENCE_REPORTER:
         return item.incident.user_id == user.id
+    if is_technician(user):
+        technician = getattr(user, "technician", None)
+        return bool(
+            technician
+            and item.incident.tecnico_asignado_id == technician.id
+        )
     return can_receive_incident_notification(user, item.incident.area_responsable)
 
 

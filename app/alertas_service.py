@@ -11,6 +11,7 @@ from sqlalchemy import or_
 
 from app import db
 from app.models import Incident, InvVenta, Machine, WorkOrder, WorkOrderStatus
+from app.permissions import is_technician
 
 
 def _current_empresa_id() -> int | None:
@@ -43,7 +44,13 @@ OT_ALERT_ABIERTAS = (WorkOrderStatus.ABIERTA.value, WorkOrderStatus.EN_PROCESO.v
 
 
 def _base_ordenes_empresa():
-    return _filter_work_orders_empresa(WorkOrder.query)
+    query = _filter_work_orders_empresa(WorkOrder.query)
+    if is_technician(current_user):
+        technician = getattr(current_user, "technician", None)
+        if technician is None or not technician.activo:
+            return query.filter(WorkOrder.id.is_(None))
+        query = query.filter(WorkOrder.technician_id == technician.id)
+    return query
 
 
 def aplicar_filtro_alerta_orden(q, alerta: str, hoy: date | None = None):
@@ -110,6 +117,14 @@ def _resumen_alertas_mantenimiento(hoy: date) -> dict[str, Any]:
 
     if is_read_only(current_user) or is_requester(current_user):
         tickets_q = tickets_q.filter(Incident.user_id == current_user.id)
+    elif is_technician(current_user):
+        technician = getattr(current_user, "technician", None)
+        if technician is None or not technician.activo:
+            tickets_q = tickets_q.filter(Incident.id.is_(None))
+        else:
+            tickets_q = tickets_q.filter(
+                Incident.tecnico_asignado_id == technician.id
+            )
     tickets_pendientes = tickets_q.count()
 
     if is_requester(current_user):
@@ -135,31 +150,32 @@ def _resumen_alertas_mantenimiento(hoy: date) -> dict[str, Any]:
     programados_hoy = aplicar_filtro_alerta_orden(base, "programados_hoy", hoy).count()
     en_proceso = aplicar_filtro_alerta_orden(base, "en_proceso", hoy).count()
 
+    technician_view = is_technician(current_user)
     return _empacar_alertas(
         modulo="mantenimiento",
-        titulo="Alertas críticas",
+        titulo="Mis alertas" if technician_view else "Alertas críticas",
         items=[
             {
-                "label": "Vencimientos",
+                "label": "Mis OT vencidas" if technician_view else "Vencimientos",
                 "count": vencimientos,
                 "url": url_for("main.ordenes_list", alerta="vencimientos"),
                 "tone": "danger",
             },
             {
-                "label": "Programados hoy",
+                "label": "Mis OT programadas hoy" if technician_view else "Programados hoy",
                 "count": programados_hoy,
                 "url": url_for("main.ordenes_list", alerta="programados_hoy"),
                 "tone": "info",
                 "pad": True,
             },
             {
-                "label": "En proceso",
+                "label": "Mis OT en proceso" if technician_view else "En proceso",
                 "count": en_proceso,
                 "url": url_for("main.ordenes_list", alerta="en_proceso"),
                 "tone": "warn",
             },
             {
-                "label": "Tickets pendientes",
+                "label": "Mis incidencias pendientes" if technician_view else "Tickets pendientes",
                 "count": tickets_pendientes,
                 "url": url_for("main.incidencias_list", estado="pendiente"),
                 "tone": "danger",

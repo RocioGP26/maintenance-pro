@@ -104,6 +104,21 @@ El acceso también considera el área del usuario: un `admin` cuya área contien
 
 → Matriz IAM Sprint 14: [07-permissions-matrix.md](../../alignment/modules/07-permissions-matrix.md)
 
+### Dashboard y navegación por rol
+
+La página de inicio y el menú se generan según el rol y sus permisos. Ocultar una opción no sustituye la autorización: las rutas y consultas aplican el mismo alcance en el servidor.
+
+| Rol | Inicio principal | Alcance operativo |
+|-----|------------------|-------------------|
+| Solicitante / Reportante | Mis incidencias | Reportes propios y sus cambios de estado |
+| Técnico | Mi jornada | OT e incidencias asignadas, agenda, repuestos y activos vinculados |
+| Supervisor | Coordinación operativa | Equipo, asignaciones, carga y pendientes |
+| Jefe de área | Gestión del área | Cumplimiento, costos, backlog y desempeño |
+| Gerente | Resumen ejecutivo | Indicadores autorizados entre módulos |
+| Administrador | Administración | Usuarios, configuración, auditoría y seguridad del tenant |
+
+Para el rol `tecnico`, la navegación oficial es: **Inicio · Mis órdenes de trabajo · Mis incidencias · Agenda · Repuestos · Mis activos · Notificaciones · Perfil**. No se muestran compras, ventas, clientes, empresas, usuarios, configuración ni reportes financieros.
+
 ---
 
 ## 4 · Gestión de usuarios · 🟡

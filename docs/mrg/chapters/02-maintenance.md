@@ -63,7 +63,7 @@ Quién participa en la operación de Mantenimiento — base para permisos en [MR
 |-----|---------|
 | **Administrador** | Configura activos, planes preventivos, técnicos y campos personalizados |
 | **Supervisor** | Planea OT, asigna técnicos o proveedores, supervisa cumplimiento |
-| **Técnico** | Ejecuta OT, registra jornadas, repuestos y cierre operativo |
+| **Técnico** | Ejecuta OT asignadas, registra jornadas, repuestos y solicita finalización; no realiza el cierre definitivo |
 | **Solicitante** | Reporta incidencias y solicita intervención (rol Usuario o equivalente) |
 | **Proveedor externo** | Ejecuta OT contratadas (ejecución externa vía proveedor de servicio) |
 
@@ -73,7 +73,7 @@ Quién participa en la operación de Mantenimiento — base para permisos en [MR
 |---------|----------------|-------|
 | Administrador | Admin · Superadmin | Configuración y catálogos |
 | Supervisor | Admin · Técnico senior | Campo supervisor en OT |
-| Técnico | Técnico | Edición de OT asignadas |
+| Técnico | Técnico | Ejecución limitada a OT e incidencias asignadas; activos y repuestos en consulta |
 | Solicitante | Usuario | Incidencias · lectura |
 | Proveedor externo | — (tercero) | Referenciado en OT externa, sin login propio hoy |
 

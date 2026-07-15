@@ -71,6 +71,11 @@ def _rol(user) -> str:
     return normalize_rol(getattr(user, "rol", ""))
 
 
+def is_technician(user) -> bool:
+    """Indica si el usuario autenticado tiene el perfil operativo de tecnico."""
+    return _rol(user) == UserRole.TECNICO.value
+
+
 def normalize_area_name(value: Optional[str]) -> str:
     """Normaliza áreas para enrutamiento seguro, incluyendo alias comunes de TIC."""
     raw = (value or "").strip().lower()
@@ -276,6 +281,7 @@ def permission_flags(user) -> dict:
         "equipo": can_manage_equipo(user),
         "solo_lectura": is_read_only(user),
         "solicitante": is_requester(user),
+        "tecnico": is_technician(user),
         "vendedor": is_vendor(user),
         "acceso_mantenimiento": can_access_maintenance(user),
         "acceso_inventario": can_access_inventory(user),

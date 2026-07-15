@@ -51,6 +51,16 @@
            href="{{ url_for('main.mi_perfil') }}">
           <i class="bi bi-person-circle me-2"></i> Mi perfil
         </a>
+        {% elif perm.tecnico %}
+        <p class="sidebar-module-label px-3 small text-uppercase text-white-50 mb-1 mt-2">Técnico</p>
+        <a class="nav-link {% if ep == 'main.dashboard' %}active{% endif %}" href="{{ url_for('main.dashboard') }}"><i class="bi bi-house-door me-2"></i> Inicio</a>
+        <a class="nav-link {% if ep in ['main.ordenes_list', 'main.ordenes_edit'] %}active{% endif %}" href="{{ url_for('main.ordenes_list') }}"><i class="bi bi-clipboard-check me-2"></i> Mis órdenes de trabajo</a>
+        <a class="nav-link {% if ep in ['main.incidencias_list', 'main.incidencias_detail'] %}active{% endif %}" href="{{ url_for('main.incidencias_list') }}"><i class="bi bi-exclamation-triangle me-2"></i> Mis incidencias</a>
+        <a class="nav-link {% if ep == 'main.calendario' %}active{% endif %}" href="{{ url_for('main.calendario') }}"><i class="bi bi-calendar3 me-2"></i> Agenda</a>
+        <a class="nav-link {% if ep == 'main.inventario_list' %}active{% endif %}" href="{{ url_for('main.inventario_list') }}"><i class="bi bi-box-seam me-2"></i> Repuestos</a>
+        <a class="nav-link {% if ep in ['main.activos_list', 'main.activos_hoja_vida', 'main.activos_ficha_tecnica'] %}active{% endif %}" href="{{ url_for('main.activos_list') }}"><i class="bi bi-cpu me-2"></i> Mis activos</a>
+        <a class="nav-link {% if ep == 'main.notifications_center' %}active{% endif %}" href="{{ url_for('main.notifications_center') }}"><i class="bi bi-bell me-2"></i> Notificaciones</a>
+        <a class="nav-link {% if ep == 'main.mi_perfil' %}active{% endif %}" href="{{ url_for('main.mi_perfil') }}"><i class="bi bi-person-circle me-2"></i> Perfil</a>
         {% else %}
         <a id="tour-nav-dashboard" class="nav-link {% if request.endpoint == 'main.dashboard' %}active{% endif %}" href="{{ dash_url }}">
           <i class="bi bi-house-door me-2"></i> Inicio
@@ -282,7 +292,7 @@
       </nav>
       <div class="mt-auto sidebar-footer-actions">
         <div class="text-center text-white-50 small py-1" title="Versión de Maintix">v{{ app_version }}</div>
-        {% if mod_mant and perm.reportar_incidencia and not perm.solicitante and not perm.vendedor %}
+        {% if mod_mant and perm.reportar_incidencia and not perm.solicitante and not perm.vendedor and not perm.tecnico %}
         <a href="{{ url_for('main.incidencia') }}" class="btn btn-report-incident w-100 rounded-0 d-flex align-items-center justify-content-center gap-2">
           <i class="bi bi-exclamation-triangle-fill"></i> Reportar Incidencia
         </a>

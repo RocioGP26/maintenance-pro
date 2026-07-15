@@ -10,7 +10,17 @@ La suite documental mantiene un ciclo independiente en
 
 ### Added
 
-- Espacio reservado para cambios aún no publicados.
+- Dashboard operativo exclusivo para el rol Técnico con OT prioritarias, preventivos del día, incidencias asignadas, agenda y alertas.
+- Notificación individual al técnico cuando una incidencia se asigna a su bandeja.
+- Centro personal de notificaciones con alertas operativas, historial, estado leído y acceso a la incidencia.
+
+### Changed
+
+- El Técnico solo consulta sus OT, incidencias y activos vinculados; repuestos queda en modo consulta.
+- La campana del Técnico calcula únicamente sus OT e incidencias asignadas y presenta contadores personales.
+- La navegación técnica oculta administración, compras, ventas, proveedores, configuración, análisis y reportes generales.
+- El Técnico registra jornadas, repuestos y diagnóstico, pero el cierre definitivo de OT e incidencias queda reservado al supervisor o responsable del flujo.
+- Mi perfil permite autoservicio seguro al Técnico para nombre, correo, teléfono y contraseña, conservando los datos laborales bajo control administrativo.
 
 ## [1.0.2] - 2026-07-14
 
