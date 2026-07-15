@@ -97,14 +97,6 @@ def _usar_alertas_inventario() -> bool:
 
 
 def _resumen_alertas_mantenimiento(hoy: date) -> dict[str, Any]:
-    from app.work_order_status import sincronizar_estados_ordenes
-
-    sincronizar_estados_ordenes(_current_empresa_id(), hoy)
-    base = _base_ordenes_empresa()
-
-    vencimientos = aplicar_filtro_alerta_orden(base, "vencimientos", hoy).count()
-    programados_hoy = aplicar_filtro_alerta_orden(base, "programados_hoy", hoy).count()
-    en_proceso = aplicar_filtro_alerta_orden(base, "en_proceso", hoy).count()
     eid = _current_empresa_id()
     tickets_q = Incident.query.filter(Incident.resuelto.is_(False))
     if eid:
@@ -119,6 +111,29 @@ def _resumen_alertas_mantenimiento(hoy: date) -> dict[str, Any]:
     if is_read_only(current_user) or is_requester(current_user):
         tickets_q = tickets_q.filter(Incident.user_id == current_user.id)
     tickets_pendientes = tickets_q.count()
+
+    if is_requester(current_user):
+        return _empacar_alertas(
+            modulo="mantenimiento",
+            titulo="Mis tickets",
+            items=[
+                {
+                    "label": "Tickets pendientes",
+                    "count": tickets_pendientes,
+                    "url": url_for("main.incidencias_list", estado="pendiente"),
+                    "tone": "danger",
+                }
+            ],
+        )
+
+    from app.work_order_status import sincronizar_estados_ordenes
+
+    sincronizar_estados_ordenes(eid, hoy)
+    base = _base_ordenes_empresa()
+
+    vencimientos = aplicar_filtro_alerta_orden(base, "vencimientos", hoy).count()
+    programados_hoy = aplicar_filtro_alerta_orden(base, "programados_hoy", hoy).count()
+    en_proceso = aplicar_filtro_alerta_orden(base, "en_proceso", hoy).count()
 
     return _empacar_alertas(
         modulo="mantenimiento",

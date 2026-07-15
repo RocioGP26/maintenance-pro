@@ -311,6 +311,8 @@ El modal muestra una sola vez cada entrega. Cerrarlo registra que ya fue mostrad
 
 La interfaz consulta pendientes mediante polling cada 45 segundos; no depende de WebSockets y nunca distribuye una alerta a toda la empresa.
 
+Para el rol **Solicitante/Reportante**, la campana se limita a sus propios tickets pendientes. Las alertas de vencimientos, trabajos programados y OT en proceso quedan reservadas al personal operativo.
+
 ---
 
 ## 10 · Inicio · Centro de Operaciones · ✅

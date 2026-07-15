@@ -31,6 +31,7 @@ La suite documental mantiene un ciclo independiente en
 
 ### Changed
 
+- La campana del rol Solicitante/Reportante muestra únicamente sus propios tickets pendientes y oculta alertas operativas de OT.
 - El antiguo Dashboard estratégico de Mantenimiento se mueve a `Análisis → Mantenimiento`; Inicio queda enfocado exclusivamente en decisiones operativas del día.
 - La navegación principal se organiza en los niveles Operación, Inteligencia y Administración.
 
