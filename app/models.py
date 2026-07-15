@@ -2031,7 +2031,10 @@ class IncidentNotification(db.Model):
     __tablename__ = "incident_notifications"
     __table_args__ = (
         db.UniqueConstraint(
-            "incident_id", "user_id", name="uq_incident_notification_user"
+            "incident_id",
+            "user_id",
+            "event_key",
+            name="uq_incident_notification_user_event",
         ),
     )
 
@@ -2054,6 +2057,12 @@ class IncidentNotification(db.Model):
         nullable=False,
         index=True,
     )
+    audience = db.Column(db.String(20), default="area", nullable=False, index=True)
+    event_key = db.Column(db.String(80), nullable=False)
+    event_type = db.Column(db.String(40), default="reported", nullable=False)
+    title = db.Column(db.String(160), default="Nueva incidencia reportada", nullable=False)
+    message = db.Column(db.String(500), default="", nullable=False)
+    status_snapshot = db.Column(db.String(32), default="", nullable=False)
     shown_at = db.Column(db.DateTime, nullable=True, index=True)
     read_at = db.Column(db.DateTime, nullable=True, index=True)
     accessed_at = db.Column(db.DateTime, nullable=True)

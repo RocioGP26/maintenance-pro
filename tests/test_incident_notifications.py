@@ -6,6 +6,7 @@ from app import create_app, db
 from app.incident_notifications import (
     authorized_unread_notifications,
     create_incident_notifications,
+    create_reporter_status_notification,
 )
 from app.models import (
     Empresa,
@@ -286,6 +287,121 @@ class TestIncidentNotifications(unittest.TestCase):
         self.assertIn('id="incidentNotificationModal"', html)
         self.assertIn("/api/incidents/notifications/unread", html)
         self.assertIn("window.setInterval(poll, 45000)", html)
+
+    def test_status_changes_create_distinct_notifications_for_reporter(self):
+        incident = self._incident()
+        incident.user_id = self.reporter.id
+        first = create_reporter_status_notification(
+            incident,
+            previous_status="reportado",
+            new_status="recibido",
+            action="recibido",
+            actor_user_id=self.maintenance_supervisor.id,
+        )
+        second = create_reporter_status_notification(
+            incident,
+            previous_status="recibido",
+            new_status="asignado",
+            action="tecnico_asignado",
+            actor_user_id=self.maintenance_supervisor.id,
+        )
+        db.session.commit()
+
+        self.assertIsNotNone(first)
+        self.assertIsNotNone(second)
+        self.assertNotEqual(first.event_key, second.event_key)
+        self.assertEqual(first.audience, "reporter")
+        self.assertIn("Reportado → Recibido", first.message)
+        self.assertIn("Recibido → Asignado", second.message)
+        self.assertEqual(
+            IncidentNotification.query.filter_by(
+                incident_id=incident.id, user_id=self.reporter.id
+            ).count(),
+            2,
+        )
+
+    def test_closed_ticket_uses_explicit_reporter_message(self):
+        incident = self._incident()
+        incident.user_id = self.reporter.id
+        item = create_reporter_status_notification(
+            incident,
+            previous_status="resuelto",
+            new_status="cerrado",
+            action="cerrado",
+            actor_user_id=self.maintenance_supervisor.id,
+        )
+        db.session.commit()
+
+        self.assertEqual(item.title, "Tu ticket fue cerrado")
+        self.assertEqual(item.status_snapshot, "cerrado")
+        self.assertIn("Resuelto → Cerrado", item.message)
+
+    def test_reporter_does_not_receive_notification_for_own_transition(self):
+        incident = self._incident()
+        incident.user_id = self.reporter.id
+
+        item = create_reporter_status_notification(
+            incident,
+            previous_status="resuelto",
+            new_status="cerrado",
+            action="cerrado",
+            actor_user_id=self.reporter.id,
+        )
+
+        self.assertIsNone(item)
+
+    def test_real_receive_transition_notifies_reporter(self):
+        incident = self._incident()
+        incident.user_id = self.reporter.id
+        db.session.commit()
+        client = self._login()
+
+        response = client.post(
+            f"/incidencias/{incident.id}/accion",
+            data={"accion": "recibir", "prioridad_confirmada": "alta"},
+        )
+
+        self.assertEqual(response.status_code, 302)
+        item = IncidentNotification.query.filter_by(
+            incident_id=incident.id,
+            user_id=self.reporter.id,
+            audience="reporter",
+        ).one()
+        self.assertEqual(item.status_snapshot, "recibido")
+        self.assertEqual(item.title, "Tu ticket cambió de estado")
+
+    def test_reporter_can_poll_show_and_read_status_notification(self):
+        incident = self._incident()
+        incident.user_id = self.reporter.id
+        item = create_reporter_status_notification(
+            incident,
+            previous_status="reportado",
+            new_status="resuelto",
+            action="resuelto",
+            actor_user_id=self.maintenance_supervisor.id,
+        )
+        db.session.commit()
+        notification_id = item.id
+        client = self._login("reportante")
+
+        page = client.get("/incidencias")
+        self.assertEqual(page.status_code, 200)
+        self.assertIn('id="incidentNotificationModal"', page.get_data(as_text=True))
+        unread = client.get("/api/incidents/notifications/unread")
+        self.assertEqual(unread.status_code, 200)
+        payload = unread.get_json()
+        self.assertEqual(payload["count"], 1)
+        self.assertEqual(payload["items"][0]["event_title"], "Tu ticket fue resuelto")
+
+        seen = client.post(f"/api/incidents/notifications/{notification_id}/seen")
+        self.assertEqual(seen.status_code, 200)
+        self.assertEqual(seen.get_json()["count"], 1)
+        read = client.post(
+            f"/api/incidents/notifications/{notification_id}/read",
+            json={"action": "access"},
+        )
+        self.assertEqual(read.status_code, 200)
+        self.assertEqual(read.get_json()["count"], 0)
 
 
 if __name__ == "__main__":

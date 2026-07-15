@@ -313,6 +313,8 @@ La interfaz consulta pendientes mediante polling cada 45 segundos; no depende de
 
 Para el rol **Solicitante/Reportante**, la campana se limita a sus propios tickets pendientes. Las alertas de vencimientos, trabajos programados y OT en proceso quedan reservadas al personal operativo.
 
+Cada transición realizada por el personal responsable genera además un evento individual para quien reportó el ticket. La notificación conserva el estado anterior, el nuevo estado y un título explícito para resolución, cierre y reapertura. Un mismo ticket puede producir varios eventos sin sobrescribir los anteriores; los cambios ejecutados por el propio reportante no generan una alerta redundante.
+
 ---
 
 ## 10 · Inicio · Centro de Operaciones · ✅

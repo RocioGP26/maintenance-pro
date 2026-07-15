@@ -3,15 +3,32 @@
 from __future__ import annotations
 
 from datetime import datetime
+from uuid import uuid4
 
 from sqlalchemy.orm import joinedload
 
 from app import db
-from app.models import Incident, IncidentHistory, IncidentNotification, User
+from app.models import (
+    INCIDENT_ESTADO_LABELS,
+    Incident,
+    IncidentHistory,
+    IncidentNotification,
+    User,
+)
 from app.permissions import can_receive_incident_notification
 
 
-def create_incident_notifications(incident: Incident) -> list[IncidentNotification]:
+AUDIENCE_AREA = "area"
+AUDIENCE_REPORTER = "reporter"
+
+
+def create_incident_notifications(
+    incident: Incident,
+    *,
+    event_key: str = "area_reported",
+    event_type: str = "reported",
+    title: str = "Nueva incidencia reportada",
+) -> list[IncidentNotification]:
     """Crea una entrega por destinatario activo, autorizado y de la misma área."""
     if not incident.id or not incident.empresa_id or not incident.area_responsable:
         return []
@@ -34,6 +51,7 @@ def create_incident_notifications(incident: Incident) -> list[IncidentNotificati
         for row in db.session.query(IncidentNotification.user_id)
         .filter(
             IncidentNotification.incident_id == incident.id,
+            IncidentNotification.event_key == event_key,
             IncidentNotification.user_id.in_([user.id for user in recipients]),
         )
         .all()
@@ -46,10 +64,85 @@ def create_incident_notifications(incident: Incident) -> list[IncidentNotificati
             empresa_id=incident.empresa_id,
             incident_id=incident.id,
             user=user,
+            audience=AUDIENCE_AREA,
+            event_key=event_key,
+            event_type=event_type,
+            title=title,
+            message=(
+                f"{incident.numero or ('INC-' + str(incident.id))} fue asignada al área "
+                f"{incident.area_responsable}."
+            ),
+            status_snapshot=incident.estado or "reportado",
         )
         db.session.add(item)
         created.append(item)
     return created
+
+
+def create_reporter_status_notification(
+    incident: Incident,
+    *,
+    previous_status: str,
+    new_status: str,
+    action: str,
+    actor_user_id: int | None,
+) -> IncidentNotification | None:
+    """Notifica al autor del ticket cuando otra persona modifica su estado."""
+    if (
+        not incident.id
+        or not incident.empresa_id
+        or not incident.user_id
+        or previous_status == new_status
+        or actor_user_id == incident.user_id
+    ):
+        return None
+    reporter = db.session.get(User, incident.user_id)
+    if (
+        reporter is None
+        or reporter.empresa_id != incident.empresa_id
+        or not reporter.activo
+        or reporter.bloqueado
+    ):
+        return None
+
+    code = incident.numero or f"INC-{incident.id}"
+    previous_label = INCIDENT_ESTADO_LABELS.get(previous_status, previous_status)
+    new_label = INCIDENT_ESTADO_LABELS.get(new_status, new_status)
+    if new_status == "cerrado":
+        title = "Tu ticket fue cerrado"
+    elif new_status == "resuelto":
+        title = "Tu ticket fue resuelto"
+    elif action == "reabierto":
+        title = "Tu ticket fue reabierto"
+    else:
+        title = "Tu ticket cambió de estado"
+    item = IncidentNotification(
+        empresa_id=incident.empresa_id,
+        incident_id=incident.id,
+        user=reporter,
+        audience=AUDIENCE_REPORTER,
+        event_key=f"status:{new_status}:{uuid4()}",
+        event_type="status_changed",
+        title=title,
+        message=f"{code}: {previous_label} → {new_label}.",
+        status_snapshot=new_status,
+    )
+    db.session.add(item)
+    return item
+
+
+def can_access_notification(user: User, item: IncidentNotification) -> bool:
+    if (
+        user is None
+        or not user.activo
+        or user.bloqueado
+        or item.empresa_id != user.empresa_id
+        or item.user_id != user.id
+    ):
+        return False
+    if item.audience == AUDIENCE_REPORTER:
+        return item.incident.user_id == user.id
+    return can_receive_incident_notification(user, item.incident.area_responsable)
 
 
 def unread_notifications_for(user: User):
@@ -72,7 +165,7 @@ def authorized_unread_notifications(user: User) -> list[IncidentNotification]:
         for item in unread_notifications_for(user)
         .order_by(IncidentNotification.created_at.desc())
         .all()
-        if can_receive_incident_notification(user, item.incident.area_responsable)
+        if can_access_notification(user, item)
     ]
 
 
@@ -84,9 +177,7 @@ def notification_for_user(notification_id: int, user: User) -> IncidentNotificat
             IncidentNotification.user_id == user.id,
         ).first()
     )
-    if item is None or not can_receive_incident_notification(
-        user, item.incident.area_responsable
-    ):
+    if item is None or not can_access_notification(user, item):
         return None
     return item
 

@@ -379,7 +379,7 @@
     </div>
   </div>
 
-  {% if current_user.is_authenticated and perm.gestionar_incidencias %}
+  {% if current_user.is_authenticated %}
   <div class="modal fade" id="incidentNotificationModal" tabindex="-1" aria-labelledby="incidentNotificationTitle" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">
@@ -395,6 +395,7 @@
             <strong class="fs-5" id="incidentNotificationCode">—</strong>
             <span class="badge" id="incidentNotificationPriority">—</span>
           </div>
+          <p class="alert alert-light border small" id="incidentNotificationMessage"></p>
           <dl class="row mb-0 small">
             <dt class="col-4 text-muted">Activo</dt><dd class="col-8 fw-semibold" id="incidentNotificationAsset">—</dd>
             <dt class="col-4 text-muted">Ubicación</dt><dd class="col-8" id="incidentNotificationLocation">—</dd>
@@ -473,7 +474,7 @@
     });
   })();
   </script>
-  {% if current_user.is_authenticated and perm.gestionar_incidencias %}
+  {% if current_user.is_authenticated %}
   <script>
   (function () {
     var unreadUrl = {{ url_for('main.incident_notifications_unread')|tojson }};
@@ -523,7 +524,8 @@
 
     function fillModal(item, count) {
       currentItem = item;
-      document.getElementById('incidentNotificationCounter').textContent = count === 1 ? '1 incidencia nueva' : count + ' incidencias nuevas';
+      document.getElementById('incidentNotificationCounter').textContent = count === 1 ? '1 notificación nueva' : count + ' notificaciones nuevas';
+      document.getElementById('incidentNotificationTitle').textContent = item.event_title || 'Nueva incidencia reportada';
       document.getElementById('incidentNotificationCode').textContent = item.code;
       var priority = document.getElementById('incidentNotificationPriority');
       priority.textContent = 'Prioridad: ' + item.priority_label;
@@ -531,6 +533,7 @@
       document.getElementById('incidentNotificationAsset').textContent = item.asset;
       document.getElementById('incidentNotificationLocation').textContent = item.location;
       document.getElementById('incidentNotificationReporter').textContent = item.reported_by;
+      document.getElementById('incidentNotificationMessage').textContent = item.message || item.title || '';
       var created = item.created_at ? new Date(item.created_at) : null;
       document.getElementById('incidentNotificationTime').textContent = created && !isNaN(created) ? created.toLocaleString('es-CO', {dateStyle: 'short', timeStyle: 'short'}) : '—';
     }

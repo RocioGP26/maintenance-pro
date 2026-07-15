@@ -292,6 +292,8 @@ USUARIO_POST_ENDPOINTS = frozenset(
         "main.logout",
         "main.mi_perfil",
         "main.session_status",
+        "main.incident_notifications_seen",
+        "main.incident_notifications_read",
     }
 )
 
@@ -304,6 +306,9 @@ SOLICITANTE_ENDPOINTS = frozenset(
         "main.incidencias_detail",
         "main.mi_perfil",
         "main.incidencias_accion",
+        "main.incident_notifications_unread",
+        "main.incident_notifications_seen",
+        "main.incident_notifications_read",
     }
 )
 

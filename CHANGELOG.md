@@ -17,6 +17,7 @@ La suite documental mantiene un ciclo independiente en
 ### Added
 
 - Notificaciones individuales de incidencias por empresa, área responsable, rol y usuario activo, con modal no bloqueante, badge en la campana y polling ligero.
+- Notificaciones de ciclo de vida al reportante cuando su ticket cambia de estado, es resuelto, cerrado o reabierto.
 - Auditoría de entrega, primera visualización, lectura y acceso al detalle desde cada notificación de incidencia.
 - Centro de Operaciones en Inicio con OT abiertas y vencidas, preventivos del día, incidencias nuevas, inventario bajo mínimo, activos fuera de servicio, garantías y actividad reciente.
 - Módulo `Análisis` como acceso común a indicadores de mantenimiento, costos, reportes, inventario comercial y Purchasing.

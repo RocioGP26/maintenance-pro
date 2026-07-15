@@ -5858,6 +5858,10 @@ def _serialize_incident_notification(item: IncidentNotification) -> dict:
         "title": incident.titulo,
         "priority": incident.prioridad,
         "priority_label": incident.prioridad_label,
+        "event_type": item.event_type,
+        "event_title": item.title,
+        "message": item.message,
+        "status": item.status_snapshot,
         "asset": machine.codigo if machine else "Sin activo asociado",
         "location": location or "Sin ubicación",
         "reported_by": incident.reportado_por or "Sin identificar",
@@ -5926,6 +5930,17 @@ def _cambiar_estado(inc, nuevo, accion, comentario=""):
     inc.estado = nuevo
     inc.resuelto = nuevo in (IncidentEstado.RESUELTO.value, IncidentEstado.CERRADO.value)
     _registrar_historial(inc, accion, anterior, nuevo, comentario)
+    from app.incident_notifications import create_reporter_status_notification
+
+    create_reporter_status_notification(
+        inc,
+        previous_status=anterior,
+        new_status=nuevo,
+        action=accion,
+        actor_user_id=(
+            current_user.id if current_user.is_authenticated else None
+        ),
+    )
 
 
 def _incidentes_kpis(base_q) -> dict:
@@ -6074,7 +6089,12 @@ def incidencias_accion(id):
         if resultado == "reasignar":
             from app.incident_notifications import create_incident_notifications
 
-            notifications = create_incident_notifications(inc)
+            notifications = create_incident_notifications(
+                inc,
+                event_key=f"area_reassigned:{uuid4()}",
+                event_type="area_reassigned",
+                title="Incidencia reasignada a tu área",
+            )
             _registrar_historial(
                 inc,
                 "notificaciones_reasignacion",
