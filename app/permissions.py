@@ -71,12 +71,31 @@ def _rol(user) -> str:
     return normalize_rol(getattr(user, "rol", ""))
 
 
-def _area_normalizada(user) -> str:
-    raw = (getattr(user, "area", "") or "").strip().lower()
-    return "".join(
-        char for char in unicodedata.normalize("NFKD", raw)
+def normalize_area_name(value: Optional[str]) -> str:
+    """Normaliza áreas para enrutamiento seguro, incluyendo alias comunes de TIC."""
+    raw = (value or "").strip().lower()
+    ascii_value = "".join(
+        char
+        for char in unicodedata.normalize("NFKD", raw)
         if not unicodedata.combining(char)
     )
+    normalized = " ".join(
+        "".join(char if char.isalnum() else " " for char in ascii_value).split()
+    )
+    aliases = {
+        "ti": "tic",
+        "tic": "tic",
+        "sistemas": "tic",
+        "tic sistemas": "tic",
+        "tecnologia": "tic",
+        "tecnologia informacion": "tic",
+        "tecnologia de la informacion": "tic",
+    }
+    return aliases.get(normalized, normalized)
+
+
+def _area_normalizada(user) -> str:
+    return normalize_area_name(getattr(user, "area", ""))
 
 
 def can_create(user) -> bool:
@@ -163,6 +182,20 @@ def can_manage_incidents(user) -> bool:
         UserRole.ADMIN.value,
         UserRole.SUPERVISOR.value,
         UserRole.TECNICO.value,
+    )
+
+
+def can_receive_incident_notification(user, responsible_area: str) -> bool:
+    """Solo personal operativo activo de la misma área recibe el aviso."""
+    if not getattr(user, "is_authenticated", True):
+        return False
+    if not getattr(user, "activo", False) or getattr(user, "bloqueado", False):
+        return False
+    destination = normalize_area_name(responsible_area)
+    return bool(
+        destination
+        and can_manage_incidents(user)
+        and _area_normalizada(user) == destination
     )
 
 

@@ -379,6 +379,38 @@
     </div>
   </div>
 
+  {% if current_user.is_authenticated and perm.gestionar_incidencias %}
+  <div class="modal fade" id="incidentNotificationModal" tabindex="-1" aria-labelledby="incidentNotificationTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <div>
+            <div class="small text-uppercase text-primary fw-semibold mb-1" id="incidentNotificationCounter">Nueva incidencia</div>
+            <h5 class="modal-title" id="incidentNotificationTitle">Nueva incidencia reportada</h5>
+          </div>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+        </div>
+        <div class="modal-body">
+          <div class="d-flex align-items-center justify-content-between gap-3 mb-3">
+            <strong class="fs-5" id="incidentNotificationCode">—</strong>
+            <span class="badge" id="incidentNotificationPriority">—</span>
+          </div>
+          <dl class="row mb-0 small">
+            <dt class="col-4 text-muted">Activo</dt><dd class="col-8 fw-semibold" id="incidentNotificationAsset">—</dd>
+            <dt class="col-4 text-muted">Ubicación</dt><dd class="col-8" id="incidentNotificationLocation">—</dd>
+            <dt class="col-4 text-muted">Reportó</dt><dd class="col-8" id="incidentNotificationReporter">—</dd>
+            <dt class="col-4 text-muted">Hora</dt><dd class="col-8 mb-0" id="incidentNotificationTime">—</dd>
+          </dl>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-secondary" id="incidentNotificationReadButton">Marcar como vista</button>
+          <button type="button" class="btn btn-primary" id="incidentNotificationOpenButton"><i class="bi bi-box-arrow-up-right me-1"></i>Ver incidencia</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
   {% if current_user.is_authenticated and session_security and session_security.warning_enabled %}
   <div class="modal fade" id="sessionWarningModal" tabindex="-1" aria-labelledby="sessionWarningTitle" aria-hidden="true" data-bs-backdrop="static">
     <div class="modal-dialog modal-dialog-centered">
@@ -441,6 +473,117 @@
     });
   })();
   </script>
+  {% if current_user.is_authenticated and perm.gestionar_incidencias %}
+  <script>
+  (function () {
+    var unreadUrl = {{ url_for('main.incident_notifications_unread')|tojson }};
+    var csrfToken = {{ csrf_token()|tojson }};
+    var badge = document.getElementById('incidentNotificationBadge');
+    var menuRow = document.getElementById('incidentNotificationMenuRow');
+    var menuCount = document.getElementById('incidentNotificationMenuCount');
+    var modalElement = document.getElementById('incidentNotificationModal');
+    var modal = modalElement && window.bootstrap ? bootstrap.Modal.getOrCreateInstance(modalElement) : null;
+    var currentItem = null;
+    var shownThisPage = new Set();
+
+    function updateCount(count) {
+      var visible = count > 0;
+      if (badge) {
+        badge.textContent = count > 99 ? '99+' : String(count);
+        badge.hidden = !visible;
+      }
+      if (menuRow) menuRow.hidden = !visible;
+      if (menuCount) menuCount.textContent = String(count);
+      var bell = document.getElementById('headerAlertBell');
+      if (bell) bell.setAttribute('aria-label', visible ? count + ' incidencias sin ver' : 'Sin incidencias nuevas');
+    }
+
+    function post(url, payload) {
+      return fetch(url, {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': csrfToken,
+          'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: JSON.stringify(payload || {})
+      }).then(function (response) {
+        if (!response.ok) throw new Error('notification request failed');
+        return response.json();
+      });
+    }
+
+    function priorityClass(priority) {
+      if (priority === 'critica') return 'badge text-bg-danger';
+      if (priority === 'alta') return 'badge text-bg-warning';
+      if (priority === 'media') return 'badge text-bg-primary';
+      return 'badge text-bg-secondary';
+    }
+
+    function fillModal(item, count) {
+      currentItem = item;
+      document.getElementById('incidentNotificationCounter').textContent = count === 1 ? '1 incidencia nueva' : count + ' incidencias nuevas';
+      document.getElementById('incidentNotificationCode').textContent = item.code;
+      var priority = document.getElementById('incidentNotificationPriority');
+      priority.textContent = 'Prioridad: ' + item.priority_label;
+      priority.className = priorityClass(item.priority);
+      document.getElementById('incidentNotificationAsset').textContent = item.asset;
+      document.getElementById('incidentNotificationLocation').textContent = item.location;
+      document.getElementById('incidentNotificationReporter').textContent = item.reported_by;
+      var created = item.created_at ? new Date(item.created_at) : null;
+      document.getElementById('incidentNotificationTime').textContent = created && !isNaN(created) ? created.toLocaleString('es-CO', {dateStyle: 'short', timeStyle: 'short'}) : '—';
+    }
+
+    function showNewest(items, count) {
+      if (!modal || modalElement.classList.contains('show')) return;
+      var item = items.find(function (candidate) {
+        return !candidate.shown && !shownThisPage.has(candidate.notification_id);
+      });
+      if (!item) return;
+      shownThisPage.add(item.notification_id);
+      fillModal(item, count);
+      modal.show();
+      post('/api/incidents/notifications/' + item.notification_id + '/seen').catch(function () {});
+    }
+
+    function poll() {
+      fetch(unreadUrl, {credentials: 'same-origin', headers: {'X-Requested-With': 'XMLHttpRequest'}})
+        .then(function (response) {
+          if (!response.ok) throw new Error('notification poll failed');
+          return response.json();
+        })
+        .then(function (data) {
+          updateCount(data.count || 0);
+          showNewest(data.items || [], data.count || 0);
+        })
+        .catch(function () {});
+    }
+
+    function readCurrent(accessed) {
+      if (!currentItem) return Promise.resolve();
+      var item = currentItem;
+      return post('/api/incidents/notifications/' + item.notification_id + '/read', {action: accessed ? 'access' : 'read'})
+        .then(function (data) { updateCount(data.count || 0); return item; });
+    }
+
+    var readButton = document.getElementById('incidentNotificationReadButton');
+    if (readButton) readButton.addEventListener('click', function () {
+      readCurrent(false).then(function () { modal.hide(); currentItem = null; window.setTimeout(poll, 500); });
+    });
+    var openButton = document.getElementById('incidentNotificationOpenButton');
+    if (openButton) openButton.addEventListener('click', function () {
+      var fallbackUrl = currentItem ? currentItem.url : {{ url_for('main.incidencias_list')|tojson }};
+      readCurrent(true).then(function (item) { window.location.assign(item ? item.url : fallbackUrl); })
+        .catch(function () { window.location.assign(fallbackUrl); });
+    });
+    if (modalElement) modalElement.addEventListener('hidden.bs.modal', function () { currentItem = null; });
+
+    window.setTimeout(poll, 800);
+    window.setInterval(poll, 45000);
+  })();
+  </script>
+  {% endif %}
   {% if current_user.is_authenticated and session_security %}
   <script>
   (function () {

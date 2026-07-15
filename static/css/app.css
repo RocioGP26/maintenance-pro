@@ -3104,3 +3104,20 @@ a.prov-kpi-card--link:hover {
 .badge-inc-resuelta { background: #dcfce7; color: #15803d; }
 .inc-kpi-card--critica.inc-kpi-card--active { border-color: #dc2626; box-shadow: 0 0 0 1px #dc2626; }
 .inc-kpi-card--resuelta.inc-kpi-card--active { border-color: #16a34a; box-shadow: 0 0 0 1px #16a34a; }
+.header-alert-bell { position: relative; }
+.header-incident-badge {
+  position: absolute;
+  top: -0.45rem;
+  right: -0.55rem;
+  min-width: 1.25rem;
+  height: 1.25rem;
+  padding: 0 0.3rem;
+  border: 2px solid var(--bs-body-bg, #fff);
+  border-radius: 999px;
+  background: #dc3545;
+  color: #fff;
+  font-size: 0.65rem;
+  font-weight: 700;
+  line-height: 1rem;
+  text-align: center;
+}

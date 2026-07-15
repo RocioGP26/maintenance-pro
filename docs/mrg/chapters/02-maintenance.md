@@ -296,7 +296,20 @@ Flujo:
 
 La prioridad de la incidencia puede interactuar con la **criticidad del activo** para ordenar la respuesta.
 
-> **Hoy en producto:** reporte · listado · resolución · crear OT desde incidencia. Asignación explícita a supervisor y evidencia fotográfica en 📋 roadmap.
+> **Hoy en producto:** reporte · enrutamiento al área responsable · notificación individual a coordinadores/técnicos autorizados · listado · resolución · crear OT desde incidencia. Evidencia fotográfica permanece en 📋 roadmap.
+
+### Notificaciones por área
+
+Al registrar o reasignar una incidencia, Maintix crea una entrega individual para cada usuario que cumpla simultáneamente estas reglas:
+
+- pertenece a la misma empresa de la incidencia;
+- su área coincide con el área responsable (incluyendo alias normalizados como TIC/Sistemas);
+- tiene un rol autorizado para gestionar incidencias;
+- está activo y no está bloqueado.
+
+El modal muestra una sola vez cada entrega. Cerrarlo registra que ya fue mostrado, pero no elimina el pendiente de la campana. **Ver incidencia** marca lectura y acceso; **Marcar como vista** registra únicamente la lectura. La combinación incidencia + usuario es única y cada transición conserva su fecha para auditoría.
+
+La interfaz consulta pendientes mediante polling cada 45 segundos; no depende de WebSockets y nunca distribuye una alerta a toda la empresa.
 
 ---
 

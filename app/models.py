@@ -2025,6 +2025,63 @@ class IncidentHistory(db.Model):
     user = db.relationship("User")
 
 
+class IncidentNotification(db.Model):
+    """Entrega individual y auditable de una incidencia a un usuario autorizado."""
+
+    __tablename__ = "incident_notifications"
+    __table_args__ = (
+        db.UniqueConstraint(
+            "incident_id", "user_id", name="uq_incident_notification_user"
+        ),
+    )
+
+    id = db.Column(db.Integer, primary_key=True)
+    empresa_id = db.Column(
+        db.Integer,
+        db.ForeignKey("empresas.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    incident_id = db.Column(
+        db.Integer,
+        db.ForeignKey("incidents.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    user_id = db.Column(
+        db.Integer,
+        db.ForeignKey("users.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    shown_at = db.Column(db.DateTime, nullable=True, index=True)
+    read_at = db.Column(db.DateTime, nullable=True, index=True)
+    accessed_at = db.Column(db.DateTime, nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False, index=True)
+
+    empresa = db.relationship("Empresa")
+    incident = db.relationship(
+        "Incident",
+        backref=db.backref(
+            "notifications", lazy="dynamic", cascade="all, delete-orphan"
+        ),
+    )
+    user = db.relationship(
+        "User",
+        backref=db.backref(
+            "incident_notifications", lazy="dynamic", cascade="all, delete-orphan"
+        ),
+    )
+
+    @property
+    def shown(self) -> bool:
+        return self.shown_at is not None
+
+    @property
+    def read(self) -> bool:
+        return self.read_at is not None
+
+
 class IncidentPrioridad(str, Enum):
     BAJA = "baja"
     MEDIA = "media"

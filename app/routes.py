@@ -69,6 +69,7 @@ from app.models import (
     Incident,
     IncidentDiagnosis,
     IncidentHistory,
+    IncidentNotification,
     IncidentEstado,
     INCIDENT_ESTADO_LABELS,
     INCIDENT_AREAS_BASE,
@@ -5747,6 +5748,17 @@ def incidencia():
             numero = _asignar_numero_incidencia(inc)
             _registrar_historial(inc, "reportado", "", IncidentEstado.REPORTADO.value,
                                 f"Asignado al área {inc.area_responsable}")
+            from app.incident_notifications import create_incident_notifications
+
+            notifications = create_incident_notifications(inc)
+            _registrar_historial(
+                inc,
+                "notificaciones_creadas",
+                comentario=(
+                    f"{len(notifications)} usuario(s) autorizado(s) del área "
+                    f"{inc.area_responsable} fueron notificados."
+                ),
+            )
             try:
                 db.session.commit()
             except IntegrityError:
@@ -5756,7 +5768,19 @@ def incidencia():
                     raise
                 flash(f"La incidencia {existing.numero} ya había sido registrada.", "info")
                 return redirect(url_for("main.incidencias_detail", id=existing.id))
-            flash(f"Incidencia {numero} registrada. El supervisor será notificado.", "success")
+            if notifications:
+                flash(
+                    f"Incidencia {numero} registrada. "
+                    f"Se notificó a {len(notifications)} responsable(s) autorizado(s) "
+                    f"de {inc.area_responsable}.",
+                    "success",
+                )
+            else:
+                flash(
+                    f"Incidencia {numero} registrada, pero el área "
+                    f"{inc.area_responsable} no tiene personal autorizado configurado.",
+                    "warning",
+                )
             return redirect(url_for("main.incidencias_detail", id=inc.id))
 
     return render_template(
@@ -5819,6 +5843,82 @@ def _registrar_historial(inc, accion, anterior="", nuevo="", comentario=""):
         estado_nuevo=nuevo or "",
         comentario=comentario or "",
     ))
+
+
+def _serialize_incident_notification(item: IncidentNotification) -> dict:
+    incident = item.incident
+    machine = incident.machine
+    location = (incident.ubicacion or "").strip()
+    if not location and machine:
+        location = (machine.ubicacion or "").strip()
+    return {
+        "notification_id": item.id,
+        "incident_id": incident.id,
+        "code": incident.numero or f"INC-{incident.id}",
+        "title": incident.titulo,
+        "priority": incident.prioridad,
+        "priority_label": incident.prioridad_label,
+        "asset": machine.codigo if machine else "Sin activo asociado",
+        "location": location or "Sin ubicación",
+        "reported_by": incident.reportado_por or "Sin identificar",
+        "created_at": (
+            item.created_at.isoformat(timespec="seconds") + "Z"
+            if item.created_at
+            else ""
+        ),
+        "shown": item.shown,
+        "url": url_for("main.incidencias_detail", id=incident.id),
+    }
+
+
+@bp.get("/api/incidents/notifications/unread")
+def incident_notifications_unread():
+    from app.incident_notifications import authorized_unread_notifications
+
+    items = authorized_unread_notifications(current_user)
+    return jsonify(
+        {
+            "count": len(items),
+            "items": [_serialize_incident_notification(item) for item in items[:20]],
+        }
+    )
+
+
+@bp.post("/api/incidents/notifications/<int:notification_id>/seen")
+def incident_notifications_seen(notification_id: int):
+    from app.incident_notifications import (
+        mark_notification_shown,
+        notification_for_user,
+        authorized_unread_notifications,
+    )
+
+    item = notification_for_user(notification_id, current_user)
+    if item is None:
+        abort(404)
+    mark_notification_shown(item)
+    db.session.commit()
+    return jsonify(
+        {"ok": True, "count": len(authorized_unread_notifications(current_user))}
+    )
+
+
+@bp.post("/api/incidents/notifications/<int:notification_id>/read")
+def incident_notifications_read(notification_id: int):
+    from app.incident_notifications import (
+        mark_notification_read,
+        notification_for_user,
+        authorized_unread_notifications,
+    )
+
+    item = notification_for_user(notification_id, current_user)
+    if item is None:
+        abort(404)
+    payload = request.get_json(silent=True) or {}
+    mark_notification_read(item, accessed=payload.get("action") == "access")
+    db.session.commit()
+    return jsonify(
+        {"ok": True, "count": len(authorized_unread_notifications(current_user))}
+    )
 
 
 def _cambiar_estado(inc, nuevo, accion, comentario=""):
@@ -5971,6 +6071,18 @@ def incidencias_accion(id):
                 return redirect(url_for("main.incidencias_detail", id=id))
             inc.area_responsable, inc.responsable_area_id, inc.tecnico_asignado_id = area, None, None
         _cambiar_estado(inc, destinos[resultado], "diagnostico_registrado", hallazgo)
+        if resultado == "reasignar":
+            from app.incident_notifications import create_incident_notifications
+
+            notifications = create_incident_notifications(inc)
+            _registrar_historial(
+                inc,
+                "notificaciones_reasignacion",
+                comentario=(
+                    f"{len(notifications)} usuario(s) autorizado(s) del área "
+                    f"{inc.area_responsable} fueron notificados por la reasignación."
+                ),
+            )
     elif accion == "resolver" and inc.estado in ("solucionado_visita", "pendiente_ot", "pendiente_reemplazo"):
         inc.resuelto_en, inc.resuelto_por_id, inc.notas_resolucion = ahora, current_user.id, comentario
         _cambiar_estado(inc, "resuelto", "resuelto", comentario)
