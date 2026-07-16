@@ -10,6 +10,12 @@ La suite documental mantiene un ciclo independiente en
 
 ### Added
 
+- Espacio reservado para cambios aún no publicados.
+
+## [1.0.3] - 2026-07-16
+
+### Added
+
 - Dashboard operativo exclusivo para el rol Técnico con OT prioritarias, preventivos del día, incidencias asignadas, agenda y alertas.
 - Notificación individual al técnico cuando una incidencia se asigna a su bandeja.
 - Centro personal de notificaciones con alertas operativas, historial, estado leído y acceso a la incidencia.
@@ -21,6 +27,10 @@ La suite documental mantiene un ciclo independiente en
 - La navegación técnica oculta administración, compras, ventas, proveedores, configuración, análisis y reportes generales.
 - El Técnico registra jornadas, repuestos y diagnóstico, pero el cierre definitivo de OT e incidencias queda reservado al supervisor o responsable del flujo.
 - Mi perfil permite autoservicio seguro al Técnico para nombre, correo, teléfono y contraseña, conservando los datos laborales bajo control administrativo.
+
+### Notes
+
+- feat: experiencia operativa y notificaciones para técnicos (#4).
 
 ## [1.0.2] - 2026-07-14
 
@@ -73,7 +83,8 @@ La suite documental mantiene un ciclo independiente en
 
 - Este release formaliza el versionado; no modifica funcionalidades de negocio.
 
-[Unreleased]: https://github.com/RocioGP26/maintenance-pro/compare/v1.0.2...HEAD
+[Unreleased]: https://github.com/RocioGP26/maintenance-pro/compare/v1.0.3...HEAD
 [1.0.0]: https://github.com/RocioGP26/maintenance-pro/releases/tag/v1.0.0
 [1.0.1]: https://github.com/RocioGP26/maintenance-pro/compare/v1.0.0...v1.0.1
 [1.0.2]: https://github.com/RocioGP26/maintenance-pro/compare/v1.0.1...v1.0.2
+[1.0.3]: https://github.com/RocioGP26/maintenance-pro/compare/v1.0.2...v1.0.3
