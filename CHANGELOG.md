@@ -19,6 +19,7 @@ La suite documental mantiene un ciclo independiente en
 - Dashboard operativo exclusivo para el rol Técnico con OT prioritarias, preventivos del día, incidencias asignadas, agenda y alertas.
 - Notificación individual al técnico cuando una incidencia se asigna a su bandeja.
 - Centro personal de notificaciones con alertas operativas, historial, estado leído y acceso a la incidencia.
+- Asignación rápida de OT a un técnico sin exigir datos de jornada, horarios o costos.
 
 ### Changed
 

@@ -45,6 +45,16 @@ class TestTechnicianExperience(unittest.TestCase):
             onboarding_completado=True,
         )
         self.user.set_password(self.PASSWORD)
+        self.admin = User(
+            empresa_id=self.company.id,
+            username="admin1",
+            nombre_visible="Administradora",
+            rol="admin",
+            area="Mantenimiento",
+            activo=True,
+            onboarding_completado=True,
+        )
+        self.admin.set_password(self.PASSWORD)
         other_user = User(
             empresa_id=self.company.id,
             username="tecnico2",
@@ -61,7 +71,7 @@ class TestTechnicianExperience(unittest.TestCase):
             nombre="Equipo",
             prefijo="EQ",
         )
-        db.session.add_all([self.user, other_user, machine_type])
+        db.session.add_all([self.user, self.admin, other_user, machine_type])
         db.session.flush()
         self.technician = Technician(
             empresa_id=self.company.id,
@@ -266,6 +276,61 @@ class TestTechnicianExperience(unittest.TestCase):
         self.assertEqual(self.own_order.titulo, "Preventivo propio")
         self.assertEqual(self.own_order.prioridad, "alta")
         self.assertNotIn(self.own_order.status, ("cerrada", "completado"))
+
+    def test_admin_can_quick_assign_without_journey_fields(self):
+        self.client.post("/logout")
+        login = self.client.post(
+            "/login",
+            data={
+                "username": self.admin.username,
+                "empresa_slug": self.company.slug,
+                "password": self.PASSWORD,
+            },
+        )
+        self.assertEqual(login.status_code, 302)
+
+        detail = self.client.get(f"/ordenes/{self.other_order.id}/editar")
+        detail_html = detail.get_data(as_text=True)
+        self.assertEqual(detail.status_code, 200)
+        self.assertIn("Asignación rápida de la OT", detail_html)
+        self.assertIn("No exige registrar fecha, horario, costos ni jornada", detail_html)
+
+        create = self.client.post(
+            "/ordenes/nueva",
+            data={
+                "titulo": "OT asignada al crear",
+                "machine_id": str(self.own_machine.id),
+                "tipo": "correctivo",
+                "prioridad": "media",
+                "technician_id": str(self.technician.id),
+            },
+            follow_redirects=False,
+        )
+        self.assertEqual(create.status_code, 302)
+        created_order = WorkOrder.query.filter_by(titulo="OT asignada al crear").one()
+        self.assertEqual(created_order.technician_id, self.technician.id)
+
+        response = self.client.post(
+            f"/ordenes/{self.other_order.id}/asignar-tecnico",
+            data={"quick_technician_id": str(self.technician.id)},
+            follow_redirects=False,
+        )
+        self.assertEqual(response.status_code, 302)
+        db.session.refresh(self.other_order)
+        self.assertEqual(self.other_order.technician_id, self.technician.id)
+
+        self.client.post("/logout")
+        technician_login = self.client.post(
+            "/login",
+            data={
+                "username": self.user.username,
+                "empresa_slug": self.company.slug,
+                "password": self.PASSWORD,
+            },
+        )
+        self.assertEqual(technician_login.status_code, 302)
+        technician_orders = self.client.get("/ordenes").get_data(as_text=True)
+        self.assertIn("OT-OTHER", technician_orders)
 
     def test_assignment_notification_is_only_visible_to_assigned_technician(self):
         item = create_technician_assignment_notification(

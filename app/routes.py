@@ -4018,12 +4018,20 @@ def ordenes_new():
             area=request.form.get("area", "").strip(),
             **_work_order_responsables_desde_form(request.form),
             machine_id=int(request.form.get("machine_id", 0)),
+            technician_id=(
+                request.form.get("technician_id", type=int)
+                if request.form.get("technician_id")
+                else None
+            ),
         )
         _, err_machine = _validar_machine_id_tenant(wo.machine_id)
+        err_technician = _validar_technician_id_tenant(wo.technician_id)
         if not wo.titulo or not wo.machine_id:
             flash("Actividad y equipo son obligatorios.", "danger")
         elif err_machine:
             flash(err_machine, "danger")
+        elif err_technician:
+            flash(err_technician, "danger")
         elif not tipo:
             flash("Selecciona el tipo de orden.", "danger")
         else:
@@ -4162,6 +4170,9 @@ def ordenes_edit(id):
     technicians = _filter_empresa(
         Technician.query.filter_by(activo=True).order_by(Technician.nombre), Technician
     ).all()
+    if is_technician(current_user):
+        current_tech = _current_technician()
+        technicians = [current_tech] if current_tech else []
     if request.method == "POST":
         if solo_lectura:
             flash(
@@ -4277,6 +4288,59 @@ def ordenes_edit(id):
         solo_lectura=solo_lectura,
         **_orden_form_context(wo, technicians, machines),
     )
+
+
+@bp.post("/ordenes/<int:id>/asignar-tecnico")
+def ordenes_asignar_tecnico(id):
+    """Asigna una OT interna sin exigir datos de jornada o ejecución."""
+    if not can_create_work_order(current_user):
+        abort(403)
+    wo = _filter_work_orders_empresa(WorkOrder.query.filter_by(id=id)).first_or_404()
+    if not wo_es_editable(wo.status):
+        flash("La orden está cerrada y no admite cambios de asignación.", "warning")
+        return redirect(url_for("main.ordenes_edit", id=wo.id))
+    if wo.es_ejecucion_externa:
+        flash(
+            "Esta OT está configurada para proveedor externo. Cambia primero el tipo de ejecución a interno.",
+            "warning",
+        )
+        return redirect(url_for("main.ordenes_edit", id=wo.id) + "#asignacion-rapida")
+
+    technician_id = request.form.get("quick_technician_id", type=int)
+    technician = (
+        _filter_empresa(
+            Technician.query.filter_by(id=technician_id, activo=True), Technician
+        ).first()
+        if technician_id
+        else None
+    )
+    if technician is None:
+        flash("Selecciona un técnico activo de la empresa.", "danger")
+        return redirect(url_for("main.ordenes_edit", id=wo.id) + "#asignacion-rapida")
+
+    previous_id = wo.technician_id
+    wo.technician_id = technician.id
+    wo.ejecucion_tipo = WorkOrderEjecucionTipo.INTERNO.value
+    if previous_id != technician.id:
+        from app.tenant_activity import registrar_actividad_tenant
+
+        registrar_actividad_tenant(
+            _current_empresa_id(),
+            "work_order_assigned",
+            user_id=current_user.id,
+            username=current_user.username,
+            detalle=(
+                f"{wo.numero or ('OT-' + str(wo.id))} asignada a {technician.nombre} "
+                "mediante asignación rápida"
+            ),
+        )
+    db.session.commit()
+    flash(
+        f"{wo.numero or ('OT-' + str(wo.id))} asignada a {technician.nombre}. "
+        "Ya aparece en la bandeja del técnico.",
+        "success",
+    )
+    return redirect(url_for("main.ordenes_edit", id=wo.id) + "#asignacion-rapida")
 
 
 INFORME_OT_EXTENSIONES = {"pdf", "doc", "docx", "xls", "xlsx", "png", "jpg", "jpeg", "webp"}

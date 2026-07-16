@@ -22,6 +22,7 @@ ACTIVITY_LABELS = {
     "impersonate_end": "Fin impersonación",
     "factura_pagada": "Pago registrado",
     "acceso_bloqueado": "Acceso bloqueado",
+    "work_order_assigned": "Orden de trabajo asignada",
 }
 
 
