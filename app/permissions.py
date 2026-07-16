@@ -71,12 +71,36 @@ def _rol(user) -> str:
     return normalize_rol(getattr(user, "rol", ""))
 
 
-def _area_normalizada(user) -> str:
-    raw = (getattr(user, "area", "") or "").strip().lower()
-    return "".join(
-        char for char in unicodedata.normalize("NFKD", raw)
+def is_technician(user) -> bool:
+    """Indica si el usuario autenticado tiene el perfil operativo de tecnico."""
+    return _rol(user) == UserRole.TECNICO.value
+
+
+def normalize_area_name(value: Optional[str]) -> str:
+    """Normaliza áreas para enrutamiento seguro, incluyendo alias comunes de TIC."""
+    raw = (value or "").strip().lower()
+    ascii_value = "".join(
+        char
+        for char in unicodedata.normalize("NFKD", raw)
         if not unicodedata.combining(char)
     )
+    normalized = " ".join(
+        "".join(char if char.isalnum() else " " for char in ascii_value).split()
+    )
+    aliases = {
+        "ti": "tic",
+        "tic": "tic",
+        "sistemas": "tic",
+        "tic sistemas": "tic",
+        "tecnologia": "tic",
+        "tecnologia informacion": "tic",
+        "tecnologia de la informacion": "tic",
+    }
+    return aliases.get(normalized, normalized)
+
+
+def _area_normalizada(user) -> str:
+    return normalize_area_name(getattr(user, "area", ""))
 
 
 def can_create(user) -> bool:
@@ -166,6 +190,20 @@ def can_manage_incidents(user) -> bool:
     )
 
 
+def can_receive_incident_notification(user, responsible_area: str) -> bool:
+    """Solo personal operativo activo de la misma área recibe el aviso."""
+    if not getattr(user, "is_authenticated", True):
+        return False
+    if not getattr(user, "activo", False) or getattr(user, "bloqueado", False):
+        return False
+    destination = normalize_area_name(responsible_area)
+    return bool(
+        destination
+        and can_manage_incidents(user)
+        and _area_normalizada(user) == destination
+    )
+
+
 def can_access_maintenance(user) -> bool:
     return _rol(user) != UserRole.VENDEDOR.value
 
@@ -243,6 +281,7 @@ def permission_flags(user) -> dict:
         "equipo": can_manage_equipo(user),
         "solo_lectura": is_read_only(user),
         "solicitante": is_requester(user),
+        "tecnico": is_technician(user),
         "vendedor": is_vendor(user),
         "acceso_mantenimiento": can_access_maintenance(user),
         "acceso_inventario": can_access_inventory(user),
@@ -259,6 +298,8 @@ USUARIO_POST_ENDPOINTS = frozenset(
         "main.logout",
         "main.mi_perfil",
         "main.session_status",
+        "main.incident_notifications_seen",
+        "main.incident_notifications_read",
     }
 )
 
@@ -271,6 +312,9 @@ SOLICITANTE_ENDPOINTS = frozenset(
         "main.incidencias_detail",
         "main.mi_perfil",
         "main.incidencias_accion",
+        "main.incident_notifications_unread",
+        "main.incident_notifications_seen",
+        "main.incident_notifications_read",
     }
 )
 

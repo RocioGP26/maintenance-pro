@@ -240,7 +240,7 @@
                 {% include 'ordenes/_ejecucion_ot.html' %}
               </div>
 
-            <div class="col-md-6">
+            {% if not perm.tecnico %}<div class="col-md-6">
               <label class="form-label" for="selectEstadoManual">Acción manual</label>
               <select name="status_manual" id="selectEstadoManual" class="form-select" {% if solo_lectura|default(false) %}disabled{% endif %}>
                 <option value="">— Automático —</option>
@@ -250,7 +250,10 @@
                 Para marcar la OT como completada, indícalo al registrar una jornada. Use esta acción solo para cerrar la orden.
               </p>
               <input type="hidden" name="jornada_estado_ot" id="jornadaEstadoOtHidden" value="{{ jornada_estado_inicial or '' }}">
-            </div>
+            </div>{% else %}
+            <input type="hidden" name="jornada_estado_ot" id="jornadaEstadoOtHidden" value="{{ jornada_estado_inicial or '' }}">
+            <div class="col-12"><div class="alert alert-info mb-0"><i class="bi bi-info-circle me-1"></i> Puedes registrar la ejecución y solicitar su finalización. El cierre definitivo corresponde al supervisor.</div></div>
+            {% endif %}
 
             <div class="col-12 d-none" id="seccionRepuestos">
               <h6 class="fw-semibold mb-2"><i class="bi bi-box-seam me-1"></i> Repuestos (inventario)</h6>

@@ -12,6 +12,7 @@
     {% if alertas_campana.tiene_alertas %}
     <span class="header-alert-dot" aria-hidden="true"></span>
     {% endif %}
+    <span class="header-incident-badge" id="incidentNotificationBadge" hidden>0</span>
   </button>
   <div class="dropdown-menu dropdown-menu-end header-alert-menu" aria-labelledby="headerAlertBell">
     <div class="header-alert-menu-head">
@@ -22,6 +23,12 @@
       </button>
     </div>
     <ul class="header-alert-menu-list list-unstyled mb-0">
+      <li id="incidentNotificationMenuRow" hidden>
+        <a href="{{ url_for('main.notifications_center') }}" class="header-alert-row">
+          <span class="header-alert-row-label">Notificaciones de incidencias</span>
+          <span class="header-alert-badge header-alert-badge--danger" id="incidentNotificationMenuCount">0</span>
+        </a>
+      </li>
       {% for item in alertas_campana.filas %}
       <li>
         <a href="{{ item.url }}" class="header-alert-row">

@@ -10,12 +10,25 @@ La suite documental mantiene un ciclo independiente en
 
 ### Added
 
-- Espacio reservado para cambios aún no publicados.
+- Dashboard operativo exclusivo para el rol Técnico con OT prioritarias, preventivos del día, incidencias asignadas, agenda y alertas.
+- Notificación individual al técnico cuando una incidencia se asigna a su bandeja.
+- Centro personal de notificaciones con alertas operativas, historial, estado leído y acceso a la incidencia.
+
+### Changed
+
+- El Técnico solo consulta sus OT, incidencias y activos vinculados; repuestos queda en modo consulta.
+- La campana del Técnico calcula únicamente sus OT e incidencias asignadas y presenta contadores personales.
+- La navegación técnica oculta administración, compras, ventas, proveedores, configuración, análisis y reportes generales.
+- El Técnico registra jornadas, repuestos y diagnóstico, pero el cierre definitivo de OT e incidencias queda reservado al supervisor o responsable del flujo.
+- Mi perfil permite autoservicio seguro al Técnico para nombre, correo, teléfono y contraseña, conservando los datos laborales bajo control administrativo.
 
 ## [1.0.2] - 2026-07-14
 
 ### Added
 
+- Notificaciones individuales de incidencias por empresa, área responsable, rol y usuario activo, con modal no bloqueante, badge en la campana y polling ligero.
+- Notificaciones de ciclo de vida al reportante cuando su ticket cambia de estado, es resuelto, cerrado o reabierto.
+- Auditoría de entrega, primera visualización, lectura y acceso al detalle desde cada notificación de incidencia.
 - Centro de Operaciones en Inicio con OT abiertas y vencidas, preventivos del día, incidencias nuevas, inventario bajo mínimo, activos fuera de servicio, garantías y actividad reciente.
 - Módulo `Análisis` como acceso común a indicadores de mantenimiento, costos, reportes, inventario comercial y Purchasing.
 - Tarifa por hora en usuarios para calcular mano de obra de Mantenimiento.
@@ -29,6 +42,7 @@ La suite documental mantiene un ciclo independiente en
 
 ### Changed
 
+- La campana del rol Solicitante/Reportante muestra únicamente sus propios tickets pendientes y oculta alertas operativas de OT.
 - El antiguo Dashboard estratégico de Mantenimiento se mueve a `Análisis → Mantenimiento`; Inicio queda enfocado exclusivamente en decisiones operativas del día.
 - La navegación principal se organiza en los niveles Operación, Inteligencia y Administración.
 

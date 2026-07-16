@@ -16,7 +16,7 @@
 | 4 | Consulta activo | Historial OT + specs | Tab o panel lateral |
 | 5 | Registra trabajo | Autosave o «Guardado» | Form mínimo |
 | 6 | Adjunta fotos | Preview + «Archivo subido» | Upload |
-| 7 | Cierra OT | «OT #1042 cerrada» | Confirm + toast |
+| 7 | Solicita finalización | «Ejecución registrada; pendiente de cierre» | Confirm + toast |
 | 8 | — | Laura ve dashboard actualizado | Async / realtime |
 
 ## Métricas
@@ -27,7 +27,7 @@
 ## Leyes críticas
 
 - **Ley 3:** No perder registro si pierde señal (aviso + retry)
-- **Ley 5:** «Cerrar OT» es primary en paso 7
+- **Ley 5:** «Registrar ejecución» es la acción primaria; el cierre definitivo corresponde al supervisor
 
 ## Empty states
 

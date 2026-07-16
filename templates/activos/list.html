@@ -4,9 +4,9 @@
 
 {% block header_toolbar %}
 <span class="activos-header-count badge rounded-pill text-bg-light border" id="activosHeaderCount">{{ activos_kpis.total }} activos</span>
-<a href="{{ url_for('main.activos_export') }}" class="btn btn-outline-secondary btn-sm">
+{% if not perm.tecnico %}<a href="{{ url_for('main.activos_export') }}" class="btn btn-outline-secondary btn-sm">
   <i class="bi bi-file-earmark-spreadsheet"></i> Exportar Excel
-</a>
+</a>{% endif %}
 {% if perm.crear %}
 <a href="{{ url_for('main.activos_new') }}" class="btn btn-outline-primary btn-sm">
   <i class="bi bi-plus-lg"></i> Nuevo activo
@@ -17,7 +17,7 @@
 {% block content %}
 <div class="activos-list-page" id="activosListPage"
      data-toggle-url="{{ url_for('main.activos_toggle_critico', id=0) }}"
-     data-can-edit="{{ '1' if perm.editar else '0' }}"
+     data-can-edit="{{ '1' if perm.editar and not perm.tecnico else '0' }}"
      data-total="{{ activos_kpis.total }}">
 
   <div class="activos-kpi-row row g-3 mb-3">
@@ -147,7 +147,7 @@
                         title="{% if item.es_critico %}Quitar marca crítica{% else %}Marcar como crítico{% endif %}"
                         aria-label="Marcar crítico"
                         aria-pressed="{{ 'true' if item.es_critico else 'false' }}"
-                        {% if not perm.editar %}disabled{% endif %}>
+                        {% if not perm.editar or perm.tecnico %}disabled{% endif %}>
                   <i class="bi bi-star{% if item.es_critico %}-fill{% endif %}"></i>
                 </button>
               </div>
@@ -165,7 +165,7 @@
                   <i class="bi bi-file-earmark-medical"></i>
                 </a>
                 <a href="{{ url_for('main.activos_ficha_tecnica', id=item.id) }}" class="btn btn-outline-info btn-sm py-0 px-2" title="Ver Ficha Técnica" aria-label="Ver Ficha Técnica"><i class="bi bi-file-earmark-text"></i></a>
-                {% if perm.editar or perm.solo_lectura %}
+                {% if (perm.editar and not perm.tecnico) or perm.solo_lectura %}
                 <a href="{{ item.href }}" class="btn btn-outline-secondary btn-sm py-0 px-2"
                    title="{% if perm.editar %}Editar{% else %}Ver{% endif %}">
                   <i class="bi bi-{% if perm.editar %}pencil{% else %}eye{% endif %}"></i>

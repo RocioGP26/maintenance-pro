@@ -38,6 +38,7 @@ from app.permissions import (
     can_manage_equipo,
     can_manage_incidents,
     can_report_incident,
+    is_technician,
     is_requester,
     normalize_rol,
     roles_for_select,
@@ -69,6 +70,7 @@ from app.models import (
     Incident,
     IncidentDiagnosis,
     IncidentHistory,
+    IncidentNotification,
     IncidentEstado,
     INCIDENT_ESTADO_LABELS,
     INCIDENT_AREAS_BASE,
@@ -752,8 +754,43 @@ def _filter_work_orders_empresa(q):
     )
 
 
+def _current_technician() -> Optional[Technician]:
+    if not current_user.is_authenticated or not is_technician(current_user):
+        return None
+    return _filter_empresa(
+        Technician.query.filter_by(user_id=current_user.id, activo=True), Technician
+    ).first()
+
+
+def _scope_work_orders_current_user(q):
+    """Los tecnicos solo consultan las OT que les fueron asignadas."""
+    if not is_technician(current_user):
+        return q
+    technician = _current_technician()
+    if technician is None:
+        return q.filter(false())
+    return q.filter(WorkOrder.technician_id == technician.id)
+
+
+def _scope_machines_current_user(q):
+    """Activos vinculados al tecnico como responsable o mediante una OT asignada."""
+    if not is_technician(current_user):
+        return q
+    technician = _current_technician()
+    if technician is None:
+        return q.filter(false())
+    assigned_ids = db.session.query(WorkOrder.machine_id).filter(
+        WorkOrder.technician_id == technician.id
+    )
+    return q.filter(
+        or_(Machine.responsable_user_id == current_user.id, Machine.id.in_(assigned_ids))
+    )
+
+
 def _get_work_order_or_404(order_id: int, *options):
-    q = _filter_work_orders_empresa(WorkOrder.query.filter_by(id=order_id))
+    q = _scope_work_orders_current_user(
+        _filter_work_orders_empresa(WorkOrder.query.filter_by(id=order_id))
+    )
     if options:
         q = q.options(*options)
     return q.first_or_404()
@@ -1614,6 +1651,43 @@ def dashboard(
 ):
     from app.modules import empresa_solo_inventario
 
+    if current_user.is_authenticated and is_technician(current_user):
+        technician = _current_technician()
+        today = date.today()
+        orders_q = _scope_work_orders_current_user(
+            _filter_work_orders_empresa(WorkOrder.query)
+        )
+        pending_q = orders_q.filter(WorkOrder.status.in_(WORK_ORDER_PENDING_STATUSES))
+        today_orders = pending_q.filter(WorkOrder.fecha_programada == today).order_by(
+            WorkOrder.fecha_programada, WorkOrder.id
+        ).all()
+        overdue_orders = pending_q.filter(
+            or_(WorkOrder.status == WorkOrderStatus.VENCIDA.value,
+                WorkOrder.fecha_programada < today)
+        ).order_by(WorkOrder.fecha_programada).all()
+        incidents_q = _incidents_scope_query().filter(Incident.resuelto.is_(False))
+        critical_incidents = incidents_q.filter(
+            Incident.prioridad.in_(("alta", "critica"))
+        ).order_by(Incident.reportado_en.desc()).all()
+        return render_template(
+            "inicio/tecnico_dashboard.html",
+            technician=technician,
+            greeting_name=current_user.etiqueta(),
+            high_priority=pending_q.filter(
+                WorkOrder.prioridad.in_(("alta", "critica"))
+            ).count(),
+            pending_count=pending_q.count(),
+            preventive_today=pending_q.filter(
+                WorkOrder.tipo == WorkOrderType.PREVENTIVO.value,
+                WorkOrder.fecha_programada == today,
+            ).count(),
+            incident_count=incidents_q.count(),
+            today_orders=today_orders,
+            overdue_orders=overdue_orders,
+            critical_incidents=critical_incidents,
+            today=today,
+        )
+
     if current_user.is_authenticated and empresa_solo_inventario(
         getattr(current_user, "empresa", None)
     ):
@@ -2109,7 +2183,9 @@ def _clave_tipo_unica(base: str) -> str:
 def activos_list():
     from app.activos_list_service import activos_kpis_for_machines, build_activos_list_items
 
-    query = _filter_empresa(Machine.query.order_by(Machine.codigo))
+    query = _scope_machines_current_user(
+        _filter_empresa(Machine.query.order_by(Machine.codigo))
+    )
     machines = query.all()
     items = build_activos_list_items(machines)
     kpis = activos_kpis_for_machines(machines)
@@ -2127,25 +2203,25 @@ def activos_hoja_vida(id):
     """Ficha consolidada y de solo consulta del activo."""
     from sqlalchemy.orm import joinedload
 
-    machine = _filter_empresa(
+    machine = _scope_machines_current_user(_filter_empresa(
         Machine.query.options(
             joinedload(Machine.responsable),
             joinedload(Machine.responsable_usuario),
             joinedload(Machine.proveedor_relacionado),
         ).filter_by(id=id),
         Machine,
-    ).first_or_404()
+    )).first_or_404()
     tipos = _machine_types_para_formulario(machine)
     ctx = _activos_form_context(machine, tipos, machine.machine_type_id)
     ordenes = (
-        _filter_work_orders_empresa(
+        _scope_work_orders_current_user(_filter_work_orders_empresa(
             WorkOrder.query.options(
                 joinedload(WorkOrder.technician),
                 joinedload(WorkOrder.jornadas).joinedload(WorkOrderJornada.technician),
                 joinedload(WorkOrder.repuestos).joinedload(WorkOrderRepuesto.spare_part),
                 joinedload(WorkOrder.informes),
             ).filter(WorkOrder.machine_id == machine.id)
-        )
+        ))
         .order_by(WorkOrder.created_at.desc())
         .all()
     )
@@ -2173,7 +2249,9 @@ def activos_hoja_vida(id):
 
 @bp.route("/activos/<int:id>/ficha-tecnica")
 def activos_ficha_tecnica(id):
-    machine = _filter_empresa(Machine.query.filter_by(id=id), Machine).first_or_404()
+    machine = _scope_machines_current_user(
+        _filter_empresa(Machine.query.filter_by(id=id), Machine)
+    ).first_or_404()
     tipos = _machine_types_para_formulario(machine)
     ctx = _activos_form_context(machine, tipos, machine.machine_type_id)
     ctx["status_meta"] = machine_status_meta(machine.status)
@@ -2188,7 +2266,9 @@ def activos_ficha_tecnica_pdf(id):
 
     from app.maintenance.asset_technical_pdf import export_asset_technical_pdf
 
-    machine = _filter_empresa(Machine.query.filter_by(id=id), Machine).first_or_404()
+    machine = _scope_machines_current_user(
+        _filter_empresa(Machine.query.filter_by(id=id), Machine)
+    ).first_or_404()
     tipos = _machine_types_para_formulario(machine)
     ctx = _activos_form_context(machine, tipos, machine.machine_type_id)
     contenido, nombre = export_asset_technical_pdf(
@@ -2255,26 +2335,26 @@ def activos_hoja_vida_pdf(id):
 
     from app.maintenance.asset_life_pdf import export_asset_life_pdf
 
-    machine = _filter_empresa(
+    machine = _scope_machines_current_user(_filter_empresa(
         Machine.query.options(
             joinedload(Machine.responsable),
             joinedload(Machine.responsable_usuario),
             joinedload(Machine.proveedor_relacionado),
         ).filter_by(id=id),
         Machine,
-    ).first_or_404()
+    )).first_or_404()
     empresa = current_user.empresa
     tipos = _machine_types_para_formulario(machine)
     ctx = _activos_form_context(machine, tipos, machine.machine_type_id)
     ordenes = (
-        _filter_work_orders_empresa(
+        _scope_work_orders_current_user(_filter_work_orders_empresa(
             WorkOrder.query.options(
                 joinedload(WorkOrder.technician),
                 joinedload(WorkOrder.jornadas).joinedload(WorkOrderJornada.technician),
                 joinedload(WorkOrder.repuestos).joinedload(WorkOrderRepuesto.spare_part),
                 joinedload(WorkOrder.informes),
             ).filter(WorkOrder.machine_id == machine.id)
-        )
+        ))
         .order_by(WorkOrder.created_at.desc())
         .all()
     )
@@ -2751,6 +2831,10 @@ def _parse_jornadas_json(wo: Optional[WorkOrder] = None) -> Tuple[list[dict], Op
             ).first()
             if not technician:
                 return [], f"Jornada {i}: técnico no pertenece a tu empresa."
+        if is_technician(current_user):
+            current_tech = _current_technician()
+            if current_tech is None or tech_id != current_tech.id:
+                return [], f"Jornada {i}: solo puedes registrar tu propia ejecución."
 
         nombre = (item.get("tecnico_nombre") or "").strip()
         if tech_id is None and not nombre:
@@ -2865,11 +2949,13 @@ def _aplicar_estado_orden_desde_formulario(wo: WorkOrder) -> None:
 
     tiene_jornadas = request.form.get("tiempo_manual") != "1" and bool(wo.jornadas)
     jornada_estado = (request.form.get("jornada_estado_ot") or "").strip()
+    if is_technician(current_user) and jornada_estado in WORK_ORDER_TERMINAL_STATUSES:
+        jornada_estado = WorkOrderStatus.EN_PROCESO.value
     if tiene_jornadas and not jornada_estado:
         jornada_estado = WorkOrderStatus.EN_PROCESO.value
     resolver_estado_al_guardar(
         wo,
-        status_manual=request.form.get("status_manual"),
+        status_manual=None if is_technician(current_user) else request.form.get("status_manual"),
         jornada_estado_ot=jornada_estado or None,
         tiene_jornadas=tiene_jornadas,
     )
@@ -3653,6 +3739,7 @@ def _ordenes_list_query(filtros: Optional[dict[str, str]] = None):
             joinedload(WorkOrder.proveedor),
         )
     )
+    q = _scope_work_orders_current_user(q)
 
     numero = filtros.get("numero", "")
     if numero:
@@ -4084,6 +4171,30 @@ def ordenes_edit(id):
                 "warning",
             )
             return redirect(url_for("main.ordenes_edit", id=wo.id))
+        if is_technician(current_user):
+            err = _guardar_jornadas_orden(wo)
+            if err:
+                db.session.rollback()
+                flash(err, "danger")
+            else:
+                _aplicar_estado_orden_desde_formulario(wo)
+                err_rep = _guardar_repuestos_orden(wo)
+                if err_rep:
+                    db.session.rollback()
+                    flash(err_rep, "danger")
+                else:
+                    db.session.commit()
+                    flash("Ejecución registrada. El cierre definitivo corresponde al supervisor.", "success")
+                    return redirect(url_for("main.ordenes_edit", id=wo.id))
+            return render_template(
+                "ordenes/form.html",
+                order=wo,
+                machines=machines,
+                technicians=technicians,
+                prioridades=WORK_ORDER_PRIORITIES,
+                solo_lectura=solo_lectura,
+                **_orden_form_context(wo, technicians, machines),
+            )
         wo.titulo = request.form.get("titulo", "").strip()
         wo.descripcion = request.form.get("descripcion", "").strip()
         wo.tipo = request.form.get("tipo") or wo.tipo
@@ -4286,13 +4397,13 @@ def calendario():
     start = date(year, month, 1)
     _, last = monthrange(year, month)
     end = date(year, month, last)
-    orders = _filter_work_orders_empresa(
+    orders = _scope_work_orders_current_user(_filter_work_orders_empresa(
         WorkOrder.query.options(joinedload(WorkOrder.machine)).filter(
             WorkOrder.fecha_programada.isnot(None),
             WorkOrder.fecha_programada >= start,
             WorkOrder.fecha_programada <= end,
         )
-    ).order_by(WorkOrder.fecha_programada).all()
+    )).order_by(WorkOrder.fecha_programada).all()
     by_day = {}
     for o in orders:
         d = o.fecha_programada.isoformat()
@@ -4827,19 +4938,19 @@ def equipo_new():
 
 @bp.route("/mi-perfil", methods=["GET", "POST"])
 def mi_perfil():
-    """El administrador puede editar su propia cuenta."""
-    if not _require_admin_equipo():
-        return redirect(url_for("main.dashboard"))
+    """Autoservicio de datos personales para cualquier usuario autenticado."""
     return equipo_edit(current_user.id)
 
 
 @bp.route("/equipo/<int:id>/editar", methods=["GET", "POST"])
 def equipo_edit(id):
-    if not _require_admin_equipo():
+    perfil_propio = request.endpoint == "main.mi_perfil" and id == current_user.id
+    if not perfil_propio and not _require_admin_equipo():
         return redirect(url_for("main.dashboard"))
     eid = _current_empresa_id()
     usuario = User.query.filter_by(id=id, empresa_id=eid).first_or_404()
     es_self = usuario.id == current_user.id
+    perfil_limitado = es_self and not can_manage_equipo(current_user)
     emp = Empresa.query.get(eid)
     sector = normalizar_sector(emp.sector if emp else None)
     roles = roles_for_select(current_user, empresa=emp)
@@ -4865,6 +4976,12 @@ def equipo_edit(id):
         password2 = request.form.get("password2", "")
         sede_id, err_sede = _parse_sede_equipo(request.form, eid)
         tarifa_hora, err_tarifa = _parse_tarifa_hora_equipo(request.form, emp)
+        if perfil_limitado:
+            username = usuario.username
+            area = usuario.area or ""
+            cargo = usuario.cargo or ""
+            sede_id, err_sede = usuario.sede_id, None
+            tarifa_hora, err_tarifa = usuario.tarifa_hora, None
 
         err_u = _validar_username_equipo(username)
         if err_u:
@@ -4875,7 +4992,7 @@ def equipo_edit(id):
             flash("Ese nombre de usuario ya está en uso en tu empresa.", "danger")
         elif not nombre:
             flash("El nombre es obligatorio.", "danger")
-        elif not area:
+        elif not area and not perfil_limitado:
             flash("El área es obligatoria.", "danger")
         elif rol not in USER_ROLE_LABELS:
             flash("Selecciona un rol válido.", "danger")
@@ -4930,7 +5047,11 @@ def equipo_edit(id):
                 usuario.activo = activo
             if password:
                 usuario.set_password(password)
-            err_c = _save_user_custom_fields(usuario, request.form, eid, sector)
+            err_c = (
+                None
+                if perfil_limitado
+                else _save_user_custom_fields(usuario, request.form, eid, sector)
+            )
             if err_c:
                 flash(err_c, "danger")
             else:
@@ -4963,7 +5084,11 @@ def equipo_edit(id):
                         flash("Tus credenciales cambiaron. Inicia sesión nuevamente.", "info")
                         return redirect(url_for("main.login"))
                     flash("Perfil actualizado." if es_self else "Miembro actualizado.", "success")
-                    return redirect(url_for("main.equipo_list"))
+                    return redirect(
+                        url_for("main.mi_perfil")
+                        if es_self
+                        else url_for("main.equipo_list")
+                    )
                 except Exception:
                     db.session.rollback()
                     flash("No se pudo guardar.", "danger")
@@ -4974,6 +5099,7 @@ def equipo_edit(id):
         roles=roles,
         roles_ayuda=roles_ayuda,
         es_self=es_self,
+        perfil_limitado=perfil_limitado,
         **ctx,
     )
 
@@ -5747,6 +5873,17 @@ def incidencia():
             numero = _asignar_numero_incidencia(inc)
             _registrar_historial(inc, "reportado", "", IncidentEstado.REPORTADO.value,
                                 f"Asignado al área {inc.area_responsable}")
+            from app.incident_notifications import create_incident_notifications
+
+            notifications = create_incident_notifications(inc)
+            _registrar_historial(
+                inc,
+                "notificaciones_creadas",
+                comentario=(
+                    f"{len(notifications)} usuario(s) autorizado(s) del área "
+                    f"{inc.area_responsable} fueron notificados."
+                ),
+            )
             try:
                 db.session.commit()
             except IntegrityError:
@@ -5756,7 +5893,19 @@ def incidencia():
                     raise
                 flash(f"La incidencia {existing.numero} ya había sido registrada.", "info")
                 return redirect(url_for("main.incidencias_detail", id=existing.id))
-            flash(f"Incidencia {numero} registrada. El supervisor será notificado.", "success")
+            if notifications:
+                flash(
+                    f"Incidencia {numero} registrada. "
+                    f"Se notificó a {len(notifications)} responsable(s) autorizado(s) "
+                    f"de {inc.area_responsable}.",
+                    "success",
+                )
+            else:
+                flash(
+                    f"Incidencia {numero} registrada, pero el área "
+                    f"{inc.area_responsable} no tiene personal autorizado configurado.",
+                    "warning",
+                )
             return redirect(url_for("main.incidencias_detail", id=inc.id))
 
     return render_template(
@@ -5788,6 +5937,11 @@ def _incidents_scope_query():
     q = _filter_incidents_empresa(Incident.query)
     if normalize_rol(current_user.rol) == UserRole.USUARIO.value or is_requester(current_user):
         q = q.filter(Incident.user_id == current_user.id)
+    elif is_technician(current_user):
+        technician = _current_technician()
+        q = q.filter(false()) if technician is None else q.filter(
+            Incident.tecnico_asignado_id == technician.id
+        )
     return q
 
 
@@ -5821,11 +5975,146 @@ def _registrar_historial(inc, accion, anterior="", nuevo="", comentario=""):
     ))
 
 
+def _serialize_incident_notification(item: IncidentNotification) -> dict:
+    incident = item.incident
+    machine = incident.machine
+    location = (incident.ubicacion or "").strip()
+    if not location and machine:
+        location = (machine.ubicacion or "").strip()
+    return {
+        "notification_id": item.id,
+        "incident_id": incident.id,
+        "code": incident.numero or f"INC-{incident.id}",
+        "title": incident.titulo,
+        "priority": incident.prioridad,
+        "priority_label": incident.prioridad_label,
+        "event_type": item.event_type,
+        "event_title": item.title,
+        "message": item.message,
+        "status": item.status_snapshot,
+        "asset": machine.codigo if machine else "Sin activo asociado",
+        "location": location or "Sin ubicación",
+        "reported_by": incident.reportado_por or "Sin identificar",
+        "created_at": (
+            item.created_at.isoformat(timespec="seconds") + "Z"
+            if item.created_at
+            else ""
+        ),
+        "shown": item.shown,
+        "url": url_for("main.incidencias_detail", id=incident.id),
+    }
+
+
+@bp.get("/api/incidents/notifications/unread")
+def incident_notifications_unread():
+    from app.incident_notifications import authorized_unread_notifications
+
+    items = authorized_unread_notifications(current_user)
+    return jsonify(
+        {
+            "count": len(items),
+            "items": [_serialize_incident_notification(item) for item in items[:20]],
+        }
+    )
+
+
+@bp.post("/api/incidents/notifications/<int:notification_id>/seen")
+def incident_notifications_seen(notification_id: int):
+    from app.incident_notifications import (
+        mark_notification_shown,
+        notification_for_user,
+        authorized_unread_notifications,
+    )
+
+    item = notification_for_user(notification_id, current_user)
+    if item is None:
+        abort(404)
+    mark_notification_shown(item)
+    db.session.commit()
+    return jsonify(
+        {"ok": True, "count": len(authorized_unread_notifications(current_user))}
+    )
+
+
+@bp.post("/api/incidents/notifications/<int:notification_id>/read")
+def incident_notifications_read(notification_id: int):
+    from app.incident_notifications import (
+        mark_notification_read,
+        notification_for_user,
+        authorized_unread_notifications,
+    )
+
+    item = notification_for_user(notification_id, current_user)
+    if item is None:
+        abort(404)
+    payload = request.get_json(silent=True) or {}
+    mark_notification_read(item, accessed=payload.get("action") == "access")
+    db.session.commit()
+    return jsonify(
+        {"ok": True, "count": len(authorized_unread_notifications(current_user))}
+    )
+
+
+@bp.get("/notificaciones")
+def notifications_center():
+    """Centro personal: alertas operativas e historial de entregas autorizadas."""
+    from sqlalchemy.orm import joinedload
+
+    from app.alertas_service import resumen_alertas_campana
+    from app.incident_notifications import can_access_notification
+
+    query = IncidentNotification.query.options(
+        joinedload(IncidentNotification.incident).joinedload(Incident.machine)
+    ).filter(
+        IncidentNotification.empresa_id == _current_empresa_id(),
+        IncidentNotification.user_id == current_user.id,
+    )
+    notifications = [
+        item
+        for item in query.order_by(IncidentNotification.created_at.desc()).limit(100).all()
+        if can_access_notification(current_user, item)
+    ]
+    return render_template(
+        "notificaciones/center.html",
+        operational_alerts=resumen_alertas_campana(),
+        notifications=notifications,
+        unread_count=sum(1 for item in notifications if not item.read),
+    )
+
+
+@bp.post("/notificaciones/<int:notification_id>/accion")
+def notifications_action(notification_id: int):
+    from app.incident_notifications import mark_notification_read, notification_for_user
+
+    item = notification_for_user(notification_id, current_user)
+    if item is None:
+        abort(404)
+    action = (request.form.get("action") or "read").strip().lower()
+    accessed = action == "open"
+    mark_notification_read(item, accessed=accessed)
+    db.session.commit()
+    if accessed:
+        return redirect(url_for("main.incidencias_detail", id=item.incident_id))
+    flash("Notificación marcada como leída.", "success")
+    return redirect(url_for("main.notifications_center"))
+
+
 def _cambiar_estado(inc, nuevo, accion, comentario=""):
     anterior = inc.estado or IncidentEstado.REPORTADO.value
     inc.estado = nuevo
     inc.resuelto = nuevo in (IncidentEstado.RESUELTO.value, IncidentEstado.CERRADO.value)
     _registrar_historial(inc, accion, anterior, nuevo, comentario)
+    from app.incident_notifications import create_reporter_status_notification
+
+    create_reporter_status_notification(
+        inc,
+        previous_status=anterior,
+        new_status=nuevo,
+        action=accion,
+        actor_user_id=(
+            current_user.id if current_user.is_authenticated else None
+        ),
+    )
 
 
 def _incidentes_kpis(base_q) -> dict:
@@ -5911,6 +6200,7 @@ def incidencias_detail(id):
     return render_template(
         "incidencias/detail.html",
         inc=inc,
+        es_tecnico=is_technician(current_user),
         puede_gestionar=can_manage_incidents(current_user),
         puede_crear_ot=can_create_work_order(current_user),
         tecnicos=tecnicos,
@@ -5925,6 +6215,8 @@ def incidencias_accion(id):
     accion = (request.form.get("accion") or "").strip()
     comentario = (request.form.get("comentario") or "").strip()
     es_reportante = current_user.is_authenticated and inc.user_id == current_user.id
+    if is_technician(current_user) and accion not in ("iniciar", "diagnosticar"):
+        abort(403)
     if accion in ("validar", "reabrir"):
         if not es_reportante and not can_manage_incidents(current_user):
             abort(403)
@@ -5950,6 +6242,10 @@ def incidencias_accion(id):
             inc.prioridad_confirmada = inc.prioridad
         inc.tecnico_asignado_id, inc.asignado_en = tecnico.id, ahora
         _cambiar_estado(inc, "asignado", "tecnico_asignado", f"{tecnico.nombre}. {comentario}".strip())
+        if tecnico.user:
+            from app.incident_notifications import create_technician_assignment_notification
+
+            create_technician_assignment_notification(inc, technician_user=tecnico.user)
     elif accion == "iniciar" and inc.estado == "asignado":
         inc.iniciado_en = ahora
         _cambiar_estado(inc, "en_atencion", "atencion_iniciada", comentario)
@@ -5960,6 +6256,8 @@ def incidencias_accion(id):
         if not hallazgo or resultado not in destinos:
             flash("Registra el hallazgo y selecciona una conclusión.", "danger")
             return redirect(url_for("main.incidencias_detail", id=id))
+        if is_technician(current_user) and resultado == "reasignar":
+            abort(403)
         db.session.add(IncidentDiagnosis(incident_id=inc.id, technician_id=inc.tecnico_asignado_id,
             hallazgo=hallazgo, causa=(request.form.get("causa") or "").strip(),
             pruebas=(request.form.get("pruebas") or "").strip(), recomendacion=(request.form.get("recomendacion") or "").strip(), resultado=resultado))
@@ -5971,6 +6269,23 @@ def incidencias_accion(id):
                 return redirect(url_for("main.incidencias_detail", id=id))
             inc.area_responsable, inc.responsable_area_id, inc.tecnico_asignado_id = area, None, None
         _cambiar_estado(inc, destinos[resultado], "diagnostico_registrado", hallazgo)
+        if resultado == "reasignar":
+            from app.incident_notifications import create_incident_notifications
+
+            notifications = create_incident_notifications(
+                inc,
+                event_key=f"area_reassigned:{uuid4()}",
+                event_type="area_reassigned",
+                title="Incidencia reasignada a tu área",
+            )
+            _registrar_historial(
+                inc,
+                "notificaciones_reasignacion",
+                comentario=(
+                    f"{len(notifications)} usuario(s) autorizado(s) del área "
+                    f"{inc.area_responsable} fueron notificados por la reasignación."
+                ),
+            )
     elif accion == "resolver" and inc.estado in ("solucionado_visita", "pendiente_ot", "pendiente_reemplazo"):
         inc.resuelto_en, inc.resuelto_por_id, inc.notas_resolucion = ahora, current_user.id, comentario
         _cambiar_estado(inc, "resuelto", "resuelto", comentario)

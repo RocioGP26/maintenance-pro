@@ -63,7 +63,7 @@ Quién participa en la operación de Mantenimiento — base para permisos en [MR
 |-----|---------|
 | **Administrador** | Configura activos, planes preventivos, técnicos y campos personalizados |
 | **Supervisor** | Planea OT, asigna técnicos o proveedores, supervisa cumplimiento |
-| **Técnico** | Ejecuta OT, registra jornadas, repuestos y cierre operativo |
+| **Técnico** | Ejecuta OT asignadas, registra jornadas, repuestos y solicita finalización; no realiza el cierre definitivo |
 | **Solicitante** | Reporta incidencias y solicita intervención (rol Usuario o equivalente) |
 | **Proveedor externo** | Ejecuta OT contratadas (ejecución externa vía proveedor de servicio) |
 
@@ -73,7 +73,7 @@ Quién participa en la operación de Mantenimiento — base para permisos en [MR
 |---------|----------------|-------|
 | Administrador | Admin · Superadmin | Configuración y catálogos |
 | Supervisor | Admin · Técnico senior | Campo supervisor en OT |
-| Técnico | Técnico | Edición de OT asignadas |
+| Técnico | Técnico | Ejecución limitada a OT e incidencias asignadas; activos y repuestos en consulta |
 | Solicitante | Usuario | Incidencias · lectura |
 | Proveedor externo | — (tercero) | Referenciado en OT externa, sin login propio hoy |
 
@@ -296,7 +296,24 @@ Flujo:
 
 La prioridad de la incidencia puede interactuar con la **criticidad del activo** para ordenar la respuesta.
 
-> **Hoy en producto:** reporte · listado · resolución · crear OT desde incidencia. Asignación explícita a supervisor y evidencia fotográfica en 📋 roadmap.
+> **Hoy en producto:** reporte · enrutamiento al área responsable · notificación individual a coordinadores/técnicos autorizados · listado · resolución · crear OT desde incidencia. Evidencia fotográfica permanece en 📋 roadmap.
+
+### Notificaciones por área
+
+Al registrar o reasignar una incidencia, Maintix crea una entrega individual para cada usuario que cumpla simultáneamente estas reglas:
+
+- pertenece a la misma empresa de la incidencia;
+- su área coincide con el área responsable (incluyendo alias normalizados como TIC/Sistemas);
+- tiene un rol autorizado para gestionar incidencias;
+- está activo y no está bloqueado.
+
+El modal muestra una sola vez cada entrega. Cerrarlo registra que ya fue mostrado, pero no elimina el pendiente de la campana. **Ver incidencia** marca lectura y acceso; **Marcar como vista** registra únicamente la lectura. La combinación incidencia + usuario es única y cada transición conserva su fecha para auditoría.
+
+La interfaz consulta pendientes mediante polling cada 45 segundos; no depende de WebSockets y nunca distribuye una alerta a toda la empresa.
+
+Para el rol **Solicitante/Reportante**, la campana se limita a sus propios tickets pendientes. Las alertas de vencimientos, trabajos programados y OT en proceso quedan reservadas al personal operativo.
+
+Cada transición realizada por el personal responsable genera además un evento individual para quien reportó el ticket. La notificación conserva el estado anterior, el nuevo estado y un título explícito para resolución, cierre y reapertura. Un mismo ticket puede producir varios eventos sin sobrescribir los anteriores; los cambios ejecutados por el propio reportante no generan una alerta redundante.
 
 ---
 

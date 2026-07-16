@@ -102,7 +102,7 @@ def create_app(config_name: str | None = None):
     from app.money import formato_moneda
     from app.models import machine_status_meta, proveedor_tipo_meta, incident_prioridad_meta, wo_es_editable, wo_status_meta, wo_tipo_meta
     from app.alertas_service import resumen_alertas_campana
-    from app.permissions import SOLICITANTE_ENDPOINTS, is_read_only, is_requester, permission_flags
+    from app.permissions import SOLICITANTE_ENDPOINTS, is_read_only, is_requester, is_technician, permission_flags
 
     @app.before_request
     def _restrict_requester_scope():
@@ -121,6 +121,40 @@ def create_app(config_name: str | None = None):
             return None
         flash("Tu rol de solicitante solo permite reportar y consultar tus incidencias.", "warning")
         return redirect(url_for("main.incidencias_list"))
+
+    @app.before_request
+    def _restrict_technician_scope():
+        """Evita acceso directo a funciones de gestion fuera del trabajo asignado."""
+        from flask import flash, redirect, request, url_for
+
+        if not current_user.is_authenticated or not is_technician(current_user):
+            return None
+        endpoint = request.endpoint or ""
+        allowed_mutations = {
+            "main.logout", "main.mi_perfil", "main.session_status",
+            "main.ordenes_edit", "main.ordenes_informe_upload",
+            "main.incidencias_accion", "main.incident_notifications_seen",
+            "main.incident_notifications_read", "main.notifications_action",
+        }
+        blocked_prefixes = (
+            "purchasing.", "inv_comercial.", "platform.", "main.analisis",
+            "main.mantenimiento_costos", "main.reportes", "main.configuracion",
+            "main.equipo", "main.seguridad", "main.proveedores",
+            "main.activos_tipo", "main.ordenes_planeacion",
+        )
+        blocked_endpoints = {
+            "main.ordenes_new", "main.ordenes_export", "main.ordenes_export_pdf", "main.activos_new",
+            "main.activos_edit", "main.activos_delete", "main.activos_export",
+            "main.activos_toggle_critico", "main.inventario_new",
+            "main.inventario_edit", "main.inventario_entrada",
+        }
+        if endpoint.startswith(blocked_prefixes) or endpoint in blocked_endpoints:
+            flash("Tu perfil tecnico solo permite ejecutar tareas asignadas y consultar informacion operativa.", "warning")
+            return redirect(url_for("main.dashboard"))
+        if request.method not in ("GET", "HEAD", "OPTIONS") and endpoint not in allowed_mutations:
+            flash("Esta accion no esta habilitada para el perfil tecnico.", "warning")
+            return redirect(request.referrer or url_for("main.dashboard"))
+        return None
 
     @app.before_request
     def _enforce_global_read_only():
