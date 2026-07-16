@@ -12,6 +12,12 @@ La suite documental mantiene un ciclo independiente en
 
 - Espacio reservado para cambios aún no publicados.
 
+## [1.0.4] - 2026-07-16
+
+### Changed
+
+- feat: agregar asignacion rapida de OT a tecnicos (#5).
+
 ## [1.0.3] - 2026-07-16
 
 ### Added
@@ -84,8 +90,9 @@ La suite documental mantiene un ciclo independiente en
 
 - Este release formaliza el versionado; no modifica funcionalidades de negocio.
 
-[Unreleased]: https://github.com/RocioGP26/maintenance-pro/compare/v1.0.3...HEAD
+[Unreleased]: https://github.com/RocioGP26/maintenance-pro/compare/v1.0.4...HEAD
 [1.0.0]: https://github.com/RocioGP26/maintenance-pro/releases/tag/v1.0.0
 [1.0.1]: https://github.com/RocioGP26/maintenance-pro/compare/v1.0.0...v1.0.1
 [1.0.2]: https://github.com/RocioGP26/maintenance-pro/compare/v1.0.1...v1.0.2
 [1.0.3]: https://github.com/RocioGP26/maintenance-pro/compare/v1.0.2...v1.0.3
+[1.0.4]: https://github.com/RocioGP26/maintenance-pro/compare/v1.0.3...v1.0.4
