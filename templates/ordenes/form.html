@@ -204,6 +204,18 @@
                   {% endfor %}
                 </select>
               </div>
+              {% if not order %}
+              <div class="col-md-6">
+                <label class="form-label" for="selectTecnicoCreacion">Técnico asignado</label>
+                <select name="technician_id" id="selectTecnicoCreacion" class="form-select">
+                  <option value="">— Asignar después —</option>
+                  {% for t in technicians %}
+                  <option value="{{ t.id }}" {% if request.form.get('technician_id') == t.id|string %}selected{% endif %}>{{ t.nombre }}</option>
+                  {% endfor %}
+                </select>
+                <p class="form-text mb-0">Opcional. La OT aparecerá inmediatamente en la bandeja del técnico seleccionado.</p>
+              </div>
+              {% endif %}
               <div class="col-md-6">
                 <label class="form-label">Estado</label>
                 {% if order %}
@@ -226,6 +238,41 @@
           <div class="mb-4 form-ot-seccion form-activo-seccion">
             {% with titulo='Ejecución', icono='bi-tools' %}{% include 'ordenes/_seccion_encabezado.html' %}{% endwith %}
             <div class="row g-3">
+              <div class="col-12" id="asignacion-rapida">
+                <div class="border rounded p-3 bg-light">
+                  <div class="row g-2 align-items-end">
+                    <div class="col-12 col-md">
+                      <label class="form-label fw-semibold" for="quickTechnicianId">Asignación rápida de la OT</label>
+                      {% if perm.tecnico %}
+                      <div class="form-control bg-white" readonly>
+                        {{ order.technician.nombre if order.technician else 'Sin técnico asignado' }}
+                      </div>
+                      {% else %}
+                      <select name="quick_technician_id" id="quickTechnicianId" class="form-select">
+                        <option value="">— Seleccionar técnico —</option>
+                        {% for t in technicians %}
+                        <option value="{{ t.id }}" {% if order.technician_id == t.id %}selected{% endif %}>{{ t.nombre }}</option>
+                        {% endfor %}
+                      </select>
+                      {% endif %}
+                    </div>
+                    {% if not perm.tecnico and not solo_lectura|default(false) %}
+                    <div class="col-12 col-md-auto d-grid">
+                      <button type="submit"
+                              class="btn btn-primary"
+                              formaction="{{ url_for('main.ordenes_asignar_tecnico', id=order.id) }}"
+                              formmethod="post"
+                              formnovalidate>
+                        <i class="bi bi-person-check me-1"></i> Asignar técnico
+                      </button>
+                    </div>
+                    {% endif %}
+                    <div class="col-12">
+                      <p class="form-text mb-0">Esta acción solo asigna la OT. No exige registrar fecha, horario, costos ni jornada. Después, el técnico o un administrador puede ingresar los avances.</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
               <div class="col-md-6">
                 <label class="form-label" for="autorizado_por">Autorizado por</label>
                 <input type="text" name="autorizado_por" id="autorizado_por" class="form-control"
@@ -294,7 +341,7 @@
               <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-2">
                 <div>
                   <h6 class="fw-semibold mb-0">Jornadas de trabajo</h6>
-                  <p class="form-text small mb-0">Registra cada visita o tramo de trabajo con el modal de avance. Al marcar la orden como <strong>Cerrada</strong> ya no podrá editarse.</p>
+                  <p class="form-text small mb-0">Registra cada visita o tramo de trabajo. El técnico puede ingresar su jornada, o un administrador/supervisor puede transcribirla seleccionando al técnico realizador. Al marcar la orden como <strong>Cerrada</strong> ya no podrá editarse.</p>
                 </div>
                 <button type="button" class="btn btn-sm btn-primary" id="btnAbrirModalJornada" data-bs-toggle="modal" data-bs-target="#modalJornada">
                   <i class="bi bi-plus-lg"></i> Agregar jornada
@@ -952,7 +999,7 @@
     document.getElementById('jornadaHoraFin').value = '';
     document.getElementById('jornadaCostoHerramientas').value = '0';
     document.getElementById('jornadaCostoMdo').value = '0';
-    document.getElementById('jornadaTecnico').value = '';
+    document.getElementById('jornadaTecnico').value = {{ (order.technician_id|string if order.technician_id else '')|tojson }};
     document.getElementById('jornadaTecnicoNombre').value = '';
     document.getElementById('jornadaRecibidoPor').value = '';
     document.getElementById('jornadaParoNo').checked = true;
