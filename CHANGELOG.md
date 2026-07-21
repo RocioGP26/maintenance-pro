@@ -8,6 +8,12 @@ La suite documental mantiene un ciclo independiente en
 
 ## [Unreleased]
 
+### Added
+
+- Espacio reservado para cambios aún no publicados.
+
+## [1.0.7] - 2026-07-21
+
 ### Changed
 
 - Favicon de Roustix optimizado para que la “R” permanezca legible en las
@@ -15,6 +21,10 @@ La suite documental mantiene un ciclo independiente en
 - Hoja de vida de activos simplificada con información sectorial y avances de
   OT desplegables, enlaces directos desde números de OT e incidencia y tablas
   sin botones redundantes.
+
+### Notes
+
+- Sprint 22.0, favicon y mejoras de hoja de vida (#8).
 
 ## [1.0.6] - 2026-07-21
 
@@ -165,7 +175,7 @@ La suite documental mantiene un ciclo independiente en
 
 - Este release formaliza el versionado; no modifica funcionalidades de negocio.
 
-[Unreleased]: https://github.com/RocioGP26/maintenance-pro/compare/v1.0.6...HEAD
+[Unreleased]: https://github.com/RocioGP26/maintenance-pro/compare/v1.0.7...HEAD
 [1.0.0]: https://github.com/RocioGP26/maintenance-pro/releases/tag/v1.0.0
 [1.0.1]: https://github.com/RocioGP26/maintenance-pro/compare/v1.0.0...v1.0.1
 [1.0.2]: https://github.com/RocioGP26/maintenance-pro/compare/v1.0.1...v1.0.2
@@ -173,3 +183,4 @@ La suite documental mantiene un ciclo independiente en
 [1.0.4]: https://github.com/RocioGP26/maintenance-pro/compare/v1.0.3...v1.0.4
 [1.0.5]: https://github.com/RocioGP26/maintenance-pro/compare/v1.0.4...v1.0.5
 [1.0.6]: https://github.com/RocioGP26/maintenance-pro/compare/v1.0.5...v1.0.6
+[1.0.7]: https://github.com/RocioGP26/maintenance-pro/compare/v1.0.6...v1.0.7
