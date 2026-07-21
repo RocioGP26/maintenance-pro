@@ -98,10 +98,10 @@ def _seed_legacy_hours():
     bind.execute(sa.text(
         "INSERT INTO asset_meters "
         "(empresa_id,machine_id,code,name,meter_type,unit,decimals,active,rules_json,created_by_id,created_at,updated_at) "
-        "SELECT m.empresa_id,m.id,'RUNTIME_HOURS','Horómetro','cumulative','h',2,1,'{}',NULL,CURRENT_TIMESTAMP,CURRENT_TIMESTAMP "
+        "SELECT m.empresa_id,m.id,'RUNTIME_HOURS','Horómetro','cumulative','h',2,:active,'{}',NULL,CURRENT_TIMESTAMP,CURRENT_TIMESTAMP "
         "FROM machines m WHERE m.empresa_id IS NOT NULL AND m.horas_operacion IS NOT NULL "
         "AND NOT EXISTS (SELECT 1 FROM asset_meters am WHERE am.empresa_id=m.empresa_id AND am.machine_id=m.id AND am.code='RUNTIME_HOURS')"
-    ))
+    ), {"active": True})
     bind.execute(sa.text(
         "INSERT INTO meter_events (empresa_id,meter_id,reading_id,event,actor_id,detail,created_at) "
         "SELECT am.empresa_id,am.id,NULL,'meter_created_from_legacy',NULL,'Machine.horas_operacion',CURRENT_TIMESTAMP "
@@ -113,11 +113,11 @@ def _seed_legacy_hours():
         "(empresa_id,meter_id,work_order_id,value,measured_at,source,performed_by_user_id,recorded_by_user_id,idempotency_key,notes,flagged,anomaly_type,justification,correction_of_id,created_at) "
         "SELECT m.empresa_id,am.id,NULL,m.horas_operacion,CURRENT_TIMESTAMP,'legacy_migration',NULL,NULL,"
         "'legacy-runtime-hours-machine-' || CAST(m.id AS VARCHAR(32)),"
-        "'Lectura inicial importada desde Machine.horas_operacion.',0,'','',NULL,CURRENT_TIMESTAMP "
+        "'Lectura inicial importada desde Machine.horas_operacion.',:flagged,'','',NULL,CURRENT_TIMESTAMP "
         "FROM machines m JOIN asset_meters am ON am.empresa_id=m.empresa_id AND am.machine_id=m.id AND am.code='RUNTIME_HOURS' "
         "WHERE m.horas_operacion IS NOT NULL AND NOT EXISTS (SELECT 1 FROM meter_readings mr WHERE mr.empresa_id=m.empresa_id "
         "AND mr.idempotency_key='legacy-runtime-hours-machine-' || CAST(m.id AS VARCHAR(32)))"
-    ))
+    ), {"flagged": False})
     bind.execute(sa.text(
         "INSERT INTO meter_events (empresa_id,meter_id,reading_id,event,actor_id,detail,created_at) "
         "SELECT mr.empresa_id,mr.meter_id,mr.id,'maintenance.meter.reading_created',NULL,'legacy_migration',CURRENT_TIMESTAMP "
