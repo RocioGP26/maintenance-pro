@@ -62,6 +62,11 @@ La suite documental mantiene un ciclo independiente en
 - Logo y favicon oficiales de Roustix incorporados como SVG y enlazados en la
   aplicación operativa, landing, onboarding y panel de plataforma.
 
+### Fixed
+
+- La migración inicial de medidores enlaza valores booleanos tipados para que
+  la carga de horas históricas funcione tanto en SQLite como en PostgreSQL.
+
 ## [1.0.4] - 2026-07-16
 
 ### Changed

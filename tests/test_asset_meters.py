@@ -1,6 +1,8 @@
 """Sprint 19.5 · medidores, lecturas, integración y cierre."""
 
 from datetime import datetime, timedelta
+from unittest import TestCase
+from unittest.mock import patch
 
 from app import db
 from app.maintenance_execution.meter_service import (
@@ -11,6 +13,26 @@ from app.maintenance_execution.meter_service import (
 )
 from app.maintenance_execution.models import AssetMeter, MeterEvent, MeterReading
 from tests import test_work_order_checklists as checklist_base
+from migrations.versions import kr9h5j71o04z_asset_meters_readings as meter_migration
+
+
+class TestAssetMeterMigrationCompatibility(TestCase):
+    def test_legacy_seed_binds_native_boolean_values(self):
+        class RecordingBind:
+            def __init__(self):
+                self.calls = []
+
+            def execute(self, statement, parameters=None):
+                self.calls.append((str(statement), parameters or {}))
+
+        bind = RecordingBind()
+        with patch.object(meter_migration.op, "get_bind", return_value=bind):
+            meter_migration._seed_legacy_hours()
+
+        self.assertIn(":active", bind.calls[0][0])
+        self.assertIs(bind.calls[0][1]["active"], True)
+        self.assertIn(":flagged", bind.calls[2][0])
+        self.assertIs(bind.calls[2][1]["flagged"], False)
 
 
 class TestAssetMeters(checklist_base.TestWorkOrderChecklists):
