@@ -93,7 +93,10 @@ Todas las solicitudes autenticadas utilizan:
 Authorization: Bearer eyJhbGc...
 ```
 
-**No se aceptan otros métodos** para la API pública (no query string, no Basic Auth).
+JWT y API keys de integración se transportan como Bearer. El prefijo de la
+credencial permite seleccionar el validador sin cambiar el header. No se
+aceptan credenciales en query string ni Basic Auth. Las API keys se implementan
+en Sprint 22.1 conforme al [contrato Sprint 22](../../api/permissions-plans.md).
 
 ---
 
@@ -254,9 +257,11 @@ Solo entonces se procesa la petición.
 | Modo | Uso |
 |------|-----|
 | **Cookie de sesión** | App web Roustix (Flask-Login) |
-| **JWT Bearer** | Integraciones, scripts, partners |
+| **JWT Bearer** | Usuario humano en clientes API |
+| **API key Bearer** | Servicios, ERP, BI y automatizaciones · Sprint 22.1 |
 
-`@tenant_required` acepta ambos: JWT en header o sesión activa.
+Actualmente `@tenant_required` acepta JWT o sesión activa. Sprint 22.1 añadirá
+API keys mediante un autenticador unificado sin ampliar el acceso de sesión web.
 
 ---
 

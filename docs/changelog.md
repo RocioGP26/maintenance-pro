@@ -3,6 +3,22 @@
 > Este changelog pertenece a la documentación. Los cambios de la aplicación se
 > registran por separado en [`/CHANGELOG.md`](../CHANGELOG.md).
 
+## [1.22.0] — 2026-07-21 · Sprint 22.0 · API pública y Webhooks
+
+### Added
+- Charter y arquitectura de integraciones públicas tenant-safe.
+- Contrato REST v1 para activos, incidencias, OT, medidores y lecturas.
+- Diseño de API keys con scopes, hash, expiración, rotación y revocación.
+- Catálogo inicial de webhooks con outbox, HMAC, reintentos e idempotencia.
+- Derechos técnicos configurables para API y webhooks.
+- Roadmap de implementación Sprint 22.1–22.5.
+
+### Status
+- ✅ Sprint 22.0 documental finalizado.
+- 📋 Siguiente: Sprint 22.1 · credenciales de integración.
+
+---
+
 ## [1.21.0] — 2026-07-21 · Sprint 21 · Asset Health
 
 ### Added

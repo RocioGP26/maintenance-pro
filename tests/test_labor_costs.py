@@ -5,7 +5,10 @@ import unittest
 
 from app import create_app, db
 from app.models import (
+    ActivoCampoValor,
+    CampoPersonalizado,
     Empresa,
+    Incident,
     Machine,
     MachineType,
     PlanSuscripcion,
@@ -292,6 +295,32 @@ class TestLaborCostReport(unittest.TestCase):
             },
         )
         machine = Machine.query.filter_by(codigo="CT-001").one()
+        empresa = db.session.get(Empresa, machine.empresa_id)
+        campo = CampoPersonalizado(
+            empresa_id=machine.empresa_id,
+            sector=empresa.sector,
+            entidad="activo",
+            machine_type_id=machine.machine_type_id,
+            clave="potencia_sector",
+            nombre="Potencia sectorial",
+            tipo="text",
+            activo=True,
+        )
+        db.session.add(campo)
+        db.session.flush()
+        db.session.add(ActivoCampoValor(
+            machine_id=machine.id,
+            campo_id=campo.id,
+            valor="15 kW",
+        ))
+        incident = Incident(
+            empresa_id=machine.empresa_id,
+            machine_id=machine.id,
+            titulo="Fuga de prueba",
+            estado="reportado",
+        )
+        db.session.add(incident)
+        db.session.commit()
         response = self.client.get(f"/activos/{machine.id}/hoja-vida")
 
         self.assertEqual(response.status_code, 200)
@@ -299,6 +328,31 @@ class TestLaborCostReport(unittest.TestCase):
         self.assertIn("Costo total de mantenimiento", html)
         self.assertIn("Costo repuestos", html)
         self.assertIn("$62.000", html)
+        self.assertIn('data-bs-toggle="collapse"', html)
+        self.assertIn('data-bs-target="#ot-avances-', html)
+        self.assertIn('class="collapse" id="ot-avances-', html)
+        self.assertIn("Desplegar", html)
+        self.assertIn("Recoger", html)
+        self.assertNotIn("<th>Técnico realizador</th>", html)
+        self.assertIn("<th>Técnico / proveedor</th>", html)
+        self.assertIn('data-bs-target="#sector-info-details"', html)
+        self.assertIn('class="collapse" id="sector-info-details"', html)
+        self.assertIn("Información específica del sector", html)
+        self.assertIn("Potencia sectorial", html)
+        self.assertIn("15 kW", html)
+        order = WorkOrder.query.filter_by(machine_id=machine.id).one()
+        order_label = order.numero or f"#{order.id}"
+        self.assertIn(
+            f'href="/ordenes/{order.id}/editar" class="fw-semibold">{order_label}',
+            html,
+        )
+        self.assertNotIn(">Ver</a>", html)
+        incident_label = incident.numero or f"#{incident.id}"
+        self.assertIn(
+            f'href="/incidencias/{incident.id}" class="fw-semibold">{incident_label}',
+            html,
+        )
+        self.assertIn("Fuga de prueba", html)
 
         pdf_response = self.client.get(f"/activos/{machine.id}/hoja-vida/pdf")
         self.assertEqual(pdf_response.status_code, 200)

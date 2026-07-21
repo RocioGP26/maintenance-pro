@@ -8,9 +8,13 @@ La suite documental mantiene un ciclo independiente en
 
 ## [Unreleased]
 
-### Added
+### Changed
 
-- Espacio reservado para cambios aún no publicados.
+- Favicon de Roustix optimizado para que la “R” permanezca legible en las
+  pestañas del navegador.
+- Hoja de vida de activos simplificada con información sectorial y avances de
+  OT desplegables, enlaces directos desde números de OT e incidencia y tablas
+  sin botones redundantes.
 
 ## [1.0.6] - 2026-07-21
 
