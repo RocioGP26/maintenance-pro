@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}Nueva automatización — {{ app_name }}{% endblock %}
+{% block page_title %}Nueva automatización{% endblock %}
+{% block content %}
+<form method="post" class="card card-dashboard"><div class="card-body row g-3">
+  {% include "_csrf.html" %}
+  <div class="col-md-6"><label class="form-label">Nombre *</label><input class="form-control" name="name" maxlength="160" required value="{{ request.form.get('name','') }}" placeholder="Crear OT por temperatura alta"></div>
+  <div class="col-md-6"><label class="form-label">Descripción</label><input class="form-control" name="description" maxlength="500" value="{{ request.form.get('description','') }}"></div>
+  <div class="col-md-5"><label class="form-label">Medidor *</label><select class="form-select" name="meter_id" required><option value="">Selecciona…</option>{% for meter in meters %}<option value="{{ meter.id }}" {% if request.form.get('meter_id')|int == meter.id %}selected{% endif %}>{{ meter.machine.codigo }} · {{ meter.name }} ({{ meter.unit }})</option>{% endfor %}</select></div>
+  <div class="col-md-2"><label class="form-label">Operador *</label><select class="form-select" name="operator" required>{% for key,label in operators.items() %}<option value="{{ key }}" {% if request.form.get('operator','gte') == key %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></div>
+  <div class="col-md-2"><label class="form-label">Umbral *</label><input class="form-control" type="number" step="any" name="threshold" required value="{{ request.form.get('threshold','') }}"></div>
+  <div class="col-md-3"><label class="form-label">Enfriamiento (min)</label><input class="form-control" type="number" min="0" max="525600" name="cooldown_minutes" value="{{ request.form.get('cooldown_minutes','0') }}"></div>
+  <div class="col-12"><div class="form-check"><input class="form-check-input" type="checkbox" name="crossing_only" value="1" id="crossing" {% if request.form.get('crossing_only','1') == '1' %}checked{% endif %}><label class="form-check-label" for="crossing">Ejecutar solo cuando la lectura cruza el umbral</label><div class="form-text">Evita crear acciones repetidas mientras el valor permanezca en condición de alerta.</div></div></div>
+  <hr class="my-2">
+  <div class="col-md-4"><label class="form-label">Acción *</label><select class="form-select" name="action_type" id="actionType"><option value="notify" {% if request.form.get('action_type') == 'notify' %}selected{% endif %}>Crear aviso interno</option><option value="create_work_order" {% if request.form.get('action_type','create_work_order') == 'create_work_order' %}selected{% endif %}>Crear orden de trabajo</option></select></div>
+  <div class="col-md-4"><label class="form-label">Destinatarios</label><div class="d-flex gap-3 pt-2"><div class="form-check"><input class="form-check-input" type="checkbox" name="notify_roles" value="admin" id="notifyAdmin" checked><label class="form-check-label" for="notifyAdmin">Administradores</label></div><div class="form-check"><input class="form-check-input" type="checkbox" name="notify_roles" value="supervisor" id="notifySupervisor" checked><label class="form-check-label" for="notifySupervisor">Supervisores</label></div></div></div>
+  <div class="row g-3 mt-1" id="workOrderFields">
+    <div class="col-md-5"><label class="form-label">Título de la OT *</label><input class="form-control" name="work_order_title" maxlength="200" value="{{ request.form.get('work_order_title','Atender condición detectada') }}"></div>
+    <div class="col-md-2"><label class="form-label">Tipo</label><select class="form-select" name="work_order_type"><option value="correctivo">Correctiva</option><option value="preventivo">Preventiva</option><option value="emergencia">Emergencia</option></select></div>
+    <div class="col-md-2"><label class="form-label">Prioridad</label><select class="form-select" name="priority"><option value="media">Media</option><option value="alta">Alta</option><option value="critica">Crítica</option><option value="baja">Baja</option></select></div>
+    <div class="col-md-3"><label class="form-label">Técnico</label><select class="form-select" name="technician_id"><option value="">Sin asignar</option>{% for tech in technicians %}<option value="{{ tech.id }}">{{ tech.nombre }}</option>{% endfor %}</select></div>
+    <div class="col-12"><label class="form-label">Descripción adicional</label><textarea class="form-control" name="work_order_description" rows="2">{{ request.form.get('work_order_description','') }}</textarea></div>
+  </div>
+  <div class="col-12 d-flex gap-2 mt-4"><button class="btn btn-primary" type="submit">Crear y activar</button><a class="btn btn-outline-secondary" href="{{ url_for('maintenance_automation.rules_list') }}">Cancelar</a></div>
+</div></form>
+{% endblock %}
+{% block scripts %}{{ super() }}<script>
+(function(){var action=document.getElementById('actionType'), fields=document.getElementById('workOrderFields'); function sync(){fields.classList.toggle('d-none',action.value!=='create_work_order'); fields.querySelector('[name="work_order_title"]').required=action.value==='create_work_order';} action.addEventListener('change',sync);sync();})();
+</script>{% endblock %}

@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+{% block title %}Editar v{{ version.version }} — {{ app_name }}{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
+  <div>
+    <div class="small text-muted"><code>{{ procedure.code }}</code> · {{ procedure.name }}</div>
+    <h1 class="h3 mb-0">Versión {{ version.version }} · Borrador</h1>
+  </div>
+  <a class="btn btn-outline-secondary" href="{{ url_for('maintenance_execution.procedure_detail', procedure_id=procedure.id) }}">Volver</a>
+</div>
+
+<form method="post" id="versionForm">
+  {% include "_csrf.html" %}
+  <div class="card shadow-sm border-0 mb-4">
+    <div class="card-body">
+      <label class="form-label" for="change_notes">Notas de la versión</label>
+      <input class="form-control" id="change_notes" name="change_notes" maxlength="500" value="{{ request.form.get('change_notes', version.change_notes) }}" placeholder="Qué cambia frente a la versión anterior">
+    </div>
+  </div>
+
+  <div class="card shadow-sm border-0">
+    <div class="card-header bg-white d-flex align-items-center justify-content-between">
+      <div><strong>Pasos del procedimiento</strong><div class="small text-muted">El orden mostrado será el orden de ejecución.</div></div>
+      <button class="btn btn-sm btn-outline-primary" type="button" id="addStep"><i class="bi bi-plus-lg me-1"></i> Agregar paso</button>
+    </div>
+    <div class="card-body" id="stepsContainer">
+      {% set rows = version.steps if version.steps else [none] %}
+      {% for step in rows %}
+      <div class="border rounded p-3 mb-3 procedure-step" data-step-row>
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <strong data-step-number>Paso {{ loop.index }}</strong>
+          <button class="btn btn-sm btn-outline-danger" type="button" data-remove-step aria-label="Eliminar paso"><i class="bi bi-trash"></i></button>
+        </div>
+        <div class="row g-3">
+          <div class="col-md-3">
+            <label class="form-label">Código</label>
+            <input class="form-control" name="step_code" maxlength="48" value="{{ step.code if step else '' }}" placeholder="STEP-001">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Título *</label>
+            <input class="form-control" name="step_title" maxlength="180" required value="{{ step.title if step else '' }}" placeholder="Verificar nivel de aceite">
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Respuesta</label>
+            <select class="form-select" name="step_response_type">
+              {% for key, label in response_types %}<option value="{{ key }}" {% if step and step.response_type == key %}selected{% endif %}>{{ label }}</option>{% endfor %}
+            </select>
+          </div>
+          <div class="col-md-8">
+            <label class="form-label">Instrucciones</label>
+            <textarea class="form-control" name="step_instructions" rows="2">{{ step.instructions if step else '' }}</textarea>
+          </div>
+          <div class="col-md-2">
+            <label class="form-label">Obligatorio</label>
+            <select class="form-select" name="step_required">
+              <option value="1" {% if not step or step.required %}selected{% endif %}>Sí</option>
+              <option value="0" {% if step and not step.required %}selected{% endif %}>No</option>
+            </select>
+          </div>
+          <div class="col-md-2">
+            <label class="form-label">Config. JSON</label>
+            <input class="form-control font-monospace" name="step_config_json" value='{{ step.config_json if step else "{}" }}'>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    <div class="card-footer bg-white d-flex justify-content-end gap-2 p-3">
+      <a class="btn btn-outline-secondary" href="{{ url_for('maintenance_execution.procedure_detail', procedure_id=procedure.id) }}">Cancelar</a>
+      <button class="btn btn-primary" type="submit">Guardar borrador</button>
+    </div>
+  </div>
+</form>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+(function () {
+  const container = document.getElementById('stepsContainer');
+  const addButton = document.getElementById('addStep');
+  function renumber() {
+    container.querySelectorAll('[data-step-row]').forEach(function (row, index) {
+      row.querySelector('[data-step-number]').textContent = 'Paso ' + (index + 1);
+      row.querySelector('[data-remove-step]').disabled = container.querySelectorAll('[data-step-row]').length === 1;
+    });
+  }
+  addButton.addEventListener('click', function () {
+    const source = container.querySelector('[data-step-row]');
+    const row = source.cloneNode(true);
+    row.querySelectorAll('input, textarea').forEach(function (field) {
+      field.value = field.name === 'step_config_json' ? '{}' : '';
+    });
+    row.querySelector('[name="step_response_type"]').value = 'confirmation';
+    row.querySelector('[name="step_required"]').value = '1';
+    container.appendChild(row);
+    renumber();
+    row.querySelector('[name="step_title"]').focus();
+  });
+  container.addEventListener('click', function (event) {
+    const button = event.target.closest('[data-remove-step]');
+    if (!button || container.querySelectorAll('[data-step-row]').length === 1) return;
+    button.closest('[data-step-row]').remove();
+    renumber();
+  });
+  renumber();
+})();
+</script>
+{% endblock %}
+

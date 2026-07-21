@@ -1853,6 +1853,9 @@ def dashboard(
         )
 
     machines = machines_q.all()
+    from app.asset_health.service import portfolio_health
+
+    asset_health = portfolio_health(machines)
     kpis = _dashboard_kpis(start, end, total_m, op, sector, machine_ids)
     kpis = _attach_plant_kpi_cards(
         kpis,
@@ -2073,6 +2076,7 @@ def dashboard(
             "falla": pct_falla,
             "counts": {"op": op, "mant": mant, "falla": falla, "total": total_m},
         },
+        asset_health=asset_health,
         cumplimiento=cumplimiento,
         prev_completadas=prev_completadas,
         prev_pendientes=prev_pendientes,
@@ -2949,8 +2953,8 @@ def _aplicar_estado_orden_desde_formulario(wo: WorkOrder) -> None:
 
     tiene_jornadas = request.form.get("tiempo_manual") != "1" and bool(wo.jornadas)
     jornada_estado = (request.form.get("jornada_estado_ot") or "").strip()
-    if is_technician(current_user) and jornada_estado in WORK_ORDER_TERMINAL_STATUSES:
-        jornada_estado = WorkOrderStatus.EN_PROCESO.value
+    if is_technician(current_user) and jornada_estado == WorkOrderStatus.CERRADA.value:
+        jornada_estado = WorkOrderStatus.COMPLETADO.value
     if tiene_jornadas and not jornada_estado:
         jornada_estado = WorkOrderStatus.EN_PROCESO.value
     resolver_estado_al_guardar(
@@ -2959,12 +2963,27 @@ def _aplicar_estado_orden_desde_formulario(wo: WorkOrder) -> None:
         jornada_estado_ot=jornada_estado or None,
         tiene_jornadas=tiene_jornadas,
     )
+    if (wo.status or "").strip().lower() in WORK_ORDER_TERMINAL_STATUSES:
+        from app.maintenance_execution.service import checklist_completion_error
+
+        checklist_error = checklist_completion_error(wo)
+        if checklist_error:
+            wo.status = WorkOrderStatus.EN_PROCESO.value
+            wo.fecha_cierre = None
+            flash(checklist_error + " La OT permanecerá en proceso.", "warning")
     _cerrar_incidente_vinculado_si_ot_terminal(wo)
+    from app.asset_health.service import save_health_snapshot
+
+    save_health_snapshot(
+        wo.machine,
+        trigger="work_order_status",
+        actor_id=current_user.id if current_user.is_authenticated else None,
+    )
 
 
 def _cerrar_incidente_vinculado_si_ot_terminal(wo: WorkOrder) -> None:
-    """Cierra el incidente de origen cuando su OT queda completada o cerrada."""
-    if (wo.status or "").strip().lower() not in WORK_ORDER_TERMINAL_STATUSES:
+    """Cierra el incidente de origen únicamente tras el cierre definitivo de la OT."""
+    if (wo.status or "").strip().lower() != WorkOrderStatus.CERRADA.value:
         return
     incidente = getattr(wo, "incidencia_origen", None)
     if not incidente or incidente.estado in (
@@ -4195,7 +4214,10 @@ def ordenes_edit(id):
                     flash(err_rep, "danger")
                 else:
                     db.session.commit()
-                    flash("Ejecución registrada. El cierre definitivo corresponde al supervisor.", "success")
+                    if (wo.status or "").strip().lower() == WorkOrderStatus.COMPLETADO.value:
+                        flash("Trabajo marcado como completado. La OT quedó pendiente de cierre por un supervisor o administrador.", "success")
+                    else:
+                        flash("Ejecución registrada. El cierre definitivo corresponde al supervisor.", "success")
                     return redirect(url_for("main.ordenes_edit", id=wo.id))
             return render_template(
                 "ordenes/form.html",
@@ -6179,6 +6201,14 @@ def _cambiar_estado(inc, nuevo, accion, comentario=""):
             current_user.id if current_user.is_authenticated else None
         ),
     )
+    if inc.machine:
+        from app.asset_health.service import save_health_snapshot
+
+        save_health_snapshot(
+            inc.machine,
+            trigger="incident_status",
+            actor_id=current_user.id if current_user.is_authenticated else None,
+        )
 
 
 def _incidentes_kpis(base_q) -> dict:

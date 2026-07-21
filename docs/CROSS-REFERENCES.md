@@ -2,6 +2,12 @@
 
 **Sprint 16 · Purchasing:** [charter](purchasing/SPRINT16-REPORT.md) · [arquitectura](purchasing/architecture.md) · [contratos MAG/MRL](purchasing/contracts.md) · [migración](purchasing/migration.md) · [MRG-04](mrg/chapters/04-compras.md) · [MPA-05](mpa/chapters/05-roadmap-modulos.md)
 
+**Sprint 19 · Maintenance Execution:** [charter](maintenance-execution/SPRINT19-REPORT.md) · [arquitectura](maintenance-execution/architecture.md) · [estados/permisos/eventos](maintenance-execution/contracts.md) · [migración](maintenance-execution/migration.md) · [MRG-02](mrg/chapters/02-maintenance.md) · [MPA-05](mpa/chapters/05-roadmap-modulos.md)
+
+**Sprint 20 · Maintenance Automation:** [charter](maintenance-automation/SPRINT20-REPORT.md) · [arquitectura](maintenance-automation/architecture.md) · [contratos](maintenance-automation/contracts.md) · [MRG-02](mrg/chapters/02-maintenance.md) · [MPA-05](mpa/chapters/05-roadmap-modulos.md)
+
+**Sprint 21 · Asset Health:** [charter](asset-health/SPRINT21-REPORT.md) · [arquitectura](asset-health/architecture.md) · [contrato de cálculo](asset-health/contracts.md) · [MRG-02](mrg/chapters/02-maintenance.md) · [MPA-05](mpa/chapters/05-roadmap-modulos.md)
+
 Convenciones para enlazar manuales de forma **consistente**. Objetivo: un lector siempre puede saltar de marca → producto → experiencia → ventas → arquitectura.
 
 ---

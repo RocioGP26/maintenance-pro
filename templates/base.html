@@ -36,7 +36,8 @@
       {% set dash_url = url_for('inv_comercial.dashboard_inventario') if mod_inv and (not mod_mant or perm.vendedor) else url_for('main.dashboard') %}
       {% set es_submenu_equipos = ep in ['main.activos_list', 'main.activos_new', 'main.activos_edit'] %}
       {% set es_submenu_tipos = ep.startswith('main.activos_tipo') %}
-      {% set menu_activos_abierto = es_submenu_equipos or es_submenu_tipos %}
+        {% set es_submenu_asset_health = ep.startswith('asset_health.') %}
+        {% set menu_activos_abierto = es_submenu_equipos or es_submenu_tipos or es_submenu_asset_health %}
       <nav class="nav flex-column flex-grow-1 py-2">
         {% if perm.solicitante %}
         <p class="sidebar-module-label px-3 small text-uppercase text-white-50 mb-1 mt-2">Solicitante</p>
@@ -86,11 +87,18 @@
             <a class="nav-link nav-link-sub {% if es_submenu_tipos %}active{% endif %}" href="{{ url_for('main.activos_tipo_list') }}">
               <i class="bi bi-tags me-2"></i> Tipos de activo
             </a>
+            {% if perm.ver_asset_health %}
+            <a class="nav-link nav-link-sub {% if es_submenu_asset_health %}active{% endif %}" href="{{ url_for('asset_health.portfolio') }}">
+              <i class="bi bi-heart-pulse me-2"></i> Asset Health
+            </a>
+            {% endif %}
           </div>
         </div>
         {% set es_submenu_ot_lista = ep in ['main.ordenes_list', 'main.ordenes_new', 'main.ordenes_edit'] %}
         {% set es_submenu_ot_planeacion = ep == 'main.ordenes_planeacion' %}
-        {% set menu_ordenes_abierto = es_submenu_ot_lista or es_submenu_ot_planeacion %}
+        {% set es_submenu_procedimientos = ep.startswith('maintenance_execution.') %}
+        {% set es_submenu_automatizaciones = ep.startswith('maintenance_automation.') %}
+        {% set menu_ordenes_abierto = es_submenu_ot_lista or es_submenu_ot_planeacion or es_submenu_procedimientos or es_submenu_automatizaciones %}
         <div class="sidebar-nav-group">
           <button type="button" id="tour-nav-ordenes" class="nav-link sidebar-nav-toggle w-100 text-start {% if menu_ordenes_abierto %}active-parent{% endif %}"
              data-bs-toggle="collapse" data-bs-target="#submenuOrdenes"
@@ -109,6 +117,16 @@
             <a class="nav-link nav-link-sub {% if es_submenu_ot_planeacion %}active{% endif %}" href="{{ url_for('main.ordenes_planeacion') }}">
               <i class="bi bi-calendar2-range me-2"></i> Planeación mensual
             </a>
+            {% if perm.ver_procedimientos %}
+            <a class="nav-link nav-link-sub {% if es_submenu_procedimientos %}active{% endif %}" href="{{ url_for('maintenance_execution.procedures_list') }}">
+              <i class="bi bi-list-check me-2"></i> Procedimientos
+            </a>
+            {% endif %}
+            {% if perm.gestionar_automatizaciones %}
+            <a class="nav-link nav-link-sub {% if es_submenu_automatizaciones %}active{% endif %}" href="{{ url_for('maintenance_automation.rules_list') }}">
+              <i class="bi bi-lightning-charge me-2"></i> Automatizaciones
+            </a>
+            {% endif %}
           </div>
         </div>
         <a id="tour-nav-calendario" class="nav-link {% if request.endpoint == 'main.calendario' %}active{% endif %}" href="{{ url_for('main.calendario') }}">

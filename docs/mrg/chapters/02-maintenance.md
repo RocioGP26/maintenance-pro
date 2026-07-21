@@ -385,6 +385,90 @@ La tarifa del técnico y el costo unitario del repuesto se guardan como snapshot
 
 ---
 
+## 12 · Ejecución guiada y datos de condición · Sprint 19 ✅
+
+Sprint 19 amplía Maintenance con tres capacidades integradas:
+
+| Capacidad | Propósito |
+|---|---|
+| **Procedimientos y checklists** | Estandarizar pasos, evidencias, conformidad y firma en la OT |
+| **Bitácora contextual** | Conservar comentarios y archivos dentro de OT, incidencia o activo |
+| **Medidores y lecturas** | Registrar horómetros, kilometraje, ciclos, temperatura, presión u otras series |
+
+Los procedimientos son versionados. Una OT conserva la versión exacta que
+ejecutó y los pasos obligatorios pendientes impiden solicitar su finalización.
+El cierre administrativo continúa bajo control del supervisor.
+
+La ejecución distingue `performed_by_user_id` del `recorded_by_user_id`: un
+técnico puede registrar su propio trabajo o un administrador/supervisor puede
+transcribir el formato físico en nombre del técnico, siempre con auditoría
+explícita y sin suplantación silenciosa.
+
+Sprint 19 registra hechos y eventos. Los disparadores automáticos, Asset Health,
+API de escritura y webhooks permanecen en Sprints 20–22.
+
+**Estado actual:** Sprint 19 completo. Los activos admiten medidores acumulativos
+e instantáneos; las lecturas conservan ejecutor, registrador, fecha, OT y origen.
+Las regresiones, reinicios, valores fuera de rango y correcciones quedan
+justificados y auditados. Las horas de operación existentes se migran de forma
+idempotente sin eliminar el campo legado.
+
+→ [Charter Sprint 19](../../maintenance-execution/SPRINT19-REPORT.md) ·
+[Arquitectura](../../maintenance-execution/architecture.md) ·
+[Contratos](../../maintenance-execution/contracts.md)
+
+---
+
+## 13 · Disparadores y automatizaciones · Sprint 20 ✅
+
+Las lecturas de medidores pueden activar reglas configuradas por supervisor o
+administrador. Cada regla define medidor, operador, umbral, modo de cruce,
+enfriamiento y una acción segura.
+
+| Acción | Resultado |
+|---|---|
+| Aviso interno | Entrega individual en la campana de los destinatarios |
+| Crear OT | Genera una OT numerada, vinculada al activo y a la evaluación |
+
+La combinación regla + lectura es única. Reprocesar la misma lectura no duplica
+la OT. El modo “solo cruce” evita repetir acciones mientras la condición continúe
+verdadera; el enfriamiento limita coincidencias posteriores. Las reglas pueden
+desactivarse sin eliminar su historial.
+
+→ [Sprint 20](../../maintenance-automation/README.md) ·
+[Arquitectura](../../maintenance-automation/architecture.md) ·
+[Contratos](../../maintenance-automation/contracts.md)
+
+---
+
+## 14 · Asset Health avanzado · Sprint 21 ✅
+
+Roustix calcula un diagnóstico de 0–100 por activo mediante cuatro factores:
+
+| Factor | Peso |
+|---|---:|
+| Estado operativo | 30% |
+| Mantenimiento pendiente | 25% |
+| Confiabilidad reciente | 20% |
+| Condición medida | 25% |
+
+El resultado siempre muestra la evidencia y la confianza. Cuando no existen
+medidores evaluables, condición recibe un valor neutral y la confianza baja a
+75%; no se presenta una precisión inexistente. Las bandas son Saludable, En
+observación, En riesgo, Crítico y Sin datos.
+
+Los snapshots se actualizan con lecturas, estados de OT, incidencias,
+automatizaciones o actualización manual. El mismo diagnóstico no se duplica.
+Los técnicos solo consultan activos relacionados; supervisores y
+administradores acceden al portafolio completo y reciben en la campana el conteo
+de activos en riesgo.
+
+→ [Sprint 21](../../asset-health/README.md) ·
+[Arquitectura](../../asset-health/architecture.md) ·
+[Contrato de cálculo](../../asset-health/contracts.md)
+
+---
+
 ## Relación con otros capítulos
 
 | Capítulo | Relación |

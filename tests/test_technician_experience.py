@@ -1,4 +1,5 @@
 from datetime import date, datetime
+import json
 import re
 import unittest
 
@@ -257,7 +258,18 @@ class TestTechnicianExperience(unittest.TestCase):
         self.assertEqual(self.user.rol, "tecnico")
         self.assertEqual(self.user.tarifa_hora, original_rate)
 
-    def test_technician_cannot_change_master_data_or_close_order(self):
+    def test_technician_completes_work_and_manager_receives_close_alert(self):
+        self.own_incident.work_order_id = self.own_order.id
+        db.session.commit()
+        journey = [{
+            "fecha": date.today().isoformat(),
+            "hora_inicio": "08:00",
+            "hora_fin": "09:00",
+            "technician_id": str(self.technician.id),
+            "recibido_por": "Supervisor",
+            "costo_herramientas": 0,
+            "descripcion": "Trabajo ejecutado",
+        }]
         response = self.client.post(
             f"/ordenes/{self.own_order.id}/editar",
             data={
@@ -265,9 +277,8 @@ class TestTechnicianExperience(unittest.TestCase):
                 "prioridad": "baja",
                 "status_manual": "cerrada",
                 "jornada_estado_ot": "completado",
-                "tiempo_manual": "1",
-                "tiempo_horas": "1",
-                "tiempo_minutos": "0",
+                "jornadas_json": json.dumps(journey),
+                "repuestos_json": "[]",
             },
             follow_redirects=False,
         )
@@ -275,7 +286,44 @@ class TestTechnicianExperience(unittest.TestCase):
         db.session.refresh(self.own_order)
         self.assertEqual(self.own_order.titulo, "Preventivo propio")
         self.assertEqual(self.own_order.prioridad, "alta")
-        self.assertNotIn(self.own_order.status, ("cerrada", "completado"))
+        self.assertEqual(self.own_order.status, "completado")
+        db.session.refresh(self.own_incident)
+        self.assertNotEqual(self.own_incident.estado, "cerrado")
+
+        self.client.post("/logout")
+        self.client.post("/login", data={
+            "username": self.admin.username,
+            "empresa_slug": self.company.slug,
+            "password": self.PASSWORD,
+        })
+        html = self.client.get("/dashboard").get_data(as_text=True)
+        pending_close = re.search(
+            r"OT pendientes de cierre.*?header-alert-badge[^>]*>\s*(\d+)", html, re.S
+        )
+        self.assertIsNotNone(pending_close)
+        self.assertEqual(int(pending_close.group(1)), 1)
+
+        response = self.client.post(
+            f"/ordenes/{self.own_order.id}/editar",
+            data={
+                "titulo": self.own_order.titulo,
+                "descripcion": self.own_order.descripcion or "",
+                "tipo": self.own_order.tipo,
+                "prioridad": self.own_order.prioridad,
+                "machine_id": str(self.own_order.machine_id),
+                "technician_id": str(self.technician.id),
+                "ejecucion_tipo": "interno",
+                "status_manual": "cerrada",
+                "jornadas_json": json.dumps(journey),
+                "repuestos_json": "[]",
+            },
+            follow_redirects=False,
+        )
+        self.assertEqual(response.status_code, 302)
+        db.session.refresh(self.own_order)
+        self.assertEqual(self.own_order.status, "cerrada")
+        db.session.refresh(self.own_incident)
+        self.assertEqual(self.own_incident.estado, "cerrado")
 
     def test_admin_can_quick_assign_without_journey_fields(self):
         self.client.post("/logout")

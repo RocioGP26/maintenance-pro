@@ -222,6 +222,95 @@ def can_create_work_order(user) -> bool:
     return can_create(user)
 
 
+def can_view_maintenance_procedures(user) -> bool:
+    """Personal con acceso a Maintenance puede consultar versiones publicadas."""
+    return bool(getattr(user, "is_authenticated", False)) and can_access_maintenance(user)
+
+
+def can_manage_maintenance_procedures(user) -> bool:
+    """Supervisor y administradores gestionan borradores del catálogo."""
+    return _rol(user) in (
+        UserRole.SUPERADMIN.value,
+        UserRole.ADMIN.value,
+        UserRole.SUPERVISOR.value,
+    )
+
+
+def can_publish_maintenance_procedures(user) -> bool:
+    """La publicación comparte el control de supervisión de Maintenance."""
+    return can_manage_maintenance_procedures(user)
+
+
+def can_view_work_order_checklists(user) -> bool:
+    """El acceso final también exige relación con la OT en el servicio."""
+    return can_view_maintenance_procedures(user)
+
+
+def can_execute_work_order_checklists(user) -> bool:
+    return _rol(user) in (
+        UserRole.SUPERADMIN.value,
+        UserRole.ADMIN.value,
+        UserRole.SUPERVISOR.value,
+        UserRole.TECNICO.value,
+    )
+
+
+def can_record_checklist_for_technician(user) -> bool:
+    return can_manage_maintenance_procedures(user)
+
+
+def can_review_work_order_checklists(user) -> bool:
+    return can_manage_maintenance_procedures(user)
+
+
+def can_write_maintenance_log(user) -> bool:
+    """La relación con la entidad se valida adicionalmente en el servicio."""
+    return _rol(user) in (
+        UserRole.SUPERADMIN.value,
+        UserRole.ADMIN.value,
+        UserRole.SUPERVISOR.value,
+        UserRole.TECNICO.value,
+    )
+
+
+def can_publish_maintenance_log_to_requester(user) -> bool:
+    return can_manage_maintenance_procedures(user)
+
+
+def can_view_maintenance_meters(user) -> bool:
+    """La relación con el activo se valida en el servicio de medidores."""
+    return _rol(user) in (
+        UserRole.SUPERADMIN.value,
+        UserRole.ADMIN.value,
+        UserRole.SUPERVISOR.value,
+        UserRole.TECNICO.value,
+    )
+
+
+def can_manage_maintenance_meters(user) -> bool:
+    return can_manage_maintenance_procedures(user)
+
+
+def can_record_maintenance_readings(user) -> bool:
+    return can_view_maintenance_meters(user)
+
+
+def can_record_reading_for_technician(user) -> bool:
+    return can_manage_maintenance_procedures(user)
+
+
+def can_manage_maintenance_automations(user) -> bool:
+    return can_manage_maintenance_procedures(user)
+
+
+def can_view_asset_health(user) -> bool:
+    return can_view_maintenance_meters(user)
+
+
+def can_refresh_asset_health(user) -> bool:
+    return can_manage_maintenance_procedures(user)
+
+
 def can_create_purchase_request(user) -> bool:
     return bool(getattr(user, "is_authenticated", False))
 
@@ -289,6 +378,22 @@ def permission_flags(user) -> dict:
         "reportar_incidencia": can_report_incident(user),
         "gestionar_incidencias": can_manage_incidents(user),
         "crear_ot": can_create_work_order(user),
+        "ver_procedimientos": can_view_maintenance_procedures(user),
+        "gestionar_procedimientos": can_manage_maintenance_procedures(user),
+        "publicar_procedimientos": can_publish_maintenance_procedures(user),
+        "ver_checklists": can_view_work_order_checklists(user),
+        "ejecutar_checklists": can_execute_work_order_checklists(user),
+        "registrar_checklist_delegado": can_record_checklist_for_technician(user),
+        "revisar_checklists": can_review_work_order_checklists(user),
+        "escribir_bitacora": can_write_maintenance_log(user),
+        "publicar_bitacora_reportante": can_publish_maintenance_log_to_requester(user),
+        "ver_medidores": can_view_maintenance_meters(user),
+        "gestionar_medidores": can_manage_maintenance_meters(user),
+        "registrar_lecturas": can_record_maintenance_readings(user),
+        "registrar_lectura_delegada": can_record_reading_for_technician(user),
+        "gestionar_automatizaciones": can_manage_maintenance_automations(user),
+        "ver_asset_health": can_view_asset_health(user),
+        "actualizar_asset_health": can_refresh_asset_health(user),
     }
 
 
@@ -315,6 +420,10 @@ SOLICITANTE_ENDPOINTS = frozenset(
         "main.incident_notifications_unread",
         "main.incident_notifications_seen",
         "main.incident_notifications_read",
+        "maintenance_execution.context_log",
+        "maintenance_execution.context_log_attachment_download",
+        "maintenance_execution.context_log_notifications",
+        "maintenance_execution.context_log_notification_read",
     }
 )
 

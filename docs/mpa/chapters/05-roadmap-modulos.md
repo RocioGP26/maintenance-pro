@@ -12,6 +12,7 @@
 |--------|-------|----------------|
 | ✅ **Maintenance** | `mantenimiento` | Manufactura, logística, salud, plantas |
 | ✅ **Inventory** | `inventario` | Comercio, retail, distribución, agro |
+| ✅ **Purchasing** | `purchasing` | Abastecimiento, recepción y CxP |
 
 **Capacidades transversales activas:** tenancy, roles, onboarding sectorial, dashboards, reportes PDF, import/export Excel (Inventory), auditoría plataforma, backups.
 
@@ -21,7 +22,9 @@
 
 | Módulo | Propósito | Dependencias |
 |--------|-----------|--------------|
-| **Purchasing** | Compras unificadas (técnicas + comerciales) · Sprint 16.0 diseño ✅ | Inventory, Maintenance, MRL, MAG |
+| **Maintenance Execution** | Sprint 19 ✅ · procedimientos, checklist, evidencia, bitácora y medidores | Maintenance, MRG, MUX |
+| **Maintenance Automation** | Sprint 20 ✅ · disparadores por lecturas, avisos y creación gobernada de OT | Maintenance Execution, IAM |
+| **Asset Health** | Sprint 21 ✅ · puntaje explicable, confianza, señales e historial | Maintenance Execution, Automation |
 | **CRM** | Clientes, pipeline, seguimiento comercial | Inventory |
 | **Sales Pro** | Cotizaciones, pedidos, facturación ligera | Inventory, CRM |
 | **Analytics** | KPIs cruzados, tendencias, export BI | Datos de todos los módulos activos |

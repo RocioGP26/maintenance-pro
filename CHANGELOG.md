@@ -10,9 +10,49 @@ La suite documental mantiene un ciclo independiente en
 
 ### Added
 
-- Espacio reservado para cambios aún no publicados.
+- Asset Health avanzado por activo con puntaje 0–100, confianza de datos,
+  factores explicables, razones accionables, bandas e historial de snapshots.
+- Portafolio de salud con filtros, detalle por activo, integración en dashboard
+  y alerta de activos en riesgo según el último diagnóstico persistido.
+- Motor tenant-safe de automatizaciones de mantenimiento con reglas de umbral,
+  control de cruce y enfriamiento, avisos internos, creación idempotente de OT
+  e historial auditable de evaluaciones.
+- Medidores acumulativos e instantáneos por activo, lecturas vinculables a OT,
+  autoría delegada, validación de secuencia y rangos, correcciones inmutables y
+  migración idempotente de horas de operación.
+- Bitácora contextual para OT, incidencias y activos, con visibilidad interna o
+  para el reportante y correcciones inmutables.
+- Adjuntos privados de bitácora con checksum, validación binaria, control de
+  acceso y auditoría de descarga.
+- Evidencias privadas de checklist con validación de contenido, límite de 5 MB,
+  checksum SHA-256 y descarga autorizada por tenant.
+- Conformidad por paso, justificación de excepciones, resolución supervisada,
+  firma personal del técnico y aprobación formal del checklist.
+- Checklist ejecutable dentro de la OT, vinculado a una versión publicada del
+  procedimiento y con snapshot histórico.
+- Progreso de pasos obligatorios, autoría delegada técnico/registrador y
+  auditoría de asignación y ejecución.
+- Validación server-side que impide finalizar una OT con checklist incompleto.
+- Catálogo tenant-safe de procedimientos de mantenimiento con versiones
+  borrador, publicadas y retiradas.
+- Pasos ordenados, tipos de respuesta configurables y publicación inmutable con
+  retiro automático de la versión anterior.
+- Auditoría del ciclo de vida, permisos por rol, UI de gestión y migración
+  Alembic para Sprint 19.1.
+- Alertas personales por nuevas entradas de bitácora, dirigidas únicamente a
+  participantes autorizados y con lectura auditada.
 
 ### Changed
+
+- Los timestamps UTC de Asset Health, automatizaciones, bitácora y
+  procedimientos se muestran en la zona horaria configurada para la empresa.
+- El gráfico “Estado de salud” deja de depender de OT del período y pasa a
+  representar las bandas reales del motor Asset Health.
+- El técnico puede marcar una OT como **Completada / pendiente de cierre**;
+  administradores y supervisores reciben una alerta visual y conservan la
+  responsabilidad exclusiva de cerrarla definitivamente.
+- El ticket vinculado ya no se cierra al completar el trabajo técnico: espera
+  el cierre definitivo de la OT.
 
 - Marca principal actualizada de Maintix a **Roustix** en la aplicación, correos,
   exportaciones MRL, API, automatización de releases y suite documental.

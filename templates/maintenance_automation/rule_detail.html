@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}{{ rule.name }} — {{ app_name }}{% endblock %}
+{% block page_title %}Detalle de automatización{% endblock %}
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between gap-3 mb-4"><div><h4 class="mb-1">{{ rule.name }}</h4><p class="text-muted mb-0">{{ rule.description or 'Sin descripción' }}</p></div><div class="d-flex gap-2"><form method="post" action="{{ url_for('maintenance_automation.rule_active', rule_id=rule.id) }}">{% include "_csrf.html" %}<input type="hidden" name="active" value="{{ '0' if rule.active else '1' }}"><button class="btn btn-outline-{{ 'danger' if rule.active else 'success' }}">{{ 'Desactivar' if rule.active else 'Activar' }}</button></form><a class="btn btn-outline-secondary" href="{{ url_for('maintenance_automation.rules_list') }}">Volver</a></div></div>
+<div class="row g-3 mb-4">
+ <div class="col-md-3"><div class="card h-100"><div class="card-body"><div class="small text-muted">Activo</div><strong>{{ rule.meter.machine.codigo }}</strong><div>{{ rule.meter.machine.nombre }}</div></div></div></div>
+ <div class="col-md-3"><div class="card h-100"><div class="card-body"><div class="small text-muted">Condición</div><strong>{{ rule.meter.name }}</strong><div class="font-monospace">{{ operators.get(rule.operator) }} {{ rule.threshold }} {{ rule.meter.unit }}</div></div></div></div>
+ <div class="col-md-3"><div class="card h-100"><div class="card-body"><div class="small text-muted">Control</div><strong>{{ 'Solo cruce' if rule.crossing_only else 'Cada coincidencia' }}</strong><div>{{ rule.cooldown_minutes }} min de enfriamiento</div></div></div></div>
+ <div class="col-md-3"><div class="card h-100"><div class="card-body"><div class="small text-muted">Acción</div><strong>{{ 'Crear OT' if rule.action_type == 'create_work_order' else 'Aviso interno' }}</strong><div>{{ rule.action_config.get('title','') }}</div></div></div></div>
+</div>
+<div class="card card-dashboard"><div class="card-header bg-white"><strong>Historial de evaluaciones</strong></div><div class="table-responsive"><table class="table table-sm align-middle mb-0"><thead><tr><th>Fecha</th><th>Lectura</th><th>Resultado</th><th>Motivo/acción</th><th>OT</th></tr></thead><tbody>
+{% for item in rule.executions %}<tr><td>{{ item.evaluated_at|formato_fecha_hora }}</td><td>{{ item.condition_snapshot }}</td><td><span class="badge text-bg-{{ 'success' if item.status == 'succeeded' else 'danger' if item.status == 'failed' else 'secondary' }}">{{ item.status }}</span></td><td>{{ item.action_snapshot or item.reason or item.error }}</td><td>{% if item.work_order %}<a href="{{ url_for('main.ordenes_edit', id=item.work_order.id) }}">{{ item.work_order.numero }}</a>{% else %}—{% endif %}</td></tr>{% else %}<tr><td colspan="5" class="text-center text-muted py-4">La regla todavía no ha evaluado lecturas.</td></tr>{% endfor %}
+</tbody></table></div></div>
+{% endblock %}

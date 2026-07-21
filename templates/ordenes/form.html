@@ -338,6 +338,21 @@
             </div>
 
             <div class="col-12" id="seccionJornadas">
+              <div class="border rounded p-3 mb-3 bg-light d-flex flex-wrap align-items-center justify-content-between gap-3">
+                <div>
+                  <h6 class="fw-semibold mb-1"><i class="bi bi-list-check me-1"></i>Checklist de ejecución</h6>
+                  <p class="form-text mb-0">Asigna y ejecuta el procedimiento técnico versionado de esta OT.</p>
+                </div>
+                <a class="btn btn-outline-primary" href="{{ url_for('maintenance_execution.work_order_checklist', work_order_id=order.id) }}">
+                  Abrir checklist
+                </a>
+                <a class="btn btn-outline-secondary" href="{{ url_for('maintenance_execution.context_log', entity_type='work_order', entity_id=order.id) }}">
+                  <i class="bi bi-chat-left-text me-1"></i> Bitácora
+                </a>
+                <a class="btn btn-outline-secondary" href="{{ url_for('maintenance_execution.asset_meters', machine_id=order.machine_id, work_order_id=order.id) }}">
+                  <i class="bi bi-speedometer2 me-1"></i> Registrar lectura
+                </a>
+              </div>
               <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-2">
                 <div>
                   <h6 class="fw-semibold mb-0">Jornadas de trabajo</h6>
@@ -654,7 +669,7 @@
             </div>
             <div class="form-check">
               <input class="form-check-input" type="radio" name="jornadaEstadoOt" id="jornadaEstadoCompletada" value="completado">
-              <label class="form-check-label" for="jornadaEstadoCompletada">Completada (trabajo terminado)</label>
+              <label class="form-check-label" for="jornadaEstadoCompletada">Completada (trabajo terminado, pendiente de cierre)</label>
             </div>
           </div>
         </div>
