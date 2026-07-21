@@ -1,6 +1,6 @@
 # MTX-UX-RESEARCH · Investigación de experiencia
 
-Maintix crecerá más allá de un solo diseñador. Este documento define **cómo evolucionar el producto con evidencia**, no solo intuición.
+Roustix crecerá más allá de un solo diseñador. Este documento define **cómo evolucionar el producto con evidencia**, no solo intuición.
 
 ---
 

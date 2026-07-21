@@ -2,7 +2,7 @@
 
 **Código:** MCM-05-MODULES · Sprint 11.5 · **Entregado**
 
-> Maintix no se vende como un conjunto de aplicaciones independientes. Se presenta como una **plataforma empresarial modular**, donde cada módulo resuelve una necesidad específica y todos comparten la misma experiencia, autenticación y datos del tenant.
+> Roustix no se vende como un conjunto de aplicaciones independientes. Se presenta como una **plataforma empresarial modular**, donde cada módulo resuelve una necesidad específica y todos comparten la misma experiencia, autenticación y datos del tenant.
 
 **Toda la operación. Una sola plataforma.**
 
@@ -55,7 +55,7 @@ Compra una **plataforma que evoluciona** junto con su operación.
 | **Mantenimiento** | `mantenimiento` | ✅ Producción | Activos · OT · Preventivos |
 | **Inventario** | `inventario` | ✅ Producción | Stock · Compras · Ventas |
 
-Estos dos módulos constituyen la **primera versión comercial completa** de Maintix.
+Estos dos módulos constituyen la **primera versión comercial completa** de Roustix.
 
 **Mensaje comercial:** hoy el cliente puede operar mantenimiento **o** inventario comercial en producción — no prometer más allá de esta frontera sin aclarar roadmap.
 
@@ -264,7 +264,7 @@ Este capítulo se considera **implementado** cuando:
 
 Cada módulo aporta valor **por sí mismo**.
 
-Pero el verdadero potencial de Maintix aparece cuando todos trabajan sobre la **misma plataforma**.
+Pero el verdadero potencial de Roustix aparece cuando todos trabajan sobre la **misma plataforma**.
 
 No se trata de vender más módulos.
 
@@ -286,4 +286,4 @@ Se trata de **acompañar el crecimiento de la operación** del cliente.
 
 ---
 
-*MCM-05-MODULES · Maintix Commercial Manual · Sprint 11 · 2026*
+*MCM-05-MODULES · Roustix Commercial Manual · Sprint 11 · 2026*

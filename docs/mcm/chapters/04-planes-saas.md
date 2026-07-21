@@ -1,9 +1,9 @@
 # MCM-04-PLANS · Planes SaaS
 
-**Código:** MCM-04-PLANS · Sprint 11.4 · **Entregado**  
+**Código:** MCM-04-PLANS · Sprint 11.4 · **Entregado**
 **Frase de marca:** Toda la operación. Una sola plataforma.
 
-> Los planes de Maintix no son una tabla de precios con funciones quitadas.  
+> Los planes de Roustix no son una tabla de precios con funciones quitadas.
 > Son una **hoja de ruta** para el crecimiento del cliente.
 
 **Prerequisitos:** [MCM-01-INTRO](01-intro-filosofia-comercial.md) · [ICP Score (apéndice)](appendix/icp-score.md) · [MCM-03-MARKETS](03-sectores-mercados.md)
@@ -22,7 +22,7 @@ Eso comunica **restricción**. El cliente siente que paga por lo que le falta.
 
 ✅ **«¿Qué necesita una empresa en cada etapa de su crecimiento para seguir operando mejor?»**
 
-Eso comunica **evolución**. El cliente siente que Maintix **crece con él**.
+Eso comunica **evolución**. El cliente siente que Roustix **crece con él**.
 
 Esta filosofía está alineada con todo el MCM desde el Sprint 1: empresas en crecimiento, OMI, ICP por operación, un módulo hoy y la plataforma completa mañana.
 
@@ -46,7 +46,7 @@ Esta filosofía está alineada con todo el MCM desde el Sprint 1: empresas en cr
 | **Start** | Tener la operación **digitalizada en menos de una semana** |
 | **Grow** | **Unificar** mantenimiento e inventario en una sola plataforma |
 | **Scale** | **Controlar varias sedes** desde un solo lugar |
-| **Enterprise** | Convertir Maintix en la **plataforma central de operación** |
+| **Enterprise** | Convertir Roustix en la **plataforma central de operación** |
 
 Conecta cada plan con **valor**, no solo con límites técnicos.
 
@@ -62,7 +62,7 @@ OMI 1-2   OMI 2-3   OMI 3-4     OMI 4-5
 
 ## Qué no cambia entre planes
 
-> Todos los planes comparten la **misma plataforma**, la misma experiencia de usuario (**MUX**), el mismo diseño (**MDL**) y la misma arquitectura.  
+> Todos los planes comparten la **misma plataforma**, la misma experiencia de usuario (**MUX**), el mismo diseño (**MDL**) y la misma arquitectura.
 > Lo que cambia es la **capacidad** para acompañar el crecimiento de la operación.
 
 Start no es una «versión recortada». Es la **primera etapa** de la misma EMP que usa Enterprise.
@@ -111,7 +111,7 @@ Espacio reservado para cuando existan datos reales de clientes:
 | **Límites orientativos** | Hasta **10 usuarios** · **1 sede** · hasta **500 MB** almacenamiento · activos o SKUs según módulo |
 | **Servicios** | Onboarding **self-service** · guías MUX · soporte **email** · trial **15 días** previo |
 | **Qué obtiene** | Registros consistentes · dashboard básico · roles esenciales · exportar reportes |
-| **Ruta → Grow** | Segundo módulo necesario · +10 usuarios activos · segundo punto de operación (bodega + planta) · procesos ya estables en Maintix |
+| **Ruta → Grow** | Segundo módulo necesario · +10 usuarios activos · segundo punto de operación (bodega + planta) · procesos ya estables en Roustix |
 
 **Historia de venta:** *«No necesitas el plan más grande. Necesitas dejar de perder el lunes armando el Excel del viernes.»*
 
@@ -131,7 +131,7 @@ Espacio reservado para cuando existan datos reales de clientes:
 | **Qué obtiene** | Equipos coordinados · alertas · permisos por rol · indicadores por área |
 | **Ruta → Scale** | Tercera sede o línea · gerencia exige consolidado multisede · volumen que satura límites actuales |
 
-**Historia de venta:** *«Tu equipo ya confía en Maintix. Ahora necesitan trabajar todos en el mismo ritmo — no en el mismo Excel.»*
+**Historia de venta:** *«Tu equipo ya confía en Roustix. Ahora necesitan trabajar todos en el mismo ritmo — no en el mismo Excel.»*
 
 **Plan destacado comercial:** Grow es el **más elegido** — equivalente al «punto dulce» de empresas en crecimiento.
 
@@ -151,7 +151,7 @@ Espacio reservado para cuando existan datos reales de clientes:
 | **Qué obtiene** | Vista consolidada Laura · permisos por ubicación · trazabilidad entre planta y bodega |
 | **Ruta → Enterprise** | Requisitos de compliance · integraciones ERP · SLA · personalización de gobernanza |
 
-**Historia de venta:** *«No abres otro Excel por sede. Abres Maintix y eliges si miras Bogotá, Medellín o el consolidado.»*
+**Historia de venta:** *«No abres otro Excel por sede. Abres Roustix y eliges si miras Bogotá, Medellín o el consolidado.»*
 
 ---
 
@@ -161,7 +161,7 @@ Espacio reservado para cuando existan datos reales de clientes:
 |-------|-----------|
 | **Enfoque** | Operación **compleja** que requiere soporte dedicado, gobernanza y flexibilidad |
 | **Perfil ideal** | Organización con **procesos complejos** |
-| **Resultado esperado** | Maintix como **plataforma central de operación** |
+| **Resultado esperado** | Roustix como **plataforma central de operación** |
 | **Público objetivo** | **OMI 4–5** · procesos formales · TI en el DMU · Finanzas en cierre |
 | **Módulos incluidos** | Plataforma completa · módulos actuales y **roadmap** (Compras, Analytics, IAM) |
 | **Límites orientativos** | Usuarios y sedes **según contrato** · almacenamiento ampliado · entorno dedicado *(si aplica)* |
@@ -169,7 +169,7 @@ Espacio reservado para cuando existan datos reales de clientes:
 | **Qué obtiene** | Decisiones basadas en datos · auditoría · escalabilidad sin cambiar de vendor |
 | **Ruta** | Partner estratégico — expansión por módulos del roadmap, no por migración |
 
-**Historia de venta:** *«No vendemos licencias sueltas. Acompañamos una operación que ya decidió que Maintix es su plataforma.»*
+**Historia de venta:** *«No vendemos licencias sueltas. Acompañamos una operación que ya decidió que Roustix es su plataforma.»*
 
 **Nota ICP:** si el prospecto pide desarrollo 100 % a medida (−20 ICP), no es Enterprise — es **proceso diferente**.
 
@@ -264,4 +264,4 @@ Documento completo: [materials/pilar-crecimiento.md](materials/pilar-crecimiento
 
 ---
 
-*MCM-04-PLANS · Maintix Commercial Manual · Sprint 11 · 2026*
+*MCM-04-PLANS · Roustix Commercial Manual · Sprint 11 · 2026*

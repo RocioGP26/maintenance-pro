@@ -10,7 +10,7 @@
 
 ## Objetivo del capítulo
 
-Definir las **políticas oficiales** de uso responsable, límites operativos y buenas prácticas para consumir la API de Maintix.
+Definir las **políticas oficiales** de uso responsable, límites operativos y buenas prácticas para consumir la API de Roustix.
 
 Este capítulo **cierra la especificación MAG v1.0**, consolidando las reglas que deben seguir integradores, SDKs y futuros clientes móviles para garantizar una plataforma escalable y confiable.
 
@@ -18,7 +18,7 @@ Este capítulo **cierra la especificación MAG v1.0**, consolidando las reglas q
 
 ## 1 · Filosofía
 
-La API de Maintix es un **recurso compartido** entre miles de empresas.
+La API de Roustix es un **recurso compartido** entre miles de empresas.
 
 Por ello, todas las integraciones deben:
 
@@ -253,7 +253,7 @@ Solo deben **utilizar los campos documentados**.
 
 ## 11 · Integraciones recomendadas
 
-Maintix está diseñado para integrarse con:
+Roustix está diseñado para integrarse con:
 
 | Plataforma | Estado |
 |------------|--------|
@@ -301,14 +301,14 @@ Próximas capacidades del contrato MAG:
 - Sandbox público
 - Marketplace de integraciones
 
-**Siguiente hito:** Sprint 9 · **MSD v1.0** (Maintix SDK & Developer Portal)
+**Siguiente hito:** Sprint 9 · **MSD v1.0** (Roustix SDK & Developer Portal)
 
 | Entrega MSD | Descripción |
 |-------------|-------------|
-| Portal | developer.maintix.app |
+| Portal | developer.roustix.app |
 | OpenAPI 3.1 | `openapi.v1.yaml` |
 | SDK | Python · JavaScript · PHP |
-| CLI | `maintix-cli` |
+| CLI | `roustix-cli` |
 | Sandbox | API Explorer |
 | Quick Start | Guías paso a paso |
 | Colecciones | Postman e Insomnia |
@@ -346,9 +346,9 @@ Este capítulo se considera **implementado** cuando:
 
 ## Filosofía del capítulo
 
-Una API bien diseñada no solo define **qué** puede hacerse, sino también **cómo** hacerlo correctamente. Las buenas prácticas garantizan que todas las integraciones se comporten de forma consistente, segura y eficiente, permitiendo que Maintix escale sin sacrificar estabilidad.
+Una API bien diseñada no solo define **qué** puede hacerse, sino también **cómo** hacerlo correctamente. Las buenas prácticas garantizan que todas las integraciones se comporten de forma consistente, segura y eficiente, permitiendo que Roustix escale sin sacrificar estabilidad.
 
-**MAG-10 cierra la especificación oficial de Maintix API Guidelines (MAG v1.0)**, estableciendo las reglas de convivencia entre la plataforma y todos sus consumidores.
+**MAG-10 cierra la especificación oficial de Roustix API Guidelines (MAG v1.0)**, estableciendo las reglas de convivencia entre la plataforma y todos sus consumidores.
 
 ---
 
@@ -382,8 +382,8 @@ Una API bien diseñada no solo define **qué** puede hacerse, sino también **c�
 
 **Sprint 8 (MAG v1.0) queda 100% completado.**
 
-Con este sprint, Maintix dispone de un estándar de API de nivel empresarial — comparable en estructura documental con plataformas como Stripe, GitHub, Microsoft Graph o Notion — adaptado a la arquitectura multi-tenant y modular de Maintix.
+Con este sprint, Roustix dispone de un estándar de API de nivel empresarial — comparable en estructura documental con plataformas como Stripe, GitHub, Microsoft Graph o Notion — adaptado a la arquitectura multi-tenant y modular de Roustix.
 
 ---
 
-→ [Índice MAG](/mag/) · [MPA-06](/mpa/chapters/06-integraciones.md) · [SDK](../../sdk/README.md) · [Maintix Docs](/docs/)
+→ [Índice MAG](/mag/) · [MPA-06](/mpa/chapters/06-integraciones.md) · [SDK](../../sdk/README.md) · [Roustix Docs](/docs/)

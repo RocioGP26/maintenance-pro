@@ -1,4 +1,4 @@
-# MSD-05-CLI · Maintix CLI
+# MSD-05-CLI · Roustix CLI
 
 **Código:** MSD-05-CLI · Sprint 9.5 · **Entregado**
 
@@ -10,7 +10,7 @@
 
 ## Objetivo del capítulo
 
-Definir la **interfaz oficial de línea de comandos (CLI)** de Maintix, permitiendo a desarrolladores, administradores y pipelines de automatización interactuar con la plataforma sin construir solicitudes HTTP manualmente.
+Definir la **interfaz oficial de línea de comandos (CLI)** de Roustix, permitiendo a desarrolladores, administradores y pipelines de automatización interactuar con la plataforma sin construir solicitudes HTTP manualmente.
 
 La CLI utiliza el mismo contrato definido en **MAG v1.0** y el **SDK oficial** ([MSD-04](04-sdk-oficiales.md)), ofreciendo una experiencia consistente para desarrollo, pruebas y automatización.
 
@@ -28,7 +28,7 @@ Cada comando ejecuta operaciones utilizando **exactamente el mismo contrato REST
 Usuario
       │
       ▼
- maintix-cli
+ roustix-cli
       │
       ▼
  SDK Oficial
@@ -37,10 +37,10 @@ Usuario
    OpenAPI
       │
       ▼
- API Maintix
+ API Roustix
 ```
 
-La CLI es un **cliente oficial** de Maintix.
+La CLI es un **cliente oficial** de Roustix.
 
 | Rol | Herramienta |
 |-----|-------------|
@@ -55,23 +55,23 @@ La CLI es un **cliente oficial** de Maintix.
 ### Python (PyPI)
 
 ```bash
-pip install maintix-cli
+pip install roustix-cli
 ```
 
 ### Verificación
 
 ```bash
-maintix --version
+roustix --version
 ```
 
 **Salida esperada:**
 
 ```
-Maintix CLI 1.0.0
+Roustix CLI 1.0.0
 API MAG v1
 ```
 
-> **Estado:** paquete `maintix-cli` planificado · especificación MSD-05 entregada.
+> **Estado:** paquete `roustix-cli` planificado · especificación MSD-05 entregada.
 
 ---
 
@@ -80,7 +80,7 @@ API MAG v1
 Primer inicio:
 
 ```bash
-maintix login
+roustix login
 ```
 
 El asistente solicita:
@@ -93,13 +93,13 @@ El asistente solicita:
 Configuración almacenada localmente:
 
 ```
-~/.maintix/config.yaml
+~/.roustix/config.yaml
 ```
 
 **Ejemplo:**
 
 ```yaml
-server: https://api.maintix.app
+server: https://api.roustix.app
 empresa: empresa-demo
 token: "************"
 ```
@@ -109,8 +109,8 @@ El token **nunca** se almacena en texto plano cuando el sistema operativo dispon
 Variables de entorno alternativas para CI:
 
 ```bash
-export MAINTIX_API=https://api.maintix.app/api/v1
-export MAINTIX_TOKEN=<jwt>
+export ROUSTIX_API=https://api.roustix.app/api/v1
+export ROUSTIX_TOKEN=<jwt>
 ```
 
 ---
@@ -128,7 +128,7 @@ POST /api/v1/auth/login
 Una vez autenticado:
 
 ```bash
-maintix whoami
+roustix whoami
 ```
 
 **Resultado:**
@@ -147,7 +147,7 @@ Equivalente a `GET /api/v1/me` con contexto enriquecido cuando el plan esté dis
 ## 5 · Organización de comandos
 
 ```
-maintix
+roustix
 │
 ├── login
 ├── logout
@@ -174,10 +174,10 @@ La estructura refleja **exactamente** los recursos definidos en [MAG-04](/mag/ch
 
 | Comando | Recurso MAG |
 |---------|-------------|
-| `maintix assets` | `maintenance/assets` |
-| `maintix work-orders` | `maintenance/work-orders` |
-| `maintix inventory` | `inventory/*` |
-| `maintix admin` | `admin/*` |
+| `roustix assets` | `maintenance/assets` |
+| `roustix work-orders` | `maintenance/work-orders` |
+| `roustix inventory` | `inventory/*` |
+| `roustix admin` | `admin/*` |
 
 ---
 
@@ -186,25 +186,25 @@ La estructura refleja **exactamente** los recursos definidos en [MAG-04](/mag/ch
 **Listar activos:**
 
 ```bash
-maintix assets list
+roustix assets list
 ```
 
 **Obtener un activo:**
 
 ```bash
-maintix assets get 25
+roustix assets get 25
 ```
 
 **Crear una orden:**
 
 ```bash
-maintix work-orders create
+roustix work-orders create
 ```
 
 **Consultar inventario:**
 
 ```bash
-maintix inventory products list
+roustix inventory products list
 ```
 
 Todos los comandos invocan el SDK internamente — no construyen HTTP manualmente.
@@ -226,19 +226,19 @@ Todos los comandos invocan el SDK internamente — no construyen HTTP manualment
 **Salida JSON** (automatización):
 
 ```bash
-maintix assets list --json
+roustix assets list --json
 ```
 
 **Salida YAML:**
 
 ```bash
-maintix assets list --yaml
+roustix assets list --yaml
 ```
 
 **Salida CSV:**
 
 ```bash
-maintix assets list --csv
+roustix assets list --csv
 ```
 
 | Flag | Uso |
@@ -264,7 +264,7 @@ La CLI está diseñada para integrarse con:
 **Ejemplo:**
 
 ```bash
-maintix inventory stock-low --json
+roustix inventory stock-low --json
 ```
 
 Puede utilizarse **directamente** dentro de pipelines CI/CD.
@@ -273,8 +273,8 @@ Puede utilizarse **directamente** dentro de pipelines CI/CD.
 # GitHub Actions (conceptual)
 - name: Check low stock
   env:
-    MAINTIX_TOKEN: ${{ secrets.MAINTIX_TOKEN }}
-  run: maintix inventory stock-low --json
+    ROUSTIX_TOKEN: ${{ secrets.ROUSTIX_TOKEN }}
+  run: roustix inventory stock-low --json
 ```
 
 ---
@@ -284,7 +284,7 @@ Puede utilizarse **directamente** dentro de pipelines CI/CD.
 Descargar la especificación oficial:
 
 ```bash
-maintix openapi download
+roustix openapi download
 ```
 
 **Resultado:** `openapi.v1.yaml`
@@ -292,8 +292,8 @@ maintix openapi download
 **Opciones:**
 
 ```bash
-maintix openapi validate
-maintix openapi version
+roustix openapi validate
+roustix openapi version
 ```
 
 Basado en [MSD-03 · OpenAPI 3.1](03-openapi.md).
@@ -349,11 +349,11 @@ Los errores API mapean desde [MAG-06](/mag/chapters/06-manejo-errores.md):
 Próximas funcionalidades:
 
 - autocompletado para Bash, Zsh y PowerShell
-- actualización automática (`maintix update`)
+- actualización automática (`roustix update`)
 - plugins oficiales
-- modo interactivo (`maintix shell`)
-- gestión de múltiples perfiles (`maintix config use staging`)
-- diagnóstico (`maintix doctor`)
+- modo interactivo (`roustix shell`)
+- gestión de múltiples perfiles (`roustix config use staging`)
+- diagnóstico (`roustix doctor`)
 - importación y exportación masiva
 
 ---
@@ -375,7 +375,7 @@ Próximas funcionalidades:
 
 Este capítulo se considera **implementado** cuando:
 
-- [ ] Existe el paquete oficial `maintix-cli`
+- [ ] Existe el paquete oficial `roustix-cli`
 - [ ] La autenticación utiliza JWT mediante MAG-02
 - [ ] Los recursos principales (assets, work-orders, inventory) están disponibles
 - [ ] La CLI permite descargar y validar OpenAPI
@@ -388,7 +388,7 @@ Este capítulo se considera **implementado** cuando:
 
 ## Filosofía del capítulo
 
-La CLI convierte el contrato MAG en **acciones ejecutables desde la terminal** — sin fricción para DevOps, soporte y desarrolladores que automatizan Maintix.
+La CLI convierte el contrato MAG en **acciones ejecutables desde la terminal** — sin fricción para DevOps, soporte y desarrolladores que automatizan Roustix.
 
 Junto al SDK y al Portal para Desarrolladores, completa el triángulo de integración: **explorar · codificar · automatizar**.
 
@@ -401,7 +401,7 @@ Junto al SDK y al Portal para Desarrolladores, completa el triángulo de integra
 | **Contrato** | ✅ Definido |
 | **Implementación** | 📋 Pendiente |
 | **Dependencias** | MSD-03 · MSD-04 · MAG v1.0 |
-| **Publicación** | 📋 PyPI (`maintix-cli`) |
+| **Publicación** | 📋 PyPI (`roustix-cli`) |
 | **Siguiente capítulo** | [MSD-06 · Sandbox & API Explorer](06-sandbox-explorer.md) |
 
 ---

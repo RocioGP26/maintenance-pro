@@ -2,7 +2,7 @@
 
 **Código:** MDO-06 · Sprint 13.6 · **Entregado**
 
-> La documentación de Maintix es un producto vivo. El catálogo documental permite conocer **qué manual existe**, cuál es su estado, su versión, sus dependencias y quién es responsable de mantenerlo.
+> La documentación de Roustix es un producto vivo. El catálogo documental permite conocer **qué manual existe**, cuál es su estado, su versión, sus dependencias y quién es responsable de mantenerlo.
 
 **Toda la operación. Una sola plataforma.**
 
@@ -12,7 +12,7 @@
 
 ## Objetivo del capítulo
 
-Definir el **Catálogo Documental Oficial** de Maintix: organización, clasificación y reglas de mantenimiento.
+Definir el **Catálogo Documental Oficial** de Roustix: organización, clasificación y reglas de mantenimiento.
 
 Este catálogo constituye el **índice maestro** de toda la documentación técnica, funcional, comercial y de diseño de la plataforma.
 
@@ -126,7 +126,7 @@ Todo manual debe declarar:
 | Campo | Valor |
 |-------|-------|
 | **Código** | MRG |
-| **Nombre** | Maintix Reference Guide |
+| **Nombre** | Roustix Reference Guide |
 | **Versión** | 1.0.0 |
 | **Estado** | ✅ Publicado |
 | **Responsable** | Equipo Producto |
@@ -319,7 +319,7 @@ Estos indicadores facilitarán la **gobernanza** y la planificación editorial.
 
 ## 14 · Gobernanza del catálogo
 
-El Catálogo Documental es administrado por el **Equipo de Documentación Maintix** y constituye la única fuente oficial para conocer el estado de cada manual.
+El Catálogo Documental es administrado por el **Equipo de Documentación Roustix** y constituye la única fuente oficial para conocer el estado de cada manual.
 
 Toda incorporación, modificación o retiro de documentos debe reflejarse **primero** en [VERSIONS.md](/docs/VERSIONS.md) antes de publicarse en el portal.
 
@@ -360,7 +360,7 @@ Toda incorporación, modificación o retiro de documentos debe reflejarse **prim
 
 ## Filosofía del capítulo
 
-La documentación de Maintix **no es una colección de archivos**. Es un **ecosistema organizado**, donde cada manual tiene un propósito, un responsable, un estado y una relación clara con el resto de la plataforma.
+La documentación de Roustix **no es una colección de archivos**. Es un **ecosistema organizado**, donde cada manual tiene un propósito, un responsable, un estado y una relación clara con el resto de la plataforma.
 
 El Catálogo Documental es el **mapa** que permite navegar ese ecosistema de forma consistente, garantizando trazabilidad, mantenimiento y crecimiento ordenado.
 

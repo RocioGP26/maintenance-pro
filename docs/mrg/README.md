@@ -1,10 +1,10 @@
-# MRG · Maintix Reference Guide
+# MRG · Roustix Reference Guide
 
 **Código:** MRG · Suite docs **11**  
 **Versión:** v1.0.0 · Sprint 10 · **✅ Completo**  
 **Frase:** Toda la operación. Una sola plataforma.
 
-> MPA describe cómo está construido Maintix. MAG explica cómo integrar la API. **MRG explica cómo funciona el producto** — en lenguaje de negocio, no de código.
+> MPA describe cómo está construido Roustix. MAG explica cómo integrar la API. **MRG explica cómo funciona el producto** — en lenguaje de negocio, no de código.
 
 ## Ver manual
 
@@ -16,13 +16,13 @@ python run.py
 
 ## Objetivo
 
-Documentación funcional oficial de Maintix para clientes, implementadores, consultores, soporte, QA y comercial.
+Documentación funcional oficial de Roustix para clientes, implementadores, consultores, soporte, QA y comercial.
 
 ## Capítulos
 
 | # | Código | Título | Estado |
 |---|--------|--------|--------|
-| 01 | MRG-01-INTRO | [Filosofía de Maintix](chapters/01-intro-filosofia.md) | ✅ |
+| 01 | MRG-01-INTRO | [Filosofía de Roustix](chapters/01-intro-filosofia.md) | ✅ |
 | 02 | MRG-02-MAINT | [Mantenimiento](chapters/02-maintenance.md) | 🟡 v1.0.2 · ALIGN ✅ |
 | 03 | MRG-03-INV | [Inventario](chapters/03-inventario.md) | ✅ v1.0.1 · ALIGN ✅ |
 | 04 | MRG-04-PUR | [Compras](chapters/04-compras.md) | 🟡 v1.0.1 · ALIGN ✅ |
@@ -44,7 +44,7 @@ Documentación funcional oficial de Maintix para clientes, implementadores, cons
 | [MUX](/mux/) | Experiencia de usuario |
 | [MRL](/mrl/) | Reportes y documentos |
 
-## Maintix Documentation Suite
+## Roustix Documentation Suite
 
 | Meta | Enlace |
 |------|--------|

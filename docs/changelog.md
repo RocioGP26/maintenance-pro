@@ -1,4 +1,4 @@
-# Changelog · Maintix Documentation Suite
+# Changelog · Roustix Documentation Suite
 
 > Este changelog pertenece a la documentación. Los cambios de la aplicación se
 > registran por separado en [`/CHANGELOG.md`](../CHANGELOG.md).
@@ -97,7 +97,7 @@
 ## [1.14.0] — 2026-07-10 · MDO v1.0.0 · Sprint 13 finalizado
 
 ### Added
-- **MDO v1.0.0** — Maintix Documentation Operations completo (10 capítulos)
+- **MDO v1.0.0** — Roustix Documentation Operations completo (10 capítulos)
 - **MDO-08** · Portal Documental · **MDO-09** · Búsqueda · **MDO-10** · Cierre y gobernanza
 
 ### Changed
@@ -111,7 +111,7 @@
 ## [1.13.0] — 2026-07-10 · MDO · Sprint 13 en curso
 
 ### Added
-- **MDO v0.1.0** — Maintix Documentation Operations · infraestructura `/mdo/`
+- **MDO v0.1.0** — Roustix Documentation Operations · infraestructura `/mdo/`
 - **MDO-01** – **MDO-07** · capítulos fundacionales
 
 ### Status
@@ -153,7 +153,7 @@
 ## [1.10.0] — 2026-07-10 · MCM v1.0.0 · Sprint 11 finalizado
 
 ### Added
-- **Maintix Commercial Manual v1.0.0** — 10 capítulos + Appendix
+- **Roustix Commercial Manual v1.0.0** — 10 capítulos + Appendix
 - MCM-10-PARTNERS · portada `/mcm/` · checklist cierre Sprint 11
 
 ### Changed
@@ -184,7 +184,7 @@
 ## [1.7.0] — 2026-07-10 · Sprint 10 · MRG iniciado
 
 ### Added
-- **MRG v0.1.0** — Maintix Reference Guide · guía funcional del producto
+- **MRG v0.1.0** — Roustix Reference Guide · guía funcional del producto
 - MRG-01-INTRO · estructura 10 capítulos · `/mrg/` · `mrg_routes.py`
 - Borradores MRG-02 – MRG-10 alineados a producto actual
 
@@ -219,10 +219,10 @@
 
 ---
 
-## [1.5.4] — 2026-07-10 · MSD-05 Maintix CLI
+## [1.5.4] — 2026-07-10 · MSD-05 Roustix CLI
 
 ### Added
-- MSD-05-CLI · maintix-cli · automatización · códigos de salida
+- MSD-05-CLI · roustix-cli · automatización · códigos de salida
 
 ---
 
@@ -251,7 +251,7 @@
 ## [1.5.0] — 2026-07-10 · Sprint 9 · MSD iniciado
 
 ### Added
-- **MSD v0.1** — Maintix SDK & Developer Portal · `/msd/`
+- **MSD v0.1** — Roustix SDK & Developer Portal · `/msd/`
 - MSD-01-PHIL · estructura 9 capítulos · strategy · NOMENCLATURE
 - Blueprint `msd_routes.py` · placeholder `openapi.v1.yaml`
 - Catálogo docs hub actualizado · MAG Sprint 8 cerrado
@@ -269,7 +269,7 @@
 ## [1.4.0] — 2026-07-10 · Sprint 8 · MAG
 
 ### Added
-- **MAG v1.0** — Maintix API Guide (10 capítulos) · `/mag/`
+- **MAG v1.0** — Roustix API Guide (10 capítulos) · `/mag/`
 - Filosofía API · JWT · multi-tenant · recursos `/api/v1`
 - Errores · versionado · webhooks · ejemplos · rate limits
 - Par MPA (interno) ↔ MAG (externo) documentado
@@ -294,7 +294,7 @@
 - Tag recomendado: `docs-foundation-1.0`
 
 ### Added · Sprint 7
-- **MRL v1.0** — Maintix Report Language (10 capítulos) · `/mrl/`
+- **MRL v1.0** — Roustix Report Language (10 capítulos) · `/mrl/`
 - DOC-001 – DOC-010 · bloques MRL-HDR/TBL/KPI/CHT
 - Estándares PDF (ReportLab) · Excel · CSV
 
@@ -320,7 +320,7 @@
 ## [1.1.0] — 2026-07-10 · Sprint 6 · MPA
 
 ### Added
-- **MPA v1.0** — Maintix Platform Architecture (10 capítulos) · `/mpa/`
+- **MPA v1.0** — Roustix Platform Architecture (10 capítulos) · `/mpa/`
 - Reorganización suite **01–10**: MPA (05), MRL (06), MAG (07), SDK (08), Developer (09), Release Notes (10)
 - Hubs: `developer/`, `sdk/`, `release-notes/`
 
@@ -346,7 +346,7 @@
 - [RELEASE-v1.0.md](RELEASE-v1.0.md) — notas del release interno
 - [VERSIONING.md](VERSIONING.md) — política de congelamiento y bumps
 - Hubs **07 API** · **08 Architecture** · **09 Roadmap** (placeholders)
-- Enlaces cruzados Maintix Docs en catálogos MBB · MDL · MUX · MCM
+- Enlaces cruzados Roustix Docs en catálogos MBB · MDL · MUX · MCM
 
 ### Contexto
 - MCM Sprint 5 completo (10 capítulos)

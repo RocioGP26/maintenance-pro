@@ -11,7 +11,7 @@
 
 ## Objetivo del capítulo
 
-Definir el **Developer Portal oficial de Maintix** (Portal para Desarrolladores), el punto único desde el cual cualquier desarrollador puede:
+Definir el **Developer Portal oficial de Roustix** (Portal para Desarrolladores), el punto único desde el cual cualquier desarrollador puede:
 
 - descubrir la plataforma
 - autenticarse
@@ -28,7 +28,7 @@ Si **MAG** define el contrato técnico, **MSD** define la **experiencia del desa
 
 El Portal para Desarrolladores no es únicamente un sitio web.
 
-Es la **interfaz oficial** entre Maintix y los integradores.
+Es la **interfaz oficial** entre Roustix y los integradores.
 
 Debe permitir que un desarrollador pueda:
 
@@ -51,7 +51,7 @@ Debe permitir que un desarrollador pueda:
 ### Producción
 
 ```
-https://developer.maintix.app
+https://developer.roustix.app
 ```
 
 ### Desarrollo
@@ -64,7 +64,7 @@ http://127.0.0.1:5000/msd/
 python run.py
 ```
 
-El Developer Portal forma parte del ecosistema Maintix, pero mantiene una **identidad propia** orientada exclusivamente a desarrolladores.
+El Developer Portal forma parte del ecosistema Roustix, pero mantiene una **identidad propia** orientada exclusivamente a desarrolladores.
 
 | Recurso relacionado | URL local |
 |---------------------|-----------|
@@ -121,7 +121,7 @@ Cada sección responde a una necesidad distinta durante el **ciclo de integraci�
 La portada resume todo el ecosistema.
 
 ```
-MAINTIX
+ROUSTIX
 Developer Portal
 
 Toda la operación.
@@ -162,7 +162,7 @@ El menú principal mantiene la misma organización documental del ecosistema.
 
 | Elemento | Destino |
 |----------|---------|
-| Logo · Maintix Developers | Inicio portal |
+| Logo · Roustix Developers | Inicio portal |
 | Quick Start | MSD-07 |
 | API Reference | MAG + OpenAPI UI |
 | SDK | MSD-04 |
@@ -229,19 +229,19 @@ Desde el Portal para Desarrolladores podrán descargarse los **SDK oficiales**.
 **Python:**
 
 ```bash
-pip install maintix
+pip install roustix
 ```
 
 **JavaScript:**
 
 ```bash
-npm install @maintix/sdk
+npm install @roustix/sdk
 ```
 
 **PHP:**
 
 ```bash
-composer require maintix/sdk
+composer require roustix/sdk
 ```
 
 Cada SDK comparte exactamente el mismo contrato definido por **MAG**.
@@ -356,7 +356,7 @@ Toda la documentación permanece **conectada** — sin silos.
 
 ## 14 · Diseño
 
-El Developer Portal reutiliza el **Design System** de Maintix.
+El Developer Portal reutiliza el **Design System** de Roustix.
 
 **Componentes:**
 
@@ -460,7 +460,7 @@ Portal
 | **Fase 1** | Nav completa · home con CTA · Search (básico) |
 | **Fase 2** | OpenAPI UI · referencia interactiva (MSD-03) |
 | **Fase 3** | Sandbox · API Explorer (MSD-06) |
-| **Fase 4** | `developer.maintix.app` producción |
+| **Fase 4** | `developer.roustix.app` producción |
 
 ---
 
@@ -500,7 +500,7 @@ Este capítulo se considera **implementado** cuando:
 - [ ] OpenAPI alimenta la referencia interactiva
 - [ ] El Portal ofrece acceso a SDK, Sandbox y Quick Start
 - [ ] Existe un Changelog oficial de la API en el portal
-- [x] La navegación reutiliza el Design System de Maintix
+- [x] La navegación reutiliza el Design System de Roustix
 
 **Documentación:** ✅ · **Funcionalidad completa:** 🟡 en progreso (MSD-03–07)
 
@@ -512,7 +512,7 @@ Una buena API necesita una buena documentación.
 
 Un gran producto necesita una **excelente experiencia para desarrolladores**.
 
-El Developer Portal convierte la documentación de Maintix en una **plataforma viva**, donde descubrir, aprender, integrar y evolucionar ocurren desde un único lugar. Es el **punto de entrada oficial** para todo desarrollador que construya sobre Maintix.
+El Developer Portal convierte la documentación de Roustix en una **plataforma viva**, donde descubrir, aprender, integrar y evolucionar ocurren desde un único lugar. Es el **punto de entrada oficial** para todo desarrollador que construya sobre Roustix.
 
 ---
 

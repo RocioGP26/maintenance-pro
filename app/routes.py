@@ -513,8 +513,8 @@ def seguridad_sesiones():
 def cuenta_suspendida():
     motivo = request.args.get("motivo", "suspendida")
     mensajes = {
-        "suspendida": "Esta cuenta está suspendida. Contacta a soporte de Maintix para reactivarla.",
-        "mora": "Hay pagos pendientes. Regulariza la facturación para continuar usando Maintix.",
+        "suspendida": "Esta cuenta está suspendida. Contacta a soporte de Roustix para reactivarla.",
+        "mora": "Hay pagos pendientes. Regulariza la facturación para continuar usando Roustix.",
     }
     return render_template(
         "cuenta_suspendida.html",
@@ -1578,7 +1578,7 @@ def demo():
             flash("Ingresa un correo válido.", "warning")
         else:
             logger.info(
-                "Solicitud demo Maintix: %s <%s> empresa=%s sector=%s mensaje=%s",
+                "Solicitud demo Roustix: %s <%s> empresa=%s sector=%s mensaje=%s",
                 nombre,
                 email,
                 empresa,
@@ -1619,7 +1619,7 @@ def contacto():
             flash("Ingresa un correo válido.", "warning")
         else:
             logger.info(
-                "Contacto Maintix: %s <%s> asunto=%s mensaje=%s",
+                "Contacto Roustix: %s <%s> asunto=%s mensaje=%s",
                 nombre,
                 email,
                 asunto or "—",

@@ -1,6 +1,6 @@
 # Nomenclatura · MSD
 
-**Código:** MSD · Maintix SDK & Developer Portal  
+**Código:** MSD · Roustix SDK & Developer Portal
 **Suite docs:** 08 · Sprint 9
 
 ## Capítulos (01 – 09)
@@ -11,7 +11,7 @@
 | **MSD-02-PORT** | `02-developer-portal.md` | Developer Portal |
 | **MSD-03-OAPI** | `03-openapi.md` | OpenAPI 3.1 |
 | **MSD-04-SDK** | `04-sdk-oficiales.md` | SDK oficiales |
-| **MSD-05-CLI** | `05-cli.md` | CLI (`maintix-cli`) |
+| **MSD-05-CLI** | `05-cli.md` | CLI (`roustix-cli`) |
 | **MSD-06-SBOX** | `06-sandbox-explorer.md` | Sandbox y API Explorer |
 | **MSD-07-QS** | `07-quick-start.md` | Quick Start y guías |
 | **MSD-08-COLL** | `08-colecciones.md` | Postman e Insomnia |
@@ -21,8 +21,8 @@
 
 | Término | Significado |
 |---------|-------------|
-| **MSD** | Maintix SDK & Developer Portal — manual Sprint 9 |
-| **Developer Portal** | Sitio público para integradores (`developer.maintix.app`) |
+| **MSD** | Roustix SDK & Developer Portal — manual Sprint 9 |
+| **Developer Portal** | Sitio público para integradores (`developer.roustix.app`) |
 | **SDK** | Cliente HTTP oficial generado o mantenido desde OpenAPI |
 | **Sandbox** | Entorno demo con tenant de prueba y datos ficticios |
 | **API Explorer** | UI interactiva sobre OpenAPI (Try it) |
@@ -49,5 +49,5 @@
 |-----|-----|
 | MAG (07) | Contrato API v1 |
 | SDK (`docs/sdk/`) | Paquetes e implementación |
-| Developer Docs (09) | Contribución al repo Maintix |
+| Developer Docs (09) | Contribución al repo Roustix |
 | MPA-06 | Estrategia integraciones |

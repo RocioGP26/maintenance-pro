@@ -1,4 +1,4 @@
-"""Sirve MAG (docs/mag/) — Maintix API Guide en /mag/."""
+"""Sirve MAG (docs/mag/) — Roustix API Guide en /mag/."""
 
 from __future__ import annotations
 

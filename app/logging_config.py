@@ -1,4 +1,4 @@
-"""Logging estructurado para Maintix."""
+"""Logging estructurado para Roustix."""
 
 from __future__ import annotations
 
@@ -64,7 +64,7 @@ def setup_logging(app) -> None:
 
     build_commit = get_build_commit()
     app.logger.info(
-        "Maintix v%s iniciando (build=%s, level=%s, json=%s)",
+        "Roustix v%s iniciando (build=%s, level=%s, json=%s)",
         __version__,
         build_commit or "local",
         level_name,

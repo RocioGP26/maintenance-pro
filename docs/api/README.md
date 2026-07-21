@@ -1,4 +1,4 @@
-# API · Referencia técnica Maintix
+# API · Referencia técnica Roustix
 
 **Código:** MTX-API · Suite docs **07** (complemento MAG)
 

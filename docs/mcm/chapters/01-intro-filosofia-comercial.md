@@ -2,7 +2,7 @@
 
 **Código:** MCM-01-INTRO · Sprint 11.1 · **Entregado**
 
-> MRG explica **cómo funciona** Maintix. MCM explica **por qué comprarlo** y **cómo venderlo**.
+> MRG explica **cómo funciona** Roustix. MCM explica **por qué comprarlo** y **cómo venderlo**.
 
 **Toda la operación. Una sola plataforma.**
 
@@ -10,9 +10,9 @@
 
 ## Objetivo del capítulo
 
-Establecer la filosofía comercial de Maintix: qué es, qué problema resuelve, para quién existe y cómo se comunica — alineado con MRG v1.0, MPA y MAG.
+Establecer la filosofía comercial de Roustix: qué es, qué problema resuelve, para quién existe y cómo se comunica — alineado con MRG v1.0, MPA y MAG.
 
-Este capítulo es la base del **Maintix Commercial Manual (MCM)**. Todo vendedor, implementador, partner o demo oficial parte de aquí.
+Este capítulo es la base del **Roustix Commercial Manual (MCM)**. Todo vendedor, implementador, partner o demo oficial parte de aquí.
 
 ---
 
@@ -32,9 +32,9 @@ Este capítulo es la base del **Maintix Commercial Manual (MCM)**. Todo vendedor
 
 ---
 
-## 2 · Qué es Maintix (mensaje comercial)
+## 2 · Qué es Roustix (mensaje comercial)
 
-**Maintix** es una **Enterprise Management Platform (EMP)** — plataforma SaaS modular que ayuda a las empresas a **controlar, organizar y optimizar su operación**.
+**Roustix** es una **Enterprise Management Platform (EMP)** — plataforma SaaS modular que ayuda a las empresas a **controlar, organizar y optimizar su operación**.
 
 | Aspecto | Mensaje comercial |
 |---------|-------------------|
@@ -43,7 +43,7 @@ Este capítulo es la base del **Maintix Commercial Manual (MCM)**. Todo vendedor
 | **Enfoque** | Operación real: activos, inventario, compras, ventas |
 | **Modelo** | Un tenant por empresa · módulos activables |
 
-Maintix no nació para vender software. Nació para **resolver problemas reales de operación** — en dos países, dos sectores, un mismo dolor: **información dispersa**.
+Roustix no nació para vender software. Nació para **resolver problemas reales de operación** — en dos países, dos sectores, un mismo dolor: **información dispersa**.
 
 ### Origen auténtico
 
@@ -58,9 +58,9 @@ Maintix no nació para vender software. Nació para **resolver problemas reales 
 
 ---
 
-## Maintix en una frase
+## Roustix en una frase
 
-> **Maintix es la plataforma que ayuda a las empresas a organizar, controlar y hacer crecer su operación desde un único lugar.**
+> **Roustix es la plataforma que ayuda a las empresas a organizar, controlar y hacer crecer su operación desde un único lugar.**
 
 Frase corta · repetible · sin jerga técnica. Úsala tal cual en:
 
@@ -81,12 +81,12 @@ Frase corta · repetible · sin jerga técnica. Úsala tal cual en:
 
 Texto listo para reuniones, ferias, demos cortas o intro de presentación — **cópialo sin editar** salvo el contexto del interlocutor:
 
-> **Maintix es una plataforma SaaS modular que ayuda a empresas en crecimiento a controlar su operación diaria desde un solo lugar. Comienza con mantenimiento o inventario y evoluciona hacia una plataforma empresarial completa, sin migraciones ni sistemas desconectados.**
+> **Roustix es una plataforma SaaS modular que ayuda a empresas en crecimiento a controlar su operación diaria desde un solo lugar. Comienza con mantenimiento o inventario y evoluciona hacia una plataforma empresarial completa, sin migraciones ni sistemas desconectados.**
 
 | Variante | Cuándo |
 |----------|--------|
 | **Completa** (arriba) | Presentaciones · partners · inversores |
-| **30 segundos** | «Maintix centraliza tu operación — mantenimiento e inventario en una plataforma que crece contigo, sin migrar de sistema.» |
+| **30 segundos** | «Roustix centraliza tu operación — mantenimiento e inventario en una plataforma que crece contigo, sin migrar de sistema.» |
 | **10 segundos** | «Un solo lugar para controlar tu operación. Empiezas con lo que duele hoy.» |
 
 ---
@@ -99,7 +99,7 @@ Las empresas **pierden tiempo y dinero** porque su información está **dispersa
 
 La consecuencia no es solo desorden: es **pérdida de tiempo, decisiones tardías y menor capacidad para crecer**.
 
-| Antes | Con Maintix |
+| Antes | Con Roustix |
 |-------|-------------|
 | «¿Cuánto hay en bodega?» → tres Excels | Un número. Misma respuesta para todos |
 | OT en papel o chat | Historial trazable por activo |
@@ -124,7 +124,7 @@ La consecuencia no es solo desorden: es **pérdida de tiempo, decisiones tardía
 
 ## 4 · Para quién existe
 
-Maintix **no vende por industria**. **Vende por operación.**
+Roustix **no vende por industria**. **Vende por operación.**
 
 ### Cliente ideal
 
@@ -150,7 +150,7 @@ Ambas puertas conducen a la **misma plataforma** — usuarios, auth, dashboards,
 
 ---
 
-## 5 · Qué NO es Maintix
+## 5 · Qué NO es Roustix
 
 Posicionamiento por contraste — usar en pitch, landing y objeciones.
 
@@ -186,7 +186,7 @@ Posicionamiento por afirmación — complementa el contraste «qué NO es»:
 | Expansión | Módulos adicionales sin migración |
 | Implementación | Ver [MCM-06-ONBOARD](06-onboarding-implementacion.md) |
 
-Mensaje landing: *«Comienza hoy. Prueba Maintix durante 15 días sin compromiso.»*
+Mensaje landing: *«Comienza hoy. Prueba Roustix durante 15 días sin compromiso.»*
 
 ---
 
@@ -219,7 +219,7 @@ Estos principios rigen todo el MCM — demo, objeciones, planes y partners:
 
 ## El mensaje que debe recordar el cliente
 
-**Slogan comercial oficial de Maintix.**
+**Slogan comercial oficial de Roustix.**
 
 Si un prospecto recuerda **una sola idea** después de una reunión, demo o visita al sitio web, debe ser esta:
 
@@ -235,14 +235,14 @@ Si un prospecto recuerda **una sola idea** después de una reunión, demo o visi
 
 **Relación con la frase de marca:** *Toda la operación. Una sola plataforma.* = **cómo** lo logramos. El slogan = **por qué** importa.
 
-**Relación con «Maintix en una frase»:** la frase define el producto; el slogan define el **dolor** que el prospecto debe sentir comprendido.
+**Relación con «Roustix en una frase»:** la frase define el producto; el slogan define el **dolor** que el prospecto debe sentir comprendido.
 
 ---
 
-Las empresas no necesitan más software. Necesitan **recuperar el control de su operación**. Esa es la razón de existir de Maintix.
+Las empresas no necesitan más software. Necesitan **recuperar el control de su operación**. Esa es la razón de existir de Roustix.
 
 **Próximo capítulo:** [MCM-02-VALUE · Propuesta de valor](02-propuesta-de-valor.md)
 
 ---
 
-*MCM-01-INTRO · Maintix Commercial Manual · Sprint 11 · 2026*
+*MCM-01-INTRO · Roustix Commercial Manual · Sprint 11 · 2026*

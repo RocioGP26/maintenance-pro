@@ -1,4 +1,4 @@
-# MDL · Maintix Design Language
+# MDL · Roustix Design Language
 
 Proyecto documental **independiente** del Brand Book.
 
@@ -8,7 +8,7 @@ Proyecto documental **independiente** del Brand Book.
 
 ## Qué es el MDL
 
-El MDL no es un capítulo de marca. Es la **herramienta de desarrollo** de interfaz de Maintix:
+El MDL no es un capítulo de marca. Es la **herramienta de desarrollo** de interfaz de Roustix:
 
 - Identificadores únicos (`MTX-BTN-001`)
 - Fichas técnicas por componente
@@ -28,7 +28,7 @@ docs/mdl/
 ├── components/         ← Fichas individuales
 ├── patterns.md         ← Patrones de flujo
 ├── dark-mode.md        ← Modo oscuro
-├── motion.md           ← Maintix Motion
+├── motion.md           ← Roustix Motion
 ├── responsive.md       ← Breakpoints XS–2XL
 ├── email.md            ← Plantillas de correo
 ├── changelog.md        ← Historial de versiones
@@ -92,5 +92,5 @@ MTX-{CATEGORÍA}-{NÚMERO}
 
 1. **Nunca** `border-radius: 14px` — siempre `var(--mdl-radius-lg)`.
 2. **Nunca** `padding: 13px` — solo tokens de espaciado.
-3. **Toda** animación respeta Maintix Motion.
+3. **Toda** animación respeta Roustix Motion.
 4. **Todo** componente nuevo recibe un ID `MTX-*` antes de merge.

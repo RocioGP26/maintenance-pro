@@ -1,10 +1,10 @@
-# MUX · Maintix User Experience Guide
+# MUX · Roustix User Experience Guide
 
 **Código:** MUX · v1.2  
 **Estado:** ✔ **Congelado** · Documentation Suite v1.0 · tag `docs-v1.0`  
 **Frase:** Toda la operación. Una sola plataforma.
 
-Parte de la **Maintix Documentation Suite** — ver [NOMENCLATURE.md](../NOMENCLATURE.md).
+Parte de la **Roustix Documentation Suite** — ver [NOMENCLATURE.md](../NOMENCLATURE.md).
 
 ## Cultura de desarrollo
 

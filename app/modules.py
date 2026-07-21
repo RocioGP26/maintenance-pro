@@ -1,4 +1,4 @@
-"""Registro de módulos activables por empresa (Maintix modular)."""
+"""Registro de módulos activables por empresa (Roustix modular)."""
 
 from __future__ import annotations
 

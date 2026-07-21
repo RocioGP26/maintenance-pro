@@ -94,4 +94,4 @@ La planta operaba con **60 activos** pero nadie podía responder con certeza qu�
 
 ---
 
-*MTX-CASE-001 · Nivel D · Maintix · 2026*
+*MTX-CASE-001 · Nivel D · Roustix · 2026*

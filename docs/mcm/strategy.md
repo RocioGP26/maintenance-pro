@@ -1,6 +1,6 @@
 # MCM · Decisiones estratégicas (fundación comercial)
 
-Documento de referencia para todos los capítulos MCM.  
+Documento de referencia para todos los capítulos MCM.
 **Aprobado:** Sprint 5 · Capítulo 1 · 2026-07-10 · **Actualizado Sprint 11** · 2026-07-10
 
 > **Sprint 11:** estructura de capítulos realineada con MRG v1.0. Ver [NOMENCLATURE.md](NOMENCLATURE.md) · [README.md](README.md).
@@ -16,7 +16,7 @@ Documento de referencia para todos los capítulos MCM.
 | Prueba gratuita | **15 días** sin compromiso |
 | Mercado | **Latinoamérica** desde el primer día |
 
-Mensaje landing: *«Comienza hoy. Prueba Maintix durante 15 días sin compromiso.»*
+Mensaje landing: *«Comienza hoy. Prueba Roustix durante 15 días sin compromiso.»*
 
 ---
 
@@ -24,8 +24,8 @@ Mensaje landing: *«Comienza hoy. Prueba Maintix durante 15 días sin compromiso
 
 | Puerta | Para quién |
 |--------|------------|
-| **Maintix Maintenance** | Prioridad: gestión de activos y mantenimiento |
-| **Maintix Inventory** | Prioridad: control comercial e inventarios |
+| **Roustix Maintenance** | Prioridad: gestión de activos y mantenimiento |
+| **Roustix Inventory** | Prioridad: control comercial e inventarios |
 
 **Ambas puertas conducen a la misma plataforma.**
 
@@ -41,20 +41,20 @@ El cliente activa el módulo según su necesidad. Mañana incorpora más **sin m
 
 ### Problema 1 · Mantenimiento (Colombia)
 
-Experiencia en entorno industrial (INR): activos, OT, preventivos, disponibilidad, indicadores.  
+Experiencia en entorno industrial (INR): activos, OT, preventivos, disponibilidad, indicadores.
 → Nació el **módulo de Mantenimiento**.
 
 ### Problema 2 · Inventario (Venezuela)
 
-Dos negocios familiares (agropecuaria y tornillería): mismo dolor — stock, compras, ventas, cartera, sin control unificado.  
+Dos negocios familiares (agropecuaria y tornillería): mismo dolor — stock, compras, ventas, cartera, sin control unificado.
 → Nació el **módulo de Inventario Comercial**.
 
-**Conclusión comercial:** Maintix no vende por industria. **Vende por operación.**  
+**Conclusión comercial:** Roustix no vende por industria. **Vende por operación.**
 El ICP no es un sector — es cualquier empresa que necesita **controlar su operación diaria**.
 
 ---
 
-## Respuesta oficial «¿Por qué desarrollaron Maintix?»
+## Respuesta oficial «¿Por qué desarrollaron Roustix?»
 
 > Porque vimos el mismo problema en dos empresas, en dos países y en sectores completamente diferentes. El verdadero desafío no era solo el mantenimiento ni solo el inventario: era la **falta de control sobre la operación**. Construimos una sola plataforma para resolver ambos.
 
@@ -64,15 +64,15 @@ El ICP no es un sector — es cualquier empresa que necesita **controlar su oper
 
 Ver [chapters/01-intro-filosofia-comercial.md](chapters/01-intro-filosofia-comercial.md).
 
-### Maintix en una frase
+### Roustix en una frase
 
-> Maintix es la plataforma que ayuda a las empresas a organizar, controlar y hacer crecer su operación desde un único lugar.
+> Roustix es la plataforma que ayuda a las empresas a organizar, controlar y hacer crecer su operación desde un único lugar.
 
 Web · presentaciones · brochure · elevator pitch · App Store · LinkedIn.
 
 ### Elevator Pitch
 
-> Maintix es una plataforma SaaS modular que ayuda a empresas en crecimiento a controlar su operación diaria desde un solo lugar. Comienza con mantenimiento o inventario y evoluciona hacia una plataforma empresarial completa, sin migraciones ni sistemas desconectados.
+> Roustix es una plataforma SaaS modular que ayuda a empresas en crecimiento a controlar su operación diaria desde un solo lugar. Comienza con mantenimiento o inventario y evoluciona hacia una plataforma empresarial completa, sin migraciones ni sistemas desconectados.
 
 ### Slogan comercial
 
@@ -105,8 +105,8 @@ Cierre de demo · landing · objeciones · redes. Complementa la frase de marca:
 | Procesos definidos | +10 | | |
 | Busca digitalización | +20 | | |
 
-**Bandas:** A (80–100) · B (60–79) · C (40–59) · D (0–39)  
-**Cierre:** A 15–30 d · B 30–60 d · C 60–120 d · D sin estimación  
+**Bandas:** A (80–100) · B (60–79) · C (40–59) · D (0–39)
+**Cierre:** A 15–30 d · B 30–60 d · C 60–120 d · D sin estimación
 **CRM:** Urgencia (Alta/Media/Baja) · Champion (Sí/No) · **OMI** (1–5)
 
 Ver [chapters/appendix/icp-score.md](chapters/appendix/icp-score.md)
@@ -117,7 +117,7 @@ Ver [chapters/appendix/icp-score.md](chapters/appendix/icp-score.md)
 
 | Concepto | Definición |
 |----------|------------|
-| **Buyer Persona** | Evalúa, recomienda o usa Maintix (MUX) |
+| **Buyer Persona** | Evalúa, recomienda o usa Roustix (MUX) |
 | **DMU** | Conjunto que participa en la compra |
 | **Influencia** | Gerente ⭐⭐⭐⭐⭐ → Bodega ⭐ |
 | **Riesgo** | Bloqueadores: Finanzas, TI, Compras |
@@ -206,7 +206,7 @@ Ver [chapters/appendix/gtm.md](chapters/appendix/gtm.md) · [chapters/10-partner
 
 ---
 
-**Sprint 11 · Maintix Commercial Manual — ✅ Finalizado · v1.0.0**
+**Sprint 11 · Roustix Commercial Manual — ✅ Finalizado · v1.0.0**
 
 ## Partners y canales (MCM-10-PARTNERS)
 

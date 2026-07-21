@@ -2,18 +2,18 @@
   "_type": "export",
   "__export_format": 4,
   "__export_date": "2026-07-10T12:00:00.000Z",
-  "__export_source": "maintix-msd-08",
+  "__export_source": "roustix-msd-08",
   "resources": [
     {
       "_type": "workspace",
-      "_id": "wrk_maintix_v1",
-      "name": "Maintix API v1",
+      "_id": "wrk_roustix_v1",
+      "name": "Roustix API v1",
       "description": "Colección oficial · MSD-08 · openapi.v1.yaml"
     },
     {
       "_type": "environment",
-      "_id": "env_maintix_sandbox",
-      "name": "Maintix Sandbox",
+      "_id": "env_roustix_sandbox",
+      "name": "Roustix Sandbox",
       "data": {
         "base_url": "http://127.0.0.1:5000",
         "api_v1": "http://127.0.0.1:5000/api/v1",
@@ -22,13 +22,13 @@
         "token": "",
         "asset_id": "1"
       },
-      "parentId": "wrk_maintix_v1"
+      "parentId": "wrk_roustix_v1"
     },
     {
       "_type": "request_group",
       "_id": "fld_auth",
       "name": "Authentication",
-      "parentId": "wrk_maintix_v1"
+      "parentId": "wrk_roustix_v1"
     },
     {
       "_type": "request",
@@ -47,7 +47,7 @@
       "_type": "request_group",
       "_id": "fld_me",
       "name": "Me",
-      "parentId": "wrk_maintix_v1"
+      "parentId": "wrk_roustix_v1"
     },
     {
       "_type": "request",
@@ -62,7 +62,7 @@
       "_type": "request_group",
       "_id": "fld_maint",
       "name": "Maintenance",
-      "parentId": "wrk_maintix_v1"
+      "parentId": "wrk_roustix_v1"
     },
     {
       "_type": "request_group",
@@ -83,7 +83,7 @@
       "_type": "request_group",
       "_id": "fld_admin",
       "name": "Admin",
-      "parentId": "wrk_maintix_v1"
+      "parentId": "wrk_roustix_v1"
     },
     {
       "_type": "request",

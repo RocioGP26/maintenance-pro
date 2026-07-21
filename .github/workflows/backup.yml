@@ -25,6 +25,6 @@ jobs:
       - name: Upload Backup
         uses: actions/upload-artifact@v4
         with:
-          name: mantis-backup
+          name: roustix-backup
           path: backup.sql
           retention-days: 14

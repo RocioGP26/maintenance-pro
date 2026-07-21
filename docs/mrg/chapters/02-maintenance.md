@@ -8,7 +8,7 @@
 
 ## Objetivo del capítulo
 
-Documentar el funcionamiento funcional del módulo Mantenimiento: entidades, roles, estados, flujos, costos e indicadores — y su relación con otros módulos de Maintix.
+Documentar el funcionamiento funcional del módulo Mantenimiento: entidades, roles, estados, flujos, costos e indicadores — y su relación con otros módulos de Roustix.
 
 **Clave de módulo:** `mantenimiento` · **Estado producto:** 🟡 Parcial · **Sprint 14 ALIGN:** ✅ Cerrado (2026-07-10)
 
@@ -67,7 +67,7 @@ Quién participa en la operación de Mantenimiento — base para permisos en [MR
 | **Solicitante** | Reporta incidencias y solicita intervención (rol Usuario o equivalente) |
 | **Proveedor externo** | Ejecuta OT contratadas (ejecución externa vía proveedor de servicio) |
 
-### Correspondencia con roles Maintix
+### Correspondencia con roles Roustix
 
 | Rol MRG | Rol plataforma | Notas |
 |---------|----------------|-------|
@@ -193,7 +193,7 @@ Este historial constituye la **trazabilidad operativa** del activo — funcional
 
 ### Ciclo de vida
 
-Modelo funcional completo de una OT en Maintix:
+Modelo funcional completo de una OT en Roustix:
 
 ```
 Programada
@@ -250,7 +250,7 @@ Cada OT puede acumular costos que alimentan indicadores y, en el futuro, el mód
 | **Costos adicionales** | Otros conceptos en costo real vs estimado |
 
 La tarifa hora se configura en **Administración → Usuarios y roles**. Al guardar
-una jornada, Maintix conserva la tarifa aplicada en ese momento y calcula
+una jornada, Roustix conserva la tarifa aplicada en ese momento y calcula
 `duración en horas × tarifa hora`; los cambios futuros de tarifa no modifican
 el costo histórico de la jornada.
 
@@ -300,7 +300,7 @@ La prioridad de la incidencia puede interactuar con la **criticidad del activo**
 
 ### Notificaciones por área
 
-Al registrar o reasignar una incidencia, Maintix crea una entrega individual para cada usuario que cumpla simultáneamente estas reglas:
+Al registrar o reasignar una incidencia, Roustix crea una entrega individual para cada usuario que cumpla simultáneamente estas reglas:
 
 - pertenece a la misma empresa de la incidencia;
 - su área coincide con el área responsable (incluyendo alias normalizados como TIC/Sistemas);

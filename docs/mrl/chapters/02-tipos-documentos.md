@@ -2,7 +2,7 @@
 
 **Código:** MRL-02-DOC · Sprint 7.2
 
-Catálogo oficial de documentos que Maintix genera o exportará. Todos comparten anatomía MRL (cap. 03).
+Catálogo oficial de documentos que Roustix genera o exportará. Todos comparten anatomía MRL (cap. 03).
 
 ---
 

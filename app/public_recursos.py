@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 RECURSOS_INTRO = (
-    "Casos de transformación, guías comerciales y contenido para evaluar Maintix. "
+    "Casos de transformación, guías comerciales y contenido para evaluar Roustix. "
     "El blog público llegará en una próxima versión del sitio."
 )
 

@@ -27,7 +27,7 @@
 - Guardar `legacy_inv_compra_id` único para idempotencia.
 - No volver a ejecutar movimientos de stock durante backfill.
 - Conservar fechas, monedas, impuestos, pagos y números originales.
-- Registrar evento `legacy_migrated`, actor `Sistema · Maintix`.
+- Registrar evento `legacy_migrated`, actor `Sistema · Roustix`.
 
 ## Compatibilidad y rollback
 

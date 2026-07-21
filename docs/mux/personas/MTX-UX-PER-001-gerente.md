@@ -32,7 +32,7 @@ Trabaja entre reuniones, correo y WhatsApp. No registra OTs manualmente cada dí
 
 ## Necesidades UX
 
-| Necesidad | Cómo la responde Maintix |
+| Necesidad | Cómo la responde Roustix |
 |-----------|--------------------------|
 | Visión consolidada | Dashboard con KPIs y alertas prioritarias |
 | Cero fricción | Login → dashboard en un paso |
@@ -52,7 +52,7 @@ Dashboard · Reportes · Alertas · Disponibilidad · Cartera (si aplica)
 
 ## Métrica de éxito
 
-*«Abrí Maintix y supe qué requiere mi atención hoy.»*
+*«Abrí Roustix y supe qué requiere mi atención hoy.»*
 
 ## Voz hacia este perfil
 

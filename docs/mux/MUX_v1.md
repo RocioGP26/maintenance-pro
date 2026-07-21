@@ -1,4 +1,4 @@
-# MUX v1.1 — Maintix User Experience Guide
+# MUX v1.1 — Roustix User Experience Guide
 
 **Sprint 4+** · Proyecto **MUX** (antes UX)
 
@@ -27,7 +27,7 @@ Ver `journeys.md` — Carlos: login → cerrar OT → dashboard
 
 Ver `north-star.md`
 
-## 5. Maintix UX Laws
+## 5. Roustix UX Laws
 
 MTX-UX-LAW-001 … 005 — ver `laws.md`
 
@@ -41,4 +41,4 @@ Ver `docs/README.md`
 
 ---
 
-*MUX v1.1 · Maintix · 2026*
+*MUX v1.1 · Roustix · 2026*

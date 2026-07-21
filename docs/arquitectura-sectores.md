@@ -1,4 +1,4 @@
-# Arquitectura multi-sector — Mantis CMMS
+# Arquitectura multi-sector — Roustix
 
 Un solo código base con **plantillas sectoriales**. No hay tablas `activo_manufactura`, `activo_logistica`, etc.
 

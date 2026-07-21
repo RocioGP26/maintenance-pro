@@ -1,4 +1,4 @@
-"""Sirve el índice maestro Maintix Docs en /docs/."""
+"""Sirve el índice maestro Roustix Docs en /docs/."""
 
 from __future__ import annotations
 

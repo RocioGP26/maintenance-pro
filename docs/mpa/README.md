@@ -1,10 +1,10 @@
-# MPA · Maintix Platform Architecture
+# MPA · Roustix Platform Architecture
 
 **Código:** MPA · Suite docs **05**  
 **Versión:** v1.0 · Sprint 6  
 **Frase:** Toda la operación. Una sola plataforma.
 
-> El **Architecture Handbook** de Maintix — para desarrolladores, arquitectos y futuros miembros del equipo.
+> El **Architecture Handbook** de Roustix — para desarrolladores, arquitectos y futuros miembros del equipo.
 
 ## Ver manual
 
@@ -16,7 +16,7 @@ python run.py
 
 ## Pregunta que responde
 
-**¿Cómo está construido Maintix y hacia dónde crecerá?**
+**¿Cómo está construido Roustix y hacia dónde crecerá?**
 
 No es documentación de Flask. Es documentación de **plataforma**.
 
@@ -25,7 +25,7 @@ No es documentación de Flask. Es documentación de **plataforma**.
 | # | Código | Título |
 |---|--------|--------|
 | 01 | MPA-01-VIS | [Visión de plataforma](chapters/01-vision-plataforma.md) |
-| 02 | MPA-02-ECO | [Ecosistema Maintix](chapters/02-ecosistema.md) |
+| 02 | MPA-02-ECO | [Ecosistema Roustix](chapters/02-ecosistema.md) |
 | 03 | MPA-03-MOD | [Arquitectura modular](chapters/03-arquitectura-modular.md) |
 | 04 | MPA-04-SAAS | [Arquitectura SaaS](chapters/04-arquitectura-saas.md) |
 | 05 | MPA-05-ROAD | [Roadmap de módulos](chapters/05-roadmap-modulos.md) |
@@ -47,7 +47,7 @@ No es documentación de Flask. Es documentación de **plataforma**.
 | [MBB](/brandbook/) | Marca · historia dual |
 | [Developer Docs](../developer/README.md) | Flask, MADR, deployment |
 
-## Maintix Documentation Suite
+## Roustix Documentation Suite
 
 | Meta | Enlace |
 |------|--------|

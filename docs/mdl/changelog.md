@@ -3,7 +3,7 @@
 ## [1.0.0] — Frozen · Documentation Suite v1.0
 
 ### Status
-- ✔ **Congelado** — Maintix Design Language primera edición oficial
+- ✔ **Congelado** — Roustix Design Language primera edición oficial
 - Tag suite: `docs-v1.0`
 
 ---
@@ -18,7 +18,7 @@
 - Capítulos: tokens, motion, dark mode, responsive, patterns, email
 - Catálogo interactivo `/mdl/`
 - Tokens ampliados: radius-sm→xl, shadow-xs→xl, breakpoints XS–2XL
-- Maintix Motion oficial (150/200/250/300ms)
+- Roustix Motion oficial (150/200/250/300ms)
 - Dark mode tokens en `mdl-tokens.css`
 - Estados: button loading/focus, card hover/selected/loading, input error/success/readonly
 - Separación Brand Book ↔ MDL ↔ MRL

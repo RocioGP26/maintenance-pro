@@ -2,7 +2,7 @@
 
 **Código:** MPA-04-SAAS · Sprint 6.4
 
-> Cómo Maintix opera como **software como servicio** multi-tenant: **tenants** (empresas cliente), usuarios, planes, facturación y aislamiento.
+> Cómo Roustix opera como **software como servicio** multi-tenant: **tenants** (empresas cliente), usuarios, planes, facturación y aislamiento.
 
 **Terminología:** *tenant* = concepto arquitectónico · *empresa* = implementación (`empresa_id`). Contrato API → [MAG-03 · Multi-tenant](/mag/chapters/03-multi-tenant.md).
 

@@ -1,4 +1,4 @@
-# Maintix Documentation Suite v1.0
+# Roustix Documentation Suite v1.0
 
 **Release interno · 10 de julio de 2026**  
 **Tag Git:** `docs-v1.0`
@@ -9,7 +9,7 @@
 
 ## Primera edición oficial
 
-Este release marca el cierre del **primer gran libro de Maintix**: documentación que ya no describe un proyecto personal, sino el **Manual Operativo** de una empresa de software.
+Este release marca el cierre del **primer gran libro de Roustix**: documentación que ya no describe un proyecto personal, sino el **Manual Operativo** de una empresa de software.
 
 Cuatro manuales congelados. Una sola narrativa: ayudar a empresas latinoamericanas a tomar el control de su operación de forma simple, modular y escalable.
 
@@ -20,9 +20,9 @@ Cuatro manuales congelados. Una sola narrativa: ayudar a empresas latinoamerican
 | | Manual | Versión | Estado |
 |---|--------|---------|--------|
 | 📘 | **Brand Book** (MBB) | v2.0 | ✔ Congelado |
-| 🎨 | **MDL** — Maintix Design Language | v1.0 | ✔ Congelado |
-| 👥 | **MUX** — Maintix User Experience Guide | v1.2 | ✔ Congelado |
-| 💼 | **MCM** — Maintix Commercial Manual | v1.0 | ✔ Congelado |
+| 🎨 | **MDL** — Roustix Design Language | v1.0 | ✔ Congelado |
+| 👥 | **MUX** — Roustix User Experience Guide | v1.2 | ✔ Congelado |
+| 💼 | **MCM** — Roustix Commercial Manual | v1.0 | ✔ Congelado |
 
 **Índice maestro:** [/docs/](http://127.0.0.1:5000/docs/) · [README.md](README.md)
 
@@ -54,10 +54,10 @@ Cualquier cambio importante genera **nueva versión**, no edición silenciosa de
 
 ## Línea de tiempo (origen)
 
-Flask · SQLAlchemy · dashboards · ReportLab · Docker · producción → el nombre **Mantis** → **Maintix** → identidad · diseño · UX · comercial · plataforma modular.
+Flask · SQLAlchemy · dashboards · ReportLab · Docker · producción → el nombre **Mantis** → **Roustix** → identidad · diseño · UX · comercial · plataforma modular.
 
 **Sprint 6** comienza sobre esta base documental estable.
 
 ---
 
-*Maintix Documentation Suite v1.0 · Julio 2026*
+*Roustix Documentation Suite v1.0 · Julio 2026*

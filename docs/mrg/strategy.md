@@ -2,9 +2,9 @@
 
 ## Objetivo
 
-**Maintix Reference Guide v1.0 (MRG)** — la documentación funcional oficial del producto.
+**Roustix Reference Guide v1.0 (MRG)** — la documentación funcional oficial del producto.
 
-MAG explica **cómo integrar** la API. MRG explica **cómo funciona** Maintix para quien opera, implementa o consulta el negocio.
+MAG explica **cómo integrar** la API. MRG explica **cómo funciona** Roustix para quien opera, implementa o consulta el negocio.
 
 ## Posición en la suite
 
@@ -21,10 +21,10 @@ MAG explica **cómo integrar** la API. MRG explica **cómo funciona** Maintix pa
 
 | Sprint | Documento | Estado |
 |--------|-----------|--------|
-| 7 | MPA · Maintix Platform Architecture | ✅ |
-| 8 | MAG · Maintix API Guide | ✅ |
-| 9 | MSD · Maintix SDK & Developer Portal | ✅ |
-| **10** | **MRG · Maintix Reference Guide** | ✅ |
+| 7 | MPA · Roustix Platform Architecture | ✅ |
+| 8 | MAG · Roustix API Guide | ✅ |
+| 9 | MSD · Roustix SDK & Developer Portal | ✅ |
+| **10** | **MRG · Roustix Reference Guide** | ✅ |
 
 ## Entregables Sprint 10
 

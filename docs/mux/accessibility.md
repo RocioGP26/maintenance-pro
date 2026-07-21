@@ -1,6 +1,6 @@
 # MUX · Accesibilidad · MTX-UX-A11Y
 
-Maintix opera en plantas, talleres y bodegas — pantallas con sol, guantes, ruido. A11Y no es opcional.
+Roustix opera en plantas, talleres y bodegas — pantallas con sol, guantes, ruido. A11Y no es opcional.
 
 ---
 

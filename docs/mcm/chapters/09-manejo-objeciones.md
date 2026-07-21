@@ -1,9 +1,9 @@
 # MCM-09-OBJECTIONS · Manejo de objeciones
 
-**Código:** MCM-09-OBJECTIONS · Sprint 11.9 · **Entregado**  
+**Código:** MCM-09-OBJECTIONS · Sprint 11.9 · **Entregado**
 **Frase de marca:** Toda la operación. Una sola plataforma.
 
-> Una objeción no es un «no».  
+> Una objeción no es un «no».
 > Es una **pregunta disfrazada** sobre riesgo, tiempo, precio o confianza.
 
 **Prerequisitos:** [DMU (apéndice)](appendix/buyer-personas-dmu.md) · [MCM-04-PLANS](04-planes-saas.md) · [MCM-07-DEMO](07-demo-comercial.md)
@@ -14,18 +14,18 @@
 
 ### Lo que no es
 
-❌ Un listado de frases para memorizar.  
-❌ «Si dice X, responde Y» sin contexto.  
+❌ Un listado de frases para memorizar.
+❌ «Si dice X, responde Y» sin contexto.
 ❌ Defender el producto a gritos.
 
 ### Lo que sí es
 
-✅ **Fichas por objeción** — entender el motivo de fondo antes de responder.  
-✅ Guiones con **evidencia** en Maintix (demo, KPI, trial, plan).  
-✅ **Siguiente pregunta** — mantener el descubrimimiento activo.  
+✅ **Fichas por objeción** — entender el motivo de fondo antes de responder.
+✅ Guiones con **evidencia** en Roustix (demo, KPI, trial, plan).
+✅ **Siguiente pregunta** — mantener el descubrimimiento activo.
 ✅ Conexión con **Debrief** (MCM-07) y **rol en el DMU** (MCM-04).
 
-**Regla del equipo:** no ganas discutiendo. Ganas **aclarando el riesgo real** y mostrando cómo Maintix lo reduce.
+**Regla del equipo:** no ganas discutiendo. Ganas **aclarando el riesgo real** y mostrando cómo Roustix lo reduce.
 
 ---
 
@@ -41,7 +41,7 @@ Cada objeción del manual sigue esta estructura:
 | **Momento típico** | Calificación · apertura · demo · cierre · post-demo |
 | **Qué significa realmente** | Motivo de fondo: precio · riesgo · tiempo · confianza · proceso · técnico |
 | **Cómo responder** | Guion recomendado para el vendedor |
-| **Evidencia** | Qué mostrar en Maintix para respaldar la respuesta |
+| **Evidencia** | Qué mostrar en Roustix para respaldar la respuesta |
 | **Error común** | Qué **no** debe decir el vendedor |
 | **Siguiente pregunta** | Cómo profundizar y descubrir la necesidad real |
 
@@ -92,7 +92,7 @@ Antes de responder, identifica **de qué habla realmente** el cliente:
 | **Momento típico** | Durante el **cierre** (PLAY-005) |
 | **Objeción** | «Es muy caro.» · «No tenemos presupuesto este año.» · «Hay opciones más baratas.» |
 | **Qué significa realmente** | **Precio** — pero casi siempre es comparación sin contexto: no ven el costo oculto de Excel, errores de stock, paradas no planificadas o horas de reconciliación manual. A veces es **proceso** (Finanzas necesita justificar ante el dueño). |
-| **Cómo responder** | *«Entiendo. La pregunta útil no es solo cuánto cuesta Maintix, sino cuánto les cuesta **seguir como están**. En empresas como la suya, el desorden operativo suele costar más que una suscripción mensual — en tiempo, reprocesos y decisiones tardías. Por eso empezamos con un plan **Start** y un trial de 15 días: para que **ustedes** vean el valor antes de decidir el presupuesto.»* |
+| **Cómo responder** | *«Entiendo. La pregunta útil no es solo cuánto cuesta Roustix, sino cuánto les cuesta **seguir como están**. En empresas como la suya, el desorden operativo suele costar más que una suscripción mensual — en tiempo, reprocesos y decisiones tardías. Por eso empezamos con un plan **Start** y un trial de 15 días: para que **ustedes** vean el valor antes de decidir el presupuesto.»* |
 | **Evidencia** | MCM-02 · **MTX-CASE** Antes/Después · **PLAY-004** · plan **Start** (MCM-04-PLANS) · trial 15 días |
 | **Error común** | «Somos los más baratos del mercado» · bajar precio sin entender banda ICP · discutir features por peso |
 | **Siguiente pregunta** | *«Si pudieran recuperar solo las horas que pierden cada semana reconciliando Excel y WhatsApp, ¿eso justificaría una conversación con quien aprueba presupuesto?»* |
@@ -108,7 +108,7 @@ Antes de responder, identifica **de qué habla realmente** el cliente:
 | **Momento típico** | **Calificación** / pre-demo (MCM-03) |
 | **Objeción** | «No tenemos tiempo para implementar otro sistema.» · «Estamos en temporada alta.» |
 | **Qué significa realmente** | **Tiempo** + **riesgo** — miedo a un proyecto de 6–12 meses como un ERP tradicional. No es falta de interés; es miedo a la interrupción. |
-| **Cómo responder** | *«Tiene sentido. Por eso Maintix no se vende como un proyecto de un año. Se empieza con **un módulo** — mantenimiento o inventario — y la meta del plan Start es tener la operación digitalizada en **menos de una semana**. El trial de 15 días es justamente para probar sin frenar la operación: un champion, datos reales, un flujo.»* |
+| **Cómo responder** | *«Tiene sentido. Por eso Roustix no se vende como un proyecto de un año. Se empieza con **un módulo** — mantenimiento o inventario — y la meta del plan Start es tener la operación digitalizada en **menos de una semana**. El trial de 15 días es justamente para probar sin frenar la operación: un champion, datos reales, un flujo.»* |
 | **Evidencia** | Pilar de crecimiento · tiempos MCM-05 por sector · **PLAY-003** un solo flujo · onboarding self-service Start |
 | **Error común** | Prometer «implementación en un día» sin champion · mostrar todo el producto · minimizar el esfuerzo del cliente |
 | **Siguiente pregunta** | *«¿Qué pasaría si en dos semanas su equipo siguiera igual de ocupado **y** además siguieran perdiendo el mismo tiempo en Excel?»* |
@@ -124,7 +124,7 @@ Antes de responder, identifica **de qué habla realmente** el cliente:
 | **Momento típico** | **Discovery** o demo — cuando TI entra al DMU |
 | **Objeción** | «Necesitamos desarrollo a medida.» · «Nuestros procesos son únicos — el software estándar no nos sirve.» |
 | **Qué significa realmente** | **Riesgo** + **control** — TI o gerencia quiere sentir que el sistema se adapta a ellos, no al revés. A veces experiencia previa con software rígido. |
-| **Cómo responder** | *«Sus procesos **sí** son únicos en el detalle — pero el patrón de dolor suele ser el mismo: información dispersa, sin trazabilidad. Maintix es SaaS **modular**: empiezan con lo que duele hoy y activan capacidad en la **misma plataforma** cuando crecen. Enterprise existe para gobernanza y personalización — pero la mayoría de empresas en crecimiento no necesitan construir un ERP desde cero.»* |
+| **Cómo responder** | *«Sus procesos **sí** son únicos en el detalle — pero el patrón de dolor suele ser el mismo: información dispersa, sin trazabilidad. Roustix es SaaS **modular**: empiezan con lo que duele hoy y activan capacidad en la **misma plataforma** cuando crecen. Enterprise existe para gobernanza y personalización — pero la mayoría de empresas en crecimiento no necesitan construir un ERP desde cero.»* |
 | **Evidencia** | MCM-05 sector (mismo patrón, otro idioma) · planes Start → Enterprise · **qué no cambia** (MUX, MDL, arquitectura) |
 | **Error común** | «No hacemos custom» como primer mensaje · comparar con ERP genérico · prometer desarrollo a medida sin alcance |
 | **Siguiente pregunta** | *«¿Qué parte del proceso **no** podría resolverse con un flujo estándar de OT o venta con stock real — y qué tan crítica es esa parte para el primer mes?»* |
@@ -140,7 +140,7 @@ Antes de responder, identifica **de qué habla realmente** el cliente:
 | **Momento típico** | Durante la **demo** (PLAY-003) |
 | **Objeción** | «Los técnicos no lo van a usar.» · «En bodega son de papel.» · «Ya probamos un sistema y nadie lo usó.» |
 | **Qué significa realmente** | **Confianza** — experiencia previa fallida o miedo a resistencia al cambio. El decisor protege su credibilidad interna. |
-| **Cómo responder** | *«Es la objeción más honesta — y la más importante. Maintix se diseñó con **MUX**: formularios cortos, flujos para Carlos y Roberto, no para consultores. En la demo no mostramos el menú completo: mostramos **lo que harían el lunes en 2 minutos**. El trial sirve para que el equipo operativo diga si lo usarían — no solo gerencia.»* |
+| **Cómo responder** | *«Es la objeción más honesta — y la más importante. Roustix se diseñó con **MUX**: formularios cortos, flujos para Carlos y Roberto, no para consultores. En la demo no mostramos el menú completo: mostramos **lo que harían el lunes en 2 minutos**. El trial sirve para que el equipo operativo diga si lo usarían — no solo gerencia.»* |
 | **Evidencia** | [MUX](/mux/) · **PLAY-003** · **MTX-CASE-001/004** adopción · trial con operario real |
 | **Error común** | «Es muy fácil, cualquiera lo usa» · culpar al equipo del cliente · demo solo para gerente |
 | **Siguiente pregunta** | *«¿Quién fue el último que dejó de usar el sistema anterior — y qué tendría que pasar para que **esa persona** lo adopte esta vez?»* |
@@ -156,7 +156,7 @@ Antes de responder, identifica **de qué habla realmente** el cliente:
 | **Momento típico** | **Apertura** (PLAY-002) · calificación ICP |
 | **Objeción** | «Con Excel llevamos años.» · «No está tan mal.» · «Solo necesitamos ordenar el archivo.» |
 | **Qué significa realmente** | **Riesgo** + **status quo** — el dolor no es suficientemente agudo **para quien habla**, o no lo admiten en público. Band ICP C posible. |
-| **Cómo responder** | *«Excel es excelente para empezar — casi todos nuestros clientes vienen de ahí. El punto de quiebre no es que Excel sea malo; es que **ya no alcanza** cuando crecen usuarios, sedes o volumen. Si hoy les funciona al 100 %, quizá no es el momento. Si hay semanas en que **no confían** en el número del stock o del downtime, ahí es donde Maintix empieza.»* |
+| **Cómo responder** | *«Excel es excelente para empezar — casi todos nuestros clientes vienen de ahí. El punto de quiebre no es que Excel sea malo; es que **ya no alcanza** cuando crecen usuarios, sedes o volumen. Si hoy les funciona al 100 %, quizá no es el momento. Si hay semanas en que **no confían** en el número del stock o del downtime, ahí es donde Roustix empieza.»* |
 | **Evidencia** | MCM-01 «empresas en crecimiento» · historia sector MCM-05 · **PLAY-002** problema antes de pantalla |
 | **Error común** | Insultar Excel · forzar demo si ICP Band D · «Excel es el enemigo» |
 | **Siguiente pregunta** | *«¿Cuándo fue la última vez que tomaron una decisión importante con un dato de Excel y **después** descubrieron que estaba desactualizado?»* |
@@ -188,7 +188,7 @@ Antes de responder, identifica **de qué habla realmente** el cliente:
 | **Momento típico** | **Cierre** o follow-up con Dueño / TI |
 | **Objeción** | «¿Y si la empresa cierra?» · «¿Podemos exportar nuestros datos?» · «No confiamos en startups.» |
 | **Qué significa realmente** | **Confianza** + **riesgo** — decisión de largo plazo. Muy común en TI y Dueño. |
-| **Cómo responder** | *«Es la pregunta correcta para un socio de varios años. Maintix es SaaS con suscripción mensual — no un proyecto cerrado sin salida. Sus datos son suyos: exportación y continuidad operativa son parte del modelo **Enterprise** y de la gobernanza que documentamos. El trial les permite evaluar soporte y estabilidad antes de un compromiso largo.»* |
+| **Cómo responder** | *«Es la pregunta correcta para un socio de varios años. Roustix es SaaS con suscripción mensual — no un proyecto cerrado sin salida. Sus datos son suyos: exportación y continuidad operativa son parte del modelo **Enterprise** y de la gobernanza que documentamos. El trial les permite evaluar soporte y estabilidad antes de un compromiso largo.»* |
 | **Evidencia** | SaaS mensual · modelo EMP · plan Enterprise · arquitectura (sin prometer lo no construido) |
 | **Error común** | «No vamos a desaparecer» sin evidencia · obviar la pregunta · prometer exportaciones no disponibles |
 | **Siguiente pregunta** | *«¿Qué requisitos de continuidad o exportación necesitarían ver por escrito para sentirse cómodos en un plan Grow o Enterprise?»* |
@@ -203,7 +203,7 @@ Antes de responder, identifica **de qué habla realmente** el cliente:
 | **Quién debe responder** | **Comercial** |
 | **Momento típico** | **Apertura** (PLAY-002) — antes de mostrar pantallas |
 | **Objeción** | «Nuestro sector es muy particular.» · «Ustedes no conocen nuestro negocio.» |
-| **Qué significa realmente** | **Confianza** + **fit** — quieren sentirse vistos. Maintix vende por **operación**, no por vertical cerrada. |
+| **Qué significa realmente** | **Confianza** + **fit** — quieren sentirse vistos. Roustix vende por **operación**, no por vertical cerrada. |
 | **Cómo responder** | *«Tiene razón en que su operación es única — y por eso no vendemos un software genérico por industria. Vendemos control de **mantenimiento** o **inventario** con el idioma de su sector. En [sector] el patrón es: [problema MCM-05]. Les muestro una historia como la suya en 20 minutos — no un catálogo de features.»* |
 | **Evidencia** | **MTX-CASE** del sector · MCM-05 · PLAY-002 · KPIs 1️⃣2️⃣3️⃣ |
 | **Error común** | «Tenemos clientes en su sector» sin caso real · lista de verticales · ignorar el sector en PLAY-002 |
@@ -235,11 +235,11 @@ Antes de responder, identifica **de qué habla realmente** el cliente:
 | **Quién debe responder** | **Preventa / TI** |
 | **Momento típico** | **Después** de la demo — follow-up técnico |
 | **Objeción** | «¿Se conecta con SAP / Siigo / nuestro ERP?» · «Necesitamos API.» |
-| **Qué significa realmente** | **Técnico** — TI evalúa si Maintix es capa operativa o isla de datos. A veces **proceso** disfrazado de técnico para frenar. |
-| **Cómo responder** | *«La integración depende del sistema y del plan — Scale y Enterprise son el marco para conectar operación con finanzas. Lo que sí pueden evaluar hoy: Maintix como **sistema de registro** de mantenimiento o inventario donde hoy no hay uno — sin esperar 12 meses de integración. ¿Cuál es el dolor que no puede esperar al ERP perfecto?»* |
+| **Qué significa realmente** | **Técnico** — TI evalúa si Roustix es capa operativa o isla de datos. A veces **proceso** disfrazado de técnico para frenar. |
+| **Cómo responder** | *«La integración depende del sistema y del plan — Scale y Enterprise son el marco para conectar operación con finanzas. Lo que sí pueden evaluar hoy: Roustix como **sistema de registro** de mantenimiento o inventario donde hoy no hay uno — sin esperar 12 meses de integración. ¿Cuál es el dolor que no puede esperar al ERP perfecto?»* |
 | **Evidencia** | Plan Scale/Enterprise · roadmap honesto · **PLAY-003** valor sin integración día 1 · Exit Criteria «solicita integración» |
 | **Error común** | Prometer integración no disponible · entrar en detalle técnico sin decisor · descartar la objeción |
-| **Siguiente pregunta** | *«Si mañana el inventario operativo fuera confiable en Maintix, ¿qué proceso con el ERP seguiría siendo el cuello de botella?»* |
+| **Siguiente pregunta** | *«Si mañana el inventario operativo fuera confiable en Roustix, ¿qué proceso con el ERP seguiría siendo el cuello de botella?»* |
 
 ---
 
@@ -296,22 +296,22 @@ Registrar en Debrief (MCM-07) → alimenta este capítulo
 
 ## Reflexión · Sprint 5
 
-Cuando empezamos a trabajar en Maintix, hablábamos de módulos, pantallas y funcionalidades.
+Cuando empezamos a trabajar en Roustix, hablábamos de módulos, pantallas y funcionalidades.
 
 Hoy estamos definiendo identidad, experiencia, documentación, metodología comercial y crecimiento.
 
 Eso cambia por completo la percepción del proyecto.
 
-Maintix ya no se está construyendo solo como un software. Se está construyendo como una **empresa de producto SaaS**, con procesos que cualquier diseñador, desarrollador, implementador o vendedor podrá seguir. Y esa consistencia será una de las mayores fortalezas cuando llegue el momento de escalar.
+Roustix ya no se está construyendo solo como un software. Se está construyendo como una **empresa de producto SaaS**, con procesos que cualquier diseñador, desarrollador, implementador o vendedor podrá seguir. Y esa consistencia será una de las mayores fortalezas cuando llegue el momento de escalar.
 
 **Las objeciones se responden con el mismo sistema:** entender, evidenciar, preguntar — no improvisar.
 
 ---
 
-> **Frase del capítulo:** No memorices respuestas. **Entiende el riesgo** detrás de cada objeción — y muestra cómo Maintix lo reduce.
+> **Frase del capítulo:** No memorices respuestas. **Entiende el riesgo** detrás de cada objeción — y muestra cómo Roustix lo reduce.
 
 **Próximo capítulo:** [MCM-10-PARTNERS · Partners y canales](10-partners-canales.md)
 
 ---
 
-*MCM-09-OBJECTIONS · Maintix Commercial Manual · v1.0.0 · 2026*
+*MCM-09-OBJECTIONS · Roustix Commercial Manual · v1.0.0 · 2026*

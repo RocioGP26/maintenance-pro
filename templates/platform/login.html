@@ -1,5 +1,5 @@
 {% extends "platform/base.html" %}
-{% block title %}Acceso plataforma — Maintix{% endblock %}
+{% block title %}Acceso plataforma — Roustix{% endblock %}
 
 {% block layout %}
 <div class="platform-login-wrap w-100">
@@ -34,7 +34,7 @@
     </form>
     <a href="{{ url_for('platform.login', cancel=1) }}" class="small text-secondary">Cancelar y volver</a>
     {% else %}
-    <p class="text-secondary small mb-3">Vista de negocio para gestionar todos los tenants de Maintix.</p>
+    <p class="text-secondary small mb-3">Vista de negocio para gestionar todos los tenants de Roustix.</p>
     {% if totp_habilitado %}
     <p class="small text-muted mb-3"><i class="bi bi-shield-lock me-1"></i> Autenticación en dos pasos activa (TOTP).</p>
     {% endif %}

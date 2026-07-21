@@ -1,13 +1,13 @@
 # Sprint 14 · Alineación Documental del Producto
 
-**Código:** ALIGN · **Sprint 14** · Documentation Alignment  
-**Estado:** ✅ Fase 1 cerrada · 🚀 **Fase 2 Public Experience** → [public/README.md](public/README.md)  
+**Código:** ALIGN · **Sprint 14** · Documentation Alignment
+**Estado:** ✅ Fase 1 cerrada · 🚀 **Fase 2 Public Experience** → [public/README.md](public/README.md)
 **Frase:** Toda la operación. Una sola plataforma.
 
-> La suite documental (MPA · MRG · MCM · MKT · MDO) define **cómo debe ser Maintix**.  
+> La suite documental (MPA · MRG · MCM · MKT · MDO) define **cómo debe ser Roustix**.
 > Sprint 14 asegura que **el producto implementado refleje esa documentación**.
 
-**No es un sprint de features nuevas.** Es el puente entre el Maintix actual y la plataforma definida en la suite.
+**No es un sprint de features nuevas.** Es el puente entre el Roustix actual y la plataforma definida en la suite.
 
 ---
 
@@ -58,7 +58,7 @@ Ciclo fijo en cada fase:
 | **3** | MRG-04-PUR | Compras | ✅ Cerrada · compras · CxP |
 | **4** | MRG-05-SALES | Ventas | ✅ Cerrada · POS · cartera |
 | **5** | MRG-06-CRM | CRM | ✅ Cerrada · maestro clientes |
-| **6** | MRG-07-ADMIN | Admin · IAM | ✅ Cerrada · usuarios · Mantis |
+| **6** | MRG-07-ADMIN | Admin · IAM | ✅ Cerrada · usuarios · Roustix Platform |
 | **7** | MRG-08-REPORTS | Reportes | ✅ Cerrada · dashboards · `/reportes` |
 | **8** | MRG-09-WORKFLOWS | Flujos transversales | ✅ Cerrada · incidencia→OT · stock |
 
@@ -123,4 +123,4 @@ Sprint 14 **cerrado** (fases MRG-02–09). Pendiente opcional: revisión MAG en 
 
 ---
 
-*Sprint 14 · Documentation Alignment · Maintix · 2026*
+*Sprint 14 · Documentation Alignment · Roustix · 2026*

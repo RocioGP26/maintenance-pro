@@ -1,6 +1,6 @@
 # MUX · Principios operativos
 
-> **Nota v1.1:** Reglas no negociables → [laws.md](laws.md) (Maintix UX Laws).
+> **Nota v1.1:** Reglas no negociables → [laws.md](laws.md) (Roustix UX Laws).
 
 Cinco principios que traducen valores de marca en **decisiones de producto**.
 
@@ -10,7 +10,7 @@ Alineados con Brand Book cap. 07 y valores Sprint 1.
 
 ## 1 · Encuentra sin pensar
 
-**Mantra:** El usuario piensa en su trabajo, no en Maintix.
+**Mantra:** El usuario piensa en su trabajo, no en Roustix.
 
 - Menú por módulos de negocio
 - Búsqueda y filtros antes que jerarquías profundas

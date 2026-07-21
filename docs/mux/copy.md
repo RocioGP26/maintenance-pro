@@ -11,7 +11,7 @@ Complementa [voice.md](voice.md) (tono) y [messaging.md](messaging.md) (alertas)
 1. **Verbos en imperativo** en botones: «Guardar», «Crear», «Eliminar»
 2. **Oraciones completas** en empty states y errores
 3. **Nunca** jerga técnica HTTP/SQL al usuario final
-4. **Maintix** con M mayúscula · no «MAINTIX» en prosa UI
+4. **Roustix** con M mayúscula · no «ROUSTIX» en prosa UI
 5. Español latinoamericano neutro
 
 ---

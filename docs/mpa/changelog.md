@@ -3,7 +3,7 @@
 ## [1.0.0] — Frozen · Documentation Foundation 1.0
 
 ### Status
-- ✔ **Congelado** — Maintix Platform Architecture · Sprint 6 completo (10 + 2 complementos)
+- ✔ **Congelado** — Roustix Platform Architecture · Sprint 6 completo (10 + 2 complementos)
 - Tag suite: `docs-foundation-1.0`
 
 ---
@@ -19,7 +19,7 @@
 
 ### MPA-01-VIS · Visión de plataforma (refinamiento)
 - Capítulo fundacional ampliado: identidad marca vs producto
-- ¿Qué es realmente Maintix? · CMMS · ERP · EMP desglosado
+- ¿Qué es realmente Roustix? · CMMS · ERP · EMP desglosado
 - Principios inmutables · visión 10 años (2026–2036)
 - Checklist pre-merge · implicaciones por rol
 - Catálogo HTML MPA-01 sincronizado
@@ -27,7 +27,7 @@
 ## [1.0.0] — 2026-07-10 · Sprint 6 completo
 
 ### Added
-- **MPA v1.0** — Maintix Platform Architecture (10 capítulos)
+- **MPA v1.0** — Roustix Platform Architecture (10 capítulos)
 - Catálogo HTML `/mpa/`
 - Códigos MPA-01-VIS … MPA-10-2030
 - Mapa oficial de ecosistema de producto
@@ -37,7 +37,7 @@
 
 ### Capítulos
 - MPA-01 · Visión EMP (no CMMS, no ERP)
-- MPA-02 · Ecosistema Maintix
+- MPA-02 · Ecosistema Roustix
 - MPA-03 · Arquitectura modular
 - MPA-04 · Arquitectura SaaS
 - MPA-05 · Roadmap de módulos

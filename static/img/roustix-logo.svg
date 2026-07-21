@@ -1,0 +1,48 @@
+<!-- Logo Roustix · Variante 1 · Engranaje Hexagonal -->
+<!-- Uso: pegar en base.html o importar como imagen -->
+<svg viewBox="0 0 260 80" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Roustix">
+
+  <!-- ═══ ISOTIPO ═══ -->
+  <g transform="translate(42, 40) scale(0.72)">
+    <!-- Dientes del engranaje -->
+    <rect x="-5" y="-50" width="10" height="13" rx="3" fill="#1A5EA8"/>
+    <rect x="-5" y="37"  width="10" height="13" rx="3" fill="#1A5EA8"/>
+    <rect x="37"  y="-5" width="13" height="10" rx="3" fill="#1A5EA8"/>
+    <rect x="-50" y="-5" width="13" height="10" rx="3" fill="#1A5EA8"/>
+    <rect x="25"  y="-44" width="9" height="12" rx="3" fill="#378ADD" transform="rotate(30)"/>
+    <rect x="-34" y="-44" width="9" height="12" rx="3" fill="#378ADD" transform="rotate(-30)"/>
+    <rect x="25"  y="32"  width="9" height="12" rx="3" fill="#378ADD" transform="rotate(-30)"/>
+    <rect x="-34" y="32"  width="9" height="12" rx="3" fill="#378ADD" transform="rotate(30)"/>
+    <!-- Hexágono exterior -->
+    <polygon points="0,-40 35,-20 35,20 0,40 -35,20 -35,-20" fill="#185FA5"/>
+    <!-- Hexágono interior -->
+    <polygon points="0,-30 26,-15 26,15 0,30 -26,15 -26,-15" fill="#0C3D7A"/>
+    <!-- Círculo central -->
+    <circle cx="0" cy="0" r="20" fill="#0A2540"/>
+    <!-- Letra R -->
+    <text x="0" y="8" text-anchor="middle"
+          font-family="Georgia, 'Times New Roman', serif"
+          font-size="22" font-weight="700" fill="white">R</text>
+    <!-- Nodos en vértices -->
+    <circle cx="-35" cy="-20" r="2.5" fill="#378ADD"/>
+    <circle cx="35"  cy="-20" r="2.5" fill="#378ADD"/>
+    <circle cx="35"  cy="20"  r="2.5" fill="#5B8EC4"/>
+    <circle cx="-35" cy="20"  r="2.5" fill="#5B8EC4"/>
+    <circle cx="0"   cy="-40" r="3"   fill="#185FA5"/>
+    <circle cx="0"   cy="40"  r="3"   fill="#5B8EC4"/>
+  </g>
+
+  <!-- ═══ WORDMARK ═══ -->
+  <text x="92" y="44"
+        font-family="-apple-system, 'DM Sans', BlinkMacSystemFont, sans-serif"
+        font-size="28" font-weight="600"
+        letter-spacing="-0.8"
+        fill="#0A2540">roustix</text>
+
+  <!-- ═══ TAGLINE ═══ -->
+  <text x="93" y="60"
+        font-family="-apple-system, 'DM Sans', BlinkMacSystemFont, sans-serif"
+        font-size="6.7" font-weight="500" letter-spacing="0.72"
+        fill="#378ADD">GESTIÓN INTELIGENTE DE ACTIVOS</text>
+
+</svg>

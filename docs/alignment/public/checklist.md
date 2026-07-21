@@ -12,7 +12,7 @@
 | Sección Problema MKT-05 §5.2 | ✅ | `#problema` |
 | Orden secciones MKT-05 | ✅ | Problema → módulos → … → confianza → CTA |
 | CTAs unificados | ✅ | |
-| Marca Maintix (no Mantis) | ✅ | |
+| Marca Roustix (no Mantis) | ✅ | |
 | SEO title/description | ✅ | |
 | MDL tokens | 🟡 | revisión visual opcional |
 

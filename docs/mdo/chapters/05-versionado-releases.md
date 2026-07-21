@@ -2,7 +2,7 @@
 
 **Código:** MDO-05 · Sprint 13.5 · **Entregado**
 
-> La documentación de Maintix es un **producto vivo**. Cada cambio debe ser trazable, versionado y publicado de forma controlada para garantizar que usuarios, implementadores, desarrolladores y partners consulten siempre una **fuente oficial**.
+> La documentación de Roustix es un **producto vivo**. Cada cambio debe ser trazable, versionado y publicado de forma controlada para garantizar que usuarios, implementadores, desarrolladores y partners consulten siempre una **fuente oficial**.
 
 **Toda la operación. Una sola plataforma.**
 
@@ -12,7 +12,7 @@
 
 ## Objetivo del capítulo
 
-Definir las reglas oficiales de **versionado**, **publicación** y **ciclo de vida** de toda la documentación Maintix.
+Definir las reglas oficiales de **versionado**, **publicación** y **ciclo de vida** de toda la documentación Roustix.
 
 Este capítulo establece cómo evoluciona la suite, cómo se registran los cambios y cómo se garantiza que lo publicado sea **oficial, trazable y consistente** con el producto.
 
@@ -38,7 +38,7 @@ Evoluciona con el producto, pero mantiene **releases propios** — el software y
 
 ## 2 · Niveles de versionado
 
-Maintix documenta en **tres niveles**.
+Roustix documenta en **tres niveles**.
 
 ```
 Suite documental (v1.13.0)
@@ -202,7 +202,7 @@ Publicación en /docs/
 La documentación y el **software de aplicación** no comparten semver.
 
 ```
-Maintix App (semver app)          Maintix Docs (semver docs)
+Roustix App (semver app)          Roustix Docs (semver docs)
         │                                  │
         ├─ features                        ├─ MRG describe operación
         ├─ migraciones BD                  ├─ MAG describe API
@@ -250,7 +250,7 @@ La misma estructura de archivos se publica en distintos **entornos**.
 | Entorno | URL / motor | Audiencia |
 |---------|-------------|-----------|
 | **Desarrollo** | Flask local `127.0.0.1:5000` | Equipo interno |
-| **Portal interno** | `/docs/` · `/mdo/` · manuales | Maintix · partners |
+| **Portal interno** | `/docs/` · `/mdo/` · manuales | Roustix · partners |
 | **Estático** | GitHub Pages · MkDocs · Docusaurus | Público futuro |
 | **Export** | PDF por manual | Comercial · partners |
 
@@ -367,7 +367,7 @@ Una documentación confiable **no es la que nunca cambia**.
 
 Es la que **cambia con trazabilidad**: cada versión tiene autor, fecha, motivo y registro.
 
-Maintix trata la documentación como producto porque **la confianza del cliente depende de saber qué es oficial, qué está en roadmap y qué quedó atrás**.
+Roustix trata la documentación como producto porque **la confianza del cliente depende de saber qué es oficial, qué está en roadmap y qué quedó atrás**.
 
 ---
 

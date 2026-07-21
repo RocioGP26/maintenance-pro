@@ -13,7 +13,7 @@
 
 ## Objetivo del capítulo
 
-Definir la **organización oficial** de los recursos REST de Maintix: nombres, operaciones CRUD, relaciones entre módulos y evolución del contrato `/api/v1`.
+Definir la **organización oficial** de los recursos REST de Roustix: nombres, operaciones CRUD, relaciones entre módulos y evolución del contrato `/api/v1`.
 
 MAG-01 definió la filosofía. MAG-02 la autenticación. MAG-03 el aislamiento multi-tenant. **MAG-04 es el contrato central de la API.** Los capítulos MAG-05–10 y el SDK oficial se construyen sobre este documento.
 
@@ -36,7 +36,7 @@ La API representa **conceptos del negocio**, no la estructura interna de la base
 2. Un recurso siempre es un **sustantivo**. Las acciones pertenecen al **método HTTP**, nunca al nombre del endpoint.
 3. Rutas y claves JSON del contrato → **inglés**. Explicación y mensajes de error humanos → español (`message`).
 
-Un recurso REST representa una **capacidad del negocio**, no una implementación técnica. Cuando la arquitectura evoluciona, el contrato permanece estable para quienes integran con Maintix.
+Un recurso REST representa una **capacidad del negocio**, no una implementación técnica. Cuando la arquitectura evoluciona, el contrato permanece estable para quienes integran con Roustix.
 
 ---
 

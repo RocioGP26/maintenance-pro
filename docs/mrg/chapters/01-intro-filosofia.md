@@ -1,8 +1,8 @@
-# MRG-01-INTRO · Filosofía de Maintix
+# MRG-01-INTRO · Filosofía de Roustix
 
 **Código:** MRG-01-INTRO · Sprint 10.1 · **Entregado**
 
-> Maintix no es solo software de mantenimiento ni un ERP genérico. Es una **plataforma SaaS modular** para operar activos, inventario y procesos relacionados — con un solo tenant, un solo login y datos aislados por empresa.
+> Roustix no es solo software de mantenimiento ni un ERP genérico. Es una **plataforma SaaS modular** para operar activos, inventario y procesos relacionados — con un solo tenant, un solo login y datos aislados por empresa.
 
 **Toda la operación. Una sola plataforma.**
 
@@ -10,7 +10,7 @@
 
 ## Objetivo del capítulo
 
-Establecer qué es Maintix, qué problema resuelve y los principios funcionales que rigen todos los módulos. Este capítulo es la puerta de entrada al **Maintix Reference Guide (MRG)**.
+Establecer qué es Roustix, qué problema resuelve y los principios funcionales que rigen todos los módulos. Este capítulo es la puerta de entrada al **Roustix Reference Guide (MRG)**.
 
 ---
 
@@ -32,9 +32,9 @@ Estos principios rigen MRG completo y guían implementación, soporte y capacita
 
 ---
 
-## 1 · Qué es Maintix
+## 1 · Qué es Roustix
 
-Maintix es una plataforma **multi-empresa (SaaS)** orientada a la operación industrial y comercial:
+Roustix es una plataforma **multi-empresa (SaaS)** orientada a la operación industrial y comercial:
 
 | Aspecto | Descripción |
 |---------|-------------|
@@ -43,13 +43,13 @@ Maintix es una plataforma **multi-empresa (SaaS)** orientada a la operación ind
 | **Enfoque** | Operación real: activos, OT, inventario, compras, ventas |
 | **Usuarios** | Gerentes, técnicos, bodegueros, vendedores, administradores |
 
-Maintix unifica en una sola aplicación lo que muchas organizaciones hoy dispersan en hojas de cálculo, WhatsApp y sistemas desconectados.
+Roustix unifica en una sola aplicación lo que muchas organizaciones hoy dispersan en hojas de cálculo, WhatsApp y sistemas desconectados.
 
 ---
 
 ## 2 · Qué problema resuelve
 
-| Antes (sin Maintix) | Con Maintix |
+| Antes (sin Roustix) | Con Roustix |
 |---------------------|-------------|
 | OT en papel o Excel sin trazabilidad | Órdenes de trabajo con historial, técnicos y costos |
 | Inventario desactualizado | Stock en tiempo real con alertas de mínimo |
@@ -58,13 +58,13 @@ Maintix unifica en una sola aplicación lo que muchas organizaciones hoy dispers
 | Datos mezclados entre sucursales o clientes | **Tenant-first:** cada empresa ve solo sus datos |
 | Integraciones ad hoc | API documentada (MAG) + ecosistema desarrolladores (MSD) |
 
-Maintix convierte la operación diaria en **procesos registrados, medibles y auditables**.
+Roustix convierte la operación diaria en **procesos registrados, medibles y auditables**.
 
 ---
 
 ## 3 · Modelo SaaS
 
-Cada **cliente de Maintix** es una **empresa (tenant)** con:
+Cada **cliente de Roustix** es una **empresa (tenant)** con:
 
 | Elemento | Función |
 |----------|---------|
@@ -75,7 +75,7 @@ Cada **cliente de Maintix** es una **empresa (tenant)** con:
 | **Sedes** | Una o más ubicaciones físicas |
 | **Sector** | Plantilla de onboarding (manufactura, comercio, etc.) |
 
-La plataforma **Mantis** (operador de Maintix) gestiona tenants, facturación SaaS y soporte de plataforma — distinto del administrador de cada empresa cliente.
+La plataforma **Roustix Platform** (operador de Roustix) gestiona tenants, facturación SaaS y soporte de plataforma — distinto del administrador de cada empresa cliente.
 
 → [MRG-07 · Administración](07-administracion.md) · [MCM · Planes comerciales](/mcm/chapters/06-planes-comerciales.md)
 
@@ -83,12 +83,12 @@ La plataforma **Mantis** (operador de Maintix) gestiona tenants, facturación Sa
 
 ## 4 · Modularidad y evolución del producto
 
-Maintix crece por **módulos operativos activables**, no por productos separados con marcas distintas.
+Roustix crece por **módulos operativos activables**, no por productos separados con marcas distintas.
 
 ### Evolución de la plataforma
 
 ```
-Maintix
+Roustix
 
         Core Platform
               │
@@ -134,7 +134,7 @@ La capa superior (**Core Platform**) incluye tenancy, auth, planes, onboarding y
 
 ## 5 · Tenant-first
 
-Todo en Maintix ocurre en **contexto de empresa**:
+Todo en Roustix ocurre en **contexto de empresa**:
 
 | Principio | Implicación funcional |
 |-----------|----------------------|
@@ -150,17 +150,17 @@ Todo en Maintix ocurre en **contexto de empresa**:
 
 ## 6 · Suite documental oficial
 
-MRG ocupa un lugar específico entre los manuales de Maintix. **Nomenclatura unificada** de toda la suite:
+MRG ocupa un lugar específico entre los manuales de Roustix. **Nomenclatura unificada** de toda la suite:
 
 | Código | Documento | Audiencia | Pregunta |
 |--------|-----------|-----------|----------|
-| **MPA** | Maintix Platform Architecture | Arquitectos · equipo interno | ¿Cómo está construido? |
-| **MAG** | Maintix API Guide | Integradores · desarrolladores | ¿Cómo me conecto por API? |
-| **MSD** | Maintix SDK & Developer Portal | Desarrolladores externos | ¿Qué herramientas uso (SDK, CLI, Portal)? |
-| **MRG** | Maintix Reference Guide | Clientes · implementadores · soporte · QA | **¿Cómo funciona el producto?** |
-| **MCM** | Maintix Commercial Manual | Ventas · marketing | ¿Cómo se vende y posiciona? |
-| **MUX** | Maintix User Experience | Diseño · producto | ¿Cómo debe sentirse la experiencia? |
-| **MRL** | Maintix Report Language | Reportes · operaciones | ¿Cómo se estandarizan documentos y exportaciones? |
+| **MPA** | Roustix Platform Architecture | Arquitectos · equipo interno | ¿Cómo está construido? |
+| **MAG** | Roustix API Guide | Integradores · desarrolladores | ¿Cómo me conecto por API? |
+| **MSD** | Roustix SDK & Developer Portal | Desarrolladores externos | ¿Qué herramientas uso (SDK, CLI, Portal)? |
+| **MRG** | Roustix Reference Guide | Clientes · implementadores · soporte · QA | **¿Cómo funciona el producto?** |
+| **MCM** | Roustix Commercial Manual | Ventas · marketing | ¿Cómo se vende y posiciona? |
+| **MUX** | Roustix User Experience | Diseño · producto | ¿Cómo debe sentirse la experiencia? |
+| **MRL** | Roustix Report Language | Reportes · operaciones | ¿Cómo se estandarizan documentos y exportaciones? |
 
 **MRG no habla de Flask ni SQLAlchemy.** Habla de activos, órdenes, stock, clientes y procesos.
 
@@ -198,7 +198,7 @@ MRG ocupa un lugar específico entre los manuales de Maintix. **Nomenclatura uni
 
 ## 9 · Distinciones importantes
 
-Evitar confusiones frecuentes al documentar o implementar Maintix:
+Evitar confusiones frecuentes al documentar o implementar Roustix:
 
 | Concepto A | Concepto B | Diferencia |
 |------------|------------|------------|
@@ -206,7 +206,7 @@ Evitar confusiones frecuentes al documentar o implementar Maintix:
 | Proveedor de servicio | Proveedor comercial | OT externa vs compra de mercancía |
 | Compras (MRG-04) | Módulo Compras unificado | Hoy: subflujo de Inventario; futuro: módulo Purchasing |
 | Cliente de venta | CRM | Hoy: maestro de clientes en ventas; futuro: pipeline y oportunidades |
-| Admin empresa | Admin plataforma | Config tenant vs gestión Mantis |
+| Admin empresa | Admin plataforma | Config tenant vs gestión Roustix Platform |
 
 ---
 
@@ -237,7 +237,7 @@ Cada capítulo profundiza un dominio del producto; MRG-09 y MRG-10 conectan los 
 
 Este capítulo se considera **implementado** cuando:
 
-- [x] Definición de Maintix y problema que resuelve
+- [x] Definición de Roustix y problema que resuelve
 - [x] Principios del producto documentados
 - [x] Modelo SaaS y evolución modular documentados
 - [x] Tabla de madurez de módulos uniforme
@@ -249,7 +249,7 @@ Este capítulo se considera **implementado** cuando:
 
 ## Filosofía del capítulo
 
-Una plataforma SaaS madura necesita tres capas de documentación: **arquitectura (MPA)**, **integración (MAG + MSD)** y **producto (MRG)**. MRG cierra la tercera — la que responde «¿qué hace Maintix en mi operación diaria?».
+Una plataforma SaaS madura necesita tres capas de documentación: **arquitectura (MPA)**, **integración (MAG + MSD)** y **producto (MRG)**. MRG cierra la tercera — la que responde «¿qué hace Roustix en mi operación diaria?».
 
 ---
 

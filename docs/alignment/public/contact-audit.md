@@ -11,7 +11,7 @@
 | Elemento | Actual | MKT / MCM | Estado |
 |----------|--------|-----------|--------|
 | Página contacto | `/contacto` + formulario | Formulario + CTA | ✅ |
-| Email | `contacto@maintix.com` | Dominio Maintix | ✅ |
+| Email | `contacto@roustix.com` | Dominio Roustix | ✅ |
 | Mensaje éxito | Confirmación 24 h | Copy MKT | ✅ |
 | Demo vs contacto | Rutas separadas | Flujos separados | ✅ |
 

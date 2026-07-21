@@ -2,7 +2,7 @@
 
 ## Objetivo
 
-Entregar el **Maintix Platform Architecture (MPA)** — handbook de plataforma que deja de hablar de marketing y empieza a hablar de **producto e ingeniería**.
+Entregar el **Roustix Platform Architecture (MPA)** — handbook de plataforma que deja de hablar de marketing y empieza a hablar de **producto e ingeniería**.
 
 ## Audiencia
 

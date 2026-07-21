@@ -1,26 +1,26 @@
 /**
- * CTAs conversacionales de la landing pública Maintix (MKT-05).
+ * CTAs conversacionales de la landing pública Roustix (MKT-05).
  */
 function sendPrompt(message, options) {
   var opts = options || {};
   var text = (message || "").trim();
-  var contactEmail = "contacto@maintix.com";
+  var contactEmail = "contacto@roustix.com";
 
   try {
-    sessionStorage.setItem("maintix_sales_prompt", text);
+    sessionStorage.setItem("roustix_sales_prompt", text);
   } catch (e) {
     /* ignore */
   }
 
   window.dispatchEvent(
-    new CustomEvent("maintix:sales-prompt", {
+    new CustomEvent("roustix:sales-prompt", {
       detail: { message: text, source: opts.source || "landing" },
     })
   );
 
   if (opts.action === "contact") {
-    var subject = encodeURIComponent("Demostración Maintix");
-    var body = encodeURIComponent(text || "Hola, me gustaría solicitar una demostración de Maintix.");
+    var subject = encodeURIComponent("Demostración Roustix");
+    var body = encodeURIComponent(text || "Hola, me gustaría solicitar una demostración de Roustix.");
     window.location.href = "mailto:" + contactEmail + "?subject=" + subject + "&body=" + body;
     return;
   }

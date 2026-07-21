@@ -1,1 +1,1 @@
-"""Tests Maintix."""
+"""Tests Roustix."""

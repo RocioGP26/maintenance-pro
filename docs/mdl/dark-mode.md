@@ -1,6 +1,6 @@
 # MDL · Dark Mode
 
-Maintix ya opera en **modo oscuro híbrido** en dashboard. Este capítulo define tokens y reglas para escalarlo a toda la plataforma.
+Roustix ya opera en **modo oscuro híbrido** en dashboard. Este capítulo define tokens y reglas para escalarlo a toda la plataforma.
 
 ## Selectores
 

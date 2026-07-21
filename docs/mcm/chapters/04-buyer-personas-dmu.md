@@ -21,7 +21,7 @@ Cada persona necesita escuchar **algo distinto**. No todas pesan igual. Algunas 
 
 | Concepto | Qué es |
 |----------|--------|
-| **Buyer Persona** | Quien **evalúa, recomienda o usa** Maintix en el día a día |
+| **Buyer Persona** | Quien **evalúa, recomienda o usa** Roustix en el día a día |
 | **DMU** (Decision Making Unit) | El **conjunto de personas** que participan en la decisión de compra |
 
 **MUX** define las Buyer Personas de producto (Laura, Carlos, Valentina…).  
@@ -29,7 +29,7 @@ Cada persona necesita escuchar **algo distinto**. No todas pesan igual. Algunas 
 
 ---
 
-## 1 · Buyer Persona · Quien vive Maintix
+## 1 · Buyer Persona · Quien vive Roustix
 
 La Buyer Persona responde: *«¿Quién usará esto mañana por la mañana?»*
 
@@ -113,7 +113,7 @@ No basta con saber si existe un champion ([MCM-03-ICP](03-icp-score.md)). Tambi�
 | Nivel | Señal | Qué hacer |
 |-------|-------|-----------|
 | 🟢 **Fuerte** | Tiene **influencia** y **quiere** el proyecto | Avanzar a demo con decisor · trial agresivo |
-| 🟡 **Medio** | Le gusta Maintix, pero **no decide** | Pedir introducción al gerente o finanzas |
+| 🟡 **Medio** | Le gusta Roustix, pero **no decide** | Pedir introducción al gerente o finanzas |
 | 🔴 **Débil** | Solo **pidió la reunión** — sin poder ni urgencia | Educar · identificar champion real antes de invertir más tiempo |
 
 **Regla:** 🟢 + Band A + Urgencia Alta = oportunidad caliente. 🔴 = no confundir curiosidad con intención de compra.
@@ -122,7 +122,7 @@ No basta con saber si existe un champion ([MCM-03-ICP](03-icp-score.md)). Tambi�
 
 ## 4 · DMU según puerta de entrada
 
-### Maintix Maintenance
+### Roustix Maintenance
 
 | Rol DMU | Prioridad | Champion típico |
 |---------|-----------|-----------------|
@@ -131,7 +131,7 @@ No basta con saber si existe un champion ([MCM-03-ICP](03-icp-score.md)). Tambi�
 | Administrador | Media | Andrea en implementación |
 | Finanzas | Alta *(cierre)* | Bloqueador frecuente |
 
-### Maintix Inventory
+### Roustix Inventory
 
 | Rol DMU | Prioridad | Champion típico |
 |---------|-----------|-----------------|
@@ -235,4 +235,4 @@ Ver [NOMENCLATURE.md](../NOMENCLATURE.md) para códigos oficiales.
 
 ---
 
-*MCM-04-DMU · Maintix Commercial Manual · 2026*
+*MCM-04-DMU · Roustix Commercial Manual · 2026*

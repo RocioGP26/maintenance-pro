@@ -40,7 +40,7 @@
 
 ---
 
-## [0.5.0] — 2026-07-10 · MSD-05 Maintix CLI
+## [0.5.0] — 2026-07-10 · MSD-05 Roustix CLI
 
 ### Added
 - **MSD-05-CLI** completo — filosofía · instalación · configuración · auth
@@ -100,7 +100,7 @@
 ## [0.1.0] — 2026-07-10 · MSD-01 · Inicio Sprint 9
 
 ### Added
-- **MSD v0.1** — Maintix SDK & Developer Portal · `/msd/`
+- **MSD v0.1** — Roustix SDK & Developer Portal · `/msd/`
 - **MSD-01-PHIL** — filosofía del ecosistema desarrolladores
 - Estructura Sprint 9 · strategy · NOMENCLATURE · catálogo HTML
 - Blueprint Flask `msd_routes.py`

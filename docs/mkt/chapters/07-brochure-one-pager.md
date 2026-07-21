@@ -2,7 +2,7 @@
 
 **Código:** MKT-07 · Sprint 12.7 · **Entregado**
 
-> El brochure de Maintix no reemplaza una reunión comercial. Su función es generar interés, reforzar el mensaje y facilitar la decisión después de una conversación o demostración.
+> El brochure de Roustix no reemplaza una reunión comercial. Su función es generar interés, reforzar el mensaje y facilitar la decisión después de una conversación o demostración.
 
 **Toda la operación. Una sola plataforma.**
 
@@ -26,7 +26,7 @@ Este capítulo garantiza que cualquier material impreso o digital comunique el *
 
 Un brochure debe responder **una sola pregunta**:
 
-> *¿Por qué debería conocer Maintix?*
+> *¿Por qué debería conocer Roustix?*
 
 **No** intenta explicar toda la plataforma.
 
@@ -38,7 +38,7 @@ Su objetivo es despertar interés y llevar al prospecto al siguiente paso:
 
 **Idea que debe quedar al cerrar:**
 
-> Maintix puede ayudarme a recuperar el control de mi operación.
+> Roustix puede ayudarme a recuperar el control de mi operación.
 
 → [MKT-01 · Slogan](01-identidad-mensajes-marca.md#7--slogans-y-frases-de-marca)
 
@@ -48,7 +48,7 @@ Su objetivo es despertar interés y llevar al prospecto al siguiente paso:
 
 | Material | Objetivo | Formato |
 |----------|----------|---------|
-| **Brochure corporativo** | Presentación general de Maintix | PDF · Impreso |
+| **Brochure corporativo** | Presentación general de Roustix | PDF · Impreso |
 | **One Pager** | Resumen ejecutivo de una página | PDF |
 | **Ficha de módulo** | Explicar un módulo específico | PDF |
 | **Ficha de planes** | Comparación comercial | PDF · Web |
@@ -62,7 +62,7 @@ Su objetivo es despertar interés y llevar al prospecto al siguiente paso:
 
 ### Objetivo
 
-Presentar Maintix de forma clara y visual en **6 a 8 páginas**, resaltando la propuesta de valor sin profundizar en detalles técnicos.
+Presentar Roustix de forma clara y visual en **6 a 8 páginas**, resaltando la propuesta de valor sin profundizar en detalles técnicos.
 
 ### Estructura recomendada
 
@@ -70,7 +70,7 @@ Presentar Maintix de forma clara y visual en **6 a 8 páginas**, resaltando la p
 |--------|-----------|
 | **1** | Portada |
 | **2** | El problema |
-| **3** | Qué es Maintix |
+| **3** | Qué es Roustix |
 | **4** | Plataforma y módulos |
 | **5** | Beneficios |
 | **6** | Sectores |
@@ -85,7 +85,7 @@ Presentar Maintix de forma clara y visual en **6 a 8 páginas**, resaltando la p
 
 Debe incluir:
 
-- Logo Maintix
+- Logo Roustix
 - Tagline: **Toda la operación. Una sola plataforma.**
 - Subtítulo: *Plataforma SaaS para empresas que quieren recuperar el control de su operación.*
 
@@ -105,15 +105,15 @@ Mostrar situaciones comunes:
 
 **Mensaje:**
 
-> Maintix nace para centralizar la información y convertirla en decisiones.
+> Roustix nace para centralizar la información y convertirla en decisiones.
 
 ---
 
-### Página 3 · Qué es Maintix
+### Página 3 · Qué es Roustix
 
 **Texto sugerido:**
 
-> Maintix es una plataforma SaaS modular que ayuda a empresas en crecimiento a organizar, controlar y hacer crecer su operación desde un solo lugar.
+> Roustix es una plataforma SaaS modular que ayuda a empresas en crecimiento a organizar, controlar y hacer crecer su operación desde un solo lugar.
 
 **Elementos visuales:** Tenant · Módulos · Dashboard
 
@@ -124,7 +124,7 @@ Mostrar situaciones comunes:
 ### Página 4 · Plataforma modular
 
 ```
-Maintix
+Roustix
 │
 ├── Maintenance      (Producción)
 ├── Inventory        (Producción)
@@ -229,7 +229,7 @@ Una ficha por módulo.
 | Sección | Contenido |
 |---------|-----------|
 | Problema | Dolor planta · OT en papel |
-| Solución | Maintix Mantenimiento |
+| Solución | Roustix Mantenimiento |
 | Funcionalidades principales | Activos · OT · Preventivos · Dashboard |
 | Beneficios | Historial · trazabilidad · disponibilidad |
 | Capturas | Producto actual |
@@ -390,7 +390,7 @@ Un brochure exitoso **no** intenta cerrar una venta.
 
 Su función es que el prospecto recuerde una idea al terminar de leerlo:
 
-> *Maintix puede ayudarme a recuperar el control de mi operación.*
+> *Roustix puede ayudarme a recuperar el control de mi operación.*
 
 Cuando el material mantiene mensaje claro, diseño consistente y CTA sencillo, se convierte en **extensión del equipo comercial** — en cada reunión, demo y evento.
 

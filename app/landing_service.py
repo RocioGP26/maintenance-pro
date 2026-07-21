@@ -1,4 +1,4 @@
-"""Contenido dinámico de la landing pública de Maintix (MKT-05 · MCM)."""
+"""Contenido dinámico de la landing pública de Roustix (MKT-05 · MCM)."""
 
 from __future__ import annotations
 
@@ -130,7 +130,7 @@ FEATURES_LANDING: tuple[dict[str, str], ...] = (
 MODULOS_PRODUCCION: tuple[dict[str, Any], ...] = (
     {
         "clave": MODULO_MANTENIMIENTO,
-        "label": "Maintix Maintenance",
+        "label": "Roustix Maintenance",
         "badge": "En producción",
         "badge_class": "landing-badge--live",
         "descripcion": (
@@ -146,7 +146,7 @@ MODULOS_PRODUCCION: tuple[dict[str, Any], ...] = (
     },
     {
         "clave": MODULO_INVENTARIO,
-        "label": "Maintix Inventory",
+        "label": "Roustix Inventory",
         "badge": "En producción",
         "badge_class": "landing-badge--live",
         "descripcion": (
@@ -230,9 +230,9 @@ def planes_landing() -> list[dict[str, Any]]:
                 "features": _plan_features_pricing(meta),
                 "cta": CTA_ENTERPRISE if is_enterprise else CTA_FINAL,
                 "cta_prompt": (
-                    f"Quiero información sobre el plan Enterprise de Maintix"
+                    f"Quiero información sobre el plan Enterprise de Roustix"
                     if is_enterprise
-                    else f"Quiero probar Maintix con el plan {short}"
+                    else f"Quiero probar Roustix con el plan {short}"
                 ),
             }
         )
@@ -296,7 +296,7 @@ def landing_context() -> dict[str, Any]:
             "planes": planes_landing(),
             "mockups": [
             {
-                "modulo": "Maintix Inventory",
+                "modulo": "Roustix Inventory",
                 "icon": "bi-cart3",
                 "empresa": "El Surtidor SAS",
                 "kpis": [
@@ -320,7 +320,7 @@ def landing_context() -> dict[str, Any]:
                 ],
             },
             {
-                "modulo": "Maintix Maintenance",
+                "modulo": "Roustix Maintenance",
                 "icon": "bi-wrench-adjustable",
                 "empresa": "Logistic SA",
                 "kpis": [

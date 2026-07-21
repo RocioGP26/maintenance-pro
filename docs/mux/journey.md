@@ -1,6 +1,6 @@
 # UX · Experiencia integral (Journey)
 
-Cómo se siente usar Maintix **de principio a fin** — no pantalla por pantalla, sino como historia continua.
+Cómo se siente usar Roustix **de principio a fin** — no pantalla por pantalla, sino como historia continua.
 
 ## Fases del journey
 
@@ -65,7 +65,7 @@ El corazón del producto. Cada perfil vive aquí horas.
 | Vendedor | Cliente delante | Fluidez, cero espera |
 | Gerente | Miradas de 30 s–5 min | Claridad, alertas accionables |
 
-**Principio transversal:** La complejidad vive en el sistema (valores Maintix), no en la pantalla.
+**Principio transversal:** La complejidad vive en el sistema (valores Roustix), no en la pantalla.
 
 ---
 

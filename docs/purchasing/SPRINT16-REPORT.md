@@ -44,7 +44,7 @@ Convertir las compras directas actuales en un proceso de abastecimiento trazable
 | Duplicar CxP | `inv_compra_id` único en OC/recepción migrada |
 | Romper tenants actuales | Rutas antiguas permanecen activas hasta 16.5 |
 | Confundir aprobación con recepción | Estados y permisos separados |
-| Exponer API prematura | OpenAPI marcado `x-maintix-status: planned` hasta implementación |
+| Exponer API prematura | OpenAPI marcado `x-roustix-status: planned` hasta implementación |
 
 ## Próximo paso
 

@@ -1,0 +1,28 @@
+<!-- Favicon Roustix · 512x512 -->
+<svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Roustix">
+  <rect width="512" height="512" rx="96" fill="#185FA5"/>
+  <g transform="translate(256, 256)">
+    <!-- Dientes -->
+    <rect x="-20" y="-190" width="40" height="50" rx="12" fill="#378ADD"/>
+    <rect x="-20" y="140"  width="40" height="50" rx="12" fill="#378ADD"/>
+    <rect x="140"  y="-20" width="50" height="40" rx="12" fill="#378ADD"/>
+    <rect x="-190" y="-20" width="50" height="40" rx="12" fill="#378ADD"/>
+    <rect x="100"  y="-168" width="38" height="46" rx="12" fill="#5B8EC4" transform="rotate(30)"/>
+    <rect x="-138" y="-168" width="38" height="46" rx="12" fill="#5B8EC4" transform="rotate(-30)"/>
+    <rect x="100"  y="122"  width="38" height="46" rx="12" fill="#5B8EC4" transform="rotate(-30)"/>
+    <rect x="-138" y="122"  width="38" height="46" rx="12" fill="#5B8EC4" transform="rotate(30)"/>
+    <!-- Hexágono -->
+    <polygon points="0,-160 138,-80 138,80 0,160 -138,80 -138,-80" fill="white" opacity="0.15"/>
+    <!-- Círculo central -->
+    <circle cx="0" cy="0" r="120" fill="#0A2540"/>
+    <!-- R -->
+    <text x="0" y="48" text-anchor="middle"
+          font-family="Georgia, serif"
+          font-size="130" font-weight="700" fill="white">R</text>
+    <!-- Nodos -->
+    <circle cx="-138" cy="-80" r="12" fill="#378ADD"/>
+    <circle cx="138"  cy="-80" r="12" fill="#378ADD"/>
+    <circle cx="138"  cy="80"  r="12" fill="#5B8EC4"/>
+    <circle cx="-138" cy="80"  r="12" fill="#5B8EC4"/>
+  </g>
+</svg>

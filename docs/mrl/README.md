@@ -1,11 +1,11 @@
-# MRL · Maintix Report Language
+# MRL · Roustix Report Language
 
-**Código:** MRL · Suite docs **06**  
-**Versión docs:** v1.1.0 · Sprint 15  
-**Versión especificación:** v1.0.1 · Sprint 7  
+**Código:** MRL · Suite docs **06**
+**Versión docs:** v1.1.0 · Sprint 15
+**Versión especificación:** v1.0.1 · Sprint 7
 **Frase:** Toda la operación. Una sola plataforma.
 
-> El lenguaje oficial para **reportes, PDF y documentos** generados por Maintix.
+> El lenguaje oficial para **reportes, PDF y documentos** generados por Roustix.
 
 ## Ver manual
 
@@ -29,16 +29,16 @@ Tras Sprint 14 ALIGN, MRL pasa de **especificación documental** a **infraestruc
 | [roadmap.md](roadmap.md) | Roadmap de código Sprint 15+ |
 | [templates/README.md](templates/README.md) | Registro MRL-TPL y plantillas |
 
-**Estado Sprint 15.1:** ✅ Núcleo `app/mrl/` · smoke test verde  
+**Estado Sprint 15.1:** ✅ Núcleo `app/mrl/` · smoke test verde
 **Estado Sprint 15.2:** ✅ Excel Engine · export Activos migrado · siguiente: 15.3 PDF Engine
 
 ---
 
 ## Objetivo
 
-Un estándar único para que **cualquier PDF o Excel** se reconozca como Maintix — sin depender del logo.
+Un estándar único para que **cualquier PDF o Excel** se reconozca como Roustix — sin depender del logo.
 
-Sprint 7 definió **qué** es un documento Maintix.  
+Sprint 7 definió **qué** es un documento Roustix.
 Sprint 15 define **cómo** el código lo genera.
 
 ---
@@ -91,7 +91,7 @@ app/mrl/
 | [MRG-08](/mrg/chapters/08-reportes.md) | Indicadores y reportes |
 | [Sprint 14 ALIGN](/alignment/SPRINT14-REPORT.md) | Predecesor |
 
-## Maintix Documentation Suite
+## Roustix Documentation Suite
 
 | Meta | Enlace |
 |------|--------|

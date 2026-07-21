@@ -96,4 +96,4 @@ El mostrador prometía entregas sobre productos que la bodega ya no tenía. Cada
 
 ---
 
-*MTX-CASE-002 · Nivel D · Maintix · 2026*
+*MTX-CASE-002 · Nivel D · Roustix · 2026*

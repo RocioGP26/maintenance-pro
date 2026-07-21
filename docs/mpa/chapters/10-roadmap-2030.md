@@ -106,8 +106,8 @@ MPA v1.0      Sales Pro     IAM           Integraciones Enterprise
 
 MPA responde la pregunta del Sprint 6:
 
-**¿Cómo está construido Maintix y hacia dónde crecerá?**
+**¿Cómo está construido Roustix y hacia dónde crecerá?**
 
 Está construido como **EMP modular multi-tenant**. Crecerá **activando módulos sobre la misma plataforma**, con integraciones, datos y experiencia unificados.
 
-→ [Índice MPA](/mpa/) · [Maintix Docs](/docs/)
+→ [Índice MPA](/mpa/) · [Roustix Docs](/docs/)

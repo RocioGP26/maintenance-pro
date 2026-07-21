@@ -4,7 +4,7 @@
 
 > Una plataforma. Miles de empresas. Cero mezcla de datos.
 
-Maintix fue diseñado como una plataforma SaaS **multi-tenant** desde su arquitectura. Todas las solicitudes, recursos y permisos existen dentro del contexto de un **tenant**, garantizando el **aislamiento completo** entre clientes.
+Roustix fue diseñado como una plataforma SaaS **multi-tenant** desde su arquitectura. Todas las solicitudes, recursos y permisos existen dentro del contexto de un **tenant**, garantizando el **aislamiento completo** entre clientes.
 
 El desarrollador nunca trabaja directamente con múltiples bases de datos ni necesita indicar qué tenant consultar. Ese contexto se obtiene automáticamente a partir del JWT o de la sesión web autenticada.
 
@@ -12,7 +12,7 @@ El desarrollador nunca trabaja directamente con múltiples bases de datos ni nec
 
 ## 1 · ¿Qué es un tenant?
 
-Un **tenant** es el concepto arquitectónico de aislamiento en Maintix. **En Maintix, un tenant representa una empresa cliente** (`Empresa` en el modelo de datos).
+Un **tenant** es el concepto arquitectónico de aislamiento en Roustix. **En Roustix, un tenant representa una empresa cliente** (`Empresa` en el modelo de datos).
 
 Cada tenant posee:
 
@@ -63,7 +63,7 @@ Tenant A (Empresa A)         Tenant B (Empresa B)
 
 ---
 
-## 3 · ¿Cómo conoce Maintix el tenant?
+## 3 · ¿Cómo conoce Roustix el tenant?
 
 1. El cliente inicia sesión
 2. El servidor genera un JWT
@@ -155,7 +155,7 @@ Todas las consultas deben ejecutarse filtrando por tenant (`empresa_id`).
 Machine.query.filter_by(empresa_id=current_empresa_id())
 ```
 
-**En Maintix (patrón oficial):**
+**En Roustix (patrón oficial):**
 
 ```python
 query_tenant(Machine).order_by(Machine.codigo).all()
@@ -196,7 +196,7 @@ Si un usuario intenta acceder a un recurso de otro tenant:
 GET /api/v1/maintenance/assets/152
 ```
 
-y el activo pertenece a otro tenant, Maintix responde:
+y el activo pertenece a otro tenant, Roustix responde:
 
 **404 Not Found**
 
@@ -240,7 +240,7 @@ El resto de la aplicación trabaja únicamente con ese contexto.
 
 ## 8 · Cadena Tenant → Permisos
 
-Toda acción en Maintix atraviesa esta cadena:
+Toda acción en Roustix atraviesa esta cadena:
 
 ```
 Usuario autenticado
@@ -278,7 +278,7 @@ Implementación: `empresa_tiene_modulo()` · `require_module()` · `@rol_require
 
 Existe un único rol con visión transversal: **`superadmin`**.
 
-Este rol pertenece a **Maintix Platform**. Puede:
+Este rol pertenece a **Roustix Platform**. Puede:
 
 - administrar tenants (empresas cliente)
 - gestionar planes
@@ -428,9 +428,9 @@ Este capítulo se considera **implementado** cuando:
 
 ## Filosofía del capítulo
 
-El desarrollador **nunca elige el tenant**. Maintix lo determina automáticamente. Así garantizamos que cada empresa cliente vea únicamente sus propios datos, sin excepciones.
+El desarrollador **nunca elige el tenant**. Roustix lo determina automáticamente. Así garantizamos que cada empresa cliente vea únicamente sus propios datos, sin excepciones.
 
-**El aislamiento multi-tenant no es una característica de la API; es un principio de toda la plataforma Maintix.** La API simplemente hereda ese comportamiento. Ver [MPA-04](/mpa/chapters/04-arquitectura-saas.md) · [MPA-09 · Filosofía técnica](/mpa/chapters/09-filosofia-tecnica.md).
+**El aislamiento multi-tenant no es una característica de la API; es un principio de toda la plataforma Roustix.** La API simplemente hereda ese comportamiento. Ver [MPA-04](/mpa/chapters/04-arquitectura-saas.md) · [MPA-09 · Filosofía técnica](/mpa/chapters/09-filosofia-tecnica.md).
 
 ---
 

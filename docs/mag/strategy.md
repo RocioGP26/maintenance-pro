@@ -2,7 +2,7 @@
 
 ## Objetivo
 
-**Maintix API Guide v1.0** — contrato oficial para integradores externos.
+**Roustix API Guide v1.0** — contrato oficial para integradores externos.
 
 ## Posición en la suite
 

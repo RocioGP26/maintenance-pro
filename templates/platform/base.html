@@ -3,7 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>{% block title %}Maintix Platform{% endblock %}</title>
+  {% include "_favicon.html" %}
+  <title>{% block title %}Roustix Platform{% endblock %}</title>
   {% from "_cdn_assets.html" import google_fonts_inter, bootstrap_css, bootstrap_icons_css, bootstrap_js %}
   {{ google_fonts_inter() }}
   {{ bootstrap_css() }}

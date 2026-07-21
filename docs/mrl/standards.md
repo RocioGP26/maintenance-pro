@@ -1,20 +1,20 @@
 # MRL · Estándares de implementación
 
-**Código:** MRL-STD · Sprint 15  
-**Versión:** v1.1.0  
+**Código:** MRL-STD · Sprint 15
+**Versión:** v1.1.0
 **Estado:** 🚧 Sprint 15.0 · obligatorio para todo código en `app/mrl/`
 
-> Reglas que **todo export y documento** generado por Maintix debe cumplir.  
+> Reglas que **todo export y documento** generado por Roustix debe cumplir.
 > Especificación funcional detallada: [capítulos MRL](chapters/).
 
 ---
 
 ## 1 · Regla de oro
 
-**Ningún módulo define estilos propios de export.**  
+**Ningún módulo define estilos propios de export.**
 Usa `app/mrl/`. Si falta un bloque, extiende MRL — no copies estilos en el módulo.
 
-**Ningún módulo funcional importa `openpyxl` directamente.**  
+**Ningún módulo funcional importa `openpyxl` directamente.**
 Toda generación Excel pasa por `app.mrl.excel` (adaptador + `BaseExcelExporter`).
 
 ---
@@ -83,10 +83,10 @@ Fuente: [MRL-04-HDR](chapters/04-header-estandar.md) · implementación: `app/mr
 | Título documento | 16pt bold | 14pt bold fila meta |
 | Cuerpo | 11pt | 11pt default |
 | Metadata | 9pt | 9–10pt |
-| Wordmark Maintix | 10pt muted | Texto meta |
+| Wordmark Roustix | 10pt muted | Texto meta |
 | Versión MRL | 8pt | Footer / última fila meta |
 
-PDF: Helvetica o equivalente ReportLab embebido.  
+PDF: Helvetica o equivalente ReportLab embebido.
 Excel: fuente sistema (Calibri/Arial) — bold solo en headers MRL.
 
 ---
@@ -101,7 +101,7 @@ Todo export **de producción** incluye:
 | `instance_code` | Sí (o `BATCH-{fecha}` en listados) |
 | `empresa_nombre` | Sí |
 | `generated_at` + `timezone` | Sí |
-| `usuario` | Sí (o `Sistema · Maintix`) |
+| `usuario` | Sí (o `Sistema · Roustix`) |
 | `mrl_version` | Sí |
 | `module` | Sí |
 
@@ -135,7 +135,7 @@ Fuente: [MRL-09-EXP](chapters/09-exportaciones.md)
 | Motor | `reportlab` |
 | Anatomía | [MRL-03-ANAT](chapters/03-anatomia-documento.md) |
 | Nombre archivo | `{DOC}-{codigo}-{YYYYMMDD}.pdf` |
-| PDF properties | Title, Author=`Maintix`, Creator, Subject=DOC code |
+| PDF properties | Title, Author=`Roustix`, Creator, Subject=DOC code |
 | Logo tenant | Max 40 mm ancho; fallback iniciales en círculo |
 | Páginas 2+ | Header reducido (título + código + página) |
 | Impresión B/N | Contraste mínimo 4.5:1 — [MRL-13-A11Y](chapters/13-accesibilidad.md) |
@@ -148,7 +148,7 @@ Fuente: [MRL-09-EXP](chapters/09-exportaciones.md)
 |-------|-------|
 | Encoding | UTF-8 con BOM |
 | Separador | `;` default LatAm |
-| Primera línea | `# Maintix · {empresa} · {DOC} · {fecha}` |
+| Primera línea | `# Roustix · {empresa} · {DOC} · {fecha}` |
 
 Implementación: 📋 post-Sprint 15 o bajo DOC-010.
 
@@ -206,4 +206,4 @@ Al completar export en UI:
 
 ---
 
-*MRL-STD · Sprint 15 · Maintix · 2026-07-10*
+*MRL-STD · Sprint 15 · Roustix · 2026-07-10*

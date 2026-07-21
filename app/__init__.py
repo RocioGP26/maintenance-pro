@@ -97,7 +97,13 @@ def create_app(config_name: str | None = None):
 
     register_tenancy_middleware(app)
 
-    from app.branding import APP_LOGO_PATH, APP_NAME, APP_TAGLINE, empresa_logo_url_or_none
+    from app.branding import (
+        APP_FAVICON_PATH,
+        APP_LOGO_PATH,
+        APP_NAME,
+        APP_TAGLINE,
+        empresa_logo_url_or_none,
+    )
 
     from app.money import formato_moneda
     from app.models import machine_status_meta, proveedor_tipo_meta, incident_prioridad_meta, wo_es_editable, wo_status_meta, wo_tipo_meta
@@ -239,6 +245,7 @@ def create_app(config_name: str | None = None):
             "app_version": app.config["APP_VERSION"],
             "app_tagline": APP_TAGLINE,
             "app_logo_path": APP_LOGO_PATH,
+            "app_favicon_path": APP_FAVICON_PATH,
             "empresa_actual": empresa_actual,
             "empresa_logo_url": empresa_logo_url_or_none(empresa_actual),
             "alertas_campana": resumen_alertas_campana(),

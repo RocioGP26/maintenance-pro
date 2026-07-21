@@ -15,7 +15,7 @@ from app.timezone_utils import resolve_timezone_name
 
 def _usuario_label(usuario) -> str:
     if usuario is None:
-        return "Sistema · Maintix"
+        return "Sistema · Roustix"
     return str(getattr(usuario, "username", usuario) or "Usuario")
 
 

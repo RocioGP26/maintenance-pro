@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  {% include "_favicon.html" %}
   <title>{% block title %}{{ app_name }}{% endblock %}</title>
   {% from "_cdn_assets.html" import google_fonts_inter, bootstrap_css, bootstrap_icons_css, bootstrap_js %}
   {{ google_fonts_inter() }}
@@ -291,7 +292,7 @@
         {% endif %}
       </nav>
       <div class="mt-auto sidebar-footer-actions">
-        <div class="text-center text-white-50 small py-1" title="Versión de Maintix">v{{ app_version }}</div>
+        <div class="text-center text-white-50 small py-1" title="Versión de Roustix">v{{ app_version }}</div>
         {% if mod_mant and perm.reportar_incidencia and not perm.solicitante and not perm.vendedor and not perm.tecnico %}
         <a href="{{ url_for('main.incidencia') }}" class="btn btn-report-incident w-100 rounded-0 d-flex align-items-center justify-content-center gap-2">
           <i class="bi bi-exclamation-triangle-fill"></i> Reportar Incidencia

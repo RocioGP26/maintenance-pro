@@ -8,7 +8,7 @@
 
 ## Objetivo del capítulo
 
-Documentar el inventario **comercial** de Maintix: productos, stock, kardex implícito y distinción con repuestos técnicos de Mantenimiento.
+Documentar el inventario **comercial** de Roustix: productos, stock, kardex implícito y distinción con repuestos técnicos de Mantenimiento.
 
 **Clave de módulo:** `inventario` · **Área producto:** `/comercial` · **Estado producto:** ✅ Producción · **Sprint 14 ALIGN:** ✅ Cerrado (2026-07-10)
 
@@ -63,7 +63,7 @@ Documentar el inventario **comercial** de Maintix: productos, stock, kardex impl
 
 ## 3 · Stock y kardex · 🟡
 
-Maintix no expone hoy una pantalla «kardex» dedicada, pero el **historial de movimientos** se reconstruye desde:
+Roustix no expone hoy una pantalla «kardex» dedicada, pero el **historial de movimientos** se reconstruye desde:
 
 | Origen | Efecto en stock |
 |--------|-----------------|

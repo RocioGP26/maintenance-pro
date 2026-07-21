@@ -65,15 +65,15 @@
 Alguien recibe:
 
 ```
-MAINTIX
+ROUSTIX
 Reporte de Disponibilidad
 Empresa XYZ
 Abril 2026
 ```
 
-Sin ver el isotipo, **sabe que es Maintix**.
+Sin ver el isotipo, **sabe que es Roustix**.
 
-Ese es el objetivo del Maintix Reporting Language.
+Ese es el objetivo del Roustix Reporting Language.
 
 ---
 
@@ -83,4 +83,4 @@ Ese es el objetivo del Maintix Reporting Language.
 
 ---
 
-*MRL-10-ROAD · Maintix Report Language v1.0.1 · 2026*
+*MRL-10-ROAD · Roustix Report Language v1.0.1 · 2026*

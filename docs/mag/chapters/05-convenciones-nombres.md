@@ -10,7 +10,7 @@
 
 ## Objetivo del capítulo
 
-Definir las **reglas oficiales de nomenclatura** para todos los elementos públicos de la API Maintix: rutas, recursos, parámetros, campos JSON, identificadores y convenciones de desarrollo.
+Definir las **reglas oficiales de nomenclatura** para todos los elementos públicos de la API Roustix: rutas, recursos, parámetros, campos JSON, identificadores y convenciones de desarrollo.
 
 El objetivo es que cualquier desarrollador pueda **predecir un endpoint** sin consultar la documentación.
 
@@ -171,7 +171,7 @@ No usar `empresa_id` en query — contexto desde JWT (MAG-03).
 
 ## 9 · Códigos internos (documentación)
 
-Todos los códigos internos de la suite Maintix siguen nomenclatura consistente:
+Todos los códigos internos de la suite Roustix siguen nomenclatura consistente:
 
 | Prefijo | Ejemplo |
 |---------|---------|
@@ -321,7 +321,7 @@ Este capítulo se considera **implementado** cuando:
 
 Una buena API no necesita memorizarse. Cuando todas las reglas son consistentes, los desarrolladores pueden **predecir** cómo funciona antes de leer la documentación.
 
-**MAG-05 es el style guide oficial de la API Maintix** — equivalente a una guía de estilo para un lenguaje de programación. MAG-06 a MAG-10 y el SDK se apoyan en este documento.
+**MAG-05 es el style guide oficial de la API Roustix** — equivalente a una guía de estilo para un lenguaje de programación. MAG-06 a MAG-10 y el SDK se apoyan en este documento.
 
 ---
 

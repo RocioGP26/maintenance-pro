@@ -2,7 +2,7 @@
 
 **Código:** MPA-05-ROAD · Sprint 6.5
 
-> El futuro de Maintix **como plataforma**, no como lista de features sueltas. Cada módulo nuevo debe encajar en el stack Tenant → Módulos → Permisos → Datos → Dashboards.
+> El futuro de Roustix **como plataforma**, no como lista de features sueltas. Cada módulo nuevo debe encajar en el stack Tenant → Módulos → Permisos → Datos → Dashboards.
 
 ---
 
@@ -62,7 +62,7 @@
 | Anti-roadmap | Por qué |
 |--------------|---------|
 | Fork por país | Un código, configuración por tenant |
-| Producto separado «Maintix CMMS» | Maintenance es módulo |
+| Producto separado «Roustix CMMS» | Maintenance es módulo |
 | ERP monolítico en un sprint | Finance llega cuando la operación esté consolidada |
 | Features sin módulo definido | Todo entra en el mapa MPA-02 |
 

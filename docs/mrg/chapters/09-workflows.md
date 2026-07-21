@@ -2,7 +2,7 @@
 
 **Código:** MRG-09-WORKFLOWS · Sprint 10.9 · **Entregado** · **v1.0.1** · Sprint 14 ALIGN ✅
 
-> Maintix no se limita a registrar información. **Organiza la operación** mediante procesos completos, donde cada acción genera el siguiente paso del flujo de trabajo.
+> Roustix no se limita a registrar información. **Organiza la operación** mediante procesos completos, donde cada acción genera el siguiente paso del flujo de trabajo.
 
 **Toda la operación. Una sola plataforma.**
 
@@ -10,7 +10,7 @@
 
 ## Objetivo del capítulo
 
-Documentar los principales **procesos funcionales de extremo a extremo** de Maintix, mostrando cómo interactúan los módulos durante la operación diaria.
+Documentar los principales **procesos funcionales de extremo a extremo** de Roustix, mostrando cómo interactúan los módulos durante la operación diaria.
 
 Este capítulo conecta **Mantenimiento**, **Inventario**, **Compras**, **Ventas** y **Administración** bajo una misma visión operativa.
 
@@ -47,7 +47,7 @@ Este capítulo conecta **Mantenimiento**, **Inventario**, **Compras**, **Ventas*
 
 ## 1 · Filosofía · ✅
 
-Maintix está diseñado para trabajar mediante **procesos**.
+Roustix está diseñado para trabajar mediante **procesos**.
 
 En lugar de aplicaciones aisladas, cada módulo participa en un flujo continuo:
 
@@ -237,7 +237,7 @@ Datos ejemplo
 Operación
 ```
 
-Durante el **período de prueba** Maintix puede cargar información inicial según el **sector** del cliente (activos demo · productos ejemplo).
+Durante el **período de prueba** Roustix puede cargar información inicial según el **sector** del cliente (activos demo · productos ejemplo).
 
 → [MRG-07 · Administración](07-administracion.md) · `/onboarding`
 
@@ -322,7 +322,7 @@ La trazabilidad permite conocer **quién** realizó cada acción y **cuándo** o
 
 ## 12 · Automatización · 🟡
 
-Maintix automatiza diversas tareas operativas:
+Roustix automatiza diversas tareas operativas:
 
 | Automatización | Estado |
 |----------------|--------|
@@ -372,7 +372,7 @@ Este capítulo se considera **implementado** cuando:
 
 ## Filosofía del capítulo
 
-Los módulos son importantes, pero el **verdadero valor** de Maintix aparece cuando trabajan juntos. Un activo genera mantenimiento, el mantenimiento consume inventario, el inventario requiere compras y toda la operación produce indicadores.
+Los módulos son importantes, pero el **verdadero valor** de Roustix aparece cuando trabajan juntos. Un activo genera mantenimiento, el mantenimiento consume inventario, el inventario requiere compras y toda la operación produce indicadores.
 
 **MRG-09 documenta esa continuidad**, convirtiendo funcionalidades aisladas en **procesos empresariales completos**.
 

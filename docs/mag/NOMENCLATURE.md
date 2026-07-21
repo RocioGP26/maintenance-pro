@@ -1,6 +1,6 @@
 # Nomenclatura · MAG
 
-**Código:** MAG · Maintix API Guide  
+**Código:** MAG · Roustix API Guide
 **Suite docs:** 07 · Sprint 8
 
 ## Capítulos (01 – 10)
@@ -94,7 +94,7 @@ Catálogo completo → [08-webhooks.md](chapters/08-webhooks.md)
 | Inventory | `product.created`, `product.updated`, `stock.updated`, `stock.low`, `movement.created` |
 | Platform | `tenant.created`, `user.created`, `subscription.updated`, `plan.changed` |
 
-Headers: `X-Maintix-Signature` · `X-Event-Id`
+Headers: `X-Roustix-Signature` · `X-Event-Id`
 
 ## Estado Sprint 8
 

@@ -30,7 +30,7 @@ MRL-TPL-00N
 │   ├── MRL-KPI-001   (opcional)
 │   ├── MRL-TBL-001   (tablas)
 │   └── MRL-CHT-001   (opcional)
-└── MRL-FTR-001    Footer (página, Maintix, versión MRL)
+└── MRL-FTR-001    Footer (página, Roustix, versión MRL)
 ```
 
 Referencia: [MRL-03-ANAT](../chapters/03-anatomia-documento.md).
@@ -103,4 +103,4 @@ title: "Orden de Trabajo Correctiva"
 
 ---
 
-*MRL-TPL · Sprint 15 · Maintix · 2026-07-10*
+*MRL-TPL · Sprint 15 · Roustix · 2026-07-10*

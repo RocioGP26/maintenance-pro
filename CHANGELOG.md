@@ -1,4 +1,4 @@
-# Changelog · Maintix Application
+# Changelog · Roustix Application
 
 Todos los cambios relevantes de la aplicación se registran en este archivo. El
 formato sigue *Keep a Changelog* y las versiones siguen SemVer 2.0.0.
@@ -11,6 +11,16 @@ La suite documental mantiene un ciclo independiente en
 ### Added
 
 - Espacio reservado para cambios aún no publicados.
+
+### Changed
+
+- Marca principal actualizada de Maintix a **Roustix** en la aplicación, correos,
+  exportaciones MRL, API, automatización de releases y suite documental.
+- Recursos públicos y colecciones de API renombrados para usar la identidad
+  Roustix, conservando identificadores técnicos heredados cuando su cambio podría
+  romper compatibilidad.
+- Logo y favicon oficiales de Roustix incorporados como SVG y enlazados en la
+  aplicación operativa, landing, onboarding y panel de plataforma.
 
 ## [1.0.4] - 2026-07-16
 

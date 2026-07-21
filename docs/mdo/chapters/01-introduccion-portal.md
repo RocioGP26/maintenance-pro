@@ -2,25 +2,25 @@
 
 **Código:** MDO-01 · Sprint 13.1 · **Entregado**
 
-> La documentación de Maintix no existe para describir pantallas. Existe para permitir que clientes, partners, desarrolladores y equipos internos **comprendan, implementen, operen e integren** la plataforma con confianza.
+> La documentación de Roustix no existe para describir pantallas. Existe para permitir que clientes, partners, desarrolladores y equipos internos **comprendan, implementen, operen e integren** la plataforma con confianza.
 
 **Toda la operación. Una sola plataforma.**
 
-**Prerequisitos:** [Maintix Docs · Índice maestro](/docs/) · [DOCUMENTATION-PRODUCT.md](/docs/DOCUMENTATION-PRODUCT.md) · [NOMENCLATURE.md](/docs/NOMENCLATURE.md)
+**Prerequisitos:** [Roustix Docs · Índice maestro](/docs/) · [DOCUMENTATION-PRODUCT.md](/docs/DOCUMENTATION-PRODUCT.md) · [NOMENCLATURE.md](/docs/NOMENCLATURE.md)
 
 ---
 
 ## Objetivo del capítulo
 
-Presentar la **filosofía, estructura y propósito** del ecosistema documental de Maintix.
+Presentar la **filosofía, estructura y propósito** del ecosistema documental de Roustix.
 
 Este capítulo es el **punto de entrada** para cualquier persona que llegue al portal `/docs`.
 
 ---
 
-## 1 · ¿Qué es la documentación Maintix?
+## 1 · ¿Qué es la documentación Roustix?
 
-La documentación Maintix es un conjunto de **manuales especializados** que describen:
+La documentación Roustix es un conjunto de **manuales especializados** que describen:
 
 | Dominio | Qué documenta |
 |---------|---------------|
@@ -45,13 +45,13 @@ Un sistema bien diseñado pero mal documentado genera:
 - Errores operativos
 - Adopción limitada
 
-Maintix documenta **desde el diseño** para evitar depender del conocimiento informal.
+Roustix documenta **desde el diseño** para evitar depender del conocimiento informal.
 
 ---
 
 ## 2 · Filosofía documental
 
-La documentación Maintix sigue **cinco principios**.
+La documentación Roustix sigue **cinco principios**.
 
 | Principio | Significado |
 |-----------|-------------|
@@ -69,13 +69,13 @@ La documentación oficial está organizada en **manuales especializados**.
 
 | Código | Manual | Audiencia |
 |--------|--------|-----------|
-| **MPA** | Maintix Platform Architecture | Producto · Arquitectura |
-| **MAG** | Maintix API Guide | Desarrolladores |
-| **MSD** | Maintix Software Developer Portal | Integradores |
-| **MRG** | Maintix Reference Guide | Usuarios · Implementadores |
-| **MCM** | Maintix Commercial Manual | Ventas |
+| **MPA** | Roustix Platform Architecture | Producto · Arquitectura |
+| **MAG** | Roustix API Guide | Desarrolladores |
+| **MSD** | Roustix Software Developer Portal | Integradores |
+| **MRG** | Roustix Reference Guide | Usuarios · Implementadores |
+| **MCM** | Roustix Commercial Manual | Ventas |
 | **MKT** | Marketing Toolkit | Marketing |
-| **MDO** | Maintix Documentation Operations | Gestión documental |
+| **MDO** | Roustix Documentation Operations | Gestión documental |
 
 ### Fundación (congelada)
 
@@ -131,7 +131,7 @@ Comienza por:
 → [MCM](/mcm/)  
 → [MKT](/mkt/)
 
-### Soy parte del equipo Maintix
+### Soy parte del equipo Roustix
 
 Comienza por:
 
@@ -292,7 +292,7 @@ Los documentos **no duplican información**.
 
 - Contratos claros
 
-### Para Maintix
+### Para Roustix
 
 - Escalabilidad organizacional
 

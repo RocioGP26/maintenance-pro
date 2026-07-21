@@ -1,5 +1,5 @@
 """
-Maintix Report Language (MRL) · Sprint 15.1 Foundation.
+Roustix Report Language (MRL) · Sprint 15.1 Foundation.
 
 API pública del núcleo de estilos y metadata. Los motores Excel/PDF
 (ExcelExporter, PdfExporter) se añaden en Sprint 15.2 y 15.3.

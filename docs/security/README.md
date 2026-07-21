@@ -1,6 +1,6 @@
 # Seguridad e Identidad
 
-Esta guía define la política operativa de sesiones de Maintix. Desde Sprint 18,
+Esta guía define la política operativa de sesiones de Roustix. Desde Sprint 18,
 la autenticación web combina la cookie firmada de Flask-Login con un registro
 revocable en servidor (`active_sessions`). Una cookie válida no es suficiente si
 la sesión fue revocada, superó su inactividad o alcanzó su tiempo máximo.

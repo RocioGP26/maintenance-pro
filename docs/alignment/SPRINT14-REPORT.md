@@ -11,7 +11,7 @@
 
 **Alinear producto y documentación** — sin scope creep ni features nuevas.
 
-Que Maintix refleje el MRG como fuente funcional: menús, copy (MUX), permisos (IAM), rutas, dashboards, flujos transversales y estado real por funcionalidad (✅ · 🟡 · 📋 · ❌).
+Que Roustix refleje el MRG como fuente funcional: menús, copy (MUX), permisos (IAM), rutas, dashboards, flujos transversales y estado real por funcionalidad (✅ · 🟡 · 📋 · ❌).
 
 → Metodología: [README.md](README.md) · Checklist: [checklist.md](checklist.md)
 
@@ -160,7 +160,7 @@ Incorporar un **ciclo de vida estándar** además de los íconos de cobertura (�
 | ✅ **Producción** | Disponible · documentación y producto sincronizados |
 | 🔒 **Deprecado** | Reemplazada o retirada · ventana de migración documentada |
 
-Esto mantiene **MRG · código · MDO (versiones) · planificación** en el mismo lenguaje durante toda la evolución de Maintix.
+Esto mantiene **MRG · código · MDO (versiones) · planificación** en el mismo lenguaje durante toda la evolución de Roustix.
 
 **Propuesta Sprint 15:** adoptar esta leyenda en `docs/alignment/README.md` (o MDO-05), actualizar `status-matrix.md` al primer ítem 🚧, y priorizar 1–2 gaps P2 con contrato MRG + entrada changelog.
 
@@ -185,7 +185,7 @@ Tras Fase 2: **evolución del producto** con ciclo de vida 📋 → 🚧 → �
 
 | Área | Siguiente paso sugerido |
 |------|-------------------------|
-| **Fase 2 P0** | Marca Maintix · planes Start–Enterprise · trial 15 días |
+| **Fase 2 P0** | Marca Roustix · planes Start–Enterprise · trial 15 días |
 | Producto | Cerrar gap P2 acordado post-Fase 2 |
 | MRG | Estados 🚧/🧪 en gaps seleccionados |
 | MAG | Revisión formal post-ALIGN |
@@ -206,4 +206,4 @@ Tras Fase 2: **evolución del producto** con ciclo de vida 📋 → 🚧 → �
 
 ---
 
-*Sprint 14 · Documentation Alignment · Maintix · 2026-07-10 · ✅ Cerrado oficialmente*
+*Sprint 14 · Documentation Alignment · Roustix · 2026-07-10 · ✅ Cerrado oficialmente*

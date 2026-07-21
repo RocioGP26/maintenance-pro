@@ -2,7 +2,7 @@
 
 **Gobierno:** [MKT-03 · Casos de éxito](../chapters/03-casos-exito.md)
 
-Casos oficiales Maintix — un archivo por historia. Este directorio escala a medida que se incorporen clientes reales.
+Casos oficiales Roustix — un archivo por historia. Este directorio escala a medida que se incorporen clientes reales.
 
 ## Índice
 

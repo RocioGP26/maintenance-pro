@@ -1,6 +1,6 @@
 # Nomenclatura · MRL
 
-**Código:** MRL · Maintix Report Language  
+**Código:** MRL · Roustix Report Language
 **Suite docs:** 06 · Sprint 7
 
 ## Capítulos · Núcleo (01 – 10)

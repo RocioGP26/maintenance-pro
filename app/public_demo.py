@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 DEMO_INTRO = (
-    "Una demostración no es un tour de menú. Es mostrar cómo Maintix resuelve "
+    "Una demostración no es un tour de menú. Es mostrar cómo Roustix resuelve "
     "un problema real de operación en tu sector — en una sesión de 45–60 minutos "
     "con un flujo punta a punta."
 )

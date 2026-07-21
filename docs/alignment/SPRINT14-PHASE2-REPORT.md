@@ -38,18 +38,18 @@ Alinear el **sitio público** (landing, trial, demo, FAQ, contacto, nav/footer) 
 | Contacto MKT-05 en `/contacto` | ✅ |
 | Recursos MKT-09 stub + MTX-CASE | ✅ |
 | Nav/Footer MKT-05 §6 + suite documental | ✅ |
-| Marca Maintix en superficie pública | ✅ |
+| Marca Roustix en superficie pública | ✅ |
 
 ---
 
 ## Cambios principales (resumen)
 
-1. **Marca y CTAs:** Maintix · «Probar gratis N días» · «Solicitar demostración» · «Comenzar prueba gratuita»
+1. **Marca y CTAs:** Roustix · «Probar gratis N días» · «Solicitar demostración» · «Comenzar prueba gratuita»
 2. **Landing:** sección Problema MKT-05 §5.2 · orden narrativo · stats antes del CTA final
 3. **Páginas:** FAQ · demo (PLAY + form) · contacto (form) · recursos (casos + docs)
 4. **Trial:** wizard alineado MCM-06 · `trial_dias` default 15
 5. **Nav:** Producto · Soluciones · Planes · Recursos · Casos · Demo · Iniciar sesión + CTA trial
-6. **Footer:** Producto · Documentación (Docs/MCM/MKT/MRG/MAG) · Empresa · slogan · copyright Maintix
+6. **Footer:** Producto · Documentación (Docs/MCM/MKT/MRG/MAG) · Empresa · slogan · copyright Roustix
 
 ---
 
@@ -89,4 +89,4 @@ Alinear el **sitio público** (landing, trial, demo, FAQ, contacto, nav/footer) 
 
 ---
 
-*ALIGN-PUB · Maintix · 2026-07-10*
+*ALIGN-PUB · Roustix · 2026-07-10*

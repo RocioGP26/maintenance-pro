@@ -1,4 +1,4 @@
-# Developer Docs · Maintix
+# Developer Docs · Roustix
 
 **Suite docs 09** — documentación técnica para quien escribe código en el repositorio.
 
@@ -18,11 +18,11 @@
 
 | Pregunta | Doc |
 |----------|-----|
-| ¿Qué es Maintix como producto? | [MPA](/mpa/) |
+| ¿Qué es Roustix como producto? | [MPA](/mpa/) |
 | ¿Cómo corro el proyecto localmente? | Handbook (planificado) |
 | ¿Por qué tomamos decisión X? | MADR |
 
-| **Developer Docs (09)** | Contribución al **repositorio** Maintix (Flask, migraciones) |
+| **Developer Docs (09)** | Contribución al **repositorio** Roustix (Flask, migraciones) |
 | **MSD (08)** | Ecosistema **externo** para integradores (portal, SDK, OpenAPI) |
 
 → [MSD · Developer Portal](/msd/) · [MAG · API Guide](/mag/)

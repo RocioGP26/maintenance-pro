@@ -11,27 +11,27 @@
 
 ## 0 · Identidad de marca vs identidad de producto
 
-Maintix tiene dos narrativas complementarias. No compiten: se refuerzan.
+Roustix tiene dos narrativas complementarias. No compiten: se refuerzan.
 
 | Dimensión | Documento | Pregunta | Ejemplo |
 |-----------|-----------|----------|---------|
 | **Marca** | MBB · MCM | ¿Quiénes somos? ¿Cómo lo comunicamos? | Historia dual, voz, pilares, trial 15 días |
 | **Producto** | **MPA** | ¿Qué construimos? ¿Cómo crece? | EMP, módulos, tenancy, roadmap 2030 |
 
-**Regla para el equipo:** cuando alguien nuevo pregunta «¿qué es Maintix?», la respuesta comercial vive en [MCM-01-POS](/mcm/chapters/01-posicionamiento.md). La respuesta de **ingeniería y producto** vive aquí.
+**Regla para el equipo:** cuando alguien nuevo pregunta «¿qué es Roustix?», la respuesta comercial vive en [MCM-01-POS](/mcm/chapters/01-posicionamiento.md). La respuesta de **ingeniería y producto** vive aquí.
 
 ---
 
-## 1 · ¿Qué es realmente Maintix?
+## 1 · ¿Qué es realmente Roustix?
 
-Maintix no es un repositorio Flask. No es un dashboard de OT. No es una tienda con inventario.
+Roustix no es un repositorio Flask. No es un dashboard de OT. No es una tienda con inventario.
 
-**Maintix es una Enterprise Management Platform (EMP)** — una plataforma SaaS multi-tenant que permite a las empresas latinoamericanas **controlar, organizar y optimizar su operación** activando solo los módulos que necesitan hoy, con espacio para crecer mañana **sin cambiar de sistema**.
+**Roustix es una Enterprise Management Platform (EMP)** — una plataforma SaaS multi-tenant que permite a las empresas latinoamericanas **controlar, organizar y optimizar su operación** activando solo los módulos que necesitan hoy, con espacio para crecer mañana **sin cambiar de sistema**.
 
 ### Definición operativa (producto)
 
 ```
-Maintix = Plataforma única
+Roustix = Plataforma única
         + Tenants aislados (empresas)
         + Módulos activables (Maintenance, Inventory, …)
         + Roles y permisos por tenant
@@ -49,7 +49,7 @@ Maintix = Plataforma única
 | Misma historia de datos | OT, stock y futuros módulos bajo un tenant |
 | LatAm primero | Español, monedas regionales, realidad Excel/WhatsApp |
 
-### Lo que Maintix **no** promete (hoy)
+### Lo que Roustix **no** promete (hoy)
 
 - ❌ Reemplazar un ERP financiero completo en el día uno
 - ❌ Consultoría ilimitada por cliente
@@ -60,18 +60,18 @@ Maintix = Plataforma única
 
 ## 2 · La pregunta que abre todo el MPA
 
-**¿Cómo está construido Maintix y hacia dónde crecerá?**
+**¿Cómo está construido Roustix y hacia dónde crecerá?**
 
 MPA-01 responde la primera mitad en términos de **identidad**. Los capítulos 02–10 responden el **cómo** y el **hacia dónde** con mapas, módulos, SaaS, integraciones y roadmap.
 
 Sin esta base, el equipo tiende a:
 
-- Diseñar features como si Maintix fuera un CMMS con extras
+- Diseñar features como si Roustix fuera un CMMS con extras
 - Duplicar lógica por sector en lugar de plantillas
 - Tratar cada módulo nuevo como mini-producto aislado
 - Subestimar el costo de romper tenancy o permisos
 
-**MPA-01 es el cimiento.** Todo capítulo posterior asume que Maintix es una EMP.
+**MPA-01 es el cimiento.** Todo capítulo posterior asume que Roustix es una EMP.
 
 ---
 
@@ -81,7 +81,7 @@ Sin esta base, el equipo tiende a:
 
 Un **CMMS** (Computerized Maintenance Management System) gestiona un dominio acotado:
 
-| Capacidad típica | En Maintix hoy |
+| Capacidad típica | En Roustix hoy |
 |------------------|----------------|
 | Activos y equipos | ✅ Módulo **Maintenance** |
 | Órdenes de trabajo | ✅ Correctivas y preventivas |
@@ -89,11 +89,11 @@ Un **CMMS** (Computerized Maintenance Management System) gestiona un dominio aco
 | Repuestos técnicos | ✅ Inventario de mantenimiento |
 | Proveedores de servicio | ✅ |
 
-Hasta aquí, Maintix **parece** un CMMS. Y para muchas empresas industriales, **Maintenance es la puerta de entrada correcta**.
+Hasta aquí, Roustix **parece** un CMMS. Y para muchas empresas industriales, **Maintenance es la puerta de entrada correcta**.
 
 ### Por qué esa etiqueta es insuficiente
 
-| Limitación del CMMS como categoría | Realidad Maintix |
+| Limitación del CMMS como categoría | Realidad Roustix |
 |-----------------------------------|------------------|
 | Define el producto por un módulo | Maintenance es **uno** de N módulos |
 | Expansión = comprar otro software | Expansión = activar Inventory, CRM, … |
@@ -122,7 +122,7 @@ Un **ERP** tradicional intenta ser el sistema nervioso de **toda** la empresa:
 
 ### Con quién **no** competimos
 
-Maintix **no** compite primero con SAP, Oracle ni suites contables completas.
+Roustix **no** compite primero con SAP, Oracle ni suites contables completas.
 
 Compite con el **caos operativo**:
 
@@ -135,7 +135,7 @@ Compite con el **caos operativo**:
 
 ### Contraste directo
 
-| ERP tradicional | Maintix EMP |
+| ERP tradicional | Roustix EMP |
 |-----------------|-------------|
 | Todo o nada | **Modular** — Start con un dolor |
 | Finanzas al centro | **Operación al centro** — finanzas consolidadas después |
@@ -144,7 +144,7 @@ Compite con el **caos operativo**:
 | Cambiar de ERP = proyecto | Activar módulo = configuración |
 | Enterprise desde día 1 | Start → Grow → Scale ([MCM-06](/mcm/chapters/06-planes-comerciales.md)) |
 
-**Conclusión de producto:** Maintix es **operación primero**. Finance (futuro) se apoya en datos operativos ya confiables — no al revés.
+**Conclusión de producto:** Roustix es **operación primero**. Finance (futuro) se apoya en datos operativos ya confiables — no al revés.
 
 ---
 
@@ -154,7 +154,7 @@ Compite con el **caos operativo**:
 
 ### Desglose · Enterprise
 
-| Aspecto | En Maintix |
+| Aspecto | En Roustix |
 |---------|------------|
 | Unidad de negocio | **Empresa** (tenant) con usuarios, roles, sedes |
 | Aislamiento | `empresa_id` · middleware tenancy |
@@ -166,7 +166,7 @@ Compite con el **caos operativo**:
 
 ### Desglose · Management
 
-| Aspecto | En Maintix |
+| Aspecto | En Roustix |
 |---------|------------|
 | Objeto de gestión | Operación: activos, stock, compras, ventas, personas |
 | Métricas | Dashboards, KPIs, reportes PDF (MRL) |
@@ -177,7 +177,7 @@ Compite con el **caos operativo**:
 
 ### Desglose · Platform
 
-| Aspecto | En Maintix |
+| Aspecto | En Roustix |
 |---------|------------|
 | Una base tecnológica | Un codebase · un despliegue |
 | Módulos = capacidades | `mantenimiento`, `inventario`, futuros en `modules.py` |
@@ -185,7 +185,7 @@ Compite con el **caos operativo**:
 | Ecosistema futuro | API, SDK, marketplace, integraciones (MPA-06) |
 | Cultura de construcción | MUX Laws · MDL · filosofía MPA-09 |
 
-**Platform** es la palabra más importante. Es lo que diferencia a Maintix de «un software que hace X».
+**Platform** es la palabra más importante. Es lo que diferencia a Roustix de «un software que hace X».
 
 ### La definición en una frase
 
@@ -198,7 +198,7 @@ Compite con el **caos operativo**:
 | ❌ No es EMP | ✅ Sí es EMP |
 |-------------|-------------|
 | Micro-productos con login distinto | Un tenant, un acceso, módulos activables |
-| Fork por industria (`maintix-mineria`) | Plantillas sectoriales sobre mismo código |
+| Fork por industria (`roustix-mineria`) | Plantillas sectoriales sobre mismo código |
 | CMMS + inventario pegados | Módulos con contrato tenancy común |
 | Feature sin dueño de plataforma | Todo feature declara módulo y permiso |
 | Migración al crecer | Activación de módulo |
@@ -229,11 +229,11 @@ Eso implica:
 
 ## 7 · Principios inmutables del producto
 
-Estos principios no cambian con el sprint. Cambian los módulos; no la naturaleza de Maintix.
+Estos principios no cambian con el sprint. Cambian los módulos; no la naturaleza de Roustix.
 
 | # | Principio | Implicación |
 |---|-----------|-------------|
-| 1 | **Una plataforma** | No crear «Maintix Lite» ni «Maintix CMMS Edition» |
+| 1 | **Una plataforma** | No crear «Roustix Lite» ni «Roustix CMMS Edition» |
 | 2 | **Tenant primero** | Toda entidad de negocio tiene `empresa_id` |
 | 3 | **Módulo explícito** | Registrar en `modules.py` antes de exponer rutas |
 | 4 | **Sector = configuración** | Plantillas, no tablas duplicadas |
@@ -266,7 +266,7 @@ Esta visión conecta MPA-01 con [MPA-10-2030](10-roadmap-2030.md). Es **direcci�
 | **2030** | Mobile GA · AI operativo (sugerencias, consultas) |
 | **2031** | Conectores ERP regionales maduros |
 
-**Meta:** Maintix como **hub operativo** que se conecta al ecosistema financiero y analítico del cliente.
+**Meta:** Roustix como **hub operativo** que se conecta al ecosistema financiero y analítico del cliente.
 
 ### Horizonte 2032–2036 · Plataforma enterprise
 
@@ -333,8 +333,8 @@ Las empresas no necesitan otro software aislado. Necesitan **una plataforma que 
 
 MPA-01 fija esa verdad para el equipo que la construye.
 
-**Próximo capítulo:** [MPA-02-ECO · Ecosistema Maintix](02-ecosistema.md) — el mapa oficial de módulos y capacidades.
+**Próximo capítulo:** [MPA-02-ECO · Ecosistema Roustix](02-ecosistema.md) — el mapa oficial de módulos y capacidades.
 
 ---
 
-*MPA-01-VIS · Maintix Platform Architecture · Sprint 6.1 · 2026*
+*MPA-01-VIS · Roustix Platform Architecture · Sprint 6.1 · 2026*

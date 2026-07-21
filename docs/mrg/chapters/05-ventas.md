@@ -10,7 +10,7 @@
 
 ## Objetivo del capítulo
 
-Documentar el funcionamiento funcional del proceso de ventas de Maintix, incluyendo ventas de contado y crédito, administración de clientes, movimientos de inventario y evolución hacia **Sales Pro**.
+Documentar el funcionamiento funcional del proceso de ventas de Roustix, incluyendo ventas de contado y crédito, administración de clientes, movimientos de inventario y evolución hacia **Sales Pro**.
 
 Actualmente las ventas forman parte del módulo **Inventory** y evolucionarán hacia un módulo independiente altamente integrado.
 
@@ -155,7 +155,7 @@ El POS permite realizar ventas de forma rápida.
 
 ## 6 · Ventas a crédito · ✅
 
-Cuando la forma de pago es **crédito**, Maintix registra automáticamente la obligación pendiente.
+Cuando la forma de pago es **crédito**, Roustix registra automáticamente la obligación pendiente.
 
 Cada venta puede tener:
 
@@ -340,7 +340,7 @@ Este capítulo se considera **implementado** cuando:
 
 ## Filosofía del capítulo
 
-Vender no consiste únicamente en registrar una salida de inventario. Cada venta representa una **relación con el cliente**, una **actualización del inventario** y una **fuente de información** para la toma de decisiones. Maintix integra estos procesos para ofrecer una operación comercial trazable, consistente y preparada para evolucionar hacia un ecosistema completo de gestión empresarial.
+Vender no consiste únicamente en registrar una salida de inventario. Cada venta representa una **relación con el cliente**, una **actualización del inventario** y una **fuente de información** para la toma de decisiones. Roustix integra estos procesos para ofrecer una operación comercial trazable, consistente y preparada para evolucionar hacia un ecosistema completo de gestión empresarial.
 
 ---
 

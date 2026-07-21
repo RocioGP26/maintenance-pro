@@ -2,7 +2,7 @@
 
 **Código:** MAG-01-PHIL · Sprint 8.1
 
-> La API de Maintix no es un acceso técnico al backend. Es la **forma oficial** de que sistemas externos operen con la plataforma.
+> La API de Roustix no es un acceso técnico al backend. Es la **forma oficial** de que sistemas externos operen con la plataforma.
 
 ---
 
@@ -10,7 +10,7 @@
 
 | Manual | Audiencia | Pregunta que responde |
 |--------|-----------|----------------------|
-| **MPA (05)** | Arquitectos · equipo interno | ¿Cómo está construido Maintix? |
+| **MPA (05)** | Arquitectos · equipo interno | ¿Cómo está construido Roustix? |
 | **MAG (07)** | Integradores · partners · desarrolladores | ¿Cómo me conecto de forma correcta? |
 
 Uno describe la arquitectura interna; el otro el **contrato público** de integración.
@@ -46,7 +46,7 @@ Uno describe la arquitectura interna; el otro el **contrato público** de integr
 - ERP / contabilidad sincronizando activos y órdenes
 - Dashboard externo (Power BI, Looker)
 - Automatización interna del cliente (scripts, n8n)
-- Partners que extienden Maintix sin fork del código
+- Partners que extienden Roustix sin fork del código
 - Webhooks para alertas operativas en tiempo real
 
 ---

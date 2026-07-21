@@ -10,7 +10,7 @@
 
 | Pregunta | Respuesta |
 |----------|-----------|
-| ¿Qué existe? | Usuarios/roles tenant · config empresa · campos custom · onboarding · Mantis `/platform/` |
+| ¿Qué existe? | Usuarios/roles tenant · config empresa · campos custom · onboarding · Roustix Platform `/platform/` |
 | ¿Qué hace? | IAM tenant + aislamiento multi-tenant · plataforma SaaS separada |
 | ¿Qué falta? | Invitación email E2E · multisede completa · API admin MAG |
 | ¿Qué sobra? | — |
@@ -25,7 +25,7 @@
 | Nivel | Ruta | Estado |
 |-------|------|--------|
 | Tenant | `/equipo` · `/configuracion/*` · onboarding | ✅ |
-| Plataforma Mantis | `/platform/*` | ✅ |
+| Plataforma Roustix | `/platform/*` | ✅ |
 | Aislamiento tenant | `empresa_id` · `query_tenant` | ✅ |
 
 ---
@@ -73,7 +73,7 @@
 
 ---
 
-## 6 · MRG §8–§9 · Onboarding y Mantis
+## 6 · MRG §8–§9 · Onboarding y Roustix Platform
 
 | Flujo | Estado |
 |-------|--------|
@@ -127,7 +127,7 @@
 | 4 | Equipo / usuarios | ✅ |
 | 5 | Config tenant | ✅ |
 | 6 | Onboarding | ✅ |
-| 7 | Mantis | ✅ |
+| 7 | Roustix Platform | ✅ |
 | 8 | API | 🟡 |
 | 9 | MRG badges | ✅ |
 
@@ -139,7 +139,7 @@
 /equipo · /equipo/nuevo · /equipo/<id>/editar · /mi-perfil
 /configuracion/empresa · /configuracion/campos
 /onboarding
-/platform/ (Mantis)
+/platform/ (Roustix Platform)
 /api/v1/admin/summary
 ```
 

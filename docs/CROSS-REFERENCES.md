@@ -1,4 +1,4 @@
-# Referencias cruzadas · Maintix Documentation Suite
+# Referencias cruzadas · Roustix Documentation Suite
 
 **Sprint 16 · Purchasing:** [charter](purchasing/SPRINT16-REPORT.md) · [arquitectura](purchasing/architecture.md) · [contratos MAG/MRL](purchasing/contracts.md) · [migración](purchasing/migration.md) · [MRG-04](mrg/chapters/04-compras.md) · [MPA-05](mpa/chapters/05-roadmap-modulos.md)
 
@@ -102,7 +102,7 @@ Convenciones para enlazar manuales de forma **consistente**. Objetivo: un lector
 ```html
 <a href="/mcm/#mcm-01">MCM-01</a>
 <a href="/mpa/#mpa-03">MPA-03 · Modular</a>
-<a href="/docs/">Maintix Docs</a>
+<a href="/docs/">Roustix Docs</a>
 ```
 
 ### Entre capítulos del mismo manual
@@ -119,7 +119,7 @@ Convenciones para enlazar manuales de forma **consistente**. Objetivo: un lector
 Copiar al final de cada manual publicado:
 
 ```markdown
-## Maintix Documentation Suite
+## Roustix Documentation Suite
 
 | Doc | Enlace |
 |-----|--------|

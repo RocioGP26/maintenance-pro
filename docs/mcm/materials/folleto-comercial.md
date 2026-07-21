@@ -1,29 +1,29 @@
-# Folleto comercial · Maintix
+# Folleto comercial · Roustix
 
-**Código:** MCM-MAT-FOL · Material de ventas  
+**Código:** MCM-MAT-FOL · Material de ventas
 **Versión:** 1.0 · 2026
 
-Documento de una página para reuniones, PDF e impresión.  
+Documento de una página para reuniones, PDF e impresión.
 Complementa el [MCM](README.md) — no lo sustituye.
 
 ---
 
 ## Toda la operación. Una sola plataforma.
 
-**Maintix** es una Enterprise Management Platform (EMP) para PYMEs en crecimiento en Latinoamérica.
+**Roustix** es una Enterprise Management Platform (EMP) para PYMEs en crecimiento en Latinoamérica.
 
-- **Maintix Maintenance** — activos, OTs, preventivos, disponibilidad  
-- **Maintix Inventory** — stock, ventas, cartera, compras  
+- **Roustix Maintenance** — activos, OTs, preventivos, disponibilidad
+- **Roustix Inventory** — stock, ventas, cartera, compras
 - **Prueba gratuita:** 15 días · SaaS mensual
 
 ---
 
-## La frase que resume Maintix
+## La frase que resume Roustix
 
-> **La transformación comienza con un módulo.**  
+> **La transformación comienza con un módulo.**
 > **El crecimiento ocurre dentro de una sola plataforma.**
 
-*Pilar de marca oficial* — usar en landing, presentaciones, demo, pitch, bienvenida y documentación.  
+*Pilar de marca oficial* — usar en landing, presentaciones, demo, pitch, bienvenida y documentación.
 Detalle de canales: [pilar-crecimiento.md](pilar-crecimiento.md)
 
 Empiezas con lo que duele hoy. Mañana activas más capacidades — **sin migrar de sistema ni perder información**.
@@ -51,8 +51,8 @@ Inventory    →  Compras → Analytics
 
 | Si tu prioridad es… | Empieza con… |
 |---------------------|--------------|
-| Plantas, activos, mantenimiento | **Maintix Maintenance** |
-| Stock, ventas, inventario comercial | **Maintix Inventory** |
+| Plantas, activos, mantenimiento | **Roustix Maintenance** |
+| Stock, ventas, inventario comercial | **Roustix Inventory** |
 
 Ambas puertas conducen a la **misma plataforma**.
 
@@ -60,12 +60,12 @@ Ambas puertas conducen a la **misma plataforma**.
 
 ## Próximo paso
 
-**Comienza hoy.** Prueba Maintix durante 15 días sin compromiso.
+**Comienza hoy.** Prueba Roustix durante 15 días sin compromiso.
 
-- Web: landing Maintix  
-- Manual comercial: [MCM](/mcm/)  
+- Web: landing Roustix
+- Manual comercial: [MCM](/mcm/)
 - Sectores y guiones: [MCM-05-SECT](chapters/05-sectores.md)
 
 ---
 
-*Maintix · Bogotá, Colombia · Latinoamérica*
+*Roustix · Bogotá, Colombia · Latinoamérica*

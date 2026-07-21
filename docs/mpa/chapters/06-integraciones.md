@@ -2,7 +2,7 @@
 
 **Código:** MPA-06-INT · Sprint 6.6
 
-> Maintix no vive aislado. La plataforma debe **hablar** con las herramientas que las empresas latinoamericanas ya usan.
+> Roustix no vive aislado. La plataforma debe **hablar** con las herramientas que las empresas latinoamericanas ya usan.
 
 ---
 
@@ -72,8 +72,8 @@ Documentación de contratos → **[MAG-04 Recursos](/mag/chapters/04-recursos.md
 ## 6 · Webhooks (diseño futuro)
 
 ```
-Maintix evento → POST https://cliente.com/hook
-  Headers: X-Maintix-Signature
+Roustix evento → POST https://cliente.com/hook
+  Headers: X-Roustix-Signature
   Body: { event, tenant_id, payload, timestamp }
 ```
 
@@ -88,7 +88,7 @@ Eventos candidatos:
 
 ## 7 · ERP y contabilidad
 
-Maintix **no reemplaza** el ERP en fase inicial. La integración exporta:
+Roustix **no reemplaza** el ERP en fase inicial. La integración exporta:
 
 - Movimientos de compra/venta
 - Referencias de activos y depreciación (futuro Finance)

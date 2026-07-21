@@ -27,12 +27,12 @@ FAQ · Documentación · Contacto viven en footer (MKT-05 §6 footer).
 
 | Elemento | Estado |
 |----------|--------|
-| Logo / marca Maintix | ✅ |
+| Logo / marca Roustix | ✅ |
 | Slogan MKT-01 | ✅ `brand_slogan` |
 | Columna Producto | ✅ Maintenance · Inventory · Planes · Trial |
 | Columna Documentación | ✅ Docs · MCM · MKT · MRG · MAG |
 | Columna Empresa | ✅ Contacto · FAQ · Demo · Recursos · email |
-| Copyright Maintix | ✅ |
+| Copyright Roustix | ✅ |
 | Privacidad | 📋 «próximamente» en barra legal |
 | Redes sociales | 📋 roadmap v2 |
 

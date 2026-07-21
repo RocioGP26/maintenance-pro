@@ -1,6 +1,6 @@
 Hola {{ user.etiqueta() }},
 
-Usa este código para confirmar el correo de {{ empresa.razon_social }} en Maintix:
+Usa este código para confirmar el correo de {{ empresa.razon_social }} en Roustix:
 
 {{ code }}
 

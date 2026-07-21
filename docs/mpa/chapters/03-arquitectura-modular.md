@@ -2,7 +2,7 @@
 
 **Código:** MPA-03-MOD · Sprint 6.3
 
-> El concepto más importante de Maintix: **una plataforma, módulos activables, cero instalaciones distintas**.
+> El concepto más importante de Roustix: **una plataforma, módulos activables, cero instalaciones distintas**.
 
 ---
 

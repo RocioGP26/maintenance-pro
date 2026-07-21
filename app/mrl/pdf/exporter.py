@@ -71,8 +71,8 @@ class BasePdfExporter:
             rightMargin=constants.PDF_MARGIN_RIGHT_MM * mm,
             topMargin=(constants.PDF_MARGIN_TOP_MM + constants.PDF_HEADER_HEIGHT_MM) * mm,
             bottomMargin=(constants.PDF_MARGIN_BOTTOM_MM + constants.PDF_FOOTER_HEIGHT_MM) * mm,
-            title=self.meta.title, author="Maintix",
-            subject=self.meta.doc_code, creator=f"Maintix MRL v{self.meta.mrl_version}",
+            title=self.meta.title, author="Roustix",
+            subject=self.meta.doc_code, creator=f"Roustix MRL v{self.meta.mrl_version}",
         )
         story = self._story or [Paragraph(self.meta.title, paragraph_styles()["title"])]
         doc.build(story, onFirstPage=self._draw_page, onLaterPages=self._draw_page)
@@ -86,8 +86,8 @@ class BasePdfExporter:
         left = constants.PDF_MARGIN_LEFT_MM * mm
         right = width - constants.PDF_MARGIN_RIGHT_MM * mm
         canvas.setTitle(self.meta.title)
-        canvas.setAuthor("Maintix")
-        canvas.setCreator(f"Maintix MRL v{self.meta.mrl_version}")
+        canvas.setAuthor("Roustix")
+        canvas.setCreator(f"Roustix MRL v{self.meta.mrl_version}")
         canvas.setSubject(self.meta.doc_code)
 
         canvas.setFillColor(pdf_color(colors.PRIMARY))

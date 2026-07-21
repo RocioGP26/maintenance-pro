@@ -16,7 +16,7 @@
 ## [1.1.4] — 2026-07-11 · Sprint 15.4 · DOC-001
 
 ### Added
-- **DOC-001 Orden de Trabajo** como primer documento PDF oficial de Maintix.
+- **DOC-001 Orden de Trabajo** como primer documento PDF oficial de Roustix.
 - Adaptador Maintenance con datos generales, KPI, ejecución, jornadas, repuestos y autorizaciones.
 - Ruta tenant-safe `GET /ordenes/<id>/pdf` y descarga desde la vista de la OT.
 - `tests/test_mrl_doc001.py` — generación independiente de Flask y desacoplamiento MRL.
@@ -111,13 +111,13 @@
 ## [1.0.0] — 2026-07-10 · Sprint 7 completo
 
 ### Added
-- **MRL v1.0** — Maintix Report Language (10 capítulos)
+- **MRL v1.0** — Roustix Report Language (10 capítulos)
 - Catálogo HTML `/mrl/`
 - Códigos MRL-01-PHIL … MRL-10-ROAD
 - Registro **DOC-001** – **DOC-010**
 - Bloques **MRL-HDR-001**, **MRL-TBL-001**, **MRL-KPI-001**, **MRL-CHT-001**
 - Estándares PDF (ReportLab) · Excel · CSV
-- Filosofía: PDF = extensión de Maintix, no archivo suelto
+- Filosofía: PDF = extensión de Roustix, no archivo suelto
 
 ### Capítulos
 - MRL-01 · Filosofía

@@ -44,7 +44,7 @@ Ver [chapters/01-identidad-mensajes-marca.md](chapters/01-identidad-mensajes-mar
 
 - Tagline: *Toda la operación. Una sola plataforma.*
 - Slogan: *No necesitas otro software. Necesitas recuperar el control de tu operación.*
-- Arquitectura del mensaje: Problema → Consecuencia → Transformación → Maintix → Resultado
+- Arquitectura del mensaje: Problema → Consecuencia → Transformación → Roustix → Resultado
 - Brand DNA · Palabras preferidas (Usar / Evitar)
 
 ---

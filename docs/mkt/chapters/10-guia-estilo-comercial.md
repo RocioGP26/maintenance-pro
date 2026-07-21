@@ -12,7 +12,7 @@
 
 ## Objetivo del capítulo
 
-Definir las **reglas oficiales** para garantizar que toda comunicación de Maintix sea consistente, profesional y alineada con la identidad de la marca.
+Definir las **reglas oficiales** para garantizar que toda comunicación de Roustix sea consistente, profesional y alineada con la identidad de la marca.
 
 Este capítulo aplica para:
 
@@ -29,7 +29,7 @@ La confianza también se construye mediante la **consistencia**.
 
 Cuando un cliente visita la web, recibe un correo, ve una demo y habla con ventas, debe sentir que interactúa con **la misma empresa**.
 
-La marca Maintix debe verse, leerse y sentirse igual en todos los canales.
+La marca Roustix debe verse, leerse y sentirse igual en todos los canales.
 
 ---
 
@@ -86,7 +86,7 @@ Todo contenido debe respetar [MKT-01 · Brand DNA](01-identidad-mensajes-marca.m
 
 | ✅ Usar | ❌ Evitar |
 |---------|----------|
-| **Maintix** | MAINTIX · maintix · Maintix ERP · Sistema Maintix |
+| **Roustix** | ROUSTIX · roustix · Roustix ERP · Sistema Roustix |
 
 ### Plataforma
 
@@ -347,7 +347,7 @@ Una marca sólida no depende de una campaña exitosa.
 
 Depende de repetir el **mismo mensaje**, con la **misma identidad** y el **mismo propósito**, durante años.
 
-Maintix no busca ser recordada por un anuncio. Busca ser reconocida porque cada interacción transmite la misma promesa:
+Roustix no busca ser recordada por un anuncio. Busca ser reconocida porque cada interacción transmite la misma promesa:
 
 > **Toda la operación. Una sola plataforma.**
 
@@ -387,7 +387,7 @@ Con **MKT-10** queda completado el **Manual de Marketing (MKT) v1.0**, conformad
 | MKT-09 | [Estrategia de Contenidos y Redes Sociales](09-social-contenidos.md) |
 | MKT-10 | Guía de Estilo y Gobernanza de Marca *(este capítulo)* |
 
-**Resultado Sprint 12:** guía integral que unifica identidad, comunicación, ventas y marketing — para que cualquier canal, campaña o partner comunique Maintix de forma consistente y alineada con la filosofía de la plataforma.
+**Resultado Sprint 12:** guía integral que unifica identidad, comunicación, ventas y marketing — para que cualquier canal, campaña o partner comunique Roustix de forma consistente y alineada con la filosofía de la plataforma.
 
 **MCM explica por qué comprar. MKT entrega con qué vender.**
 

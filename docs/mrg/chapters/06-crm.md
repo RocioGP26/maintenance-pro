@@ -2,7 +2,7 @@
 
 **Código:** MRG-06-CRM · Sprint 10.6 · **Entregado (parcial)**
 
-> El módulo **CRM** (Customer Relationship Management) centralizará la gestión comercial de clientes, contactos, oportunidades y actividades — convirtiéndose en el **punto de partida** del proceso comercial de Maintix.
+> El módulo **CRM** (Customer Relationship Management) centralizará la gestión comercial de clientes, contactos, oportunidades y actividades — convirtiéndose en el **punto de partida** del proceso comercial de Roustix.
 
 **Toda la operación. Una sola plataforma.**
 
@@ -10,9 +10,9 @@
 
 ## Objetivo del capítulo
 
-Documentar el alcance funcional del módulo CRM de Maintix, describiendo el **estado actual**, la **evolución prevista** y su integración con Sales, Inventory y futuros módulos comerciales.
+Documentar el alcance funcional del módulo CRM de Roustix, describiendo el **estado actual**, la **evolución prevista** y su integración con Sales, Inventory y futuros módulos comerciales.
 
-Actualmente Maintix dispone del **maestro de clientes** utilizado por Inventory y Sales. El CRM ampliará esta información para administrar todo el ciclo comercial.
+Actualmente Roustix dispone del **maestro de clientes** utilizado por Inventory y Sales. El CRM ampliará esta información para administrar todo el ciclo comercial.
 
 **Estado:** 🟡 **Maestro de clientes operativo** · **Sprint 14 ALIGN:** ✅ Cerrado (2026-07-10) · Módulo CRM completo 📋 **Roadmap**
 
@@ -325,7 +325,7 @@ Este capítulo se considera **implementado (documentación)** cuando:
 
 ## Filosofía del capítulo
 
-El CRM no consiste únicamente en almacenar clientes. Su objetivo es convertir las **relaciones comerciales** en procesos **medibles y trazables**, permitiendo conocer el estado de cada oportunidad desde el primer contacto hasta la venta. Maintix integra este proceso con el resto de la plataforma para ofrecer una visión completa del ciclo comercial.
+El CRM no consiste únicamente en almacenar clientes. Su objetivo es convertir las **relaciones comerciales** en procesos **medibles y trazables**, permitiendo conocer el estado de cada oportunidad desde el primer contacto hasta la venta. Roustix integra este proceso con el resto de la plataforma para ofrecer una visión completa del ciclo comercial.
 
 ---
 

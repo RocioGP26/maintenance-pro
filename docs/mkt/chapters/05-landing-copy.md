@@ -2,7 +2,7 @@
 
 **Código:** MKT-05 · Sprint 12.5 · **Entregado**
 
-> El sitio web de Maintix no existe para explicar todo el producto. Existe para convertir visitantes en trials, demostraciones y oportunidades comerciales.
+> El sitio web de Roustix no existe para explicar todo el producto. Existe para convertir visitantes en trials, demostraciones y oportunidades comerciales.
 
 **Toda la operación. Una sola plataforma.**
 
@@ -14,7 +14,7 @@
 
 ## Objetivo del capítulo
 
-Definir la **estructura oficial del sitio web** de Maintix: arquitectura de la landing principal, mensajes por sección, CTAs, principios de conversión y criterios para futuras páginas comerciales.
+Definir la **estructura oficial del sitio web** de Roustix: arquitectura de la landing principal, mensajes por sección, CTAs, principios de conversión y criterios para futuras páginas comerciales.
 
 Este documento sirve como referencia para:
 
@@ -36,7 +36,7 @@ El visitante debe comprender **tres ideas en menos de un minuto**:
 
 | # | Idea |
 |---|------|
-| 1 | ¿Qué problema resuelve Maintix? |
+| 1 | ¿Qué problema resuelve Roustix? |
 | 2 | ¿Cómo lo resuelve? |
 | 3 | ¿Cómo empezar hoy? |
 
@@ -65,7 +65,7 @@ Visitante
     ↓
 Problema
     ↓
-Maintix
+Roustix
     ↓
 Beneficios
     ↓
@@ -120,7 +120,7 @@ Debe comunicar el valor **inmediatamente**.
 | Elemento | Copy oficial |
 |----------|--------------|
 | **Título** | Organiza, controla y haz crecer tu operación desde un solo lugar. |
-| **Subtítulo** | Maintix es una plataforma SaaS modular para empresas que ya crecieron más allá de Excel. |
+| **Subtítulo** | Roustix es una plataforma SaaS modular para empresas que ya crecieron más allá de Excel. |
 | **CTA primario** | Probar gratis 15 días |
 | **CTA secundario** | Solicitar demostración |
 
@@ -153,7 +153,7 @@ Mostrar situaciones reales:
 Explicar el concepto **EMP**. Mostrar módulos conectados:
 
 ```
-Maintix
+Roustix
     ↓
 Mantenimiento  →  Inventario  →  Compras  →  Ventas  →  Analytics
 ```
@@ -278,7 +278,7 @@ Elementos recomendados:
 - Multiempresa (tenant)
 - Arquitectura modular
 - API disponible ([MAG](/mag/))
-- Documentación oficial ([Maintix Docs](/docs/))
+- Documentación oficial ([Roustix Docs](/docs/))
 
 ---
 
@@ -321,13 +321,13 @@ Debe contener:
 ### Meta Title
 
 ```
-Maintix | Plataforma SaaS para controlar la operación empresarial
+Roustix | Plataforma SaaS para controlar la operación empresarial
 ```
 
 ### Meta Description
 
 ```
-Maintix ayuda a empresas en crecimiento a organizar, controlar y hacer crecer su operación mediante una plataforma SaaS modular para mantenimiento e inventario.
+Roustix ayuda a empresas en crecimiento a organizar, controlar y hacer crecer su operación mediante una plataforma SaaS modular para mantenimiento e inventario.
 ```
 
 ### Palabras clave *(referencia · no stuffing)*
@@ -424,11 +424,11 @@ Maintix ayuda a empresas en crecimiento a organizar, controlar y hacer crecer su
 
 ## Filosofía del capítulo
 
-La web de Maintix no debe intentar responder **todas** las preguntas.
+La web de Roustix no debe intentar responder **todas** las preguntas.
 
 Debe responder **una sola**:
 
-> *«¿Vale la pena probar Maintix?»*
+> *«¿Vale la pena probar Roustix?»*
 
 Si el visitante comprende el problema, identifica el valor y encuentra un camino claro para trial o demo, **la landing cumplió su objetivo**.
 

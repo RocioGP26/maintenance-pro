@@ -1,5 +1,5 @@
 :root {
-  /* Paleta corporativa Mantis */
+  /* Paleta corporativa Roustix */
   --primario: #042c53;
   --acento: #185fa5;
   --claro: #378add;
@@ -1059,7 +1059,7 @@ a.header-user-name:hover {
   box-shadow: 0 2px 12px rgba(55, 138, 221, 0.2);
 }
 
-/* Login y onboarding — paleta corporativa Mantis */
+/* Login y onboarding — paleta corporativa Roustix */
 .login-page,
 .onboarding-page {
   background-color: var(--fondo);

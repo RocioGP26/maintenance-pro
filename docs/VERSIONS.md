@@ -1,4 +1,4 @@
-# Versiones oficiales · Maintix Documentation Suite
+# Versiones oficiales · Roustix Documentation Suite
 
 **Fuente única de verdad** para versiones de cada manual y de la suite.
 
@@ -62,7 +62,7 @@ Changelog: [changelog.md](changelog.md)
 | 06 | MRL | Report Language | **v1.1.0** | 🚧 Sprint 15.0 | [mrl/changelog.md](mrl/changelog.md) | [/mrl/](http://127.0.0.1:5000/mrl/) |
 | 07 | MAG | API Guide | **v1.0.12** | ✅ MAG v1.0 | [mag/changelog.md](mag/changelog.md) | [/mag/](http://127.0.0.1:5000/mag/) |
 | 08 | SDK | SDK & Developer Portal (MSD) | **v1.0.0** | ✅ Sprint 9 | [msd/changelog.md](msd/changelog.md) | [/msd/](http://127.0.0.1:5000/msd/) |
-| 11 | MRG | Maintix Reference Guide | **v1.0.0** | ✅ Sprint 10 | [mrg/changelog.md](mrg/changelog.md) | [/mrg/](http://127.0.0.1:5000/mrg/) |
+| 11 | MRG | Roustix Reference Guide | **v1.0.0** | ✅ Sprint 10 | [mrg/changelog.md](mrg/changelog.md) | [/mrg/](http://127.0.0.1:5000/mrg/) |
 | 09 | — | Developer Docs | — | 🟡 En curso | — | [developer/README.md](developer/README.md) |
 | 10 | — | Release Notes | — | Activo | [release-notes/](release-notes/) | [release-notes/README.md](release-notes/README.md) |
 

@@ -1,6 +1,6 @@
-# Maintix Documentation · Producto independiente
+# Roustix Documentation · Producto independiente
 
-**Maintix Documentation Suite** no es un apéndice del repositorio. Es un **producto documental** con su propia versión, changelog, índice maestro y estándares de calidad.
+**Roustix Documentation Suite** no es un apéndice del repositorio. Es un **producto documental** con su propia versión, changelog, índice maestro y estándares de calidad.
 
 > El software y la documentación evolucionan juntos, pero **no al mismo ritmo**. La documentación tiene releases propios.
 
@@ -67,7 +67,7 @@ Cuando llegue el momento de hacerla **pública** para clientes y partners:
 ## Relación software ↔ documentación
 
 ```
-Maintix App (semver app)          Maintix Docs (semver docs)
+Roustix App (semver app)          Roustix Docs (semver docs)
         │                                  │
         ├─ features                        ├─ MPA describe plataforma
         ├─ migraciones BD                  ├─ MCM describe venta
@@ -98,4 +98,4 @@ Maintix App (semver app)          Maintix Docs (semver docs)
 
 ---
 
-*Maintix Documentation · Producto independiente · 2026*
+*Roustix Documentation · Producto independiente · 2026*

@@ -7,7 +7,7 @@ Capítulo completo de correos transaccionales. Todos comparten shell `mtx-email`
 | Parte | Clase | Contenido |
 |-------|-------|-----------|
 | Wrapper | `mtx-email` | Tabla 600px max, centrada |
-| Header | `mtx-email-header` | Logo MAINTIX + azul `#185FA5` |
+| Header | `mtx-email-header` | Logo ROUSTIX + azul `#185FA5` |
 | Body | `mtx-email-content` | Copy + CTA |
 | Footer | `mtx-email-footer` | Legal, unsubscribe, © |
 
@@ -38,15 +38,15 @@ Capítulo completo de correos transaccionales. Todos comparten shell `mtx-email`
 ```html
 <div class="mtx-email">
   <div class="mtx-email-body">
-    <div class="mtx-email-header">MAINTIX</div>
+    <div class="mtx-email-header">ROUSTIX</div>
     <div class="mtx-email-content">
-      <h1 style="font-size:22px;color:#042C53">Bienvenido a Maintix</h1>
+      <h1 style="font-size:22px;color:#042C53">Bienvenido a Roustix</h1>
       <p>Toda la operación. Una sola plataforma.</p>
       <a href="{{ app_url }}" style="background:#185FA5;color:#fff;padding:12px 24px;border-radius:10px;text-decoration:none;display:inline-block">
         Ir al dashboard
       </a>
     </div>
-    <div class="mtx-email-footer">© Maintix · {{ year }}</div>
+    <div class="mtx-email-footer">© Roustix · {{ year }}</div>
   </div>
 </div>
 ```

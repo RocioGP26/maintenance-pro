@@ -10,7 +10,7 @@
 
 ## Objetivo del capítulo
 
-Definir el **formato oficial** de manejo de errores de Maintix.
+Definir el **formato oficial** de manejo de errores de Roustix.
 
 Un error nunca debe depender del framework, de SQLAlchemy ni del servidor. El cliente siempre recibe una respuesta **consistente**, independientemente del módulo.
 
@@ -60,7 +60,7 @@ El cliente **nunca** debe interpretar el texto de `message`. Siempre debe utiliz
 
 ## 3 · Códigos HTTP
 
-Maintix utiliza únicamente códigos HTTP estándar.
+Roustix utiliza únicamente códigos HTTP estándar.
 
 | HTTP | Uso |
 |------|-----|
@@ -368,7 +368,7 @@ Este capítulo se considera **implementado** cuando:
 
 Los errores también son una **interfaz**. Un contrato consistente permite que personas, SDKs e integraciones reaccionen de forma predecible, independientemente del módulo o de la implementación interna.
 
-**MAG-06 convierte el manejo de errores en parte del contrato público de Maintix**, garantizando estabilidad para todos los clientes de la API.
+**MAG-06 convierte el manejo de errores en parte del contrato público de Roustix**, garantizando estabilidad para todos los clientes de la API.
 
 ---
 

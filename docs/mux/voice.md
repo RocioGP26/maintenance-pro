@@ -43,7 +43,7 @@ Subtítulos y empty states pueden explicar **por qué** importa:
 
 Usar MTBF, MTTR, CMMS cuando el perfil lo espera (gerente). Para técnico: «Tiempo entre fallas» la primera vez, sigla después.
 
-## Palabras Maintix (producto)
+## Palabras Roustix (producto)
 
 **Usar:** operación · activo · orden de trabajo · disponibilidad · inventario · planta · módulo · sede · cliente · stock
 
@@ -51,8 +51,8 @@ Usar MTBF, MTTR, CMMS cuando el perfil lo espera (gerente). Para técnico: «Tie
 
 ## Tratamiento del nombre
 
-- **Maintix** en prosa UI (M mayúscula)
-- **MAINTIX** solo en logos, emails header, PDF
+- **Roustix** en prosa UI (M mayúscula)
+- **ROUSTIX** solo en logos, emails header, PDF
 - No «MTX» en copy de usuario
 
 ## Tono por perfil (resumen)

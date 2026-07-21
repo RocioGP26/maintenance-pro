@@ -2,7 +2,7 @@
 
 **Código:** MDO-04 · Sprint 13.4 · **Entregado**
 
-> Una documentación excelente no depende de escribir mucho. Depende de escribir de forma **consistente, reutilizable y alineada** con la arquitectura documental de Maintix.
+> Una documentación excelente no depende de escribir mucho. Depende de escribir de forma **consistente, reutilizable y alineada** con la arquitectura documental de Roustix.
 
 **Toda la operación. Una sola plataforma.**
 
@@ -12,7 +12,7 @@
 
 ## Objetivo del capítulo
 
-Definir las **reglas oficiales** para cualquier persona que escriba, edite o mantenga documentación de Maintix.
+Definir las **reglas oficiales** para cualquier persona que escriba, edite o mantenga documentación de Roustix.
 
 ### Aplica para
 
@@ -39,7 +39,7 @@ Por lo tanto debe cumplir los mismos principios que el software:
 - Versionado
 
 > No se escribe pensando únicamente en el lector actual.  
-> Se escribe pensando en el **Maintix de los próximos años**.
+> Se escribe pensando en el **Roustix de los próximos años**.
 
 ---
 
@@ -156,7 +156,7 @@ Todo documento debe indicar claramente su **estado**.
 
 ## 6 · Terminología oficial
 
-Siempre utilizar el **vocabulario oficial** de Maintix.
+Siempre utilizar el **vocabulario oficial** de Roustix.
 
 | Correcto | Evitar |
 |----------|--------|
@@ -305,7 +305,7 @@ Antes de aprobar un documento verificar:
 ### Editorial
 
 - [ ] Ortografía
-- [ ] Tono Maintix
+- [ ] Tono Roustix
 - [ ] Formato uniforme
 - [ ] Estado actualizado
 
@@ -362,7 +362,7 @@ Cada modificación importante debe **registrarse**.
 - [x] Se definieron estándares editoriales
 - [x] Se documentó el flujo de contribución
 - [x] Se establecieron reglas de calidad
-- [x] Se alineó la documentación con toda la suite Maintix
+- [x] Se alineó la documentación con toda la suite Roustix
 
 ---
 
@@ -370,7 +370,7 @@ Cada modificación importante debe **registrarse**.
 
 Una buena documentación **no depende del autor**.
 
-Depende de un **estándar** que permita que cualquier colaborador escriba con la misma calidad, estructura y lenguaje, haciendo que Maintix evolucione de forma ordenada.
+Depende de un **estándar** que permita que cualquier colaborador escriba con la misma calidad, estructura y lenguaje, haciendo que Roustix evolucione de forma ordenada.
 
 ---
 

@@ -16,7 +16,7 @@
 
 | Tema | Debe reflejarse en sitio |
 |------|--------------------------|
-| Qué es Maintix | ✅ |
+| Qué es Roustix | ✅ |
 | Módulos hoy vs roadmap | ✅ |
 | Planes Start–Enterprise | ✅ |
 | Trial 15 días | ✅ |

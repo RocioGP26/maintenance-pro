@@ -10,7 +10,7 @@
 
 ## Objetivo del capítulo
 
-Definir el **entorno oficial de pruebas (Sandbox)** y el **API Explorer** de Maintix, permitiendo a desarrolladores, partners e integradores experimentar con la API en un entorno completamente aislado, utilizando datos de demostración y el contrato oficial de **MAG v1**.
+Definir el **entorno oficial de pruebas (Sandbox)** y el **API Explorer** de Roustix, permitiendo a desarrolladores, partners e integradores experimentar con la API en un entorno completamente aislado, utilizando datos de demostración y el contrato oficial de **MAG v1**.
 
 El Sandbox proporciona una experiencia **segura** para desarrollar, validar integraciones y aprender a utilizar la plataforma **sin riesgo** para información de clientes.
 
@@ -95,7 +95,7 @@ python run.py
 # Tenant demo según seed de la base de datos local
 ```
 
-**Producción sandbox (planificado):** `https://sandbox.api.maintix.app/api/v1` o tenant `empresa-demo` en API compartida con aislamiento estricto.
+**Producción sandbox (planificado):** `https://sandbox.api.roustix.app/api/v1` o tenant `empresa-demo` en API compartida con aislamiento estricto.
 
 ---
 
@@ -326,7 +326,7 @@ Este capítulo se considera **implementado** cuando:
 
 El Sandbox convierte la documentación en una **experiencia interactiva**. Un desarrollador no solo lee cómo funciona la API: la **prueba**, experimenta con ella y valida su integración antes de escribir una sola línea de código para producción.
 
-**MSD-06 establece el entorno oficial de experimentación de Maintix**, garantizando que cualquier integración pueda desarrollarse de forma segura, repetible y alineada con el contrato definido por MAG.
+**MSD-06 establece el entorno oficial de experimentación de Roustix**, garantizando que cualquier integración pueda desarrollarse de forma segura, repetible y alineada con el contrato definido por MAG.
 
 ---
 

@@ -2,7 +2,7 @@
 
 **Código:** MPA-08-SCALE · Sprint 6.8
 
-> Cómo Maintix puede crecer de **10 usuarios a 10.000 empresas** sin reescribir la plataforma.
+> Cómo Roustix puede crecer de **10 usuarios a 10.000 empresas** sin reescribir la plataforma.
 
 ---
 

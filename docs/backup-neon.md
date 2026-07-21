@@ -1,6 +1,6 @@
 # Copias de seguridad con Neon PostgreSQL
 
-Mantis soporta backups lógicos vía `pg_dump` y la recuperación point-in-time (PITR) nativa de Neon.
+Roustix Platform soporta backups lógicos vía `pg_dump` y la recuperación point-in-time (PITR) nativa de Neon.
 
 ## 1. PITR en Neon (recomendado)
 
@@ -47,7 +47,7 @@ Programación sugerida: `0 3 * * *` (diario 03:00 UTC).
 
 ### GitHub Actions (backup diario)
 
-El workflow `.github/workflows/backup.yml` ejecuta un `pg_dump` cada día a las 03:00 UTC y guarda `backup.sql` como artefacto (`mantis-backup`, 14 días de retención).
+El workflow `.github/workflows/backup.yml` ejecuta un `pg_dump` cada día a las 03:00 UTC y guarda `backup.sql` como artefacto (`roustix-backup`, 14 días de retención).
 
 Configuración en GitHub:
 

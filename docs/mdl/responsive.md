@@ -1,6 +1,6 @@
 # MDL · Responsive
 
-Breakpoints oficiales Maintix. Usar **solo estos** en `@media` y clases utilitarias.
+Breakpoints oficiales Roustix. Usar **solo estos** en `@media` y clases utilitarias.
 
 ## Escala
 
@@ -47,7 +47,7 @@ Breakpoints oficiales Maintix. Usar **solo estos** en `@media` y clases utilitar
 
 ## Dashboard
 
-Maintix es **desktop-first** en operación densa. En móvil: priorizar lectura y alertas, no edición masiva.
+Roustix es **desktop-first** en operación densa. En móvil: priorizar lectura y alertas, no edición masiva.
 
 ## Prohibido
 
