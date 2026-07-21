@@ -42,7 +42,7 @@ class TestApplicationVersion(unittest.TestCase):
             self.app.update_template_context(context)
         self.assertEqual(context["app_name"], "Roustix")
         self.assertEqual(context["app_logo_path"], "img/roustix-logo.svg")
-        self.assertEqual(context["app_favicon_path"], "img/roustix-favicon.svg")
+        self.assertEqual(context["app_favicon_path"], "img/favicon.svg")
 
     def test_public_html_and_static_brand_assets(self) -> None:
         with self.app.test_request_context("/"):
@@ -51,7 +51,7 @@ class TestApplicationVersion(unittest.TestCase):
                 "<img src=\"{{ url_for('static', filename=app_logo_path) }}\">"
             )
         self.assertIn("/static/img/roustix-logo.svg", html)
-        self.assertIn("/static/img/roustix-favicon.svg", html)
+        self.assertIn("/static/img/favicon.svg", html)
 
         client = self.app.test_client()
         for path in (

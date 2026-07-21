@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+  <!-- Fondo cuadrado redondeado -->
+  <rect width="32" height="32" rx="7" fill="#185FA5"/>
+  <!-- Círculo central oscuro -->
+  <circle cx="16" cy="16" r="12" fill="#0A2540"/>
+  <!-- R geométrica limpia -->
+  <!-- Palo vertical -->
+  <rect x="10" y="9" width="3" height="14" rx="1" fill="white"/>
+  <!-- Panza -->
+  <path d="M13,9 L19,9 Q23,9 23,13 Q23,17 19,17 L13,17 Z" fill="white"/>
+  <path d="M13,11 L18,11 Q21,11 21,13 Q21,15 18,15 L13,15 Z" fill="#0A2540"/>
+  <!-- Pierna diagonal -->
+  <line x1="14" y1="17" x2="22" y2="23" stroke="white" stroke-width="3" stroke-linecap="square"/>
+</svg>
