@@ -12,6 +12,12 @@ La suite documental mantiene un ciclo independiente en
 
 - Espacio reservado para cambios aún no publicados.
 
+## [1.0.6] - 2026-07-21
+
+### Changed
+
+- fix: sync develop → main (migración medidores PostgreSQL) (#7).
+
 ## [1.0.5] - 2026-07-21
 
 ### Added
@@ -155,10 +161,11 @@ La suite documental mantiene un ciclo independiente en
 
 - Este release formaliza el versionado; no modifica funcionalidades de negocio.
 
-[Unreleased]: https://github.com/RocioGP26/maintenance-pro/compare/v1.0.5...HEAD
+[Unreleased]: https://github.com/RocioGP26/maintenance-pro/compare/v1.0.6...HEAD
 [1.0.0]: https://github.com/RocioGP26/maintenance-pro/releases/tag/v1.0.0
 [1.0.1]: https://github.com/RocioGP26/maintenance-pro/compare/v1.0.0...v1.0.1
 [1.0.2]: https://github.com/RocioGP26/maintenance-pro/compare/v1.0.1...v1.0.2
 [1.0.3]: https://github.com/RocioGP26/maintenance-pro/compare/v1.0.2...v1.0.3
 [1.0.4]: https://github.com/RocioGP26/maintenance-pro/compare/v1.0.3...v1.0.4
 [1.0.5]: https://github.com/RocioGP26/maintenance-pro/compare/v1.0.4...v1.0.5
+[1.0.6]: https://github.com/RocioGP26/maintenance-pro/compare/v1.0.5...v1.0.6
