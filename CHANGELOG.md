@@ -10,6 +10,12 @@ La suite documental mantiene un ciclo independiente en
 
 ### Added
 
+- Espacio reservado para cambios aún no publicados.
+
+## [1.0.5] - 2026-07-21
+
+### Added
+
 - Asset Health avanzado por activo con puntaje 0–100, confianza de datos,
   factores explicables, razones accionables, bandas e historial de snapshots.
 - Portafolio de salud con filtros, detalle por activo, integración en dashboard
@@ -66,6 +72,10 @@ La suite documental mantiene un ciclo independiente en
 
 - La migración inicial de medidores enlaza valores booleanos tipados para que
   la carga de horas históricas funcione tanto en SQLite como en PostgreSQL.
+
+### Notes
+
+- Release: Roustix + Sprints 19-21 (ejecucion, automatizacion, Asset Health) (#6).
 
 ## [1.0.4] - 2026-07-16
 
@@ -145,9 +155,10 @@ La suite documental mantiene un ciclo independiente en
 
 - Este release formaliza el versionado; no modifica funcionalidades de negocio.
 
-[Unreleased]: https://github.com/RocioGP26/maintenance-pro/compare/v1.0.4...HEAD
+[Unreleased]: https://github.com/RocioGP26/maintenance-pro/compare/v1.0.5...HEAD
 [1.0.0]: https://github.com/RocioGP26/maintenance-pro/releases/tag/v1.0.0
 [1.0.1]: https://github.com/RocioGP26/maintenance-pro/compare/v1.0.0...v1.0.1
 [1.0.2]: https://github.com/RocioGP26/maintenance-pro/compare/v1.0.1...v1.0.2
 [1.0.3]: https://github.com/RocioGP26/maintenance-pro/compare/v1.0.2...v1.0.3
 [1.0.4]: https://github.com/RocioGP26/maintenance-pro/compare/v1.0.3...v1.0.4
+[1.0.5]: https://github.com/RocioGP26/maintenance-pro/compare/v1.0.4...v1.0.5
