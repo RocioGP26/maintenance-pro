@@ -10,7 +10,7 @@
 
 ## Objetivo del capítulo
 
-Definir la **estrategia oficial** para los SDK Maintix — bibliotecas nativas que encapsulan autenticación, consumo de la API, manejo de errores y buenas prácticas definidas en MAG.
+Definir la **estrategia oficial** para los SDK Roustix — bibliotecas nativas que encapsulan autenticación, consumo de la API, manejo de errores y buenas prácticas definidas en MAG.
 
 Los SDK eliminan la necesidad de construir manualmente solicitudes HTTP y garantizan que todas las integraciones utilicen el **mismo contrato**.
 
@@ -32,7 +32,7 @@ El SDK únicamente ofrece una forma más **cómoda y segura** de consumir ese co
 Aplicación
       │
       ▼
- Maintix SDK
+ Roustix SDK
       │
       ▼
    OpenAPI
@@ -57,9 +57,9 @@ Toda mejora del SDK debe mantenerse **alineada con MAG**.
 
 | Lenguaje | Paquete | Estado |
 |----------|---------|--------|
-| **Python** | `maintix` | 📋 Implementación pendiente |
-| **JavaScript / TypeScript** | `@maintix/sdk` | 📋 Implementación pendiente |
-| **PHP** | `maintix/sdk` | 📋 Implementación pendiente |
+| **Python** | `roustix` | 📋 Implementación pendiente |
+| **JavaScript / TypeScript** | `@roustix/sdk` | 📋 Implementación pendiente |
+| **PHP** | `roustix/sdk` | 📋 Implementación pendiente |
 
 **Roadmap futuro:**
 
@@ -74,19 +74,19 @@ Toda mejora del SDK debe mantenerse **alineada con MAG**.
 **Python:**
 
 ```bash
-pip install maintix
+pip install roustix
 ```
 
 **JavaScript:**
 
 ```bash
-npm install @maintix/sdk
+npm install @roustix/sdk
 ```
 
 **PHP:**
 
 ```bash
-composer require maintix/sdk
+composer require roustix/sdk
 ```
 
 Todos los paquetes siguen el **mismo versionado** que MAG (`1.x` → MAG v1).
@@ -100,10 +100,10 @@ Ejemplo conceptual — base URL incluye `/api/v1`:
 **Python:**
 
 ```python
-from maintix import MaintixClient
+from roustix import RoustixClient
 
-client = MaintixClient(
-    base_url="https://api.maintix.app/api/v1",
+client = RoustixClient(
+    base_url="https://api.roustix.app/api/v1",
     token="JWT",
 )
 ```
@@ -111,26 +111,26 @@ client = MaintixClient(
 **JavaScript:**
 
 ```javascript
-import { MaintixClient } from "@maintix/sdk";
+import { RoustixClient } from "@roustix/sdk";
 
-const client = new MaintixClient({
-  baseUrl: process.env.MAINTIX_API,
-  token: process.env.MAINTIX_TOKEN,
+const client = new RoustixClient({
+  baseUrl: process.env.ROUSTIX_API,
+  token: process.env.ROUSTIX_TOKEN,
 });
 ```
 
 **PHP:**
 
 ```php
-use Maintix\Client;
+use Roustix\Client;
 
 $client = new Client(
-    token: getenv('MAINTIX_TOKEN'),
-    baseUrl: 'https://api.maintix.app/api/v1',
+    token: getenv('ROUSTIX_TOKEN'),
+    baseUrl: 'https://api.roustix.app/api/v1',
 );
 ```
 
-Variables de entorno recomendadas: `MAINTIX_API` · `MAINTIX_TOKEN` ([MAG-09](/mag/chapters/09-ejemplos.md)).
+Variables de entorno recomendadas: `ROUSTIX_API` · `ROUSTIX_TOKEN` ([MAG-09](/mag/chapters/09-ejemplos.md)).
 
 ---
 
@@ -180,7 +180,7 @@ El SDK administra automáticamente:
 | **Timeouts** | [MAG-10](/mag/chapters/10-limites-buenas-practicas.md) |
 | **Reintentos** | 429 · 503 · backoff exponencial |
 | **Errores MAG-06** | `error.code` → excepciones |
-| **User-Agent** | `maintix-python/1.0.0` (por lenguaje) |
+| **User-Agent** | `roustix-python/1.0.0` (por lenguaje) |
 
 El desarrollador trabaja únicamente con **objetos y métodos** — no con URLs ni headers crudos.
 
@@ -193,7 +193,7 @@ Los errores MAG se convierten en **excepciones tipadas**.
 **Python:**
 
 ```python
-from maintix.errors import ResourceNotFoundError
+from roustix.errors import ResourceNotFoundError
 
 try:
     client.maintenance.assets.get(500)
@@ -241,7 +241,7 @@ OpenAPI
  SDK Base
      │
      ▼
-Wrappers Maintix
+Wrappers Roustix
 ```
 
 | Capa | Contenido |
@@ -279,10 +279,10 @@ Los SDK utilizan el **mismo ciclo de vida** que MAG ([MAG-07](/mag/chapters/07-v
 **Python:**
 
 ```python
-from maintix import MaintixClient
+from roustix import RoustixClient
 
-client = MaintixClient(
-    base_url="https://api.maintix.app/api/v1",
+client = RoustixClient(
+    base_url="https://api.roustix.app/api/v1",
     token="JWT",
 )
 
@@ -294,7 +294,7 @@ for asset in assets:
 
 Sin construir manualmente requests HTTP.
 
-**Estado:** ejemplo ilustrativo · paquete `maintix` en implementación.
+**Estado:** ejemplo ilustrativo · paquete `roustix` en implementación.
 
 → [MAG-09 · Ejemplos](/mag/chapters/09-ejemplos.md)
 
@@ -304,15 +304,15 @@ Sin construir manualmente requests HTTP.
 
 | Plataforma | Paquete | Estado |
 |------------|---------|--------|
-| **PyPI** | `maintix` | 📋 |
-| **npm** | `@maintix/sdk` | 📋 |
-| **Packagist** | `maintix/sdk` | 📋 |
+| **PyPI** | `roustix` | 📋 |
+| **npm** | `@roustix/sdk` | 📋 |
+| **Packagist** | `roustix/sdk` | 📋 |
 
 **Repositorios oficiales (planificados):**
 
-- `github.com/maintix/sdk-python`
-- `github.com/maintix/sdk-js`
-- `github.com/maintix/sdk-php`
+- `github.com/roustix/sdk-python`
+- `github.com/roustix/sdk-js`
+- `github.com/roustix/sdk-php`
 
 Publicación detallada → [MSD-09 · Publicación](09-publicacion.md)
 
@@ -371,7 +371,7 @@ Un buen SDK hace que esa integración sea **natural**.
 
 El desarrollador no debería preocuparse por construir solicitudes HTTP, gestionar encabezados o interpretar respuestas. Su trabajo debe centrarse en el **negocio**, mientras el SDK aplica automáticamente el contrato definido por MAG.
 
-**MSD-04 convierte la API de Maintix en una experiencia de desarrollo idiomática, consistente y lista para producción.**
+**MSD-04 convierte la API de Roustix en una experiencia de desarrollo idiomática, consistente y lista para producción.**
 
 ---
 

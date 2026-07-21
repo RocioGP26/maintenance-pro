@@ -1,6 +1,6 @@
 # Nomenclatura · MPA
 
-**Código:** MPA · Maintix Platform Architecture  
+**Código:** MPA · Roustix Platform Architecture
 **Suite docs:** 05
 
 ## Capítulos · Núcleo (01 – 10)
@@ -8,7 +8,7 @@
 | Código | Archivo | Título |
 |--------|---------|--------|
 | **MPA-01-VIS** | `01-vision-plataforma.md` | Visión de plataforma |
-| **MPA-02-ECO** | `02-ecosistema.md` | Ecosistema Maintix |
+| **MPA-02-ECO** | `02-ecosistema.md` | Ecosistema Roustix |
 | **MPA-03-MOD** | `03-arquitectura-modular.md` | Arquitectura modular |
 | **MPA-04-SAAS** | `04-arquitectura-saas.md` | Arquitectura SaaS |
 | **MPA-05-ROAD** | `05-roadmap-modulos.md` | Roadmap de módulos |

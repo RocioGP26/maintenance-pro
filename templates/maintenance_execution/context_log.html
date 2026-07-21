@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Bitácora — {{ app_name }}{% endblock %}
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
+  <div><div class="text-muted small">Bitácora contextual</div><h1 class="h3 mb-1">{{ context_title }}</h1><p class="text-muted mb-0">Historial inmutable de comentarios, acciones y soportes.</p></div>
+  {% if entity_type == 'work_order' %}<a class="btn btn-outline-secondary" href="{{ url_for('main.ordenes_edit', id=entity.id) }}">Volver a la OT</a>
+  {% elif entity_type == 'incident' %}<a class="btn btn-outline-secondary" href="{{ url_for('main.incidencias_detail', id=entity.id) }}">Volver al ticket</a>
+  {% else %}<a class="btn btn-outline-secondary" href="{{ url_for('main.activos_edit', id=entity.id) }}">Volver al activo</a>{% endif %}
+</div>
+
+{% if can_write %}
+<div class="card shadow-sm border-0 mb-4"><div class="card-body">
+  <form method="post" enctype="multipart/form-data" class="row g-3">
+    {% include '_csrf.html' %}
+    <div class="col-md-4"><label class="form-label">Tipo</label><select class="form-select" name="entry_type"><option value="comment">Comentario</option><option value="diagnosis">Diagnóstico</option><option value="action">Acción realizada</option><option value="observation">Observación</option></select></div>
+    <div class="col-md-4"><label class="form-label">Ejecutado por</label><select class="form-select" name="performed_by_user_id"><option value="">Usuario actual</option>{% for user in performers %}<option value="{{ user.id }}">{{ user.etiqueta() }}</option>{% endfor %}</select></div>
+    <div class="col-md-4"><label class="form-label">Visibilidad</label><select class="form-select" name="visibility"><option value="internal">Solo equipo interno</option>{% if can_publish_requester %}<option value="requester">Visible para el reportante</option>{% endif %}</select></div>
+    <div class="col-12"><label class="form-label">Entrada</label><textarea class="form-control" name="body" rows="3" maxlength="5000" required></textarea></div>
+    <div class="col-md-9"><label class="form-label">Adjuntos</label><input class="form-control" type="file" name="attachments" accept=".pdf,.png,.jpg,.jpeg,.webp" multiple><div class="form-text">PDF o imagen; máximo 5 MB por archivo.</div></div>
+    <div class="col-md-3 d-grid align-items-end"><button class="btn btn-primary" type="submit">Agregar entrada</button></div>
+  </form>
+</div></div>
+{% endif %}
+
+<div class="vstack gap-3">
+{% for entry in entries %}
+  <article class="card shadow-sm border-0"><div class="card-body">
+    <div class="d-flex flex-wrap justify-content-between gap-2 mb-2"><div><span class="badge text-bg-light me-2">{{ entry.entry_type }}</span>{% if entry.visibility == 'requester' %}<span class="badge text-bg-info">Reportante</span>{% else %}<span class="badge text-bg-secondary">Interna</span>{% endif %}</div><time class="small text-muted">{{ entry.created_at|formato_fecha_hora }}</time></div>
+    <p class="mb-2" style="white-space:pre-wrap">{{ entry.body }}</p>
+    <div class="small text-muted">Autor: {{ entry.author.etiqueta() }}{% if entry.performed_by and entry.performed_by_user_id != entry.author_id %} · ejecutado por {{ entry.performed_by.etiqueta() }}{% endif %}</div>
+    {% if entry.correction_of %}<div class="small text-warning mt-1">Corrige la entrada #{{ entry.correction_of.id }}; el original se conserva.</div>{% endif %}
+    {% if entry.attachments %}<div class="list-group mt-3">{% for attachment in entry.attachments %}<a class="list-group-item list-group-item-action d-flex justify-content-between" href="{{ url_for('maintenance_execution.context_log_attachment_download', attachment_id=attachment.id) }}"><span><i class="bi bi-paperclip me-1"></i>{{ attachment.original_name }}</span><small>{{ (attachment.size_bytes / 1024)|round(1) }} KB</small></a>{% endfor %}</div>{% endif %}
+  </div></article>
+{% else %}<div class="card border-0 shadow-sm"><div class="card-body text-center text-muted py-5">Aún no hay entradas en esta bitácora.</div></div>{% endfor %}
+</div>
+{% endblock %}

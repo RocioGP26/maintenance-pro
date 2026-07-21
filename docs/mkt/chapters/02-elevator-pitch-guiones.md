@@ -12,7 +12,7 @@
 
 ## Objetivo del capítulo
 
-Definir los **discursos comerciales oficiales** de Maintix para reuniones, llamadas, eventos, demostraciones, partners y contenido digital.
+Definir los **discursos comerciales oficiales** de Roustix para reuniones, llamadas, eventos, demostraciones, partners y contenido digital.
 
 Todo pitch debe comunicar la misma idea:
 
@@ -43,7 +43,7 @@ Consecuencia
     ↓
 Transformación
     ↓
-Maintix
+Roustix
     ↓
 Próximo paso
 ```
@@ -56,7 +56,7 @@ Próximo paso
 
 ## 2 · La estructura oficial
 
-Todo pitch Maintix utiliza cinco bloques.
+Todo pitch Roustix utiliza cinco bloques.
 
 | Paso | Contenido |
 |------|-----------|
@@ -73,7 +73,7 @@ Problema
     ↓
 ¿Por qué importa?
     ↓
-Maintix
+Roustix
     ↓
 ¿Por qué nosotros?
     ↓
@@ -86,7 +86,7 @@ Prueba / Demo
 
 Versión para networking, eventos o primera llamada.
 
-> Muchas empresas siguen controlando su operación entre Excel, WhatsApp y procesos manuales. Eso provoca errores, retrasos y decisiones basadas en información diferente para cada persona. Maintix es una plataforma SaaS que centraliza mantenimiento, inventario y la operación diaria en un solo lugar. Empiezas con el módulo que necesitas hoy y creces sin cambiar de plataforma.
+> Muchas empresas siguen controlando su operación entre Excel, WhatsApp y procesos manuales. Eso provoca errores, retrasos y decisiones basadas en información diferente para cada persona. Roustix es una plataforma SaaS que centraliza mantenimiento, inventario y la operación diaria en un solo lugar. Empiezas con el módulo que necesitas hoy y creces sin cambiar de plataforma.
 
 | | |
 |---|---|
@@ -101,7 +101,7 @@ Versión recomendada para reuniones iniciales.
 
 > Muchas empresas llegan a un punto donde Excel deja de ser suficiente. El mantenimiento se lleva en un archivo, el inventario en otro y las compras dependen de llamadas o mensajes. La información deja de coincidir y cada área trabaja con datos diferentes.
 >
-> Maintix ayuda a recuperar el control de esa operación. Centraliza mantenimiento, inventario, compras y ventas dentro de una única plataforma SaaS, permitiendo comenzar con un solo módulo y crecer sin migraciones.
+> Roustix ayuda a recuperar el control de esa operación. Centraliza mantenimiento, inventario, compras y ventas dentro de una única plataforma SaaS, permitiendo comenzar con un solo módulo y crecer sin migraciones.
 >
 > Nuestro objetivo no es vender otro software. Es ayudar a que la operación funcione con información confiable desde el primer día.
 
@@ -118,9 +118,9 @@ Pensado para gerentes generales y propietarios.
 
 > El crecimiento trae un problema que casi todas las empresas enfrentan: la información empieza a dispersarse. Aparecen más personas, más activos, más inventario, más sedes y más decisiones. Lo que antes resolvía un Excel ahora consume horas cada semana.
 >
-> Maintix nació precisamente para resolver ese momento. Comenzó con dos empresas, dos países y dos necesidades distintas. Una necesitaba controlar mantenimiento. La otra inventario y ventas. Descubrimos que el verdadero problema no era el módulo, sino la falta de control sobre la operación.
+> Roustix nació precisamente para resolver ese momento. Comenzó con dos empresas, dos países y dos necesidades distintas. Una necesitaba controlar mantenimiento. La otra inventario y ventas. Descubrimos que el verdadero problema no era el módulo, sino la falta de control sobre la operación.
 >
-> Hoy Maintix permite centralizar esa información dentro de una plataforma modular. El cliente comienza con el área donde tiene el mayor dolor y posteriormente incorpora nuevos procesos sin cambiar de sistema.
+> Hoy Roustix permite centralizar esa información dentro de una plataforma modular. El cliente comienza con el área donde tiene el mayor dolor y posteriormente incorpora nuevos procesos sin cambiar de sistema.
 >
 > Esa es nuestra diferencia: no vendemos módulos aislados; acompañamos el crecimiento de la operación.
 
@@ -146,8 +146,8 @@ Referencia rápida para elegir **qué versión usar** según el tiempo disponibl
 
 **Regla de selección:**
 
-1. **Menos de 30 s** → solo dolor + Maintix en una frase + CTA.
-2. **30–60 s** → dolor + consecuencia + Maintix + próximo paso.
+1. **Menos de 30 s** → solo dolor + Roustix en una frase + CTA.
+2. **30–60 s** → dolor + consecuencia + Roustix + próximo paso.
 3. **2–3 min** → historia de origen + modularidad + sector si aplica.
 4. **10 min+** → deck MKT-04 · no improvisar.
 
@@ -161,7 +161,7 @@ Referencia rápida para elegir **qué versión usar** según el tiempo disponibl
 
 > La mayoría de las plantas no tienen problemas porque falten técnicos. Los tienen porque nadie sabe exactamente qué pasó con un equipo hace tres meses.
 >
-> Maintix permite registrar activos, preventivos, órdenes de trabajo e historial completo para que la planta deje de depender de la memoria del personal.
+> Roustix permite registrar activos, preventivos, órdenes de trabajo e historial completo para que la planta deje de depender de la memoria del personal.
 
 **Mensaje final:** *La planta deja de depender de la memoria del técnico.*
 
@@ -175,7 +175,7 @@ Referencia rápida para elegir **qué versión usar** según el tiempo disponibl
 
 > Muchas empresas venden productos que realmente ya no tienen o compran mercancía que todavía estaba en otra bodega. El problema no es vender más. Es vender con información correcta.
 >
-> Maintix ayuda a controlar inventario, compras, ventas y cartera desde una única plataforma.
+> Roustix ayuda a controlar inventario, compras, ventas y cartera desde una única plataforma.
 
 **Mensaje final:** *Deja de vender a ciegas.*
 
@@ -187,7 +187,7 @@ Referencia rápida para elegir **qué versión usar** según el tiempo disponibl
 
 > La agroindustria necesita controlar maquinaria, inventario e insumos al mismo tiempo. Cuando esa información está separada aparecen pérdidas difíciles de detectar.
 >
-> Maintix conecta esas áreas dentro de la misma plataforma para que el crecimiento no implique más hojas de cálculo.
+> Roustix conecta esas áreas dentro de la misma plataforma para que el crecimiento no implique más hojas de cálculo.
 
 **Mensaje final:** *Una operación agrícola que crece sin perder el control.*
 
@@ -197,7 +197,7 @@ Referencia rápida para elegir **qué versión usar** según el tiempo disponibl
 
 > Cada reparación deja información valiosa. Cuando esa información queda en un cuaderno o en un chat, el conocimiento desaparece.
 >
-> Maintix conserva el historial completo de cada activo y ayuda a responder al cliente con información real.
+> Roustix conserva el historial completo de cada activo y ayuda a responder al cliente con información real.
 
 **Mensaje final:** *El historial de cada reparación, siempre disponible.*
 
@@ -207,7 +207,7 @@ Referencia rápida para elegir **qué versión usar** según el tiempo disponibl
 
 > Cuando ventas y bodega trabajan con números diferentes aparecen promesas que la empresa no puede cumplir.
 >
-> Maintix hace que ambos trabajen sobre la misma información en tiempo real.
+> Roustix hace que ambos trabajen sobre la misma información en tiempo real.
 
 **Mensaje final:** *Ventas y bodega hablan con los mismos números.*
 
@@ -264,7 +264,7 @@ Eso mantiene la conversación centrada en el cliente.
 | **TI** | Plataforma, API y seguridad | Plataforma modular |
 | **Finanzas** | ROI y reducción de reprocesos | Sin migración |
 
-**Regla:** el mismo Maintix · distinto dolor según quién escucha.
+**Regla:** el mismo Roustix · distinto dolor según quién escucha.
 
 ---
 
@@ -320,7 +320,7 @@ Qué versión utilizar según **canal, audiencia y objetivo**. Consultar antes d
 
 ## Filosofía del capítulo
 
-El mejor pitch **no termina hablando de Maintix**.
+El mejor pitch **no termina hablando de Roustix**.
 
 Termina haciendo que el prospecto hable de su propia operación.
 

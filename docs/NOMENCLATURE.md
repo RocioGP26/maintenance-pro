@@ -1,4 +1,4 @@
-# Nomenclatura · Maintix Documentation Suite
+# Nomenclatura · Roustix Documentation Suite
 
 Índice maestro: [README.md](README.md) · Visual: [/docs/](http://127.0.0.1:5000/docs/)  
 Versiones: [VERSIONS.md](VERSIONS.md) · Cross-refs: [CROSS-REFERENCES.md](CROSS-REFERENCES.md)
@@ -7,17 +7,17 @@ Versiones: [VERSIONS.md](VERSIONS.md) · Cross-refs: [CROSS-REFERENCES.md](CROSS
 
 | # | Código | Nombre completo | Carpeta | URL |
 |---|--------|-----------------|---------|-----|
-| **01** | **MBB** | Maintix Brand Book | `docs/brandbook/` | `/brandbook/` |
-| **02** | **MDL** | Maintix Design Language | `docs/mdl/` | `/mdl/` |
-| **03** | **MUX** | Maintix User Experience Guide | `docs/mux/` | `/mux/` |
-| **04** | **MCM** | Maintix Commercial Manual | `docs/mcm/` | `/mcm/` |
+| **01** | **MBB** | Roustix Brand Book | `docs/brandbook/` | `/brandbook/` |
+| **02** | **MDL** | Roustix Design Language | `docs/mdl/` | `/mdl/` |
+| **03** | **MUX** | Roustix User Experience Guide | `docs/mux/` | `/mux/` |
+| **04** | **MCM** | Roustix Commercial Manual | `docs/mcm/` | `/mcm/` |
 | **12** | **MKT** | Sales Enablement & Marketing Assets | `docs/mkt/` | `/mkt/` |
-| **13** | **MDO** | Maintix Documentation Operations | `docs/mdo/` | `/mdo/` |
-| **05** | **MPA** | Maintix Platform Architecture | `docs/mpa/` | `/mpa/` |
-| **06** | **MRL** | Maintix Report Language | `docs/mrl/` | — |
-| **07** | **MAG** | Maintix API Guide | `docs/mag/` | — |
-| **08** | **SDK** | Maintix SDK & Developer Portal | `docs/msd/` | `/msd/` |
-| **11** | **MRG** | Maintix Reference Guide | `docs/mrg/` | `/mrg/` |
+| **13** | **MDO** | Roustix Documentation Operations | `docs/mdo/` | `/mdo/` |
+| **05** | **MPA** | Roustix Platform Architecture | `docs/mpa/` | `/mpa/` |
+| **06** | **MRL** | Roustix Report Language | `docs/mrl/` | — |
+| **07** | **MAG** | Roustix API Guide | `docs/mag/` | — |
+| **08** | **SDK** | Roustix SDK & Developer Portal | `docs/msd/` | `/msd/` |
+| **11** | **MRG** | Roustix Reference Guide | `docs/mrg/` | `/mrg/` |
 | **09** | **—** | Developer Docs | `docs/developer/` | — |
 | **10** | **—** | Release Notes | `docs/release-notes/` | — |
 

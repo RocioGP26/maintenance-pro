@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+{% block title %}Medidores · {{ machine.codigo }} — {{ app_name }}{% endblock %}
+{% block page_title %}Medidores y lecturas{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
+  <div>
+    <div class="text-muted small">{{ machine.codigo }}</div>
+    <h4 class="mb-1">{{ machine.nombre }}</h4>
+    <p class="text-muted mb-0">Historial inmutable de condición y uso del activo.</p>
+  </div>
+  <div class="d-flex gap-2">
+    <a class="btn btn-outline-secondary" href="{{ url_for('maintenance_execution.context_log', entity_type='machine', entity_id=machine.id) }}">
+      <i class="bi bi-chat-left-text me-1"></i> Bitácora
+    </a>
+    {% if related_order %}
+    <a class="btn btn-outline-secondary" href="{{ url_for('main.ordenes_edit', id=related_order.id) }}">Volver a {{ related_order.numero or 'OT' }}</a>
+    {% else %}
+    <a class="btn btn-outline-secondary" href="{{ url_for('main.activos_edit', id=machine.id) }}">Volver al activo</a>
+    {% endif %}
+  </div>
+</div>
+
+{% if can_manage %}
+<div class="card card-dashboard mb-4">
+  <div class="card-header bg-white d-flex justify-content-between align-items-center">
+    <div><strong>Configurar medidor</strong><div class="small text-muted">El tipo y la unidad no se modifican después de recibir lecturas.</div></div>
+    <button class="btn btn-sm btn-primary" type="button" data-bs-toggle="collapse" data-bs-target="#newMeter"><i class="bi bi-plus-lg"></i> Nuevo</button>
+  </div>
+  <div class="collapse {% if request.method == 'POST' %}show{% endif %}" id="newMeter">
+    <div class="card-body">
+      <form method="post" class="row g-3">
+        {% include "_csrf.html" %}
+        <div class="col-md-3"><label class="form-label">Código *</label><input class="form-control text-uppercase" name="code" maxlength="48" required value="{{ request.form.get('code','') }}" placeholder="HOROMETRO"></div>
+        <div class="col-md-4"><label class="form-label">Nombre *</label><input class="form-control" name="name" maxlength="120" required value="{{ request.form.get('name','') }}" placeholder="Horómetro principal"></div>
+        <div class="col-md-2"><label class="form-label">Tipo *</label><select class="form-select" name="meter_type" required>{% for key, label in meter_types %}<option value="{{ key }}" {% if request.form.get('meter_type') == key %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></div>
+        <div class="col-md-2"><label class="form-label">Unidad *</label><input class="form-control" name="unit" maxlength="24" required value="{{ request.form.get('unit','') }}" placeholder="h, km, °C"></div>
+        <div class="col-md-1"><label class="form-label">Dec.</label><input class="form-control" type="number" name="decimals" min="0" max="6" value="{{ request.form.get('decimals','2') }}"></div>
+        <div class="col-md-3"><label class="form-label">Mínimo de referencia</label><input class="form-control" type="number" step="any" name="min_value" value="{{ request.form.get('min_value','') }}"></div>
+        <div class="col-md-3"><label class="form-label">Máximo de referencia</label><input class="form-control" type="number" step="any" name="max_value" value="{{ request.form.get('max_value','') }}"></div>
+        <div class="col-12"><button class="btn btn-primary" type="submit">Guardar medidor</button></div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+{% if not meters %}
+<div class="alert alert-light border text-center py-5"><i class="bi bi-speedometer2 fs-2 d-block mb-2"></i>Este activo todavía no tiene medidores configurados.</div>
+{% endif %}
+
+{% for meter in meters %}
+<div class="card card-dashboard mb-4 {% if not meter.active %}opacity-75{% endif %}">
+  <div class="card-header bg-white d-flex flex-wrap justify-content-between align-items-start gap-2">
+    <div>
+      <div class="d-flex align-items-center gap-2"><h5 class="mb-0">{{ meter.name }}</h5><span class="badge text-bg-{{ 'success' if meter.active else 'secondary' }}">{{ 'Activo' if meter.active else 'Inactivo' }}</span></div>
+      <div class="small text-muted font-monospace">{{ meter.code }} · {{ 'Acumulativo' if meter.meter_type == 'cumulative' else 'Instantáneo' }} · {{ meter.unit }}</div>
+      {% if meter.rules %}<div class="small text-muted">Rango de referencia: {{ meter.rules.get('min','—') }} a {{ meter.rules.get('max','—') }} {{ meter.unit }}</div>{% endif %}
+    </div>
+    <div class="text-end">
+      <div class="small text-muted">Última lectura</div>
+      <div class="fs-4 fw-semibold">{% if meter.latest_reading %}{{ (('%.' ~ meter.decimals ~ 'f')|format(meter.latest_reading.value|float)) }} {{ meter.unit }}{% else %}—{% endif %}</div>
+      {% if can_manage %}<form method="post" action="{{ url_for('maintenance_execution.asset_meter_active', machine_id=machine.id, meter_id=meter.id) }}" class="mt-1">{% include "_csrf.html" %}<input type="hidden" name="active" value="{{ '0' if meter.active else '1' }}"><button class="btn btn-sm btn-outline-secondary" type="submit">{{ 'Desactivar' if meter.active else 'Activar' }}</button></form>{% endif %}
+    </div>
+  </div>
+  <div class="card-body">
+    {% if meter.active %}
+    <form method="post" action="{{ url_for('maintenance_execution.asset_meter_reading', machine_id=machine.id, meter_id=meter.id) }}" class="row g-3 border rounded p-2 mb-4 bg-light">
+      {% include "_csrf.html" %}
+      {% if related_order %}<input type="hidden" name="work_order_id" value="{{ related_order.id }}">{% endif %}
+      <div class="col-md-3"><label class="form-label">Valor *</label><div class="input-group"><input class="form-control" type="number" step="any" name="value" required><span class="input-group-text">{{ meter.unit }}</span></div></div>
+      <div class="col-md-3"><label class="form-label">Fecha y hora</label><input class="form-control meter-now" type="datetime-local" name="measured_at"></div>
+      <div class="col-md-3"><label class="form-label">Ejecutado por</label><select class="form-select" name="performed_by_user_id">{% for user in performers %}<option value="{{ user.id }}" {% if user.id == current_user.id %}selected{% endif %}>{{ user.etiqueta() }}</option>{% endfor %}</select></div>
+      <div class="col-md-3"><label class="form-label">Corrige lectura</label><select class="form-select" name="correction_of_id"><option value="">No</option>{% for reading in meter.readings[:20] %}<option value="{{ reading.id }}">#{{ reading.id }} · {{ reading.value }} {{ meter.unit }}</option>{% endfor %}</select></div>
+      <div class="col-md-4"><label class="form-label">Tipo de novedad</label><select class="form-select" name="anomaly_type"><option value="">Sin novedad</option>{% if meter.meter_type == 'cumulative' %}<option value="reset">Reinicio</option><option value="replacement">Reemplazo</option><option value="rollover">Rollover</option><option value="sequence_adjustment">Ajuste de secuencia</option>{% else %}<option value="out_of_range">Fuera de rango confirmado</option>{% endif %}</select></div>
+      <div class="col-md-4"><label class="form-label">Justificación</label><input class="form-control" name="justification" maxlength="500" placeholder="Obligatoria para anomalías o correcciones"></div>
+      <div class="col-md-4"><label class="form-label">Notas</label><input class="form-control" name="notes" maxlength="500"></div>
+      <div class="col-12"><button class="btn btn-primary" type="submit"><i class="bi bi-plus-circle me-1"></i>Registrar lectura</button></div>
+    </form>
+    {% endif %}
+
+    <div class="table-responsive">
+      <table class="table table-sm align-middle mb-0">
+        <thead><tr><th>Medición</th><th>Fecha</th><th>Ejecutor / registrador</th><th>Origen</th><th>Contexto</th><th>Observaciones</th></tr></thead>
+        <tbody>
+        {% for reading in meter.readings %}
+          <tr>
+            <td class="fw-semibold">{{ (('%.' ~ meter.decimals ~ 'f')|format(reading.value|float)) }} {{ meter.unit }} {% if reading.flagged %}<span class="badge text-bg-warning">Justificada</span>{% endif %}</td>
+            <td>{{ reading.measured_at.strftime('%Y-%m-%d %H:%M') }}</td>
+            <td><div>{{ reading.performed_by.etiqueta() if reading.performed_by else 'Migración' }}</div><small class="text-muted">Registró: {{ reading.recorded_by.etiqueta() if reading.recorded_by else 'Sistema' }}</small></td>
+            <td>{{ {'manual':'Manual','legacy_migration':'Migración inicial','correction':'Corrección'}.get(reading.source, reading.source) }}{% if reading.correction_of_id %}<div class="small text-muted">Corrige #{{ reading.correction_of_id }}</div>{% endif %}</td>
+            <td>{% if reading.work_order %}<a href="{{ url_for('main.ordenes_edit', id=reading.work_order.id) }}">{{ reading.work_order.numero or ('OT-' ~ reading.work_order.id) }}</a>{% else %}Activo{% endif %}</td>
+            <td><div>{{ reading.notes or '—' }}</div>{% if reading.justification %}<small class="text-warning-emphasis">{{ reading.anomaly_type }}: {{ reading.justification }}</small>{% endif %}</td>
+          </tr>
+        {% else %}<tr><td colspan="6" class="text-center text-muted py-3">Sin lecturas.</td></tr>{% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endfor %}
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+document.querySelectorAll('.meter-now').forEach(function (input) {
+  if (!input.value) {
+    var now = new Date(); now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+    input.value = now.toISOString().slice(0, 16);
+  }
+});
+</script>
+{% endblock %}

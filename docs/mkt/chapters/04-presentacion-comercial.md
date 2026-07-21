@@ -2,7 +2,7 @@
 
 **Código:** MKT-04 · Sprint 12.4 · **Entregado**
 
-> La presentación oficial de Maintix no es un catálogo de pantallas. Es una historia que lleva al prospecto desde su problema hasta la decisión de iniciar un trial.
+> La presentación oficial de Roustix no es un catálogo de pantallas. Es una historia que lleva al prospecto desde su problema hasta la decisión de iniciar un trial.
 
 **Toda la operación. Una sola plataforma.**
 
@@ -12,7 +12,7 @@
 
 ## Objetivo del capítulo
 
-Definir la **presentación comercial oficial** de Maintix para reuniones comerciales, demostraciones, partners, eventos y webinars.
+Definir la **presentación comercial oficial** de Roustix para reuniones comerciales, demostraciones, partners, eventos y webinars.
 
 Esta guía establece:
 
@@ -38,7 +38,7 @@ La secuencia siempre debe responder cuatro preguntas:
 |---|----------|
 | 1 | ¿Cuál es el problema? |
 | 2 | ¿Por qué ocurre? |
-| 3 | ¿Cómo lo resuelve Maintix? |
+| 3 | ¿Cómo lo resuelve Roustix? |
 | 4 | ¿Cuál es el siguiente paso? |
 
 → Arquitectura del mensaje: [MKT-01 · §11](01-identidad-mensajes-marca.md#11--arquitectura-del-mensaje)
@@ -65,7 +65,7 @@ La secuencia siempre debe responder cuatro preguntas:
 |-------|------|----------|
 | **1** | Portada | Marca · tagline · sin funciones |
 | **2** | El problema | Dolor compartido |
-| **3** | Qué es Maintix | Definición oficial |
+| **3** | Qué es Roustix | Definición oficial |
 | **4** | La plataforma | EMP · un tenant · un login |
 | **5** | Mantenimiento | Recorrido principal |
 | **6** | Inventario | Recorrido principal |
@@ -82,7 +82,7 @@ La secuencia siempre debe responder cuatro preguntas:
 
 Debe contener **únicamente**:
 
-- Logo Maintix
+- Logo Roustix
 - Tagline: **Toda la operación. Una sola plataforma.**
 - Subtítulo: *Plataforma SaaS para controlar la operación de empresas en crecimiento.*
 
@@ -115,11 +115,11 @@ Mostrar situaciones conocidas:
 
 ---
 
-## 6 · Slide 3 · Qué es Maintix
+## 6 · Slide 3 · Qué es Roustix
 
 Utilizar el **mensaje oficial**:
 
-> Maintix es una plataforma SaaS modular que ayuda a empresas en crecimiento a organizar, controlar y hacer crecer su operación desde un solo lugar.
+> Roustix es una plataforma SaaS modular que ayuda a empresas en crecimiento a organizar, controlar y hacer crecer su operación desde un solo lugar.
 
 Mostrar únicamente conceptos:
 
@@ -140,7 +140,7 @@ Explicar el concepto **EMP** (Enterprise Modular Platform).
 Diagrama simple:
 
 ```
-                 Maintix
+                 Roustix
 
       Mantenimiento
              │
@@ -325,9 +325,9 @@ Mostrar:
 
 **CTA oficial:**
 
-> Comienza hoy. Prueba Maintix durante **15 días** sin compromiso.
+> Comienza hoy. Prueba Roustix durante **15 días** sin compromiso.
 
-**Objetivo del deck:** que el prospecto piense *«Quiero probar Maintix en mi empresa.»*
+**Objetivo del deck:** que el prospecto piense *«Quiero probar Roustix en mi empresa.»*
 
 ---
 
@@ -404,13 +404,13 @@ Esta presentación es la base para:
 
 ## Filosofía del capítulo
 
-Una buena presentación no intenta demostrar que Maintix tiene muchas funcionalidades.
+Una buena presentación no intenta demostrar que Roustix tiene muchas funcionalidades.
 
 Demuestra que la operación del cliente puede dejar de depender de Excel, WhatsApp y procesos manuales.
 
 Cada diapositiva debe acercar al prospecto a una sola decisión:
 
-> *«Quiero probar Maintix en mi empresa.»*
+> *«Quiero probar Roustix en mi empresa.»*
 
 ---
 

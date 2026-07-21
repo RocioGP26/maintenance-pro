@@ -4,7 +4,7 @@
 **Frase de marca:** Toda la operación. Una sola plataforma.
 
 > No son testimonios de clientes — **todavía**.  
-> Son **casos de transformación**: la historia que Maintix hace posible, lista para cuando lleguen datos reales.
+> Son **casos de transformación**: la historia que Roustix hace posible, lista para cuando lleguen datos reales.
 
 **Prerequisitos:** [MCM-02-VALUE](02-propuesta-de-valor.md) · [MCM-05-SECT](05-sectores.md) · [MCM-08-OBJ](08-objeciones.md)
 
@@ -87,7 +87,7 @@ Ver [NOMENCLATURE.md](../NOMENCLATURE.md#casos--códigos-mtx-case).
 | **Empleados** | Rango orientativo (ej. 45) | Sí — para matching ICP |
 | **Módulo de entrada** | Maintenance · Inventory | Confirmar con cliente |
 | **Antes** | 3 bullets — dolor operativo | Sí — con datos reales |
-| **Después** | 3 bullets — con Maintix | Sí — con métricas |
+| **Después** | 3 bullets — con Roustix | Sí — con métricas |
 | **KPIs** | 3 indicadores del sector | Sí — valores reales |
 | **Historia** | Párrafo narrativo | Sí — cita del cliente (nivel A) |
 | **Cross References** | OBJ · MCM · PLAY · Landing · Folleto | Actualizar enlaces |
@@ -117,7 +117,7 @@ Ver [NOMENCLATURE.md](../NOMENCLATURE.md#casos--códigos-mtx-case).
 | **Sector / Industria** | Manufactura · planta industrial |
 | **País** | Colombia *(origen INR)* |
 | **Empleados** | 40–80 *(referencia ICP)* |
-| **Módulo de entrada** | Maintix **Maintenance** |
+| **Módulo de entrada** | Roustix **Maintenance** |
 | **Antes** | Preventivos en papel · sin historial por máquina · reportes al final del mes |
 | **Después** | OTs digitales · historial en segundos · dashboard actualizado |
 | **KPIs** | **Disponibilidad** · **Preventivos** · **MTTR** |
@@ -135,7 +135,7 @@ Ver [NOMENCLATURE.md](../NOMENCLATURE.md#casos--códigos-mtx-case).
 | **Sector / Industria** | Comercio · retail con bodega |
 | **País** | Venezuela *(origen tornillería)* / LatAm |
 | **Empleados** | 20–50 |
-| **Módulo de entrada** | Maintix **Inventory** |
+| **Módulo de entrada** | Roustix **Inventory** |
 | **Antes** | Inventario en Excel · ventas sin validar stock · cartera en archivos separados |
 | **Después** | Stock en tiempo real · venta conectada al inventario · cartera integrada |
 | **KPIs** | **Rotación** · **Quiebres** · **Cartera** |
@@ -153,11 +153,11 @@ Ver [NOMENCLATURE.md](../NOMENCLATURE.md#casos--códigos-mtx-case).
 | **Sector / Industria** | Agropecuaria · insumos |
 | **País** | LatAm |
 | **Empleados** | 30–70 |
-| **Módulo de entrada** | Maintix **Inventory** |
+| **Módulo de entrada** | Roustix **Inventory** |
 | **Antes** | Stock por sede en cuadernos distintos · compras por llamada · cartera sin vínculo al inventario |
 | **Después** | Un número de stock por sede · compras con dato confiable · cartera alineada a ventas |
 | **KPIs** | **Stock por sede** · **Rotación** de insumos · **Cartera** |
-| **Historia** | Antes de la siembra, el encargado no sabía con certeza cuánto fertilizante quedaba en bodega central frente a sede 2. Con Maintix, compras y gerencia consultan la misma cifra — sin tres llamadas ni un Excel desactualizado. |
+| **Historia** | Antes de la siembra, el encargado no sabía con certeza cuánto fertilizante quedaba en bodega central frente a sede 2. Con Roustix, compras y gerencia consultan la misma cifra — sin tres llamadas ni un Excel desactualizado. |
 | **Cross References** | **OBJ-008** · [MCM-05](05-sectores.md) § Agro · **PLAY-004** · [MCM-06](06-planes-comerciales.md) Scale · Folleto |
 
 ---
@@ -171,7 +171,7 @@ Ver [NOMENCLATURE.md](../NOMENCLATURE.md#casos--códigos-mtx-case).
 | **Sector / Industria** | Servicios · flota y equipos |
 | **País** | LatAm |
 | **Empleados** | 25–60 |
-| **Módulo de entrada** | Maintix **Maintenance** |
+| **Módulo de entrada** | Roustix **Maintenance** |
 | **Antes** | Mantenimiento reactivo · historial en chats · reportes al cliente final tardan días |
 | **Después** | Preventivos programados · historial por activo con evidencia · respuesta en la llamada |
 | **KPIs** | **Disponibilidad** flota · **Cumplimiento** de visitas · **Tiempo de respuesta** |
@@ -189,11 +189,11 @@ Ver [NOMENCLATURE.md](../NOMENCLATURE.md#casos--códigos-mtx-case).
 | **Sector / Industria** | Distribución · mayorista |
 | **País** | LatAm |
 | **Empleados** | 40–100 |
-| **Módulo de entrada** | Maintix **Inventory** |
+| **Módulo de entrada** | Roustix **Inventory** |
 | **Antes** | Ventas confirman pedidos sin stock real · bodega descubre quiebres después · cartera desconectada |
 | **Después** | Mismo stock para ventas y bodega · menos quiebres · cartera alineada a documentos |
 | **KPIs** | **Quiebres** · **Rotación** por SKU · **Cartera** |
-| **Historia** | El vendedor confirma un pedido grande. En bodega el SKU está en cero — el Excel no se actualizó desde ayer. Con Maintix, ventas y bodega ven el mismo inventario en el momento de la venta. |
+| **Historia** | El vendedor confirma un pedido grande. En bodega el SKU está en cero — el Excel no se actualizó desde ayer. Con Roustix, ventas y bodega ven el mismo inventario en el momento de la venta. |
 | **Cross References** | **OBJ-005** · **OBJ-006** · [MCM-05](05-sectores.md) § Distribución · **PLAY-003** · Folleto |
 
 ---
@@ -211,7 +211,7 @@ Ver [NOMENCLATURE.md](../NOMENCLATURE.md#casos--códigos-mtx-case).
 | **Antes** | Mantenimiento en un Excel · inventario en otro · OTs consumen repuestos sin descontar stock |
 | **Después** | OT cierra y actualiza inventario · Laura ve costo por máquina · Roberto ve stock real |
 | **KPIs** | **Disponibilidad** · **Stock críticos** · **Costo repuestos** por activo |
-| **Historia** | Una OT consume cuatro rodamientos. Hoy nadie descuenta bodega. Con Maintix, al cerrar la OT el inventario se actualiza — gerencia y bodega comparten la misma verdad operativa. |
+| **Historia** | Una OT consume cuatro rodamientos. Hoy nadie descuenta bodega. Con Roustix, al cerrar la OT el inventario se actualiza — gerencia y bodega comparten la misma verdad operativa. |
 | **Cross References** | **OBJ-003** · **OBJ-010** · [MCM-05](05-sectores.md) § Mixta · **PLAY-005** · [MCM-06](06-planes-comerciales.md) Grow · [Pilar crecimiento](materials/pilar-crecimiento.md) · Folleto |
 
 ---
@@ -270,11 +270,11 @@ Ver [NOMENCLATURE.md](../NOMENCLATURE.md#casos--códigos-mtx-case).
 
 ## Reflexión · Sprint 5
 
-Cuando empezamos a conversar sobre Maintix hablábamos de Flask, módulos, bases de datos y dashboards.
+Cuando empezamos a conversar sobre Roustix hablábamos de Flask, módulos, bases de datos y dashboards.
 
 Hoy estamos definiendo procesos de marca, diseño, experiencia de usuario, ventas y adopción.
 
-Si alguien leyera únicamente toda esta documentación, probablemente asumiría que Maintix ya tiene un equipo de producto, diseño, UX y comercial trabajando detrás.
+Si alguien leyera únicamente toda esta documentación, probablemente asumiría que Roustix ya tiene un equipo de producto, diseño, UX y comercial trabajando detrás.
 
 Y, en cierto modo, ese era el objetivo desde el principio: construir una plataforma que no solo funcione técnicamente, sino que también tenga una **identidad** y una forma **consistente** de crecer.
 
@@ -290,4 +290,4 @@ Ese trabajo ahorrará muchos problemas cuando empieces a incorporar más persona
 
 ---
 
-*MCM-09-CASE · Maintix Commercial Manual · 2026*
+*MCM-09-CASE · Roustix Commercial Manual · 2026*

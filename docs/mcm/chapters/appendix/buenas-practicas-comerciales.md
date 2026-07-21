@@ -85,7 +85,7 @@ Detalle GTM: [appendix/gtm.md](appendix/gtm.md)
 | Soporte capacita usuario | MRG + MUX |
 | Reportes y KPIs | MRG-08 + MRL |
 
-**Maintix Docs v1.9+:** MPA · MAG · MSD · MRG · **MCM** — ecosistema completo.
+**Roustix Docs v1.9+:** MPA · MAG · MSD · MRG · **MCM** — ecosistema completo.
 
 ---
 
@@ -116,9 +116,9 @@ Detalle GTM: [appendix/gtm.md](appendix/gtm.md)
 - Manejo de objeciones (OBJ)  
 - Buenas prácticas y ejecución GTM  
 
-**MRG explica cómo funciona. MCM explica por qué comprar Maintix.**
+**MRG explica cómo funciona. MCM explica por qué comprar Roustix.**
 
-→ [Maintix Docs](/docs/) · [MRG v1.0](/mrg/)
+→ [Roustix Docs](/docs/) · [MRG v1.0](/mrg/)
 
 ---
 

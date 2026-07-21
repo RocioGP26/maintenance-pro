@@ -10,7 +10,7 @@
 
 ## Producto y plataforma
 
-### ¿Qué es Maintix?
+### ¿Qué es Roustix?
 
 Una **Enterprise Management Platform (EMP)** SaaS modular para controlar la operación de PYMEs en crecimiento — mantenimiento, inventario y módulos futuros en **una sola plataforma**.
 
@@ -18,7 +18,7 @@ Una **Enterprise Management Platform (EMP)** SaaS modular para controlar la oper
 
 ### ¿Es un ERP?
 
-No en el sentido tradicional. Maintix no requiere meses de implementación ni consultoría pesada. Es **operación digitalizada en días**, modular y escalable.
+No en el sentido tradicional. Roustix no requiere meses de implementación ni consultoría pesada. Es **operación digitalizada en días**, modular y escalable.
 
 ### ¿Es solo mantenimiento o solo inventario?
 
@@ -70,7 +70,7 @@ No obligatorio. Start es **self-service** con guías MUX y MRG. Grow y superiore
 
 ### ¿Quién administra la plataforma?
 
-Dos niveles: **admin de la empresa** (usuarios, sedes) y **Mantis** (operador SaaS — tenants, planes). Ver [MRG-07](/mrg/chapters/07-administracion.md).
+Dos niveles: **admin de la empresa** (usuarios, sedes) y **Roustix Platform** (operador SaaS — tenants, planes). Ver [MRG-07](/mrg/chapters/07-administracion.md).
 
 ---
 
@@ -128,7 +128,7 @@ Implementación rápida · modular · UX moderna (MUX/MDL) · precio accesible p
 
 ### ¿Pueden desarrollar a medida?
 
-Maintix es **producto SaaS**, no consultora. Personalización acotada en plan Enterprise — ver OBJ-003.
+Roustix es **producto SaaS**, no consultora. Personalización acotada en plan Enterprise — ver OBJ-003.
 
 ---
 
@@ -155,4 +155,4 @@ MCM completo · folleto · demo PLAY · casos MTX-CASE · [MCM-10-PARTNERS](10-p
 
 ---
 
-*MCM-08-FAQ · Maintix Commercial Manual · v1.0.0 · 2026*
+*MCM-08-FAQ · Roustix Commercial Manual · v1.0.0 · 2026*

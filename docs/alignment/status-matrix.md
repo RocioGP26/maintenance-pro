@@ -114,7 +114,7 @@
 | Configuración empresa | `/configuracion/empresa` | ✅ |
 | Campos personalizados | `/configuracion/campos` | ✅ |
 | Onboarding | `/onboarding` | ✅ |
-| Mantis plataforma | `/platform/` | ✅ |
+| Roustix Platform plataforma | `/platform/` | ✅ |
 | Permisos por rol | `permissions.py` | ✅ |
 | Sedes | usuario · activos | 🟡 |
 | Invitación email | — | 🟡 |

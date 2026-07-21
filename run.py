@@ -1,4 +1,4 @@
-"""Punto de entrada para Mantis."""
+"""Punto de entrada para Roustix."""
 import os
 
 from app import create_app, db

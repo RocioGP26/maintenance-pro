@@ -4,7 +4,7 @@
 **Audiencia:** Desarrolladores nuevos · arquitectos · onboarding técnico
 
 > Mapa **conceptual** de capas — no un inventario de archivos.  
-> Objetivo: que cualquier persona entienda en cinco minutos **por dónde fluye una petición** en Maintix.
+> Objetivo: que cualquier persona entienda en cinco minutos **por dónde fluye una petición** en Roustix.
 
 ---
 
@@ -109,7 +109,7 @@
 | Filtro tenant | Toda query incluye `empresa_id` (o usa helpers de tenancy) |
 | Abstracción ORM | Services no necesitan saber SQL ni joins internos |
 
-**Estado en Maintix hoy:** capa **conceptual en evolución**. Parte del acceso vive en services; existen helpers como `query_tenant()` en tenancy. La dirección es **concentrar queries** aquí, no dispersarlas en rutas.
+**Estado en Roustix hoy:** capa **conceptual en evolución**. Parte del acceso vive en services; existen helpers como `query_tenant()` en tenancy. La dirección es **concentrar queries** aquí, no dispersarlas en rutas.
 
 **Responsabilidad:** un solo lugar para «obtener OT por empresa», «listar productos activos», etc.
 
@@ -204,7 +204,7 @@ Frontend: pantalla de confirmación / detalle OT
 
 ## 6 · Dirección de madurez
 
-Maintix es un monolito modular maduro en producto, **en evolución** en separación de capas:
+Roustix es un monolito modular maduro en producto, **en evolución** en separación de capas:
 
 | Hoy | Dirección |
 |-----|-----------|
@@ -232,4 +232,4 @@ Maintix es un monolito modular maduro en producto, **en evolución** en separaci
 
 ---
 
-*MPA-11-LOG · Maintix Platform Architecture · 2026*
+*MPA-11-LOG · Roustix Platform Architecture · 2026*

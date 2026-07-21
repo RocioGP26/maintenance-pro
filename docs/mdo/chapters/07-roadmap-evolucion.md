@@ -2,7 +2,7 @@
 
 **Código:** MDO-07 · Sprint 13.7 · **Entregado**
 
-> La documentación de Maintix evoluciona junto con la plataforma. Cada nueva funcionalidad, módulo o servicio debe reflejarse en un **ecosistema documental coherente, versionado y mantenible**.
+> La documentación de Roustix evoluciona junto con la plataforma. Cada nueva funcionalidad, módulo o servicio debe reflejarse en un **ecosistema documental coherente, versionado y mantenible**.
 
 **Toda la operación. Una sola plataforma.**
 
@@ -12,9 +12,9 @@
 
 ## Objetivo del capítulo
 
-Definir la **estrategia de evolución** de la documentación de Maintix: cómo crecerán los manuales, cómo se incorporarán nuevas suites documentales y cómo se mantendrá la consistencia del ecosistema a largo plazo.
+Definir la **estrategia de evolución** de la documentación de Roustix: cómo crecerán los manuales, cómo se incorporarán nuevas suites documentales y cómo se mantendrá la consistencia del ecosistema a largo plazo.
 
-Este capítulo establece la **hoja de ruta documental** para futuras versiones de Maintix Docs.
+Este capítulo establece la **hoja de ruta documental** para futuras versiones de Roustix Docs.
 
 → Catálogo actual: [MDO-06](06-catalogo-documental.md) · [VERSIONS.md](/docs/VERSIONS.md)
 
@@ -45,7 +45,7 @@ La documentación debe evolucionar al mismo ritmo del producto para evitar la **
 | **Versionado permanente** | Toda modificación queda registrada |
 | **Documentación modular** | Cada manual evoluciona de forma independiente |
 | **Compatibilidad** | Mantener referencias entre suites |
-| **Escalabilidad** | Preparada para nuevos productos Maintix |
+| **Escalabilidad** | Preparada para nuevos productos Roustix |
 
 → Compatibilidad entre manuales: [MDO-05 §13](05-versionado-releases.md#13--política-de-compatibilidad-entre-manuales)
 
@@ -97,7 +97,7 @@ Incluye:
 
 Posibles expansiones:
 
-- Academia Maintix
+- Academia Roustix
 - Certificaciones
 - Portal Partners
 - Knowledge Base
@@ -219,7 +219,7 @@ La estructura modular facilita ampliar el ecosistema sin reorganizar el contenid
 
 ## 10 · Objetivo a largo plazo
 
-La visión documental de Maintix es un ecosistema donde **cualquier persona** encuentre la información correcta según su perfil:
+La visión documental de Roustix es un ecosistema donde **cualquier persona** encuentre la información correcta según su perfil:
 
 ```
 Cliente → Comercial → Implementador → Administrador
@@ -247,7 +247,7 @@ Toda incorporación documental deberá cumplir:
 
 ## 12 · Visión del ecosistema
 
-La documentación futura de Maintix aspira a un **portal único** que integre:
+La documentación futura de Roustix aspira a un **portal único** que integre:
 
 | Capa |
 |------|
@@ -273,7 +273,7 @@ Todo accesible desde un único portal documental.
 | [MDO-04](04-guia-colaboradores.md) | Estándares editoriales |
 | [MDO-05](05-versionado-releases.md) | Publicación y ciclo de vida |
 | [MDO-06](06-catalogo-documental.md) | Catálogo documental |
-| Todos los manuales Maintix | Evolución coordinada |
+| Todos los manuales Roustix | Evolución coordinada |
 
 ---
 
@@ -292,7 +292,7 @@ Todo accesible desde un único portal documental.
 
 La documentación **no acompaña al producto: es parte del producto**.
 
-Cada nueva capacidad de Maintix debe ir acompañada por documentación clara, versionada y mantenible. El objetivo final no es solo publicar manuales, sino construir un **ecosistema de conocimiento** que permita a clientes, partners y equipos internos aprender, implementar y evolucionar la plataforma con la misma velocidad con la que evoluciona el software.
+Cada nueva capacidad de Roustix debe ir acompañada por documentación clara, versionada y mantenible. El objetivo final no es solo publicar manuales, sino construir un **ecosistema de conocimiento** que permita a clientes, partners y equipos internos aprender, implementar y evolucionar la plataforma con la misma velocidad con la que evoluciona el software.
 
 ---
 

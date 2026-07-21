@@ -1,10 +1,10 @@
-# MCM · Maintix Commercial Manual
+# MCM · Roustix Commercial Manual
 
 **Código:** MCM · **v1.0.0**  
 **Estado:** ✅ **Sprint 11 Finalizado** · Alineado MRG v1.0  
 **Frase:** Toda la operación. Una sola plataforma.
 
-**MRG explica cómo funciona. MCM explica por qué comprar Maintix.**
+**MRG explica cómo funciona. MCM explica por qué comprar Roustix.**
 
 ## Ver manual
 
@@ -14,7 +14,7 @@ python run.py
 
 → http://127.0.0.1:5000/mcm/
 
-## Maintix Commercial Manual · Version 1.0.0
+## Roustix Commercial Manual · Version 1.0.0
 
 | # | Código | Capítulo | Archivo |
 |---|--------|----------|---------|

@@ -136,7 +136,7 @@ Resultado esperado: _______________________________________
 | Minuto | Acción | Ejemplo |
 |--------|--------|---------|
 | 0:00 | Saludo · confirmar tiempo | «Tenemos unos 20 minutos — ¿les parece si empezamos?» |
-| 0:30 | **Problema** del sector | Historia MCM-03-MARKETS — sin mencionar Maintix aún |
+| 0:30 | **Problema** del sector | Historia MCM-03-MARKETS — sin mencionar Roustix aún |
 | 1:30 | **Transformación esperada** | Bloque MCM-02 — qué cambia en su operación |
 | 2:30 | Puente a la demo | «Les muestro cómo se ve eso en la plataforma — con un caso como el suyo.» |
 
@@ -162,7 +162,7 @@ Resultado esperado: _______________________________________
 
 **Regla de oro:** si no lo usarían en la primera semana, **no lo muestras**.
 
-### Flujo · Maintix Maintenance
+### Flujo · Roustix Maintenance
 
 | Paso | Pantalla / acción | Perfil MUX | Tiempo |
 |------|-------------------|------------|--------|
@@ -174,7 +174,7 @@ Resultado esperado: _______________________________________
 
 **Historia guion:** *«Línea 3 parada. Abrimos el activo, creamos la OT, Carlos la cierra con evidencia — el gerente ya no depende del audio de WhatsApp.»*
 
-### Flujo · Maintix Inventory
+### Flujo · Roustix Inventory
 
 | Paso | Pantalla / acción | Perfil MUX | Tiempo |
 |------|-------------------|------------|--------|
@@ -260,7 +260,7 @@ Usa la **historia de demo** de [MCM-03-MARKETS](03-sectores-mercados.md) como hi
 
 ### Script · Trial 15 días
 
-*«Lo siguiente natural no es firmar un contrato hoy. Es probar Maintix 15 días con su operación real — un módulo, sus usuarios, sus datos. Si en dos semanas no ven el valor, no hay compromiso. Si lo ven, hablamos del plan que corresponde a su etapa.»*
+*«Lo siguiente natural no es firmar un contrato hoy. Es probar Roustix 15 días con su operación real — un módulo, sus usuarios, sus datos. Si en dos semanas no ven el valor, no hay compromiso. Si lo ven, hablamos del plan que corresponde a su etapa.»*
 
 ### Pilar de marca · Cierre acto 3
 
@@ -398,7 +398,7 @@ Fecha follow-up: __________
 
 ## Reflexión · Sprint 5
 
-Cuando empezamos a hablar de Maintix, la conversación era sobre un sistema de mantenimiento e inventario.
+Cuando empezamos a hablar de Roustix, la conversación era sobre un sistema de mantenimiento e inventario.
 
 Hoy, después de estos sprints, hay algo distinto:
 
@@ -407,7 +407,7 @@ Hoy, después de estos sprints, hay algo distinto:
 - Una **experiencia de usuario** definida (MUX)  
 - Un **modelo comercial** coherente (MCM)
 
-Eso diferencia un buen producto de una empresa que puede escalar. Y lo más valioso: esa base se construye **antes** de salir masivamente al mercado — lo que hará mucho más sencillo mantener la coherencia a medida que Maintix crezca.
+Eso diferencia un buen producto de una empresa que puede escalar. Y lo más valioso: esa base se construye **antes** de salir masivamente al mercado — lo que hará mucho más sencillo mantener la coherencia a medida que Roustix crezca.
 
 **La demo es el momento donde todo eso se hace visible en 20 minutos.**
 
@@ -419,4 +419,4 @@ Eso diferencia un buen producto de una empresa que puede escalar. Y lo más vali
 
 ---
 
-*MCM-07-DEMO · Maintix Commercial Manual · 2026*
+*MCM-07-DEMO · Roustix Commercial Manual · 2026*

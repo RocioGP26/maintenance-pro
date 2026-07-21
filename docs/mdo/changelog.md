@@ -122,4 +122,4 @@
 
 ---
 
-*MDO changelog · Maintix Documentation Operations*
+*MDO changelog · Roustix Documentation Operations*

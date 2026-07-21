@@ -93,4 +93,4 @@ Cada reparación deja información valiosa. Cuando esa información queda en un 
 
 ---
 
-*MTX-CASE-004 · Nivel D · Maintix · 2026*
+*MTX-CASE-004 · Nivel D · Roustix · 2026*

@@ -48,7 +48,7 @@
 ## [1.1.1] — 2026-07-10 · MCM-01 · Mensajes oficiales
 
 ### Added
-- **Maintix en una frase** · canales web · presentaciones · LinkedIn · App Store
+- **Roustix en una frase** · canales web · presentaciones · LinkedIn · App Store
 - **Elevator Pitch** · texto listo para presentaciones
 - **Qué sí prometemos** · tabla Control · Trazabilidad · Escalabilidad · Simplicidad · Plataforma
 - **Slogan comercial:** «No necesitas otro software. Necesitas recuperar el control de tu operación.»
@@ -86,7 +86,7 @@
 ## [1.0.0] — Frozen · Documentation Suite v1.0
 
 ### Status
-- ✔ **Congelado** — Maintix Commercial Manual · 10 capítulos · Sprint 5 completo
+- ✔ **Congelado** — Roustix Commercial Manual · 10 capítulos · Sprint 5 completo
 - Tag suite: `docs-v1.0`
 
 ---

@@ -1,8 +1,8 @@
-# Maintix Documentation Suite · v1.5.0
+# Roustix Documentation Suite · v1.21.0
 
 **Producto documental independiente** del software de aplicación.
 
-**Índice maestro** del ecosistema documental de Maintix.
+**Índice maestro** del ecosistema documental de Roustix.
 
 **Frase:** Toda la operación. Una sola plataforma.
 
@@ -23,13 +23,16 @@ python run.py
 | Nomenclatura | [NOMENCLATURE.md](NOMENCLATURE.md) |
 | Sitio público (futuro) | [publishing/README.md](publishing/README.md) |
 | Sprint 16 · Purchasing | [purchasing/README.md](purchasing/README.md) |
+| Sprint 19 · Maintenance Execution | [maintenance-execution/README.md](maintenance-execution/README.md) |
+| Sprint 20 · Maintenance Automation | [maintenance-automation/README.md](maintenance-automation/README.md) |
+| Sprint 21 · Asset Health | [asset-health/README.md](asset-health/README.md) |
 
 ---
 
-## MAINTIX DOCS · Árbol maestro (01 – 10)
+## ROUSTIX DOCS · Árbol maestro (01 – 10)
 
 ```
-MAINTIX DOCS
+ROUSTIX DOCS
 │
 ├── 01 Brand Book       (MBB)   → /brandbook/
 ├── 02 MDL                        → /mdl/
@@ -82,7 +85,7 @@ MAINTIX DOCS
 | # | Código | Título |
 |---|--------|--------|
 | 01 | MPA-01-VIS | Visión de plataforma (EMP) |
-| 02 | MPA-02-ECO | Ecosistema Maintix |
+| 02 | MPA-02-ECO | Ecosistema Roustix |
 | 03 | MPA-03-MOD | Arquitectura modular |
 | 04 | MPA-04-SAAS | Arquitectura SaaS |
 | 05 | MPA-05-ROAD | Roadmap de módulos |
@@ -131,4 +134,4 @@ Matriz completa: [CROSS-REFERENCES.md](CROSS-REFERENCES.md)
 
 ---
 
-*Maintix Documentation Suite · v1.2 · 2026*
+*Roustix Documentation Suite · v1.2 · 2026*

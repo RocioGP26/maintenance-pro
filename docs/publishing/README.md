@@ -2,7 +2,7 @@
 
 **Suite docs · Publicación futura**
 
-Hoy Maintix sirve documentación desde la app Flask:
+Hoy Roustix sirve documentación desde la app Flask:
 
 | Ruta | Contenido |
 |------|-----------|
@@ -19,7 +19,7 @@ Esto es suficiente para **equipo interno** y desarrollo. Cuando la documentació
 
 ## Opciones evaluadas
 
-| Herramienta | Fortalezas | Para Maintix |
+| Herramienta | Fortalezas | Para Roustix |
 |-------------|------------|--------------|
 | **MkDocs** | Simple · Markdown nativo · Material theme · rápido de montar | ✅ Buen fit inicial — ya tenemos `.md` |
 | **Docusaurus** | React · versioning · blog · i18n | ✅ Si crece comunidad o docs multidioma |
@@ -40,7 +40,7 @@ Esto es suficiente para **equipo interno** y desarrollo. Cuando la documentació
 - [ ] [CROSS-REFERENCES.md](../CROSS-REFERENCES.md) aplicado
 - [ ] MPA v1.0 congelado
 - [ ] Política de versionado comunicada ([VERSIONING.md](../VERSIONING.md))
-- [ ] Dominio definido (ej. `docs.maintix.com`)
+- [ ] Dominio definido (ej. `docs.roustix.com`)
 
 ---
 
@@ -48,7 +48,7 @@ Esto es suficiente para **equipo interno** y desarrollo. Cuando la documentació
 
 ```yaml
 # mkdocs.yml (futuro)
-site_name: Maintix Documentation
+site_name: Roustix Documentation
 nav:
   - Inicio: README.md
   - Brand Book: brandbook/README.md

@@ -1,6 +1,6 @@
 # MUX · North Star Metrics
 
-Tres métricas que miden si Maintix cumple su promesa UX.  
+Tres métricas que miden si Roustix cumple su promesa UX.
 Origen: journey macro + goals por perfil.
 
 ## Objetivos globales (MTX-UX-MEASURE)
@@ -17,7 +17,7 @@ Detalle e instrumentación: [measure.md](measure.md)
 
 ## North Star 1 · TTFAV
 
-**Time to First Actionable Value**  
+**Time to First Actionable Value**
 *Tiempo hasta la primera acción útil.*
 
 | Perfil | Acción | Objetivo |
@@ -33,7 +33,7 @@ Detalle e instrumentación: [measure.md](measure.md)
 
 ## North Star 2 · TTCOT
 
-**Time to Close OT**  
+**Time to Close OT**
 *Tiempo para cerrar una orden de trabajo.*
 
 Desde «OT asignada» hasta «OT cerrada con evidencia».
@@ -50,7 +50,7 @@ Desde «OT asignada» hasta «OT cerrada con evidencia».
 
 ## North Star 3 · TTFFI
 
-**Time to Find Information**  
+**Time to Find Information**
 *Tiempo para encontrar información.*
 
 Desde intención («¿dónde está X?») hasta dato visible.

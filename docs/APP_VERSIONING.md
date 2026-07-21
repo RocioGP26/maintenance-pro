@@ -1,4 +1,4 @@
-# Versionado de la aplicación Maintix
+# Versionado de la aplicación Roustix
 
 ## Fuentes de verdad separadas
 
@@ -90,7 +90,7 @@ Usar solamente si GitHub Actions está temporalmente inhabilitado.
    ```bash
    git add app/version.py CHANGELOG.md docs/VERSIONS.md
    git commit -m "Release vX.Y.Z"
-   git tag -a vX.Y.Z -m "Maintix vX.Y.Z"
+   git tag -a vX.Y.Z -m "Roustix vX.Y.Z"
    git push origin main
    git push origin vX.Y.Z
    ```
@@ -104,7 +104,7 @@ Usar solamente si GitHub Actions está temporalmente inhabilitado.
    GET https://<servicio>.onrender.com/health
    ```
 
-   El log de arranque debe incluir `Maintix vX.Y.Z` y el build. Render aporta
+   El log de arranque debe incluir `Roustix vX.Y.Z` y el build. Render aporta
    `RENDER_GIT_COMMIT`; GitHub Actions aporta `GITHUB_SHA` automáticamente.
 
 ## Render y GitHub

@@ -1,4 +1,4 @@
-# MPA-02-ECO · Ecosistema Maintix
+# MPA-02-ECO · Ecosistema Roustix
 
 **Código:** MPA-02-ECO · Sprint 6.2
 
@@ -9,7 +9,7 @@
 ## 1 · Vista general
 
 ```
-                 MAINTIX
+                 ROUSTIX
 
           Enterprise Platform
                     │

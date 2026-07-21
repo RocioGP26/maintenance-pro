@@ -9,4 +9,4 @@
 | Sectores y módulos futuros (comercial) | [MCM-05-SECT](/mcm/chapters/05-sectores.md) |
 | GTM y fases de mercado | [MCM-10-GTM](/mcm/chapters/10-gtm.md) |
 
-→ [MPA · Maintix Platform Architecture](/mpa/)
+→ [MPA · Roustix Platform Architecture](/mpa/)

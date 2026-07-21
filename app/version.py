@@ -1,4 +1,4 @@
-"""Metadatos canónicos de versión de la aplicación Maintix.
+"""Metadatos canónicos de versión de la aplicación Roustix.
 
 Este módulo es la única fuente de verdad para la versión SemVer del software.
 La revisión Git identifica el build desplegado, pero no modifica la versión.
@@ -38,7 +38,7 @@ def get_build_commit() -> str | None:
 def get_version_info(*, include_build: bool = True) -> dict[str, str]:
     """Payload público seguro, sin datos de infraestructura ni secretos."""
     payload = {
-        "application": "Maintix",
+        "application": "Roustix",
         "version": __version__,
         "release": f"v{__version__}",
     }

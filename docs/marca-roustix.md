@@ -1,4 +1,4 @@
-# Guía de marca — Mantis CMMS
+# Guía de marca — Roustix
 
 Referencia para mantener consistencia visual en plantillas, CSS y gráficos (Chart.js).
 
@@ -38,9 +38,9 @@ No forman parte del logotipo, pero se usan para legibilidad operativa:
 
 Constantes en `app/branding.py`:
 
-- `APP_NAME` — «Mantis»
-- `APP_TAGLINE` — «CMMS — Industrial»
-- `APP_LOGO_PATH` — `img/mantis-logo.png`
+- `APP_NAME` — «Roustix»
+- `APP_TAGLINE` — «Toda la operación. Una sola plataforma.»
+- `APP_LOGO_PATH` — `img/roustix-logo.svg`
 
 **Isotipo / logo:** altura mínima recomendada **24px** en UI compacta; en auth/onboarding usar clases `.auth-logo` / `.onboarding-logo`.
 
@@ -118,4 +118,4 @@ Clases reutilizables en `app.css`:
 
 ---
 
-*Última revisión: alineado con `static/css/app.css` — paleta corporativa Mantis.*
+*Última revisión: alineado con `static/css/app.css` — paleta corporativa Roustix.*

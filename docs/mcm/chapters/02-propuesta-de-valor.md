@@ -4,7 +4,7 @@
 **Frase de marca:** Toda la operación. Una sola plataforma.
 
 > Este capítulo no vende software.  
-> Responde una sola pregunta: **¿Qué cambia en la vida de una empresa después de implementar Maintix?**
+> Responde una sola pregunta: **¿Qué cambia en la vida de una empresa después de implementar Roustix?**
 
 **Prerequisito:** [MCM-01-INTRO · Filosofía comercial](01-intro-filosofia-comercial.md)
 
@@ -18,7 +18,7 @@ No listamos módulos.
 
 No competimos por quién tiene más pantallas.
 
-Describimos **transformación**: cómo se siente la operación **antes** y **después** de que la empresa centraliza su información en Maintix.
+Describimos **transformación**: cómo se siente la operación **antes** y **después** de que la empresa centraliza su información en Roustix.
 
 > **Frase para el vendedor:** Si respondemos bien la pregunta central, la conversación deja de ser «¿cuánto cuesta el sistema?» y pasa a ser «¿cuánto nos cuesta seguir como estamos?»
 
@@ -28,11 +28,11 @@ Describimos **transformación**: cómo se siente la operación **antes** y **des
 
 | Pregunta que NO guía este capítulo | Pregunta que SÍ guía este capítulo |
 |--------------------------------------|-------------------------------------|
-| ¿Qué funciones tiene Maintix? | ¿Qué deja de doler en el día a día? |
+| ¿Qué funciones tiene Roustix? | ¿Qué deja de doler en el día a día? |
 | ¿Es mejor que el competidor X? | ¿Qué puede hacer el equipo que antes no podía? |
 | ¿Cuántas pantallas tiene? | ¿Qué decisiones llegan a tiempo ahora? |
 
-**Maintix no cambia la empresa por magia.** Cambia la empresa porque la información deja de estar dispersa y pasa a estar **disponible, confiable y compartida**.
+**Roustix no cambia la empresa por magia.** Cambia la empresa porque la información deja de estar dispersa y pasa a estar **disponible, confiable y compartida**.
 
 Eso tiene consecuencias concretas en **seis dimensiones**.
 
@@ -142,7 +142,7 @@ Cada transformación incluye una **métrica orientativa** — no números exacto
 
 Ambas puertas conducen a la misma plataforma. El **primer dolor** define por dónde entra el cliente — la **transformación profunda** es la misma: control operativo.
 
-### Maintix Maintenance
+### Roustix Maintenance
 
 Empresas cuya prioridad es activos y mantenimiento.
 
@@ -157,7 +157,7 @@ Empresas cuya prioridad es activos y mantenimiento.
 
 ---
 
-### Maintix Inventory
+### Roustix Inventory
 
 Empresas cuya prioridad es control comercial e inventarios.
 
@@ -184,7 +184,7 @@ Hoy entra por Maintenance o Inventory. Mañana activa el otro módulo.
 
 No vendemos a empresas abstractas. Vendemos a **Laura, Carlos, Valentina, Roberto y Andrea** — perfiles MUX.
 
-| Perfil | Antes de Maintix | Después de Maintix |
+| Perfil | Antes de Roustix | Después de Roustix |
 |--------|------------------|---------------------|
 | **Laura** (gerente) | Pide reportes, espera, decide tarde | Abre el dashboard y actúa en minutos |
 | **Carlos** (técnico) | Registra en cuaderno o no registra | Cierra OTs rápido, sin formularios eternos |
@@ -200,7 +200,7 @@ Ver fichas completas en [MUX](/mux/).
 
 ## 5 · Madurez operativa
 
-Maintix no solo resuelve un problema puntual. **Acompaña un recorrido** — de operación manual a decisiones basadas en datos.
+Roustix no solo resuelve un problema puntual. **Acompaña un recorrido** — de operación manual a decisiones basadas en datos.
 
 | Nivel | Estado | Qué significa |
 |-------|--------|---------------|
@@ -222,7 +222,7 @@ Nivel 4  Indicadores
 Nivel 5  Decisiones basadas en datos
 ```
 
-**Mensaje comercial:** la mayoría de PYMEs en crecimiento están en el **Nivel 1**. Maintix las lleva al **Nivel 2** desde el primer módulo y las prepara para **3, 4 y 5** sin cambiar de plataforma.
+**Mensaje comercial:** la mayoría de PYMEs en crecimiento están en el **Nivel 1**. Roustix las lleva al **Nivel 2** desde el primer módulo y las prepara para **3, 4 y 5** sin cambiar de plataforma.
 
 En la primera reunión, pregunta: *«¿En qué nivel siente que está su operación hoy?»* — eso abre la conversación sin hablar de precio.
 
@@ -270,11 +270,11 @@ Las respuestas mapean directamente a las seis transformaciones.
 | El problema es información dispersa | La transformación es información centralizada |
 | Cliente ideal: empresa en crecimiento | La transformación es poder crecer sin caos |
 | Dos puertas, una plataforma | El primer cambio visible depende de la puerta; el fondo es el mismo |
-| Madurez operativa | Maintix acompaña el recorrido del Nivel 1 al 5 |
+| Madurez operativa | Roustix acompaña el recorrido del Nivel 1 al 5 |
 
 ---
 
-Las empresas no compran Maintix para tener otro sistema. Lo compran porque **su operación empieza a comportarse como una empresa que puede crecer**.
+Las empresas no compran Roustix para tener otro sistema. Lo compran porque **su operación empieza a comportarse como una empresa que puede crecer**.
 
 **La transformación comienza con un módulo. El crecimiento ocurre dentro de una sola plataforma.**
 
@@ -287,7 +287,7 @@ Las empresas no compran Maintix para tener otro sistema. Lo compran porque **su 
 Este capítulo puede convertirse en una **infografía** para landing y presentaciones comerciales.
 
 ```
-ANTES                    MAINTIX
+ANTES                    ROUSTIX
 ─────                    ───────
 Excel                    Dashboard
   ↓                        ↓
@@ -304,4 +304,4 @@ Información dispersa     Control operativo
 
 ---
 
-*MCM-02 · Maintix Commercial Manual · 2026*
+*MCM-02 · Roustix Commercial Manual · 2026*

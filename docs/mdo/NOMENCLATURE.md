@@ -1,6 +1,6 @@
 # MDO · Nomenclatura
 
-Códigos oficiales · **Sprint 13** · Maintix Documentation Operations · **v1.0.0**
+Códigos oficiales · **Sprint 13** · Roustix Documentation Operations · **v1.0.0**
 
 | Código | Documento | Archivo | Estado |
 |--------|-----------|---------|--------|

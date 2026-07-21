@@ -8,7 +8,7 @@ FAQ_SECTIONS: tuple[dict, ...] = (
         "title": "Producto y plataforma",
         "entries": (
             {
-                "q": "¿Qué es Maintix?",
+                "q": "¿Qué es Roustix?",
                 "a": (
                     "Una Enterprise Management Platform (EMP) SaaS modular para controlar "
                     "la operación de PYMEs en crecimiento — mantenimiento, inventario y "
@@ -18,7 +18,7 @@ FAQ_SECTIONS: tuple[dict, ...] = (
             {
                 "q": "¿Es un ERP?",
                 "a": (
-                    "No en el sentido tradicional. Maintix no requiere meses de implementación "
+                    "No en el sentido tradicional. Roustix no requiere meses de implementación "
                     "ni consultoría pesada. Es operación digitalizada en días, modular y escalable."
                 ),
             },
@@ -48,7 +48,7 @@ FAQ_SECTIONS: tuple[dict, ...] = (
                 "a": (
                     "SaaS mensual por plan: Start · Grow · Scale · Enterprise. "
                     "Los precios definitivos estarán disponibles próximamente. "
-                    "Contacta al equipo Maintix para recibir información comercial."
+                    "Contacta al equipo Roustix para recibir información comercial."
                 ),
             },
             {
@@ -148,7 +148,7 @@ FAQ_SECTIONS: tuple[dict, ...] = (
             {
                 "q": "¿Tienen casos de éxito?",
                 "a": (
-                    "Narrativas por sector documentadas en Maintix Docs (MTX-CASE). "
+                    "Narrativas por sector documentadas en Roustix Docs (MTX-CASE). "
                     "Cada caso indica su nivel de evidencia."
                 ),
             },
@@ -175,7 +175,7 @@ FAQ_SECTIONS: tuple[dict, ...] = (
             {
                 "q": "¿Pueden desarrollar a medida?",
                 "a": (
-                    "Maintix es producto SaaS, no consultora. Personalización acotada "
+                    "Roustix es producto SaaS, no consultora. Personalización acotada "
                     "en plan Enterprise."
                 ),
             },

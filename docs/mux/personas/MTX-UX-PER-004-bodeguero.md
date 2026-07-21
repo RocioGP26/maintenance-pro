@@ -30,7 +30,7 @@ Mueve físicamente mercancía. La pantalla es una herramienta de trabajo, no un 
 
 ## Necesidades UX
 
-| Necesidad | Cómo la responde Maintix |
+| Necesidad | Cómo la responde Roustix |
 |-----------|--------------------------|
 | Escaneo / código | Campo código protagonista, Enter confirma |
 | Tablas densas | Listados filtrables, exportables |

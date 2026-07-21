@@ -2,7 +2,7 @@
 
 **Código:** MKT-09 · Sprint 12.9 · **Entregado**
 
-> El contenido de Maintix no busca generar más «likes». Busca generar confianza, autoridad y conversaciones comerciales.
+> El contenido de Roustix no busca generar más «likes». Busca generar confianza, autoridad y conversaciones comerciales.
 
 **Toda la operación. Una sola plataforma.**
 
@@ -12,7 +12,7 @@
 
 ## Objetivo del capítulo
 
-Definir la **estrategia oficial de contenidos** de Maintix para LinkedIn, sitio web, email marketing, video y futuras campañas.
+Definir la **estrategia oficial de contenidos** de Roustix para LinkedIn, sitio web, email marketing, video y futuras campañas.
 
 El objetivo del contenido **no** es vender inmediatamente.
 
@@ -28,7 +28,7 @@ Las empresas no compran software porque alguien publique una captura de pantalla
 
 Compran cuando entienden que existe una **mejor forma de operar**.
 
-Por eso Maintix comunica:
+Por eso Roustix comunica:
 
 - Problemas reales
 - Historias reales
@@ -67,7 +67,7 @@ Trial
 | Objetivo | Resultado esperado |
 |----------|-------------------|
 | **Educar** | Prospectos entienden el problema |
-| **Generar autoridad** | Maintix se percibe como experto |
+| **Generar autoridad** | Roustix se percibe como experto |
 | **Generar tráfico** | Landing y demo |
 | **Alimentar CRM** | Leads más preparados |
 | **Acompañar clientes** | Educación continua |
@@ -186,7 +186,7 @@ Contenido: procesos · escalabilidad · organización · liderazgo
 | **Inspiracional** | Hace pensar | *La mayoría de empresas no necesitan otro software. Necesitan recuperar el control.* |
 | **Práctico** | Enseña | Cómo organizar un inventario en cinco pasos |
 | **Evidencia** | Demuestra | Caso MTX-CASE |
-| **Producto** | Presenta Maintix | Siempre con contexto — nunca solo capturas |
+| **Producto** | Presenta Roustix | Siempre con contexto — nunca solo capturas |
 
 ---
 
@@ -196,7 +196,7 @@ Contenido: procesos · escalabilidad · organización · liderazgo
 |----------|----------|
 | Educar · Ayudar · Resolver · Enseñar | Producto · Demo · Trial · CTA |
 
-**Si todo el contenido habla de Maintix, deja de ser útil.**
+**Si todo el contenido habla de Roustix, deja de ser útil.**
 
 ---
 
@@ -252,7 +252,7 @@ No todos los contenidos deben vender.
 | Última oportunidad | No alineado marca |
 | Solo hoy | Spam · desconfianza |
 
-**Maintix vende confianza, no urgencia artificial.**
+**Roustix vende confianza, no urgencia artificial.**
 
 → [MKT-05 · CTAs](05-landing-copy.md#8--conversiones)
 
@@ -312,7 +312,7 @@ Palabras clave prioritarias *(referencia · copy natural, no stuffing)*:
 
 ## 14 · Biblioteca de ideas de contenido
 
-### Serie «De Excel a Maintix»
+### Serie «De Excel a Roustix»
 
 - ¿Cuántos Excels tiene tu operación?
 - Cinco señales de que Excel ya no alcanza.
@@ -332,7 +332,7 @@ Palabras clave prioritarias *(referencia · copy natural, no stuffing)*:
 
 ### Serie «Historias»
 
-- El origen de Maintix ([MCM-01](/mcm/chapters/01-intro-filosofia-comercial.md)).
+- El origen de Roustix ([MCM-01](/mcm/chapters/01-intro-filosofia-comercial.md)).
 - Lo que aprendimos implementando mantenimiento.
 - Cómo un inventario ordenado cambia una empresa.
 
@@ -349,7 +349,7 @@ Palabras clave prioritarias *(referencia · copy natural, no stuffing)*:
 
 ## Filosofía del capítulo
 
-El mejor contenido **no** habla primero de Maintix.
+El mejor contenido **no** habla primero de Roustix.
 
 Habla primero del **problema** que vive el cliente.
 

@@ -3,9 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  {% include "_favicon.html" %}
   <meta name="robots" content="noindex">
-  <title>Recursos — Maintix</title>
-  <meta name="description" content="Casos MTX-CASE, guías comerciales y documentación para evaluar Maintix.">
+  <title>Recursos — Roustix</title>
+  <meta name="description" content="Casos MTX-CASE, guías comerciales y documentación para evaluar Roustix.">
   {% from "_cdn_assets.html" import google_fonts_inter_extra_bold, bootstrap_icons_css %}
   {{ google_fonts_inter_extra_bold() }}
   {{ bootstrap_icons_css() }}
@@ -18,7 +19,7 @@
     <section class="landing-section landing-section--soft">
       <div class="container-xl landing-public-page-head">
         <p class="landing-eyebrow">MKT-09 · Recursos</p>
-        <h1 class="landing-section-title">Recursos para evaluar Maintix</h1>
+        <h1 class="landing-section-title">Recursos para evaluar Roustix</h1>
         <p class="landing-section-sub mx-auto text-center">{{ recursos_intro }}</p>
       </div>
     </section>
@@ -79,7 +80,7 @@
     <section class="landing-cta-band">
       <div class="container-xl text-center">
         <h2>¿Listo para probar?</h2>
-        <p>Comienza hoy. Prueba Maintix durante {{ trial_dias }} días sin compromiso.</p>
+        <p>Comienza hoy. Prueba Roustix durante {{ trial_dias }} días sin compromiso.</p>
         <div class="landing-hero-ctas justify-content-center">
           <a href="{{ url_for('onboarding.wizard') }}" class="landing-btn landing-btn-light">
             <i class="bi bi-rocket-takeoff"></i> {{ cta_final }}

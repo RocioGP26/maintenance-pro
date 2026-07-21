@@ -109,7 +109,7 @@ Leyenda: ☐ pendiente · 🟡 en progreso · ✅ alineado · ➖ N/A
 | Equipo / usuarios | ✅ | `/equipo` |
 | Config tenant | ✅ | superadmin |
 | Onboarding | ✅ | `/onboarding` |
-| Mantis | ✅ | `/platform/` |
+| Roustix Platform | ✅ | `/platform/` |
 | API | 🟡 | `/admin/summary` |
 | MRG estado | ✅ | Badges §1–§10 · v1.0.1 |
 

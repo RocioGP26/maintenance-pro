@@ -1,4 +1,4 @@
-"""Sirve MRG (docs/mrg/) — Maintix Reference Guide en /mrg/."""
+"""Sirve MRG (docs/mrg/) — Roustix Reference Guide en /mrg/."""
 
 from __future__ import annotations
 

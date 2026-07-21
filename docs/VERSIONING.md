@@ -1,4 +1,4 @@
-# Política de versionado · Maintix Documentation Suite
+# Política de versionado · Roustix Documentation Suite
 
 > Esta política cubre la documentación. Para la aplicación Flask, consultar
 > [APP_VERSIONING.md](APP_VERSIONING.md); su fuente canónica es

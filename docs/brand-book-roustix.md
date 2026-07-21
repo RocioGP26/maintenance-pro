@@ -1,13 +1,13 @@
-# Brand Book — Maintix v1.0
+# Brand Book — Roustix v1.0
 
 > **Versión actual:** el Brand Book visual v2.0 vive en [`docs/brandbook/index.html`](brandbook/index.html).  
 > **MDL** (componentes, tokens, patrones) es un proyecto independiente en [`docs/mdl/`](mdl/README.md) · catálogo en `/mdl/`.  
-> **MUX** (Maintix User Experience Guide) en [`docs/mux/`](mux/README.md) · guía en `/mux/`.  
+> **MUX** (Roustix User Experience Guide) en [`docs/mux/`](mux/README.md) · guía en `/mux/`.  
 > Este archivo (v1.0) queda como referencia textual; el manual oficial se construye por sprints en HTML.
 
 **Manual de Marca oficial**
 
-Documento fundacional que define la esencia de Maintix y sirve como guía para diseño, desarrollo y comunicación. Toda decisión visual, de producto o de mensaje debe poder justificarse con este manual.
+Documento fundacional que define la esencia de Roustix y sirve como guía para diseño, desarrollo y comunicación. Toda decisión visual, de producto o de mensaje debe poder justificarse con este manual.
 
 | Metadato | Valor |
 |----------|-------|
@@ -21,7 +21,7 @@ Documento fundacional que define la esencia de Maintix y sirve como guía para d
 
 ## Tabla de contenidos
 
-1. [Historia de Maintix](#1-historia-de-maintix)
+1. [Historia de Roustix](#1-historia-de-roustix)
 2. [Misión](#2-misión)
 3. [Visión](#3-visión)
 4. [Valores](#4-valores)
@@ -39,15 +39,15 @@ Documento fundacional que define la esencia de Maintix y sirve como guía para d
 
 ---
 
-## 1. Historia de Maintix
+## 1. Historia de Roustix
 
-Maintix nace de una observación simple pero recurrente en plantas, talleres, flotas y comercios de Latinoamérica: **las operaciones críticas se gestionan con planillas, WhatsApp y memoria**, mientras que el software de mantenimiento e inventario parece hecho solo para corporaciones con equipos de TI.
+Roustix nace de una observación simple pero recurrente en plantas, talleres, flotas y comercios de Latinoamérica: **las operaciones críticas se gestionan con planillas, WhatsApp y memoria**, mientras que el software de mantenimiento e inventario parece hecho solo para corporaciones con equipos de TI.
 
-El proyecto comenzó como una respuesta práctica a ese vacío: una plataforma web que uniera **mantenimiento industrial (CMMS)** e **inventario comercial** en un solo producto, sin imponer complejidad innecesaria. En lugar de duplicar el producto por industria, Maintix adoptó desde el inicio una arquitectura **multi-sector y modular**: la misma base de código se adapta a manufactura, logística, comercio, salud, minería, alimentos, construcción y educación mediante plantillas sectoriales y campos personalizados.
+El proyecto comenzó como una respuesta práctica a ese vacío: una plataforma web que uniera **mantenimiento industrial (CMMS)** e **inventario comercial** en un solo producto, sin imponer complejidad innecesaria. En lugar de duplicar el producto por industria, Roustix adoptó desde el inicio una arquitectura **multi-sector y modular**: la misma base de código se adapta a manufactura, logística, comercio, salud, minería, alimentos, construcción y educación mediante plantillas sectoriales y campos personalizados.
 
-Maintix representa la convicción de que **una empresa pequeña o mediana merece las mismas herramientas de control operativo que una grande**, con onboarding guiado, datos aislados por empresa, métricas como MTBF y MTTR, y la libertad de activar solo los módulos que necesita.
+Roustix representa la convicción de que **una empresa pequeña o mediana merece las mismas herramientas de control operativo que una grande**, con onboarding guiado, datos aislados por empresa, métricas como MTBF y MTTR, y la libertad de activar solo los módulos que necesita.
 
-Hoy, Maintix es más que un CMMS: es el sistema nervioso de la operación diaria — activos, órdenes de trabajo, repuestos, proveedores, ventas y stock — pensado para equipos que trabajan en planta, no en una oficina de proyectos.
+Hoy, Roustix es más que un CMMS: es el sistema nervioso de la operación diaria — activos, órdenes de trabajo, repuestos, proveedores, ventas y stock — pensado para equipos que trabajan en planta, no en una oficina de proyectos.
 
 ---
 
@@ -68,7 +68,7 @@ Traducimos la misión en producto cuando:
 
 **Ser la plataforma de referencia en Latinoamérica para la gestión operativa de PYMEs industriales y comerciales: donde mantenimiento e inventario conviven en un solo lugar, adaptados a cada sector, sin barreras de entrada.**
 
-A cinco años, queremos que decir «lo tenemos en Maintix» signifique lo mismo que decir «tenemos control de la operación»: confianza, trazabilidad y decisiones basadas en datos reales.
+A cinco años, queremos que decir «lo tenemos en Roustix» signifique lo mismo que decir «tenemos control de la operación»: confianza, trazabilidad y decisiones basadas en datos reales.
 
 ---
 
@@ -126,7 +126,7 @@ Manufactura · Logística · Comercio · Salud · Minería · Alimentos · Const
 
 ## 6. Personalidad de la marca
 
-Maintix es el colega experimentado del área de planta: **sabe del tema, habla claro y no presume**.
+Roustix es el colega experimentado del área de planta: **sabe del tema, habla claro y no presume**.
 
 | Atributo | Somos | No somos |
 |----------|-------|----------|
@@ -170,9 +170,9 @@ Revolutionary · Disruptivo · Synergy · Solución integral (sin contexto) · L
 
 ### Tratamiento del nombre
 
-- **Maintix** — siempre con M mayúscula; nunca «MAINTIX» en prosa (sí en logos o badges técnicos si aplica).
+- **Roustix** — siempre con M mayúscula; nunca «ROUSTIX» en prosa (sí en logos o badges técnicos si aplica).
 - No abreviar a «MTX» en comunicación externa salvo espacio muy limitado (icono de app).
-- En código interno pueden coexistir alias históricos durante migraciones; en UI y marketing prevalece **Maintix**.
+- En código interno pueden coexistir alias históricos durante migraciones; en UI y marketing prevalece **Roustix**.
 
 ---
 
@@ -236,7 +236,7 @@ rgba(55, 138, 221, 0.14) + rgba(24, 95, 165, 0.08) sobre --fondo
 
 ### Familia principal — Inter
 
-[Inter](https://fonts.google.com/specimen/Inter) es la tipografía de Maintix: legible en pantallas industriales, neutral y profesional.
+[Inter](https://fonts.google.com/specimen/Inter) es la tipografía de Roustix: legible en pantallas industriales, neutral y profesional.
 
 | Uso | Peso | Tamaño / estilo |
 |-----|------|-----------------|
@@ -274,11 +274,14 @@ font-family: "Inter", system-ui, -apple-system, sans-serif;
 
 ### Composición
 
-El logotipo de Maintix combina **isotipo + wordmark** (archivo de referencia: `static/img/mantis-logo.png` — sujeto a actualización de nombre visual).
+El logotipo de Roustix combina **isotipo + wordmark** (archivo de referencia: `static/img/roustix-logo.svg`).
+
+El favicon oficial utiliza el isotipo en formato cuadrado y se encuentra en
+`static/img/roustix-favicon.svg`.
 
 - **Isotipo:** símbolo reconocible a tamaños pequeños (favicon, sidebar colapsado).
-- **Wordmark:** «Maintix» en Inter Semibold, alineado ópticamente con el isotipo.
-- **Tagline opcional:** «CMMS — Industrial» debajo o junto al wordmark en contextos institucionales.
+- **Wordmark:** «Roustix» en Inter Semibold, alineado ópticamente con el isotipo.
+- **Tagline opcional:** «Toda la operación. Una sola plataforma.» debajo o junto al wordmark en contextos institucionales.
 
 ### Zona de protección
 
@@ -310,7 +313,7 @@ Mantener un espacio libre equivalente a **la altura de la «M»** del wordmark e
 
 ### Coexistencia con logo de cliente
 
-En el panel de empresa, el **logo del tenant** puede mostrarse junto al de Maintix. Maintix permanece en sidebar/footer; el logo del cliente en cabecera de empresa o informes exportados según configuración.
+En el panel de empresa, el **logo del tenant** puede mostrarse junto al de Roustix. Roustix permanece en sidebar/footer; el logo del cliente en cabecera de empresa o informes exportados según configuración.
 
 ---
 
@@ -358,7 +361,7 @@ Frase corta, memorable y alineada con la promesa de producto: visibilidad sobre 
 
 ### Tagline técnica
 
-> **CMMS — Industrial**
+> **Toda la operación. Una sola plataforma.**
 
 Usar debajo del logo o en metadata cuando se necesite categorizar el producto (SEO, fichas técnicas, app stores). Clase CSS: `.app-tagline`.
 
@@ -400,7 +403,7 @@ Contraste, labels en formularios, feedback en acciones destructivas. No es opcio
 La operación crítica ocurre en escritorio; móvil debe ser usable para consultas y registros rápidos, no paridad pixel-perfect en v1.
 
 ### 8. Marca en segundo plano, cliente en primer plano
-Maintix identifica la plataforma; el nombre de la empresa del cliente es el protagonista en su workspace.
+Roustix identifica la plataforma; el nombre de la empresa del cliente es el protagonista en su workspace.
 
 ---
 
@@ -408,7 +411,7 @@ Maintix identifica la plataforma; el nombre de la empresa del cliente es el prot
 
 ### Look & feel general
 
-Maintix se ve **limpio, industrial y confiable**: fondos claros azulados, tarjetas blancas con sombra suave, sidebar oscuro anclado, acentos azules para acción. Evitamos el exceso de gradientes, glassmorphism o ilustraciones stock genéricas.
+Roustix se ve **limpio, industrial y confiable**: fondos claros azulados, tarjetas blancas con sombra suave, sidebar oscuro anclado, acentos azules para acción. Evitamos el exceso de gradientes, glassmorphism o ilustraciones stock genéricas.
 
 ### Componentes distintivos
 
@@ -476,7 +479,7 @@ Maintix se ve **limpio, industrial y confiable**: fondos claros azulados, tarjet
 | Hero | Propuesta de valor + CTA «Empieza gratis» |
 | Secciones | Eyebrow en mayúsculas espaciadas (como `.app-tagline`) |
 | Precios | Destacar plan popular con `--acento`; honestidad en límites |
-| Footer | © Maintix · Bogotá, Colombia |
+| Footer | © Roustix · Bogotá, Colombia |
 
 **Referencia:** `templates/landing/index.html`, `static/css/landing.css` (alineación de acentos en curso)
 
@@ -484,7 +487,7 @@ Maintix se ve **limpio, industrial y confiable**: fondos claros azulados, tarjet
 
 - Títulos en `#042C53`, links en `#185FA5`.
 - Screenshots con marco de navegador o dispositivo neutro.
-- Mantener nombre **Maintix** en títulos de ayuda.
+- Mantener nombre **Roustix** en títulos de ayuda.
 
 ### D. Presentaciones comerciales
 
@@ -513,9 +516,9 @@ Plantillas: logo en esquina inferior derecha, margen de protección, fondo `--fo
 Constantes en `app/branding.py`:
 
 ```python
-APP_NAME = "Maintix"           # objetivo de marca
-APP_TAGLINE = "CMMS — Industrial"
-APP_LOGO_PATH = "img/maintix-logo.png"  # cuando exista asset final
+APP_NAME = "Roustix"           # objetivo de marca
+APP_TAGLINE = "Toda la operación. Una sola plataforma."
+APP_LOGO_PATH = "img/roustix-logo.svg"
 ```
 
 Variables CSS en `:root` de `app.css` — **no duplicar** en módulos salvo excepción documentada.
@@ -529,9 +532,9 @@ Variables CSS en `:root` de `app.css` — **no duplicar** en módulos salvo exce
 - [ ] ¿Botones primarios con `btn-primary` / `--acento`?
 - [ ] ¿Estados operativos con colores semánticos?
 - [ ] ¿Iconos Bootstrap Icons únicamente?
-- [ ] ¿Copy alineado con voz Maintix (directo, sin hype)?
+- [ ] ¿Copy alineado con voz Roustix (directo, sin hype)?
 - [ ] ¿Logo con zona de protección y tamaño mínimo?
-- [ ] ¿Nombre «Maintix» escrito correctamente?
+- [ ] ¿Nombre «Roustix» escrito correctamente?
 
 ---
 
@@ -540,7 +543,7 @@ Variables CSS en `:root` de `app.css` — **no duplicar** en módulos salvo exce
 | Documento | Alcance |
 |-----------|---------|
 | **Este Brand Book** | Estrategia de marca, voz, identidad completa |
-| `docs/marca-mantis.md` | Guía técnica rápida para CSS/plantillas (legacy; migrar referencias a Maintix) |
+| `docs/marca-roustix.md` | Guía técnica rápida para CSS/plantillas |
 | `docs/arquitectura-sectores.md` | Arquitectura de producto multi-sector |
 
 ---
@@ -553,4 +556,4 @@ Variables CSS en `:root` de `app.css` — **no duplicar** en módulos salvo exce
 
 ---
 
-*Maintix — Tu operación, bajo control.*
+*Roustix — Tu operación, bajo control.*

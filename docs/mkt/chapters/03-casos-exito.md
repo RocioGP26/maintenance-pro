@@ -14,9 +14,9 @@
 
 ## Objetivo del capítulo
 
-Definir la estrategia oficial para documentar, clasificar y comunicar los **casos de éxito Maintix (MTX-CASE)**.
+Definir la estrategia oficial para documentar, clasificar y comunicar los **casos de éxito Roustix (MTX-CASE)**.
 
-Los casos de éxito son la principal evidencia comercial para demostrar que Maintix resuelve problemas reales de operación.
+Los casos de éxito son la principal evidencia comercial para demostrar que Roustix resuelve problemas reales de operación.
 
 No son testimonios aislados.
 
@@ -30,7 +30,7 @@ Las funcionalidades generan interés.
 
 Los casos generan confianza.
 
-El objetivo de un caso de éxito **no** es demostrar que Maintix tiene muchas funciones.
+El objetivo de un caso de éxito **no** es demostrar que Roustix tiene muchas funciones.
 
 Es demostrar que una empresa logró mejores resultados.
 
@@ -182,7 +182,7 @@ Cuando existan datos autorizados pueden incluirse.
 
 ## 6 · Casos iniciales
 
-La biblioteca parte de los orígenes de Maintix.
+La biblioteca parte de los orígenes de Roustix.
 
 | Código | Título | Archivo | Nivel |
 |--------|--------|---------|-------|
@@ -314,7 +314,7 @@ Antes de publicarlo validar:
 
 ## Filosofía del capítulo
 
-Los casos de éxito no sirven para demostrar que Maintix funciona.
+Los casos de éxito no sirven para demostrar que Roustix funciona.
 
 Sirven para demostrar que empresas reales recuperaron el control de su operación.
 

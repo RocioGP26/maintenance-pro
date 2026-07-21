@@ -2,7 +2,7 @@
 
 **Código:** MKT-08 · Sprint 12.8 · **Entregado**
 
-> Un partner no solo distribuye Maintix. Representa la marca, comunica la propuesta de valor y acompaña al cliente durante todo su proceso de adopción.
+> Un partner no solo distribuye Roustix. Representa la marca, comunica la propuesta de valor y acompaña al cliente durante todo su proceso de adopción.
 
 **Toda la operación. Una sola plataforma.**
 
@@ -16,9 +16,9 @@
 
 ## Objetivo del capítulo
 
-Definir el **Partner Kit oficial** de Maintix: materiales, procesos, reglas de uso de marca, recursos comerciales y lineamientos para distribuidores, integradores y aliados estratégicos.
+Definir el **Partner Kit oficial** de Roustix: materiales, procesos, reglas de uso de marca, recursos comerciales y lineamientos para distribuidores, integradores y aliados estratégicos.
 
-Este documento garantiza que cualquier partner comunique Maintix con el mismo nivel de **calidad, consistencia y transparencia** que el equipo interno.
+Este documento garantiza que cualquier partner comunique Roustix con el mismo nivel de **calidad, consistencia y transparencia** que el equipo interno.
 
 ---
 
@@ -26,7 +26,7 @@ Este documento garantiza que cualquier partner comunique Maintix con el mismo ni
 
 Los partners **no venden un software**.
 
-Ayudan a las empresas a **recuperar el control de su operación** utilizando la metodología y las herramientas de Maintix.
+Ayudan a las empresas a **recuperar el control de su operación** utilizando la metodología y las herramientas de Roustix.
 
 Su éxito depende de tres factores:
 
@@ -40,7 +40,7 @@ Su éxito depende de tres factores:
 
 > Un solo mensaje. Una sola metodología. Una sola plataforma.
 
-Cuando un cliente trabaja con un Partner Maintix, debe recibir la **misma experiencia** que con el equipo oficial.
+Cuando un cliente trabaja con un Partner Roustix, debe recibir la **misma experiencia** que con el equipo oficial.
 
 → [MKT-01 · Brand DNA](01-identidad-mensajes-marca.md#12--brand-dna)
 
@@ -231,7 +231,7 @@ Onboarding
 
 → [MKT-02 · Matriz contexto](02-elevator-pitch-guiones.md#14--matriz-contexto--pitch) · [MCM-07](/mcm/chapters/07-demo-comercial.md)
 
-### Handoff al equipo Maintix
+### Handoff al equipo Roustix
 
 Cuando un partner requiera apoyo, compartir:
 
@@ -381,7 +381,7 @@ Para evitar conflictos comerciales entre partners.
 ```
 Partner registra oportunidad
     ↓
-Validación Maintix
+Validación Roustix
     ↓
 Aprobación
     ↓

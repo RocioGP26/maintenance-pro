@@ -48,8 +48,8 @@ def backup_db():
 
 @click.command("version")
 def version_command():
-    """Muestra la versión SemVer y el build Git de Maintix."""
-    click.echo(f"Maintix v{__version__}")
+    """Muestra la versión SemVer y el build Git de Roustix."""
+    click.echo(f"Roustix v{__version__}")
     click.echo(f"Build: {get_build_commit() or 'local'}")
 
 

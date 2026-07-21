@@ -3,8 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Preguntas frecuentes — Maintix</title>
-  <meta name="description" content="Respuestas oficiales sobre Maintix: producto, planes, implementación, API e integraciones. Fuente MCM-08.">
+  {% include "_favicon.html" %}
+  <title>Preguntas frecuentes — Roustix</title>
+  <meta name="description" content="Respuestas oficiales sobre Roustix: producto, planes, implementación, API e integraciones. Fuente MCM-08.">
   {% from "_cdn_assets.html" import google_fonts_inter_extra_bold, bootstrap_icons_css %}
   {{ google_fonts_inter_extra_bold() }}
   {{ bootstrap_icons_css() }}
@@ -19,7 +20,7 @@
         <p class="landing-eyebrow">MCM-08 · FAQ oficial</p>
         <h1 class="landing-section-title">Preguntas frecuentes</h1>
         <p class="landing-section-sub mx-auto text-center">
-          Respuestas alineadas con la documentación comercial y funcional de Maintix.
+          Respuestas alineadas con la documentación comercial y funcional de Roustix.
           Si no encuentras tu caso, <a href="{{ url_for('main.contacto') }}">contáctanos</a>.
         </p>
       </div>
@@ -53,9 +54,9 @@
     <section class="landing-cta-band">
       <div class="container-xl text-center">
         <h2>¿Listo para probar?</h2>
-        <p>Comienza hoy. Prueba Maintix durante {{ trial_dias }} días sin compromiso.</p>
+        <p>Comienza hoy. Prueba Roustix durante {{ trial_dias }} días sin compromiso.</p>
         <button type="button" class="landing-btn landing-btn-light"
-                data-send-prompt="Quiero comenzar mi prueba gratuita en Maintix"
+                data-send-prompt="Quiero comenzar mi prueba gratuita en Roustix"
                 data-prompt-url="{{ url_for('onboarding.wizard') }}">
           <i class="bi bi-rocket-takeoff"></i> {{ cta_final }}
         </button>

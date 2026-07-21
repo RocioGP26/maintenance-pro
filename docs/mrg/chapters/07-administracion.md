@@ -2,7 +2,7 @@
 
 **Código:** MRG-07-ADMIN · Sprint 10.7 · **Entregado**
 
-> El módulo **Administration** centraliza la gestión de usuarios, roles, empresas, sedes y configuración del inquilino. A nivel de plataforma, **Mantis** administra el ecosistema SaaS completo.
+> El módulo **Administration** centraliza la gestión de usuarios, roles, empresas, sedes y configuración del inquilino. A nivel de plataforma, **Roustix Platform** administra el ecosistema SaaS completo.
 
 **Toda la operación. Una sola plataforma.**
 
@@ -10,7 +10,7 @@
 
 ## Objetivo del capítulo
 
-Documentar el funcionamiento administrativo de Maintix, diferenciando claramente la **administración del inquilino** de la **administración de la plataforma SaaS**.
+Documentar el funcionamiento administrativo de Roustix, diferenciando claramente la **administración del inquilino** de la **administración de la plataforma SaaS**.
 
 **Estado:** ✅ **Núcleo operativo en producción** · **Sprint 14 ALIGN:** ✅ Cerrado (2026-07-10)
 
@@ -34,7 +34,7 @@ Documentar el funcionamiento administrativo de Maintix, diferenciando claramente
 | §6 | Sedes | 🟡 |
 | §7 | Configuración tenant | ✅ |
 | §8 | Onboarding | ✅ |
-| §9 | Mantis | ✅ |
+| §9 | Roustix Platform | ✅ |
 | §10 | Seguridad | ✅ |
 | API | MAG admin | 🟡 |
 
@@ -57,12 +57,12 @@ Documentar el funcionamiento administrativo de Maintix, diferenciando claramente
 
 ## 2 · Dos niveles de administración · ✅
 
-Maintix distingue claramente **dos ámbitos administrativos**:
+Roustix distingue claramente **dos ámbitos administrativos**:
 
 | Nivel | Responsable | Alcance |
 |-------|-------------|---------|
 | **Administrador del inquilino** | Empresa cliente | Usuarios, configuración y operación de su organización |
-| **Administrador de plataforma (Mantis)** | Operador Maintix | Gestión SaaS completa |
+| **Administrador de plataforma (Roustix Platform)** | Operador Roustix | Gestión SaaS completa |
 
 Los administradores de una empresa **nunca pueden acceder** a información de otros inquilinos.
 
@@ -226,9 +226,9 @@ El contenido inicial depende del **sector** seleccionado (manufactura → Manten
 
 ---
 
-## 9 · Plataforma Mantis · ✅
+## 9 · Plataforma Roustix · ✅
 
-La plataforma administrativa de Maintix dispone de capacidades **exclusivas**:
+La plataforma administrativa de Roustix dispone de capacidades **exclusivas**:
 
 | Función | Descripción |
 |---------|-------------|
@@ -273,7 +273,7 @@ Administración
         ├────────► Sales
         ├────────► CRM (roadmap)
         ├────────► Reportes
-        └────────► Plataforma Mantis
+        └────────► Plataforma Roustix
 ```
 
 La administración constituye el **punto de control** de toda la plataforma — roles, módulos activos y configuración determinan qué ve y hace cada usuario en MRG-02 a MRG-06.
@@ -325,7 +325,7 @@ Este capítulo se considera **implementado** cuando:
 
 ## Filosofía del capítulo
 
-La administración no consiste únicamente en crear usuarios. Es el mecanismo mediante el cual cada empresa configura su **propio entorno de trabajo** mientras la plataforma garantiza el **aislamiento entre inquilinos** y la **administración centralizada** del ecosistema SaaS. Maintix separa claramente ambas responsabilidades para ofrecer seguridad, escalabilidad y autonomía.
+La administración no consiste únicamente en crear usuarios. Es el mecanismo mediante el cual cada empresa configura su **propio entorno de trabajo** mientras la plataforma garantiza el **aislamiento entre inquilinos** y la **administración centralizada** del ecosistema SaaS. Roustix separa claramente ambas responsabilidades para ofrecer seguridad, escalabilidad y autonomía.
 
 ---
 

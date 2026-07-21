@@ -1,4 +1,4 @@
-"""Sirve MSD (docs/msd/) — Maintix SDK & Developer Portal en /msd/."""
+"""Sirve MSD (docs/msd/) — Roustix SDK & Developer Portal en /msd/."""
 
 from __future__ import annotations
 

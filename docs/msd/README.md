@@ -1,4 +1,4 @@
-# MSD · Maintix SDK & Developer Portal
+# MSD · Roustix SDK & Developer Portal
 
 **Código:** MSD · Suite docs **08**  
 **Versión:** v1.0.0 · Sprint 9 · **✅ Completo**  
@@ -28,7 +28,7 @@ Construir el ecosistema completo para desarrolladores externos: Developer Portal
 | 02 | MSD-02-PORT | [Developer Portal](chapters/02-developer-portal.md) | ✅ |
 | 03 | MSD-03-OAPI | [OpenAPI 3.1](chapters/03-openapi.md) | ✅ |
 | 04 | MSD-04-SDK | [SDK oficiales](chapters/04-sdk-oficiales.md) | ✅ |
-| 05 | MSD-05-CLI | [CLI (`maintix-cli`)](chapters/05-cli.md) | ✅ |
+| 05 | MSD-05-CLI | [CLI (`roustix-cli`)](chapters/05-cli.md) | ✅ |
 | 06 | MSD-06-SBOX | [Sandbox y API Explorer](chapters/06-sandbox-explorer.md) | ✅ |
 | 07 | MSD-07-QS | [Quick Start y guías](chapters/07-quick-start.md) | ✅ |
 | 08 | MSD-08-COLL | [Postman e Insomnia](chapters/08-colecciones.md) | ✅ |
@@ -44,7 +44,7 @@ Construir el ecosistema completo para desarrolladores externos: Developer Portal
 | [MPA-06](/mpa/chapters/06-integraciones.md) | Estrategia integraciones |
 | [Developer Docs](../developer/README.md) | Contribución al repo (suite 09) |
 
-## Maintix Documentation Suite
+## Roustix Documentation Suite
 
 | Meta | Enlace |
 |------|--------|

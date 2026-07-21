@@ -212,7 +212,7 @@ Pantalla operativa para **obligaciones con proveedores** derivadas de compras a 
 
 ## 6 · Recepción de mercancía · 🟡
 
-Cuando llega una compra, Maintix registra la recepción.
+Cuando llega una compra, Roustix registra la recepción.
 
 | Tipo | Descripción |
 |------|-------------|
@@ -388,7 +388,7 @@ Este capítulo se considera **implementado** cuando:
 
 ## Filosofía del capítulo
 
-Comprar no consiste únicamente en adquirir productos. Significa garantizar que la operación disponga de los recursos correctos, en el momento adecuado y con **trazabilidad completa**. Maintix convierte cada compra en un proceso controlado, medible e integrado con el resto de la plataforma.
+Comprar no consiste únicamente en adquirir productos. Significa garantizar que la operación disponga de los recursos correctos, en el momento adecuado y con **trazabilidad completa**. Roustix convierte cada compra en un proceso controlado, medible e integrado con el resto de la plataforma.
 
 ---
 

@@ -348,7 +348,7 @@ class PlatformAuditLog(db.Model):
     empresa_id = db.Column(db.Integer, db.ForeignKey("empresas.id"), nullable=True, index=True)
     user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=True, index=True)
     accion = db.Column(db.String(32), nullable=False, index=True)
-    actor_label = db.Column(db.String(120), nullable=False, default="Soporte Maintix")
+    actor_label = db.Column(db.String(120), nullable=False, default="Soporte Roustix")
     detalle = db.Column(db.String(500), default="")
     ip_address = db.Column(db.String(45), default="")
     visible_cliente = db.Column(db.Boolean, default=True, nullable=False)

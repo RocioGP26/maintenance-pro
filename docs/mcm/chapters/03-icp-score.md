@@ -14,7 +14,7 @@
 
 Hasta ahora hablamos del cliente ideal en términos generales: **empresa en crecimiento**, Excel ya no alcanza, operación por encima de industria.
 
-En este capítulo construimos el **ICP Score de Maintix** — una matriz de puntuación que permite:
+En este capítulo construimos el **ICP Score de Roustix** — una matriz de puntuación que permite:
 
 - Priorizar prospectos al llegar un lead
 - Enfocar demos según el perfil real
@@ -28,7 +28,7 @@ En este capítulo construimos el **ICP Score de Maintix** — una matriz de punt
 
 ## 1 · Perfil del cliente ideal (resumen)
 
-Maintix no vende por industria. **Vende por operación.**
+Roustix no vende por industria. **Vende por operación.**
 
 | Dimensión | Cliente ideal |
 |-----------|---------------|
@@ -138,7 +138,7 @@ Sin champion, la venta suele ser **más lenta o fallar** — aunque el score sea
 
 | Puntuación (score neto) | Banda | Significado | Acción comercial |
 |-------------------------|-------|-------------|------------------|
-| **80 – 100** | 🟢 **A · Prioritaria** | Prospecto muy alineado con Maintix | Respuesta en &lt;24 h · demo personalizada · trial activo desde día 1 |
+| **80 – 100** | 🟢 **A · Prioritaria** | Prospecto muy alineado con Roustix | Respuesta en &lt;24 h · demo personalizada · trial activo desde día 1 |
 | **60 – 79** | 🔵 **B · Sólida** | Buena oportunidad con algún gap | Demo estándar · trial 15 días · seguimiento semanal |
 | **40 – 59** | 🟡 **C · Nurturing** | Interés real pero no es el momento ideal | Email educativo · caso de uso · recontacto en 30–60 días |
 | **0 – 39** | 🔴 **D · Proceso diferente** | Bajo fit o prematuro | No priorizar ventas activas · lista de espera o derivar a partner |
@@ -164,7 +164,7 @@ Ayuda a planificar el pipeline comercial. Ajustar según Urgencia y Champion.
 | **Menos de 5 empleados** sin dolor claro | Banda D o C — el costo de cambio puede superar el beneficio |
 | Solo compara **precio** sin hablar de operación | Volver a MCM-02 (transformación) o depriorizar |
 | Sin dueño/gerente involucrado | Pausar hasta tener decisor |
-| No maneja inventario **ni** activos | Maintix no encaja hoy |
+| No maneja inventario **ni** activos | Roustix no encaja hoy |
 
 ---
 
@@ -175,7 +175,7 @@ Ayuda a planificar el pipeline comercial. Ajustar según Urgencia y Champion.
 | Herramienta | Mide |
 |-------------|------|
 | **ICP Score** | Qué tan buena oportunidad comercial es el prospecto |
-| **OMI** | En qué nivel de madurez operativa está hoy — y hasta dónde puede llegar con Maintix |
+| **OMI** | En qué nivel de madurez operativa está hoy — y hasta dónde puede llegar con Roustix |
 
 Relacionado con [Madurez operativa](02-propuesta-de-valor.md) (MCM-02), pero **OMI es la métrica comercial** para CRM, demos y roadmap.
 
@@ -199,13 +199,13 @@ Nivel 4  Operación integrada
 Nivel 5  Operación basada en datos
 ```
 
-**Maintix acompaña ese recorrido** — desde Nivel 1–2 (cliente típico de entrada) hacia 3, 4 y 5 sin cambiar de plataforma.
+**Roustix acompaña ese recorrido** — desde Nivel 1–2 (cliente típico de entrada) hacia 3, 4 y 5 sin cambiar de plataforma.
 
 | OMI actual | Mensaje comercial |
 |------------|-------------------|
 | 1–2 | «Empiezas donde estás hoy — sin consultoría de meses.» |
 | 3 | «Unificamos lo que hoy está fragmentado.» |
-| 4–5 | «Activas el siguiente módulo; los datos ya viven en Maintix.» |
+| 4–5 | «Activas el siguiente módulo; los datos ya viven en Roustix.» |
 
 Registrar **OMI actual** y **OMI objetivo** en cada prospecto.
 
@@ -217,8 +217,8 @@ El ICP Score no reemplaza la elección de módulo. La define el **dolor dominant
 
 | Si el dolor principal es… | Puerta | Puntos de demo MUX |
 |---------------------------|--------|---------------------|
-| Activos, OTs, planta, disponibilidad | **Maintix Maintenance** | Laura + Carlos |
-| Stock, ventas, cartera, compras | **Maintix Inventory** | Valentina + Roberto |
+| Activos, OTs, planta, disponibilidad | **Roustix Maintenance** | Laura + Carlos |
+| Stock, ventas, cartera, compras | **Roustix Inventory** | Valentina + Roberto |
 | Ambos con igual urgencia | Empezar por el más doloroso · segundo módulo en expansión | Combinar perfiles |
 
 **Regla:** un prospecto Band A con Inventory no recibe demo de Maintenance solo porque «tenemos ese módulo».
@@ -394,4 +394,4 @@ Próxima acción: __________________
 
 ---
 
-*MCM-03 · Maintix Commercial Manual · 2026*
+*MCM-03 · Roustix Commercial Manual · 2026*

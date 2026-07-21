@@ -16,7 +16,7 @@ _REGISTERED_DOC_CODES = frozenset(
 
 @dataclass(frozen=True)
 class MRLDocumentMeta:
-    """Información común de toda exportación Maintix."""
+    """Información común de toda exportación Roustix."""
 
     doc_code: str
     instance_code: str
@@ -32,8 +32,8 @@ class MRLDocumentMeta:
     mrl_version: str = MRL_VERSION
     template: str | None = None
     document_version: str = "1.0"
-    generated_by: str = "Maintix"
-    sistema: str = "Maintix"
+    generated_by: str = "Roustix"
+    sistema: str = "Roustix"
 
     def __post_init__(self) -> None:
         doc = (self.doc_code or "").strip().upper()
@@ -54,7 +54,7 @@ class MRLDocumentMeta:
 
     @property
     def tenant(self) -> int:
-        """Alias de empresa_id · tenant Maintix."""
+        """Alias de empresa_id · tenant Roustix."""
         return self.empresa_id
 
     @property

@@ -73,13 +73,13 @@ def empresa_puede_operar(empresa: Empresa | None) -> tuple[bool, str, str]:
         return (
             False,
             "email_no_verificado",
-            "Confirma el correo de la empresa antes de acceder a Maintix.",
+            "Confirma el correo de la empresa antes de acceder a Roustix.",
         )
     if empresa.suspendida:
         return (
             False,
             "suspendida",
-            "Esta cuenta está suspendida. Contacta a soporte de Maintix para reactivarla.",
+            "Esta cuenta está suspendida. Contacta a soporte de Roustix para reactivarla.",
         )
     estado = estado_ciclo_empresa(empresa)
     if estado == "suspendida":
@@ -92,7 +92,7 @@ def empresa_puede_operar(empresa: Empresa | None) -> tuple[bool, str, str]:
         return (
             False,
             "mora",
-            "Hay pagos pendientes. Regulariza la facturación para continuar usando Maintix.",
+            "Hay pagos pendientes. Regulariza la facturación para continuar usando Roustix.",
         )
     return True, "", ""
 

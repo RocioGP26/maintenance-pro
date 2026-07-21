@@ -1,4 +1,4 @@
-# MDO · Maintix Documentation Operations
+# MDO · Roustix Documentation Operations
 
 **Código:** MDO · **v1.0.0** · Sprint 13 ✅  
 **Estado:** ✅ **Sprint 13 finalizado** · Manual completo (10 capítulos)  

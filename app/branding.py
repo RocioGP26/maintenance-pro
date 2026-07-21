@@ -9,10 +9,11 @@ from flask import url_for
 if TYPE_CHECKING:
     from app.models import Empresa
 
-APP_NAME = "Maintix"
+APP_NAME = "Roustix"
 APP_TAGLINE = "Toda la operación. Una sola plataforma."
-APP_LOGO_PATH = "img/mantis-logo.png"
-PUBLIC_CONTACT_EMAIL = "contacto@maintix.com"
+APP_LOGO_PATH = "img/roustix-logo.svg"
+APP_FAVICON_PATH = "img/roustix-favicon.svg"
+PUBLIC_CONTACT_EMAIL = "contacto@roustix.com"
 
 
 def empresa_logo_url_or_none(empresa: Optional["Empresa"]) -> Optional[str]:

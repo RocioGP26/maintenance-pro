@@ -7,6 +7,11 @@
   <div class="col-lg-10">
     <div class="card card-dashboard">
       <div class="card-body">
+        {% if machine %}<div class="d-flex flex-wrap justify-content-end gap-2 mb-3">
+          <a class="btn btn-outline-success" href="{{ url_for('asset_health.detail', machine_id=machine.id) }}"><i class="bi bi-heart-pulse me-1"></i> Asset Health</a>
+          <a class="btn btn-outline-primary" href="{{ url_for('maintenance_execution.asset_meters', machine_id=machine.id) }}"><i class="bi bi-speedometer2 me-1"></i> Medidores</a>
+          <a class="btn btn-outline-primary" href="{{ url_for('maintenance_execution.context_log', entity_type='machine', entity_id=machine.id) }}"><i class="bi bi-chat-left-text me-1"></i> Bitácora del activo</a>
+        </div>{% endif %}
         <p class="text-muted small mb-3">
           Formulario estándar multisectorial · sector <strong>{{ sector_label }}</strong>.
           Los campos adicionales se configuran en <strong>Configuración → Campos personalizados</strong>.
@@ -399,7 +404,7 @@
                     <td class="font-monospace small">{{ wo.numero or ('#' ~ wo.id) }}</td>
                     <td>{{ wo_tipo_meta(wo.tipo).label }}</td>
                     <td><span class="{{ wo_status_meta(wo.status).badge_class }}">{{ wo_status_meta(wo.status).label }}</span></td>
-                    <td class="text-muted small">{{ wo.fecha_programada.strftime('%d/%m/%Y') if wo.fecha_programada else (wo.created_at.strftime('%d/%m/%Y') if wo.created_at else '—') }}</td>
+                    <td class="text-muted small">{{ wo.fecha_programada.strftime('%d/%m/%Y') if wo.fecha_programada else (wo.created_at|formato_fecha_hora('%d/%m/%Y') if wo.created_at else '—') }}</td>
                     <td class="text-end">
                       <a href="{{ url_for('main.ordenes_edit', id=wo.id) }}" class="btn btn-outline-secondary btn-sm py-0 px-2">Ver OT</a>
                     </td>

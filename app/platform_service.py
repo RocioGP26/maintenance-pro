@@ -1,4 +1,4 @@
-"""Métricas y ciclo de vida de tenants para el panel de plataforma Maintix."""
+"""Métricas y ciclo de vida de tenants para el panel de plataforma Roustix."""
 
 from __future__ import annotations
 

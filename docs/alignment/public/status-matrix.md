@@ -15,7 +15,7 @@
 | Trial | `/onboarding` | MCM-06 | ✅ | P1 |
 | Contacto | `/contacto` | MKT-05 | ✅ | P2 |
 | Recursos | `/recursos` | MKT-09 | ✅ stub | P3 |
-| Marca global | `APP_NAME` | MKT-01 | ✅ Maintix | — |
+| Marca global | `APP_NAME` | MKT-01 | ✅ Roustix | — |
 | MDL visual | `landing.css` | MDL | 🟡 revisión visual | P2 |
 | SEO | meta tags | MKT-05 §7 | ✅ | P2 |
 
@@ -27,7 +27,7 @@
 
 | Tema | Doc oficial | Sitio Fase 2 | Estado |
 |------|-------------|--------------|--------|
-| Marca | Maintix | Maintix en público | ✅ |
+| Marca | Roustix | Roustix en público | ✅ |
 | Planes | Start/Grow/Scale/Enterprise | Catálogo MCM-04 | ✅ |
 | Trial | 15 días | `trial_dias` = 15 | ✅ |
 | Hero H1 | MKT-05 §5.1 | Copy oficial | ✅ |

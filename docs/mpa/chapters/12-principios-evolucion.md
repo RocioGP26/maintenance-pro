@@ -1,16 +1,16 @@
 # MPA-12-EVO · Principios de evolución
 
-**Código:** MPA-12-EVO · Complemento Sprint 6  
+**Código:** MPA-12-EVO · Complemento Sprint 6
 **Audiencia:** Todo el equipo de ingeniería y producto técnico
 
-> La **Constitución del desarrollo** de Maintix.  
+> La **Constitución del desarrollo** de Roustix.
 > Reglas cortas, prioridad clara, aplicables en cada PR y cada decisión de diseño.
 
 ---
 
 ## 1 · Por qué existe este documento
 
-MPA-01 define **qué es** el producto. MPA-09 define **cómo pensar** el código.  
+MPA-01 define **qué es** el producto. MPA-09 define **cómo pensar** el código.
 **MPA-12 define qué no se negocia** al evolucionar la plataforma.
 
 Si hay conflicto entre velocidad y un principio de este documento, **el principio gana** — o se abre un MADR que explique por qué se hace una excepción temporal.
@@ -42,7 +42,7 @@ Si hay conflicto entre velocidad y un principio de este documento, **el principi
 |-----------|----------------|
 | Componentes `mtx-*` | Botones, tablas, cards, modales oficiales |
 | Tokens `--mdl-*` | Color, radius, shadow, motion |
-| Sin CSS paralelo | No inventar `btn-custom-maintix` |
+| Sin CSS paralelo | No inventar `btn-custom-roustix` |
 | Patrones documentados | Listados, formularios, empty states en MDL |
 
 **Violación típica:** pantalla nueva con estilos inline únicos · tabla que no sigue `mtx-table`.
@@ -176,9 +176,9 @@ La versión vigente es la de este capítulo en `/mpa/`.
 
 ---
 
-**Anterior:** [MPA-11-LOG · Arquitectura lógica](11-arquitectura-logica.md)  
+**Anterior:** [MPA-11-LOG · Arquitectura lógica](11-arquitectura-logica.md)
 **Índice:** [MPA · Inicio](/mpa/)
 
 ---
 
-*MPA-12-EVO · Constitución del desarrollo Maintix · 2026*
+*MPA-12-EVO · Constitución del desarrollo Roustix · 2026*

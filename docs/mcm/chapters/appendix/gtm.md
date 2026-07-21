@@ -5,7 +5,7 @@
 **Código:** MCM-10-GTM · Sprint 5.10  
 **Frase de marca:** Toda la operación. Una sola plataforma.
 
-> Este capítulo es el **puente** entre todo lo construido en el MCM y el **lanzamiento real** de Maintix.
+> Este capítulo es el **puente** entre todo lo construido en el MCM y el **lanzamiento real** de Roustix.
 
 **Consolida:** [strategy.md](../strategy.md) · capítulos MCM-01 a MCM-09
 
@@ -13,7 +13,7 @@
 
 ## Enfoque de este capítulo
 
-El Sprint 5 definió **cómo pensar, vender y comunicar** Maintix. El GTM define **cómo llevarlo al mercado**.
+El Sprint 5 definió **cómo pensar, vender y comunicar** Roustix. El GTM define **cómo llevarlo al mercado**.
 
 | Antes (Sprint 5) | Ahora (GTM) |
 |------------------|-------------|
@@ -38,7 +38,7 @@ El Sprint 5 definió **cómo pensar, vender y comunicar** Maintix. El GTM define
 
 ### Por qué Colombia y Venezuela primero
 
-| País | Origen Maintix | Puerta natural | Narrativa |
+| País | Origen Roustix | Puerta natural | Narrativa |
 |------|----------------|----------------|-----------|
 | **🇨🇴 Colombia** | Experiencia industrial · mantenimiento | **Maintenance** | INR · planta · OTs |
 | **🇻🇪 Venezuela** | Agro y tornillería · inventario | **Inventory** | Stock · ventas · cartera |
@@ -63,8 +63,8 @@ Dos formas de llegar a la **misma plataforma** — no dos productos.
 
 | Puerta | Módulo | Dolor típico | Sector ref. | Plan inicial |
 |--------|--------|--------------|-------------|--------------|
-| **Maintenance** | Maintix Maintenance | Activos · OTs · paradas | Manufactura · Servicios | **Start** |
-| **Inventory** | Maintix Inventory | Stock · ventas · cartera | Comercio · Distribución | **Start** |
+| **Maintenance** | Roustix Maintenance | Activos · OTs · paradas | Manufactura · Servicios | **Start** |
+| **Inventory** | Roustix Inventory | Stock · ventas · cartera | Comercio · Distribución | **Start** |
 
 **Regla GTM:** el visitante elige puerta en landing; el vendedor **confirma** con ICP (MCM-03) y sector (MCM-05).
 
@@ -167,7 +167,7 @@ CLIENTE → CASO DE ÉXITO → REFERIDO → NUEVO CLIENTE
 
 | Paso | Qué ocurre | Herramienta |
 |------|------------|-------------|
-| **1 · Cliente** | Opera con Maintix · plan Start/Grow | MCM-06 · MUX |
+| **1 · Cliente** | Opera con Roustix · plan Start/Grow | MCM-06 · MUX |
 | **2 · Caso de éxito** | Documentar transformación | **MCM-09** · evidencia A/B |
 | **3 · Referido** | Champion recomienda | CRM · incentivo (definir) |
 | **4 · Nuevo cliente** | Entra por confianza social | MTX-CASE en PLAY-002 |
@@ -215,9 +215,9 @@ Cuando empezamos, hablábamos de Flask, módulos y dashboards.
 
 Hoy existe un **manual comercial completo**: posicionamiento, valor, ICP, DMU, sectores, planes, demo con playbook, objeciones con fichas, casos de transformación y este plan de mercado.
 
-Maintix no se construye solo como software. Se construye como **empresa de producto SaaS** — con identidad (MBB), experiencia (MUX), diseño (MDL) y **procesos que cualquier persona del equipo puede seguir**.
+Roustix no se construye solo como software. Se construye como **empresa de producto SaaS** — con identidad (MBB), experiencia (MUX), diseño (MDL) y **procesos que cualquier persona del equipo puede seguir**.
 
-El MCM es la prueba: quien lo lea entero entenderá **cómo vender Maintix** antes de entrar a una reunión.
+El MCM es la prueba: quien lo lea entero entenderá **cómo vender Roustix** antes de entrar a una reunión.
 
 **El GTM es el momento de salir al mercado con esa coherencia.**
 
@@ -225,8 +225,8 @@ El MCM es la prueba: quien lo lea entero entenderá **cómo vender Maintix** ant
 
 > **Frase del capítulo:** La estrategia sin ejecución es un documento. El GTM convierte el MCM en **movimiento en el mercado**.
 
-**Sprint 5 · Maintix Commercial Manual — completo.**
+**Sprint 5 · Roustix Commercial Manual — completo.**
 
 ---
 
-*MCM-10-GTM · Maintix Commercial Manual · 2026*
+*MCM-10-GTM · Roustix Commercial Manual · 2026*

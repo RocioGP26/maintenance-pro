@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>MPA — Maintix Platform Architecture</title>
+  <title>MPA — Roustix Platform Architecture</title>
   <link rel="stylesheet" href="/brandbook/css/brand-book.css">
   <link rel="stylesheet" href="css/mpa-docs.css">
 </head>
@@ -12,8 +12,8 @@
   <nav class="bb-nav" aria-label="MPA Sprint 6">
     <div class="bb-nav-brand">
       <p class="bb-wordmark">MPA</p>
-      <p class="bb-sub">Maintix Platform Architecture</p>
-      <p class="bb-nav-meta"><a href="/docs/" style="color:rgba(255,255,255,0.55)">Maintix Docs</a> · <a href="/mcm/" style="color:rgba(255,255,255,0.55)">MCM</a> · <a href="/mux/" style="color:rgba(255,255,255,0.55)">MUX</a></p>
+      <p class="bb-sub">Roustix Platform Architecture</p>
+      <p class="bb-nav-meta"><a href="/docs/" style="color:rgba(255,255,255,0.55)">Roustix Docs</a> · <a href="/mcm/" style="color:rgba(255,255,255,0.55)">MCM</a> · <a href="/mux/" style="color:rgba(255,255,255,0.55)">MUX</a></p>
     </div>
     <div class="bb-nav-group">
       <p class="bb-nav-label">Sprint 6 · Plataforma</p>
@@ -54,14 +54,14 @@
 
   <main class="bb-main">
     <div class="bb-freeze-banner" role="status">
-      <strong>MPA v1.0</strong> · Edición congelada · Fundación 1.0 · <a href="/docs/">Maintix Docs</a>
+      <strong>MPA v1.0</strong> · Edición congelada · Fundación 1.0 · <a href="/docs/">Roustix Docs</a>
       <span class="bb-freeze-badge">Congelado</span>
     </div>
 
     <section id="indice" class="bb-page bb-page--dark">
       <div class="bb-page-inner bb-sprint-hero">
         <span class="bb-mdl-badge">Sprint 6 · Arquitectura de plataforma</span>
-        <h2 class="bb-h1" style="color:#fff">¿Cómo está construido Maintix<br>y hacia dónde crecerá?</h2>
+        <h2 class="bb-h1" style="color:#fff">¿Cómo está construido Roustix<br>y hacia dónde crecerá?</h2>
         <p class="bb-lead" style="color:rgba(255,255,255,0.82);text-align:center;max-width:44rem">
           El <strong>Architecture Handbook</strong> del producto.
           No es documentación de Flask — es documentación de <strong>plataforma</strong>.
@@ -97,7 +97,7 @@
           </div>
         </div>
 
-        <h3 class="bb-h3">¿Qué es realmente Maintix?</h3>
+        <h3 class="bb-h3">¿Qué es realmente Roustix?</h3>
         <p class="bb-body">
           Una <strong>Enterprise Management Platform (EMP)</strong> — SaaS multi-tenant que permite
           controlar la operación activando solo los módulos necesarios hoy, con crecimiento
@@ -156,7 +156,7 @@
         <div class="mpa-vision-phases">
           <div class="mpa-vision-phase">
             <h4>2026 – 2028</h4>
-            <p>Fundación: Maintenance + Inventory → CRM, Purchasing, Finance. EMP de referencia LatAm.</p>
+            <p>Fundación: Maintenance + Inventory + Purchasing → ejecución guiada, CRM y Finance. EMP de referencia LatAm.</p>
           </div>
           <div class="mpa-vision-phase">
             <h4>2029 – 2031</h4>
@@ -192,11 +192,11 @@
     <section id="mpa-02" class="bb-page">
       <div class="bb-page-inner">
         <span class="mpa-doc-code">MPA-02-ECO</span>
-        <p class="bb-page-num">02 · Ecosistema Maintix</p>
+        <p class="bb-page-num">02 · Ecosistema Roustix</p>
         <h2 class="bb-h1">Mapa oficial de producto</h2>
         <p class="bb-body">Taxonomía que el equipo usa para nombrar módulos, priorizar roadmap y evitar duplicar capacidades.</p>
 
-        <pre class="mpa-eco-map" aria-label="Mapa ecosistema Maintix"><span class="mpa-eco-live">                 MAINTIX
+        <pre class="mpa-eco-map" aria-label="Mapa ecosistema Roustix"><span class="mpa-eco-live">                 ROUSTIX
 
           Enterprise Platform
                     │
@@ -207,7 +207,7 @@
     └──────────┬───────────────────────┘
                │
     ────────────────────────────────────
- <span class="mpa-eco-future">Purchasing · CRM · Sales · Finance</span>
+ <span class="mpa-eco-live">Maintenance Execution · Automation</span> · <span class="mpa-eco-future">CRM · Sales · Finance</span>
  <span class="mpa-eco-future">BI · IAM · AI · API · Mobile</span>
     ────────────────────────────────────</span></pre>
 
@@ -216,7 +216,7 @@
           <tbody>
             <tr><td>Maintenance</td><td><code>mantenimiento</code></td><td class="mpa-status-live">✅ Producción</td></tr>
             <tr><td>Inventory</td><td><code>inventario</code></td><td class="mpa-status-live">✅ Producción</td></tr>
-            <tr><td>Purchasing</td><td>—</td><td class="mpa-status-plan">📋 Planificado</td></tr>
+            <tr><td>Purchasing</td><td><code>purchasing</code></td><td class="mpa-status-live">✅ Producción</td></tr>
             <tr><td>CRM · Sales Pro</td><td>—</td><td class="mpa-status-plan">📋 Planificado</td></tr>
             <tr><td>Finance · Analytics</td><td>—</td><td class="mpa-status-plan">📋 Planificado</td></tr>
           </tbody>
@@ -301,8 +301,8 @@
         <table class="mpa-module-table">
           <thead><tr><th>Horizonte</th><th>Módulos</th></tr></thead>
           <tbody>
-            <tr><td class="mpa-status-live"><strong>Hoy</strong></td><td>Maintenance · Inventory</td></tr>
-            <tr><td class="mpa-status-wip"><strong>Próximo</strong></td><td>Purchasing · CRM · Sales Pro · Analytics</td></tr>
+            <tr><td class="mpa-status-live"><strong>Hoy</strong></td><td>Maintenance · Maintenance Execution · Automation · Asset Health · Inventory · Purchasing</td></tr>
+            <tr><td class="mpa-status-wip"><strong>Próximo</strong></td><td>CRM · Sales Pro · Analytics</td></tr>
             <tr><td class="mpa-status-plan"><strong>Largo plazo</strong></td><td>IAM · Marketplace · API pública · AI · Mobile · ERP</td></tr>
           </tbody>
         </table>
@@ -482,7 +482,7 @@
         <p class="bb-page-num">11 · Arquitectura lógica</p>
         <p class="bb-eyebrow">Complemento · Onboarding desarrollador</p>
         <h2 class="bb-h1">Mapa conceptual de capas.</h2>
-        <p class="bb-lead">Sin nombres de archivos — solo <strong>por dónde fluye una petición</strong> en Maintix.</p>
+        <p class="bb-lead">Sin nombres de archivos — solo <strong>por dónde fluye una petición</strong> en Roustix.</p>
 
         <div class="mpa-stack mpa-layer-stack">
           <div class="mpa-stack-step">Frontend<span>Plantillas · Bootstrap · MDL (mtx-*)</span></div>
@@ -562,7 +562,7 @@
 
         <div class="mpa-chapter-nav">
           <a href="chapters/12-principios-evolucion.md">Leer MPA-12 completo →</a>
-          <a href="/docs/">Maintix Docs →</a>
+          <a href="/docs/">Roustix Docs →</a>
         </div>
         <div class="bb-page-footer"><span>MPA v1.0</span><span>Constitución</span></div>
       </div>

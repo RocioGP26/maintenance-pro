@@ -6,9 +6,9 @@ from __future__ import annotations
 MRL_VERSION = "1.1"
 
 # Sistema
-GENERATED_BY_LABEL = "Generado por Maintix"
-SYSTEM_USER = "Sistema · Maintix"
-WORDMARK = "MAINTIX"
+GENERATED_BY_LABEL = "Generado por Roustix"
+SYSTEM_USER = "Sistema · Roustix"
+WORDMARK = "ROUSTIX"
 
 # Excel · convención Sprint 15 (MRL-STD §7)
 EXCEL_META_START_ROW = 1

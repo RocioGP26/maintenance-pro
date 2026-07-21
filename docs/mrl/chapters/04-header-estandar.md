@@ -8,7 +8,7 @@
 
 ```
 ┌──────────────────────────────────────────────────────────┐
-│ [LOGO EMPRESA]              MAINTIX                      │
+│ [LOGO EMPRESA]              ROUSTIX                      │
 │                             {Título del documento}       │
 │                             {Empresa · NIT}              │
 │                                                          │
@@ -25,7 +25,7 @@
 | Campo | Posición | Tipografía |
 |-------|----------|------------|
 | **Logo empresa** | Izquierda superior | Max 40 mm ancho |
-| **Wordmark Maintix** | Derecha | 10pt · `#888780` |
+| **Wordmark Roustix** | Derecha | 10pt · `#888780` |
 | **Título** | Derecha bajo wordmark | 16pt bold · `#042C53` |
 | **Empresa** | Derecha | 11pt · `#444441` |
 | **Código documento** | Izquierda inferior bloque meta | 9pt mono |

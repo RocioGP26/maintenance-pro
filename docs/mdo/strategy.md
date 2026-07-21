@@ -1,6 +1,6 @@
 # MDO · Decisiones estratégicas
 
-**Sprint 13** · Maintix Documentation Operations · 2026-07-10 · **✅ Finalizado**
+**Sprint 13** · Roustix Documentation Operations · 2026-07-10 · **✅ Finalizado**
 
 ---
 

@@ -25,7 +25,7 @@
 | Pill trial dinámico | ✅ |
 | CTA primario trial | ✅ |
 | CTA secundario demo | ✅ → `/demo` |
-| Marca Maintix | ✅ |
+| Marca Roustix | ✅ |
 
 ---
 
@@ -57,7 +57,7 @@
 
 - [x] Hero MKT-05 §5.1
 - [x] CTAs unificados
-- [x] Marca Maintix en toda la página
+- [x] Marca Roustix en toda la página
 - [x] SEO meta oficial
 - [x] Orden secciones MKT-05 (Problema → … → confianza → CTA)
 - [x] MDL base (Inter · Bootstrap Icons)

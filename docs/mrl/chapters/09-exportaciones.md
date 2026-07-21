@@ -11,7 +11,7 @@
 | Motor | **ReportLab** |
 | Anatomía | MRL-03 completa |
 | Nombre archivo | `{DOC}-{codigo}-{fecha}.pdf` |
-| Metadata | Título, autor Maintix, empresa |
+| Metadata | Título, autor Roustix, empresa |
 
 **Objetivo:** reconocible sin ver el logo.
 
@@ -26,7 +26,7 @@
 | Estilo header | Fondo `#042C53`, texto blanco (openpyxl / xlsxwriter) |
 | Zebra | Filas pares `#F4F7FB` |
 | Hoja | Nombre = tipo DOC (ej. `Inventario`) |
-| Primera fila | Metadatos: empresa, fecha, generado por Maintix |
+| Primera fila | Metadatos: empresa, fecha, generado por Roustix |
 
 Ya implementado parcialmente en Inventory — alinear a MRL.
 
@@ -38,7 +38,7 @@ Ya implementado parcialmente en Inventory — alinear a MRL.
 |---------|----------|
 | Encoding | UTF-8 con BOM (Excel LatAm) |
 | Separador | `;` o `,` según locale tenant |
-| Primera línea | Comentario `# Maintix · {empresa} · {fecha}` opcional |
+| Primera línea | Comentario `# Roustix · {empresa} · {fecha}` opcional |
 | Headers | Igual que tabla MRL |
 
 ---

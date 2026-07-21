@@ -10,7 +10,7 @@
 
 ## Objetivo del capítulo
 
-Proporcionar **ejemplos oficiales** de consumo de la API Maintix y definir las bases del **SDK oficial**, que permitirá integrar la plataforma desde cualquier lenguaje.
+Proporcionar **ejemplos oficiales** de consumo de la API Roustix y definir las bases del **SDK oficial**, que permitirá integrar la plataforma desde cualquier lenguaje.
 
 Mientras MAG-01 a MAG-08 definen el contrato, **MAG-09 demuestra cómo utilizarlo**.
 
@@ -45,13 +45,13 @@ Todos los ejemplos deben ser:
 |---------|----------|
 | Servidor local | `http://127.0.0.1:5000` |
 | API oficial (local) | `http://127.0.0.1:5000/api/v1` |
-| Producción | `https://api.maintix.app/api/v1` |
+| Producción | `https://api.roustix.app/api/v1` |
 
 Variables recomendadas:
 
 ```bash
-export MAINTIX_API=https://api.maintix.app/api/v1
-export MAINTIX_TOKEN=<jwt>
+export ROUSTIX_API=https://api.roustix.app/api/v1
+export ROUSTIX_TOKEN=<jwt>
 ```
 
 Iniciar servidor local:
@@ -106,7 +106,7 @@ curl -X POST \
 import os
 import requests
 
-BASE = os.getenv("MAINTIX_API", "http://127.0.0.1:5000/api/v1")
+BASE = os.getenv("ROUSTIX_API", "http://127.0.0.1:5000/api/v1")
 
 response = requests.post(
     f"{BASE}/auth/login",
@@ -299,7 +299,7 @@ Los clientes deben utilizar **`error.code`** — nunca interpretar el texto de `
 
 ## 8 · SDK oficial
 
-Maintix dispondrá de SDKs oficiales construidos sobre el contrato MAG.
+Roustix dispondrá de SDKs oficiales construidos sobre el contrato MAG.
 
 | SDK | Estado |
 |-----|--------|
@@ -320,11 +320,11 @@ Todos consumen **exactamente la misma API**.
 Ejemplo conceptual (Python):
 
 ```python
-from maintix import Client
+from roustix import Client
 
 client = Client(
     token="...",
-    base_url="https://api.maintix.app/api/v1",
+    base_url="https://api.roustix.app/api/v1",
 )
 
 assets = client.maintenance.assets.list()
@@ -345,7 +345,7 @@ client.maintenance.assets.create(
 ## 10 · Organización del SDK
 
 ```
-Maintix Client
+Roustix Client
 │
 ├── auth
 ├── maintenance
@@ -387,7 +387,7 @@ No debe implementarse manualmente cada cliente cuando pueda **derivarse del cont
 ## 12 · Ejemplo completo
 
 ```python
-from maintix import Client
+from roustix import Client
 
 client = Client(token="JWT...")
 
@@ -433,7 +433,7 @@ Próximas capacidades del SDK:
 - cliente asíncrono
 - tipado completo
 - generación automática desde OpenAPI
-- CLI oficial (`maintix-cli`)
+- CLI oficial (`roustix-cli`)
 
 ---
 
@@ -468,7 +468,7 @@ Este capítulo se considera **implementado** cuando:
 
 Una API bien diseñada debe ser fácil de aprender, pero también **rápida de integrar**. Los ejemplos y el SDK reducen el tiempo entre leer la documentación y tener una integración funcionando.
 
-**MAG-09 transforma el contrato de Maintix en una experiencia práctica** — referencia ejecutable para desarrolladores, partners e integradores.
+**MAG-09 transforma el contrato de Roustix en una experiencia práctica** — referencia ejecutable para desarrolladores, partners e integradores.
 
 ---
 

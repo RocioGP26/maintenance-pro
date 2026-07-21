@@ -2,7 +2,7 @@
 
 **Código:** MDO-02 · Sprint 13.2 · **Entregado**
 
-> La arquitectura documental define cómo se organiza el conocimiento de Maintix. Su objetivo es que cualquier persona encuentre la información correcta, en el momento correcto y **sin duplicidad**.
+> La arquitectura documental define cómo se organiza el conocimiento de Roustix. Su objetivo es que cualquier persona encuentre la información correcta, en el momento correcto y **sin duplicidad**.
 
 **Toda la operación. Una sola plataforma.**
 
@@ -12,7 +12,7 @@
 
 ## Objetivo del capítulo
 
-Definir la **arquitectura lógica y física** del ecosistema documental de Maintix: dominios, estructura, convenciones, navegación, referencias cruzadas y principios de organización.
+Definir la **arquitectura lógica y física** del ecosistema documental de Roustix: dominios, estructura, convenciones, navegación, referencias cruzadas y principios de organización.
 
 Este capítulo sirve como guía para cualquier persona que **escriba, mantenga o publique** documentación oficial.
 
@@ -20,7 +20,7 @@ Este capítulo sirve como guía para cualquier persona que **escriba, mantenga o
 
 ## 1 · Filosofía
 
-La documentación de Maintix está organizada por **dominios de conocimiento**, no por equipos internos ni por carpetas técnicas.
+La documentación de Roustix está organizada por **dominios de conocimiento**, no por equipos internos ni por carpetas técnicas.
 
 Cada documento debe responder **una pregunta específica** y pertenecer a **un único dominio**.
 
@@ -67,7 +67,7 @@ Cada dominio mantiene su **independencia**, pero comparte **convenciones comunes
 ## 3 · Jerarquía documental
 
 ```
-Maintix Documentation
+Roustix Documentation
 │
 ├── Dominio
 │     ├── Índice
@@ -213,7 +213,7 @@ Existe un **glosario compartido** para toda la plataforma.
 | **ICP** | MCM · [appendix/icp-score](/mcm/chapters/appendix/icp-score.md) |
 | **OT** | MRG |
 | **EMP** | MCM-01 |
-| **Mantis** | MPA |
+| **Roustix Platform** | MPA |
 
 > **No redefinir** estos conceptos en múltiples manuales.
 
@@ -275,7 +275,7 @@ Cada dominio mantiene su **propio historial**.
 
 Toda la suite comparte una **versión documental agregada**.
 
-**Ejemplo:** Maintix Docs **v1.13.0**
+**Ejemplo:** Roustix Docs **v1.13.0**
 
 Cada manual puede evolucionar de forma **independiente**.
 
@@ -369,7 +369,7 @@ Una buena arquitectura documental hace que la información sea **fácil de encon
 
 Cada nuevo capítulo debe integrarse de forma natural, sin romper la estructura existente ni generar duplicidad.
 
-En Maintix, la documentación evoluciona igual que la plataforma: **modular, consistente y preparada para crecer**.
+En Roustix, la documentación evoluciona igual que la plataforma: **modular, consistente y preparada para crecer**.
 
 ---
 

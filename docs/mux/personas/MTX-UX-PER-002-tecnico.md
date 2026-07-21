@@ -32,7 +32,7 @@ Usa el celular o un PC en taller con las manos ocupadas, ruido de fondo y poco t
 
 ## Necesidades UX
 
-| Necesidad | Cómo la responde Maintix |
+| Necesidad | Cómo la responde Roustix |
 |-----------|--------------------------|
 | Velocidad | Registrar OT en &lt; 3 clics desde lista |
 | Legibilidad | Botones grandes, contraste alto |

@@ -66,6 +66,8 @@ def aplicar_filtro_alerta_orden(q, alerta: str, hoy: date | None = None):
         )
     if key == "en_proceso":
         return q.filter(WorkOrder.status == WorkOrderStatus.EN_PROCESO.value)
+    if key == "pendientes_cierre":
+        return q.filter(WorkOrder.status == WorkOrderStatus.COMPLETADO.value)
     return q
 
 
@@ -128,6 +130,9 @@ def _resumen_alertas_mantenimiento(hoy: date) -> dict[str, Any]:
     tickets_pendientes = tickets_q.count()
 
     if is_requester(current_user):
+        from app.maintenance_execution.log_service import unread_log_notifications
+
+        log_pending = len(unread_log_notifications(current_user))
         return _empacar_alertas(
             modulo="mantenimiento",
             titulo="Mis tickets",
@@ -137,7 +142,13 @@ def _resumen_alertas_mantenimiento(hoy: date) -> dict[str, Any]:
                     "count": tickets_pendientes,
                     "url": url_for("main.incidencias_list", estado="pendiente"),
                     "tone": "danger",
-                }
+                },
+                {
+                    "label": "Actualizaciones de mis tickets",
+                    "count": log_pending,
+                    "url": url_for("maintenance_execution.context_log_notifications"),
+                    "tone": "info",
+                },
             ],
         )
 
@@ -149,6 +160,24 @@ def _resumen_alertas_mantenimiento(hoy: date) -> dict[str, Any]:
     vencimientos = aplicar_filtro_alerta_orden(base, "vencimientos", hoy).count()
     programados_hoy = aplicar_filtro_alerta_orden(base, "programados_hoy", hoy).count()
     en_proceso = aplicar_filtro_alerta_orden(base, "en_proceso", hoy).count()
+
+    pendientes_cierre = 0
+    if not is_technician(current_user):
+        pendientes_cierre = aplicar_filtro_alerta_orden(base, "pendientes_cierre", hoy).count()
+
+    from app.maintenance_execution.log_service import unread_log_notifications
+
+    log_pending = len(unread_log_notifications(current_user))
+
+    from app.asset_health.service import latest_attention_count
+
+    asset_attention = latest_attention_count(current_user)
+
+    from app.maintenance_automation.models import MaintenanceAutomationNotification
+
+    automation_pending = MaintenanceAutomationNotification.query.filter_by(
+        empresa_id=eid, user_id=current_user.id, read_at=None
+    ).count() if eid else 0
 
     technician_view = is_technician(current_user)
     return _empacar_alertas(
@@ -175,10 +204,39 @@ def _resumen_alertas_mantenimiento(hoy: date) -> dict[str, Any]:
                 "tone": "warn",
             },
             {
+                "label": "OT pendientes de cierre",
+                "count": pendientes_cierre,
+                "url": url_for("main.ordenes_list", alerta="pendientes_cierre"),
+                "tone": "warn",
+            } if not technician_view else {
+                "label": "Novedades de bitácora",
+                "count": log_pending,
+                "url": url_for("maintenance_execution.context_log_notifications"),
+                "tone": "info",
+            },
+            {
                 "label": "Mis incidencias pendientes" if technician_view else "Tickets pendientes",
                 "count": tickets_pendientes,
                 "url": url_for("main.incidencias_list", estado="pendiente"),
                 "tone": "danger",
+            },
+            *([{
+                "label": "Novedades de bitácora",
+                "count": log_pending,
+                "url": url_for("maintenance_execution.context_log_notifications"),
+                "tone": "info",
+            }] if not technician_view else []),
+            {
+                "label": "Mis activos en riesgo" if technician_view else "Activos en riesgo",
+                "count": asset_attention,
+                "url": url_for("asset_health.portfolio", band="attention"),
+                "tone": "danger",
+            },
+            {
+                "label": "Avisos automáticos",
+                "count": automation_pending,
+                "url": url_for("maintenance_automation.notifications"),
+                "tone": "warn",
             },
         ],
     )

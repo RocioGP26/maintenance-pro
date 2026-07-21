@@ -2,7 +2,7 @@
 
 **Código:** MDO-10 · Sprint 13.10 · **Entregado**
 
-> Maintix Documentation Operations (MDO) cierra el ciclo de gobernanza que permite a toda la suite — MRG, MCM, MKT, MAG y el resto — **evolucionar de forma ordenada**.
+> Roustix Documentation Operations (MDO) cierra el ciclo de gobernanza que permite a toda la suite — MRG, MCM, MKT, MAG y el resto — **evolucionar de forma ordenada**.
 
 **Toda la operación. Una sola plataforma.**
 
@@ -156,14 +156,14 @@ MDO garantiza que partners encuentren **versiones oficiales** y materiales vigen
 - PATCH: typos · enlaces · aclaraciones
 - MINOR: dashboard catálogo · índice JSON search MVP
 
-### Maintix Docs v2.x (suite)
+### Roustix Docs v2.x (suite)
 
 | Entrega |
 |---------|
 | Portal shell unificado (MDO-08 implementado) |
 | Search global (MDO-09 implementado) |
 | Mintlify o Docusaurus |
-| Portal público `docs.maintix.com` |
+| Portal público `docs.roustix.com` |
 
 ### v3.x · v4.x
 
@@ -201,7 +201,7 @@ El manual MDO se considera **completo** cuando:
 
 ## Filosofía del capítulo
 
-Maintix no solo documenta software — documenta **cómo una organización piensa, vende, implementa y evoluciona**.
+Roustix no solo documenta software — documenta **cómo una organización piensa, vende, implementa y evoluciona**.
 
 MDO v1.0 es el marco que permite que ese conocimiento escale sin perder coherencia.
 
@@ -216,7 +216,7 @@ Con diez capítulos, la suite documental tiene **gobernanza propia** — al mism
 | Manual MDO | ✅ **v1.0.0 completo** |
 | Sprint 13 | ✅ **Finalizado** |
 | Portal documental | 🟡 Implementación v2 (especificado) |
-| Suite Maintix Docs | **v1.14.0** |
+| Suite Roustix Docs | **v1.14.0** |
 | Gobernanza documental | ✅ Activa |
 
 ---
@@ -227,4 +227,4 @@ Con diez capítulos, la suite documental tiene **gobernanza propia** — al mism
 
 ---
 
-← [MDO-09](09-busqueda.md) · [Índice MDO](/mdo/) · [Maintix Docs](/docs/)
+← [MDO-09](09-busqueda.md) · [Índice MDO](/mdo/) · [Roustix Docs](/docs/)

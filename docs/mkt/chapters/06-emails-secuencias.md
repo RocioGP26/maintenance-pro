@@ -2,7 +2,7 @@
 
 **Código:** MKT-06 · Sprint 12.6 · **Entregado**
 
-> El email no existe para vender en cada mensaje. Existe para acompañar al prospecto hasta que descubra el valor de Maintix.
+> El email no existe para vender en cada mensaje. Existe para acompañar al prospecto hasta que descubra el valor de Roustix.
 
 **Toda la operación. Una sola plataforma.**
 
@@ -33,7 +33,7 @@ La secuencia debe generar:
 | **Interés** | |
 | **Acción** | |
 
-**Objetivo final:** no abrir un correo — sino que el usuario experimente el valor de Maintix y decida convertirlo en la plataforma de su operación.
+**Objetivo final:** no abrir un correo — sino que el usuario experimente el valor de Roustix y decida convertirlo en la plataforma de su operación.
 
 → Primera victoria operativa: primera OT · primer producto · dejar de depender solo de Excel.
 
@@ -72,7 +72,7 @@ La secuencia debe generar:
 
 | Día | Asunto / tema | Objetivo | CTA |
 |-----|---------------|----------|-----|
-| **0** | Bienvenido a Maintix 👋 | Bienvenida · siguiente paso | Ingresar a Maintix |
+| **0** | Bienvenido a Roustix 👋 | Bienvenida · siguiente paso | Ingresar a Roustix |
 | **1** | Configura tu empresa | Sede · usuarios · módulo elegido | Completar configuración |
 | **3** | Realiza tu primer proceso | OT *(Maintenance)* · producto *(Inventory)* | Según módulo |
 | **7** | ¿Cómo va tu prueba? | Dashboard · dudas · ofrecer demo | Agendar una reunión |
@@ -81,11 +81,11 @@ La secuencia debe generar:
 
 ### Día 0 · Bienvenida
 
-**Asunto:** `Bienvenido a Maintix 👋`
+**Asunto:** `Bienvenido a Roustix 👋`
 
 **Contenido:** dar la bienvenida · explicar el siguiente paso · enlace directo al tenant.
 
-**CTA:** Ingresar a Maintix
+**CTA:** Ingresar a Roustix
 
 ### Día 1 · Configuración
 
@@ -152,7 +152,7 @@ Secuencia sugerida:
 |-----|----------|------|
 | **0** | Bienvenida | Gracias por tu interés |
 | **2** | Problema | ¿Por qué tantas empresas siguen dependiendo de Excel? |
-| **5** | Historia | Origen Maintix · Colombia + Venezuela |
+| **5** | Historia | Origen Roustix · Colombia + Venezuela |
 | **8** | Caso | [MTX-CASE](../mtx-case/README.md) del sector |
 | **12** | Plataforma | Modular · un módulo · sin migración |
 | **15** | Trial | Invitación al trial 15 días |
@@ -165,7 +165,7 @@ Mostrar dolor: información dispersa · decisiones tardías · áreas desconecta
 
 ### Correo 3 · Historia
 
-Mostrar: historia Maintix · origen dual agro + tornillería ([MCM-01](/mcm/chapters/01-intro-filosofia-comercial.md)).
+Mostrar: historia Roustix · origen dual agro + tornillería ([MCM-01](/mcm/chapters/01-intro-filosofia-comercial.md)).
 
 ### Correo 4 · Caso
 
@@ -277,7 +277,7 @@ Adaptar día 3 del trial según `{{modulo}}` (Maintenance vs Inventory).
 |-----|-----|
 | **Probar gratis** | Lead frío · reactivación |
 | **Agendar demo** | Trial día 7 · demo |
-| **Entrar a Maintix** | Trial día 0 · onboarding |
+| **Entrar a Roustix** | Trial día 0 · onboarding |
 
 ### Secundarios
 
@@ -366,7 +366,7 @@ Adaptar día 3 del trial según `{{modulo}}` (Maintenance vs Inventory).
 
 ## Filosofía del capítulo
 
-El mejor correo **no** es el que habla más de Maintix.
+El mejor correo **no** es el que habla más de Roustix.
 
 Es el que ayuda al prospecto a dar el **siguiente paso**.
 

@@ -10,7 +10,7 @@
 
 ## Objetivo del capítulo
 
-Definir **OpenAPI 3.1** como la fuente oficial del contrato técnico de Maintix.
+Definir **OpenAPI 3.1** como la fuente oficial del contrato técnico de Roustix.
 
 Toda la documentación interactiva, los SDK oficiales, el CLI, las colecciones Postman, el API Explorer y futuras herramientas se **generan a partir de esta especificación**.
 
@@ -76,7 +76,7 @@ curl http://127.0.0.1:5000/api/v1/openapi.json
 ```yaml
 openapi: 3.1.0
 info:
-  title: Maintix API
+  title: Roustix API
   version: 1.0.0
 ```
 
@@ -131,7 +131,7 @@ Cada capítulo MAG alimenta una parte de OpenAPI.
 
 ```yaml
 servers:
-  - url: https://api.maintix.app/api/v1
+  - url: https://api.roustix.app/api/v1
     description: Producción
   - url: http://127.0.0.1:5000/api/v1
     description: Desarrollo local
@@ -352,7 +352,7 @@ Este capítulo se considera **implementado** cuando:
 
 ## Filosofía del capítulo
 
-OpenAPI convierte el contrato de Maintix en un **estándar consumible por personas y herramientas**. Es la fuente única de verdad sobre la API y el **punto de partida de todo el ecosistema de desarrollo**.
+OpenAPI convierte el contrato de Roustix en un **estándar consumible por personas y herramientas**. Es la fuente única de verdad sobre la API y el **punto de partida de todo el ecosistema de desarrollo**.
 
 Así como [MAG-04](/mag/chapters/04-recursos.md) fue el documento central del Sprint 8, **MSD-03 es el documento central del Sprint 9**.
 

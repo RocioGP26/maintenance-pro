@@ -2,7 +2,7 @@
 
 **Código:** MCM-06-ONBOARD · Sprint 11.6 · **Entregado**
 
-> La venta no termina con la firma. Termina cuando el cliente **opera con confianza** en Maintix.
+> La venta no termina con la firma. Termina cuando el cliente **opera con confianza** en Roustix.
 
 **Prerequisitos:** [MCM-04-PLANS](04-planes-saas.md) · [MRG-07 · Administración](/mrg/chapters/07-administracion.md) · [MUX](/mux/)
 
@@ -34,7 +34,7 @@ Definir el proceso comercial de implementación y onboarding: expectativas por p
 Contrato / trial
       │
       ▼
-Provisioning tenant (Mantis)
+Provisioning tenant (Roustix Platform)
       │
       ▼
 Configuración base (sedes · roles · sector)
@@ -51,7 +51,7 @@ Revisión 7–14 días · expansión
 
 | Fase | Responsable | Entregable |
 |------|-------------|------------|
-| **Provisioning** | Mantis / plataforma | Tenant activo · plan · módulos |
+| **Provisioning** | Roustix Platform / plataforma | Tenant activo · plan · módulos |
 | **Kick-off** | Comercial + champion | Objetivo · usuarios · sedes |
 | **Configuración** | Admin tenant | Sedes · roles · catálogo inicial |
 | **Capacitación** | Onboarding / docs MRG | Usuarios operando flujos clave |
@@ -79,11 +79,11 @@ Revisión 7–14 días · expansión
 
 | Rol | Quién | Función |
 |-----|-------|---------|
-| **Mantis** | Operador plataforma | Crear tenant · plan · soporte L2 |
+| **Roustix Platform** | Operador plataforma | Crear tenant · plan · soporte L2 |
 | **Admin tenant** | Cliente | Usuarios · sedes · configuración |
 | **Champion** | Cliente (gerente / jefe área) | Impulsar adopción · validar procesos |
 | **Usuarios operativos** | Cliente | Ejecutar OT · ventas · bodega |
-| **Comercial Maintix** | Ventas | Expectativas · handoff · upgrade |
+| **Comercial Roustix** | Ventas | Expectativas · handoff · upgrade |
 
 → Detalle funcional: [MRG-07 · Administración](/mrg/chapters/07-administracion.md)
 
@@ -147,4 +147,4 @@ Documento de referencia interno: [appendix/icp-score.md](appendix/icp-score.md) 
 
 ---
 
-*MCM-06-ONBOARD · Maintix Commercial Manual · Sprint 11 · 2026*
+*MCM-06-ONBOARD · Roustix Commercial Manual · Sprint 11 · 2026*

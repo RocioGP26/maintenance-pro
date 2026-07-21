@@ -1,7 +1,7 @@
 # Pilar de marca · Crecimiento modular
 
 **Código:** MBB-PIL-02 · Complementa MBB frase principal  
-**Estado:** Pilar oficial de marca Maintix · 2026
+**Estado:** Pilar oficial de marca Roustix · 2026
 
 ---
 
@@ -57,7 +57,7 @@ Usar cuando el cliente perciba Start como «versión recortada»:
 
 ## Texto largo · Presentaciones
 
-*Maintix no te pide implementar todo el primer día. Comienzas con mantenimiento o con inventario — lo que más duele. Cuando creces, activas más módulos en la misma plataforma. La transformación comienza con un módulo. El crecimiento ocurre dentro de una sola plataforma.*
+*Roustix no te pide implementar todo el primer día. Comienzas con mantenimiento o con inventario — lo que más duele. Cuando creces, activas más módulos en la misma plataforma. La transformación comienza con un módulo. El crecimiento ocurre dentro de una sola plataforma.*
 
 ---
 

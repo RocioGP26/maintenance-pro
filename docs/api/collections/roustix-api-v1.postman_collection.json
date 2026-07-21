@@ -1,8 +1,8 @@
 {
   "info": {
-    "_postman_id": "maintix-api-v1",
-    "name": "Maintix API v1",
-    "description": "Colección oficial Maintix API v1 · generada desde openapi.v1.yaml · MSD-08",
+    "_postman_id": "roustix-api-v1",
+    "name": "Roustix API v1",
+    "description": "Colección oficial Roustix API v1 · generada desde openapi.v1.yaml · MSD-08",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [

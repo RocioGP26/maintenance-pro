@@ -2,7 +2,7 @@
 
 **Código:** MRL-03-ANAT · Sprint 7.3
 
-**Todos** los documentos Maintix comparten la misma estructura. Sin excepciones por módulo.
+**Todos** los documentos Roustix comparten la misma estructura. Sin excepciones por módulo.
 
 ---
 
@@ -21,7 +21,7 @@
 │  Tablas · texto · gráficos              │
 ├─────────────────────────────────────────┤
 │ FOOTER                                  │
-│  Página N de M · Generado por Maintix   │
+│  Página N de M · Generado por Roustix   │
 │  Versión MRL · QR (opcional)            │
 └─────────────────────────────────────────┘
 ```
@@ -35,7 +35,7 @@
 | **Header** | Sí | Identidad + contexto del documento |
 | **KPI row** | No | Resumen numérico antes del detalle |
 | **Body** | Sí | Datos del reporte |
-| **Footer** | Sí | Paginación + atribución Maintix |
+| **Footer** | Sí | Paginación + atribución Roustix |
 
 ---
 
@@ -61,7 +61,7 @@
 
 ## Anti-patrones
 
-- ❌ PDF sin footer «Generado por Maintix»
+- ❌ PDF sin footer «Generado por Roustix»
 - ❌ Header distinto en OT vs factura
 - ❌ KPIs mezclados en cuerpo sin bloque dedicado
 - ❌ Márgenes «a ojo» por reporte

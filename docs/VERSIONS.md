@@ -1,4 +1,4 @@
-# Versiones oficiales · Maintix Documentation Suite
+# Versiones oficiales · Roustix Documentation Suite
 
 **Fuente única de verdad** para versiones de cada manual y de la suite.
 
@@ -7,12 +7,12 @@
 | Producto | Versión actual | Fuente canónica | Changelog | Tag Git |
 |---|---:|---|---|---|
 | **Aplicación Flask** | **v1.0.4** | [`app/version.py`](../app/version.py) | [`CHANGELOG.md`](../CHANGELOG.md) | `v1.0.0` *(pendiente de publicar)* |
-| **Suite documental** | **v1.17.0** | Este archivo | [changelog.md](changelog.md) | `docs-vX.Y` |
+| **Suite documental** | **v1.21.0** | Este archivo | [changelog.md](changelog.md) | `docs-vX.Y` |
 
 La aplicación y la documentación son productos versionados de forma
 independiente. Flujo de release del software: [APP_VERSIONING.md](APP_VERSIONING.md).
 
-**Suite actual:** **v1.17.0** (Sprint 16 completo · Purchasing operativo)
+**Suite actual:** **v1.21.0** (Sprint 21 · Asset Health avanzado)
 **Últimos tags:** `docs-v1.0` · `docs-foundation-1.0` (recomendado)
 
 ---
@@ -21,6 +21,15 @@ independiente. Flujo de release del software: [APP_VERSIONING.md](APP_VERSIONING
 
 | Versión | Fecha | Tag Git | Notas |
 |---------|-------|---------|-------|
+| **v1.21.0** | 2026-07-21 | *(pendiente)* | **Asset Health** · puntaje explicable, confianza e historial |
+| **v1.20.0** | 2026-07-21 | *(pendiente)* | **Maintenance Automation** · reglas, acciones e idempotencia |
+| **v1.19.5** | 2026-07-21 | *(pendiente)* | **Maintenance Execution** · medidores, lecturas y cierre Sprint 19 |
+| **v1.19.4** | 2026-07-21 | *(pendiente)* | **Maintenance Execution** · bitácora contextual y adjuntos |
+| **v1.19.3** | 2026-07-21 | *(pendiente)* | **Maintenance Execution** · evidencia, conformidad, firma y revisión |
+| **v1.19.2** | 2026-07-21 | *(pendiente)* | **Maintenance Execution** · Sprint 19.2 checklist de OT |
+| **v1.19.1** | 2026-07-21 | *(pendiente)* | **Maintenance Execution** · Sprint 19.1 catálogo versionado |
+| **v1.19.0** | 2026-07-21 | *(pendiente)* | **Maintenance Execution** · Sprint 19.0 diseño y contratos |
+| **v1.18.0** | 2026-07-14 | *(pendiente)* | **Security & Identity** · Sprint 18 cerrado |
 | **v1.17.0** | 2026-07-11 | *(pendiente)* | **Purchasing** · Sprint 16.0–16.5 completo |
 | **v1.16.0** | 2026-07-11 | *(pendiente)* | **Purchasing** · Sprint 16.0 diseño, contratos y migración |
 | **v1.15.0** | 2026-07-10 | *(pendiente)* | **MRL v1.1.0** · Sprint 15.0 MRL Foundation (docs) |
@@ -62,7 +71,7 @@ Changelog: [changelog.md](changelog.md)
 | 06 | MRL | Report Language | **v1.1.0** | 🚧 Sprint 15.0 | [mrl/changelog.md](mrl/changelog.md) | [/mrl/](http://127.0.0.1:5000/mrl/) |
 | 07 | MAG | API Guide | **v1.0.12** | ✅ MAG v1.0 | [mag/changelog.md](mag/changelog.md) | [/mag/](http://127.0.0.1:5000/mag/) |
 | 08 | SDK | SDK & Developer Portal (MSD) | **v1.0.0** | ✅ Sprint 9 | [msd/changelog.md](msd/changelog.md) | [/msd/](http://127.0.0.1:5000/msd/) |
-| 11 | MRG | Maintix Reference Guide | **v1.0.0** | ✅ Sprint 10 | [mrg/changelog.md](mrg/changelog.md) | [/mrg/](http://127.0.0.1:5000/mrg/) |
+| 11 | MRG | Roustix Reference Guide | **v1.0.0** | ✅ Sprint 10 | [mrg/changelog.md](mrg/changelog.md) | [/mrg/](http://127.0.0.1:5000/mrg/) |
 | 09 | — | Developer Docs | — | 🟡 En curso | — | [developer/README.md](developer/README.md) |
 | 10 | — | Release Notes | — | Activo | [release-notes/](release-notes/) | [release-notes/README.md](release-notes/README.md) |
 

@@ -2,7 +2,7 @@
 
 **Código:** MDO-03 · Sprint 13.3 · **Entregado**
 
-> La documentación de Maintix está diseñada para responder preguntas rápidamente. Este capítulo explica cómo **navegar el portal**, encontrar información y utilizar correctamente la suite documental.
+> La documentación de Roustix está diseñada para responder preguntas rápidamente. Este capítulo explica cómo **navegar el portal**, encontrar información y utilizar correctamente la suite documental.
 
 **Toda la operación. Una sola plataforma.**
 
@@ -12,7 +12,7 @@
 
 ## Objetivo del capítulo
 
-Guiar a **usuarios, clientes, partners y equipos internos** en el uso del portal de documentación oficial de Maintix, explicando cómo está organizado, cómo encontrar información y cómo interpretar la estructura documental.
+Guiar a **usuarios, clientes, partners y equipos internos** en el uso del portal de documentación oficial de Roustix, explicando cómo está organizado, cómo encontrar información y cómo interpretar la estructura documental.
 
 ---
 
@@ -44,7 +44,7 @@ Los principios de navegación son:
 | Partner | [MCM](/mcm/) + [MKT](/mkt/) |
 | Desarrollador | [MAG](/mag/) + [MSD](/msd/) |
 | Arquitecto de software | [MPA](/mpa/) |
-| Equipo interno Maintix | Toda la suite |
+| Equipo interno Roustix | Toda la suite |
 
 ---
 
@@ -243,7 +243,7 @@ Para obtener mejores resultados:
 
 Comienza por [MDO-01](01-introduccion-portal.md) o utiliza el buscador del portal.
 
-### Soy cliente y quiero aprender a usar Maintix
+### Soy cliente y quiero aprender a usar Roustix
 
 Consulta [MRG](/mrg/).
 
@@ -336,7 +336,7 @@ API
 
 Un buen portal de documentación **no solo almacena información**: guía al usuario hacia la respuesta correcta.
 
-La documentación de Maintix está organizada para que cada perfil encuentre rápidamente lo que necesita, reduciendo la dependencia del soporte y favoreciendo una **adopción más rápida** de la plataforma.
+La documentación de Roustix está organizada para que cada perfil encuentre rápidamente lo que necesita, reduciendo la dependencia del soporte y favoreciendo una **adopción más rápida** de la plataforma.
 
 > La mejor documentación es aquella que responde una pregunta **antes** de que el usuario tenga que hacerla.
 

@@ -93,4 +93,4 @@ Antes de la siembra, el encargado no sabía con certeza cuánto fertilizante que
 
 ---
 
-*MTX-CASE-003 · Nivel D · Maintix · 2026*
+*MTX-CASE-003 · Nivel D · Roustix · 2026*

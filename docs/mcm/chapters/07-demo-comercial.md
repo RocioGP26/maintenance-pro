@@ -2,7 +2,7 @@
 
 **Código:** MCM-07-DEMO · Sprint 11.7 · **Entregado**
 
-> Una demo no consiste en mostrar pantallas. Consiste en demostrar **cómo Maintix resuelve un problema real de operación**.
+> Una demo no consiste en mostrar pantallas. Consiste en demostrar **cómo Roustix resuelve un problema real de operación**.
 
 **Toda la operación. Una sola plataforma.**
 
@@ -12,7 +12,7 @@
 
 ## Objetivo
 
-Definir el **proceso oficial** para realizar demostraciones comerciales de Maintix — asegurando un mensaje **consistente**, **centrado en el cliente** y alineado con la propuesta de valor del producto.
+Definir el **proceso oficial** para realizar demostraciones comerciales de Roustix — asegurando un mensaje **consistente**, **centrado en el cliente** y alineado con la propuesta de valor del producto.
 
 ---
 
@@ -23,7 +23,7 @@ Una demo exitosa responde **tres preguntas**:
 | # | Pregunta |
 |---|----------|
 | 1 | ¿Cuál es el **problema** del cliente? |
-| 2 | ¿Cómo lo **resuelve Maintix**? |
+| 2 | ¿Cómo lo **resuelve Roustix**? |
 | 3 | ¿Qué **cambia** después de implementarlo? |
 
 **Nunca** comienza mostrando el menú.
@@ -155,7 +155,7 @@ Copiar o adaptar desde [MCM-03-MARKETS](03-sectores-mercados.md); no inventar un
 5. Se genera una **alerta**.
 6. **Compras** repone.
 
-**En PLAY-002:** contar la historia en 60–90 segundos **antes** de abrir Maintix.
+**En PLAY-002:** contar la historia en 60–90 segundos **antes** de abrir Roustix.
 
 → Historias extendidas: [appendix/sectores-detalle.md](appendix/sectores-detalle.md)
 
@@ -200,7 +200,7 @@ Evitar en demo comercial:
 | ❌ No mostrar | Por qué |
 |--------------|---------|
 | Configuración avanzada | Distrae · no es el dolor del día 1 |
-| Pantallas administrativas Mantis | Confunde tenant vs operador |
+| Pantallas administrativas Roustix Platform | Confunde tenant vs operador |
 | Funciones **roadmap** | Honestidad comercial — MCM-05 §5 |
 | Errores técnicos · bugs | Escalar post-demo |
 | SQL · Flask · API · código | Audiencia incorrecta |
@@ -337,4 +337,4 @@ Tres ideas (§9) · plan · trial 15 días · **fecha** de siguiente paso.
 
 ---
 
-*MCM-07-DEMO · Maintix Commercial Manual · Sprint 11 · 2026*
+*MCM-07-DEMO · Roustix Commercial Manual · Sprint 11 · 2026*

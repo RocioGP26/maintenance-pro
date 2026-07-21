@@ -97,11 +97,11 @@ Detalle: [MRL-10-ROAD · cap. 10](chapters/10-roadmap.md).
 
 Al cerrar Sprint 15, un operador puede:
 
-1. Descargar **OT en PDF** (DOC-001) reconocible como Maintix
+1. Descargar **OT en PDF** (DOC-001) reconocible como Roustix
 2. Exportar **Excel inventario y maintenance** con mismo header/tablas MRL
 3. Añadir un export nuevo en un módulo usando solo adaptador + `BaseExcelExporter` / `BasePdfExporter`
 
-Sin ver el isotipo, el documento debe sentirse Maintix — objetivo de [MRL-01-PHIL](chapters/01-filosofia.md).
+Sin ver el isotipo, el documento debe sentirse Roustix — objetivo de [MRL-01-PHIL](chapters/01-filosofia.md).
 
 ---
 
@@ -121,4 +121,4 @@ Sin ver el isotipo, el documento debe sentirse Maintix — objetivo de [MRL-01-P
 
 ---
 
-*MRL-ROAD-IMPL · Sprint 15 · Maintix · 2026-07-10*
+*MRL-ROAD-IMPL · Sprint 15 · Roustix · 2026-07-10*

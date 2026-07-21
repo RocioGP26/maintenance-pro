@@ -97,7 +97,13 @@ def create_app(config_name: str | None = None):
 
     register_tenancy_middleware(app)
 
-    from app.branding import APP_LOGO_PATH, APP_NAME, APP_TAGLINE, empresa_logo_url_or_none
+    from app.branding import (
+        APP_FAVICON_PATH,
+        APP_LOGO_PATH,
+        APP_NAME,
+        APP_TAGLINE,
+        empresa_logo_url_or_none,
+    )
 
     from app.money import formato_moneda
     from app.models import machine_status_meta, proveedor_tipo_meta, incident_prioridad_meta, wo_es_editable, wo_status_meta, wo_tipo_meta
@@ -135,6 +141,11 @@ def create_app(config_name: str | None = None):
             "main.ordenes_edit", "main.ordenes_informe_upload",
             "main.incidencias_accion", "main.incident_notifications_seen",
             "main.incident_notifications_read", "main.notifications_action",
+            "maintenance_execution.work_order_checklist_execute",
+            "maintenance_execution.context_log",
+            "maintenance_execution.context_log_notification_read",
+            "maintenance_execution.asset_meter_reading",
+            "maintenance_automation.notification_read",
         }
         blocked_prefixes = (
             "purchasing.", "inv_comercial.", "platform.", "main.analisis",
@@ -239,6 +250,7 @@ def create_app(config_name: str | None = None):
             "app_version": app.config["APP_VERSION"],
             "app_tagline": APP_TAGLINE,
             "app_logo_path": APP_LOGO_PATH,
+            "app_favicon_path": APP_FAVICON_PATH,
             "empresa_actual": empresa_actual,
             "empresa_logo_url": empresa_logo_url_or_none(empresa_actual),
             "alertas_campana": resumen_alertas_campana(),
@@ -259,6 +271,9 @@ def create_app(config_name: str | None = None):
         }
 
     from app import models  # noqa: F401
+    from app.maintenance_execution import models as maintenance_execution_models  # noqa: F401
+    from app.maintenance_automation import models as maintenance_automation_models  # noqa: F401
+    from app.asset_health import models as asset_health_models  # noqa: F401
     from app.models import User
 
     @login_manager.user_loader
@@ -283,6 +298,9 @@ def create_app(config_name: str | None = None):
     from app.onboarding_routes import onboarding_bp
     from app.inventario_comercial.routes import inv_comercial_bp
     from app.purchasing.routes import purchasing_bp
+    from app.maintenance_execution.routes import maintenance_execution_bp
+    from app.maintenance_automation.routes import maintenance_automation_bp
+    from app.asset_health.routes import asset_health_bp
     from app.tenancy.admin_routes import admin_bp
     from app.tenancy.api_routes import tenancy_api_bp
     from app.tenancy.platform_routes import platform_bp
@@ -320,6 +338,9 @@ def create_app(config_name: str | None = None):
     app.register_blueprint(onboarding_bp)
     app.register_blueprint(inv_comercial_bp)
     app.register_blueprint(purchasing_bp)
+    app.register_blueprint(maintenance_execution_bp)
+    app.register_blueprint(maintenance_automation_bp)
+    app.register_blueprint(asset_health_bp)
     app.register_blueprint(tenancy_api_bp)
     app.register_blueprint(admin_bp)
     app.register_blueprint(platform_bp)

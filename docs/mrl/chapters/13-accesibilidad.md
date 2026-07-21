@@ -88,4 +88,4 @@ En tablas: columna «Estado» con palabra, no solo celda coloreada.
 
 ---
 
-*MRL-13-A11Y · Maintix Report Language · 2026*
+*MRL-13-A11Y · Roustix Report Language · 2026*

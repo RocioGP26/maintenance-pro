@@ -95,4 +95,4 @@ Una OT consume cuatro rodamientos. Nadie descuenta bodega. Gerencia no sabe el c
 
 ---
 
-*MTX-CASE-006 · Nivel D · Maintix · 2026*
+*MTX-CASE-006 · Nivel D · Roustix · 2026*

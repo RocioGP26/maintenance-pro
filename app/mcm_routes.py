@@ -1,4 +1,4 @@
-"""Sirve MCM (docs/mcm/) — Maintix Commercial Manual en /mcm/."""
+"""Sirve MCM (docs/mcm/) — Roustix Commercial Manual en /mcm/."""
 
 from __future__ import annotations
 

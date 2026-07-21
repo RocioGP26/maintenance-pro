@@ -1,4 +1,4 @@
-"""Sirve MRL (docs/mrl/) — Maintix Report Language en /mrl/."""
+"""Sirve MRL (docs/mrl/) — Roustix Report Language en /mrl/."""
 
 from __future__ import annotations
 

@@ -10,7 +10,7 @@
 
 ## Objetivo del capítulo
 
-Definir las **colecciones oficiales** de Postman e Insomnia de Maintix, generadas automáticamente desde la especificación **OpenAPI 3.1**, permitiendo que cualquier desarrollador explore, pruebe y documente la API sin configuración manual.
+Definir las **colecciones oficiales** de Postman e Insomnia de Roustix, generadas automáticamente desde la especificación **OpenAPI 3.1**, permitiendo que cualquier desarrollador explore, pruebe y documente la API sin configuración manual.
 
 Las colecciones representan una implementación práctica del contrato **MAG v1.0**, garantizando consistencia entre documentación, SDK y herramientas de prueba.
 
@@ -35,7 +35,7 @@ Colección oficial
       └── Insomnia
             │
             ▼
-       API Maintix
+       API Roustix
 ```
 
 Las colecciones **nunca se editan manualmente** de forma permanente — siempre se **generan desde OpenAPI**.
@@ -65,12 +65,12 @@ Son una herramienta de **aprendizaje** y de **pruebas**.
 
 ## 3 · Colección Postman
 
-**Nombre oficial:** `Maintix API v1`
+**Nombre oficial:** `Roustix API v1`
 
 **Estructura:**
 
 ```
-Maintix API v1
+Roustix API v1
 │
 ├── Authentication
 ├── Me
@@ -89,9 +89,9 @@ Maintix API v1
 
 Cada carpeta corresponde a un **módulo definido en MAG-04**.
 
-**Archivo:** [`docs/api/collections/maintix-api-v1.postman_collection.json`](../../api/collections/maintix-api-v1.postman_collection.json)
+**Archivo:** [`docs/api/collections/roustix-api-v1.postman_collection.json`](../../api/collections/roustix-api-v1.postman_collection.json)
 
-**Entorno Sandbox:** [`maintix-sandbox.postman_environment.json`](../../api/collections/maintix-sandbox.postman_environment.json)
+**Entorno Sandbox:** [`roustix-sandbox.postman_environment.json`](../../api/collections/roustix-sandbox.postman_environment.json)
 
 ---
 
@@ -100,7 +100,7 @@ Cada carpeta corresponde a un **módulo definido en MAG-04**.
 La organización **replica exactamente** la colección de Postman.
 
 ```
-Maintix API v1
+Roustix API v1
 │
 ├── Authentication
 ├── Maintenance
@@ -111,7 +111,7 @@ Maintix API v1
 
 El objetivo es que ambas herramientas ofrezcan la **misma experiencia**.
 
-**Archivo:** [`docs/api/collections/maintix-api-v1.insomnia.json`](../../api/collections/maintix-api-v1.insomnia.json)
+**Archivo:** [`docs/api/collections/roustix-api-v1.insomnia.json`](../../api/collections/roustix-api-v1.insomnia.json)
 
 ---
 
@@ -195,7 +195,7 @@ Postman · Insomnia
 
 | Herramienta | Comando (planificado) |
 |-------------|----------------------|
-| Postman | `openapi2postmanv2 -s openapi.v1.yaml -o maintix-api-v1.postman_collection.json` |
+| Postman | `openapi2postmanv2 -s openapi.v1.yaml -o roustix-api-v1.postman_collection.json` |
 | Insomnia | Generación desde OpenAPI import en CI |
 
 ---
@@ -223,8 +223,8 @@ Las colecciones siguen el mismo ciclo de vida que la API ([MAG-07](/mag/chapters
 
 | Colección | API |
 |-----------|-----|
-| **Maintix API v1** | MAG v1 |
-| **Maintix API v2** | MAG v2 |
+| **Roustix API v1** | MAG v1 |
+| **Roustix API v2** | MAG v2 |
 
 Cada versión mantiene su **propia colección independiente**.
 
@@ -258,9 +258,9 @@ Las colecciones están disponibles desde:
 
 | Archivo | Formato |
 |---------|---------|
-| `maintix-api-v1.postman_collection.json` | Postman Collection v2.1 |
-| `maintix-api-v1.insomnia.json` | Insomnia Export v4 |
-| `maintix-sandbox.postman_environment.json` | Postman Environment |
+| `roustix-api-v1.postman_collection.json` | Postman Collection v2.1 |
+| `roustix-api-v1.insomnia.json` | Insomnia Export v4 |
+| `roustix-sandbox.postman_environment.json` | Postman Environment |
 
 **Importar en Postman:** File → Import → seleccionar colección + entorno Sandbox.
 
@@ -299,7 +299,7 @@ Este capítulo se considera **implementado** cuando:
 
 Las colecciones oficiales convierten el contrato de la API en una **experiencia interactiva**. En lugar de construir solicitudes manualmente, el desarrollador importa una colección, se autentica y comienza a trabajar en minutos.
 
-**MSD-08 establece las herramientas oficiales de exploración y prueba de Maintix**, garantizando que documentación, OpenAPI y herramientas de desarrollo evolucionen siempre de forma sincronizada.
+**MSD-08 establece las herramientas oficiales de exploración y prueba de Roustix**, garantizando que documentación, OpenAPI y herramientas de desarrollo evolucionen siempre de forma sincronizada.
 
 ---
 

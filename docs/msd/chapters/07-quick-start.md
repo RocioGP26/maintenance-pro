@@ -10,7 +10,7 @@
 
 ## Objetivo del capítulo
 
-Definir la **guía oficial de Quick Start** de Maintix, permitiendo que cualquier desarrollador:
+Definir la **guía oficial de Quick Start** de Roustix, permitiendo que cualquier desarrollador:
 
 1. obtenga un JWT
 2. consulte la API
@@ -81,8 +81,8 @@ python run.py
 Variables recomendadas:
 
 ```bash
-export MAINTIX_API=http://127.0.0.1:5000/api/v1
-export MAINTIX_TOKEN=<jwt>
+export ROUSTIX_API=http://127.0.0.1:5000/api/v1
+export ROUSTIX_TOKEN=<jwt>
 ```
 
 > **Legacy hoy:** login en `/api/auth/login` · `/me` en `/api/me` · activos en `/api/activos`. Los pasos muestran **contrato v1**; ver notas por paso.
@@ -248,7 +248,7 @@ curl -s -H "Authorization: Bearer $TOKEN" http://127.0.0.1:5000/api/activos | jq
 import os
 import requests
 
-BASE = os.getenv("MAINTIX_API", "http://127.0.0.1:5000/api/v1")
+BASE = os.getenv("ROUSTIX_API", "http://127.0.0.1:5000/api/v1")
 # Legacy local: usar http://127.0.0.1:5000/api para auth/login y /activos
 
 r = requests.post(
@@ -336,9 +336,9 @@ echo $me;
 **Python** (conceptual · [MSD-04](04-sdk-oficiales.md)):
 
 ```python
-from maintix import MaintixClient
+from roustix import RoustixClient
 
-client = MaintixClient(
+client = RoustixClient(
     base_url="http://127.0.0.1:5000/api/v1",
     token="JWT",
 )
@@ -354,9 +354,9 @@ El mismo flujo existe para **JavaScript** y **PHP** cuando los paquetes estén p
 ## 8 · Uso de la CLI
 
 ```bash
-maintix login
-maintix whoami
-maintix assets list
+roustix login
+roustix whoami
+roustix assets list
 ```
 
 La CLI utiliza el mismo contrato que el SDK y la API REST → [MSD-05](05-cli.md).
@@ -427,7 +427,7 @@ Este capítulo se considera **implementado** cuando:
 
 ## Filosofía del capítulo
 
-El Quick Start representa la **primera experiencia** con Maintix. Debe ser breve, práctico y reproducible. En pocos minutos, cualquier desarrollador debe comprender el flujo de autenticación, ejecutar su primera llamada a la API y estar preparado para construir una integración completa.
+El Quick Start representa la **primera experiencia** con Roustix. Debe ser breve, práctico y reproducible. En pocos minutos, cualquier desarrollador debe comprender el flujo de autenticación, ejecutar su primera llamada a la API y estar preparado para construir una integración completa.
 
 **MSD-07 establece el recorrido oficial de onboarding** para desarrolladores, convirtiendo la documentación en una experiencia guiada y lista para usar.
 

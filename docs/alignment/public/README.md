@@ -13,7 +13,7 @@
 
 ## Objetivo
 
-Que cualquier visitante vea **el mismo Maintix** que describen MCM y MKT: marca unificada, planes oficiales, módulos en producción vs roadmap, CTAs coherentes y recorrido trial/demo/contacto separados.
+Que cualquier visitante vea **el mismo Roustix** que describen MCM y MKT: marca unificada, planes oficiales, módulos en producción vs roadmap, CTAs coherentes y recorrido trial/demo/contacto separados.
 
 ---
 
@@ -25,7 +25,7 @@ Que cualquier visitante vea **el mismo Maintix** que describen MCM y MKT: marca 
 | Páginas públicas nuevas | `/faq` · `/demo` · `/contacto` · `/recursos` |
 | Módulos Python contenido | `public_faq.py` · `public_demo.py` · `public_contact.py` · `public_recursos.py` |
 | Trial default | **15 días** (MCM-04 · MCM-06 · MCM-08) |
-| Marca pública | **Maintix** |
+| Marca pública | **Roustix** |
 | Planes públicos | Start · Grow · Scale · Enterprise |
 
 ---
@@ -50,7 +50,7 @@ Que cualquier visitante vea **el mismo Maintix** que describen MCM y MKT: marca 
 ## Archivos principales
 
 ```
-app/branding.py              APP_NAME · contacto@maintix.com
+app/branding.py              APP_NAME · contacto@roustix.com
 app/landing_service.py       Hero · sectores · problema · CTAs
 app/platform_config_service  Planes Start/Grow/Scale · trial 15d
 app/public_*.py              FAQ · demo · contacto · recursos
@@ -99,7 +99,7 @@ Registradas en `middleware.py` y `before_request` de `routes.py`.
 | **Interno** | App autenticada ↔ MRG | ✅ Fase 1 |
 | **Externo** | Sitio público ↔ MCM/MKT | ✅ Fase 2 |
 
-El ecosistema documental y la experiencia visitor-facing hablan el mismo lenguaje Maintix.
+El ecosistema documental y la experiencia visitor-facing hablan el mismo lenguaje Roustix.
 
 ---
 

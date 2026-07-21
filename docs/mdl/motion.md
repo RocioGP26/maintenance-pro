@@ -1,4 +1,4 @@
-# Maintix Motion
+# Roustix Motion
 
 Sistema de animación oficial del MDL. **Toda animación debe respetar estos valores.**
 

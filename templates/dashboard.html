@@ -339,38 +339,40 @@
 
                 <span class="dash-card-head-icon" aria-hidden="true"><i class="bi bi-heart-pulse"></i></span>
 
-                <h5 class="card-title mb-0">Estado de salud de la planta</h5>
+                <div>
+                  <h5 class="card-title mb-0">Salud actual de los activos</h5>
+                  <div class="text-muted small mt-1">La confiabilidad considera los correctivos de los últimos 90 días.</div>
+                </div>
 
               </div>
 
             </div>
 
-            {% if ot_en_periodo > 0 %}
+            {% if asset_health.total > 0 %}
             <div class="chart-box health-chart-wrap">
 
               <canvas id="chartSalud"></canvas>
 
               <div class="health-chart-center" aria-hidden="true">
-                <span class="health-chart-center-value">{{ health.counts.total }}</span>
-                <span class="health-chart-center-label">Activos</span>
+                <span class="health-chart-center-value">{{ asset_health.average }}</span>
+                <span class="health-chart-center-label">Promedio / 100</span>
               </div>
 
             </div>
 
             <ul class="health-legend list-unstyled mb-0 mt-2">
 
-              <li><span class="health-legend-swatch health-legend-swatch--ok"></span> Operativos: {{ health.counts.op }} ({{ health.operativos }}%)</li>
-
-              <li><span class="health-legend-swatch health-legend-swatch--warn"></span> En mantenimiento: {{ health.counts.mant }} ({{ health.mantenimiento }}%)</li>
-
-              <li><span class="health-legend-swatch health-legend-swatch--bad"></span> En falla: {{ health.counts.falla }} ({{ health.falla }}%)</li>
+              <li><span class="health-legend-swatch" style="background:#38a169"></span> Saludables: {{ asset_health.counts.healthy }}</li>
+              <li><span class="health-legend-swatch" style="background:#3182ce"></span> En observación: {{ asset_health.counts.watch }}</li>
+              <li><span class="health-legend-swatch" style="background:#ed8936"></span> En riesgo: {{ asset_health.counts.at_risk }}</li>
+              <li><span class="health-legend-swatch" style="background:#e53e3e"></span> Críticos: {{ asset_health.counts.critical }}</li>
+              {% if asset_health.counts.unknown %}<li><span class="health-legend-swatch" style="background:#718096"></span> Sin datos: {{ asset_health.counts.unknown }}</li>{% endif %}
 
             </ul>
             {% else %}
             <div class="chart-box chart-box--empty d-flex align-items-center justify-content-center" style="min-height:10rem;">
               <p class="text-muted small text-center mb-0 px-3">
-                Sin mantenimientos en {{ periodo_label }}.<br>
-                El estado de salud se muestra cuando hay OT programadas en el período.
+                No hay activos disponibles para calcular Asset Health.
               </p>
             </div>
             {% endif %}
@@ -735,7 +737,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
   const saludCtx = document.getElementById('chartSalud');
 
-  if (saludCtx && {{ ot_en_periodo }} > 0) {
+  if (saludCtx && {{ asset_health.total }} > 0) {
 
     new Chart(saludCtx, {
 
@@ -743,13 +745,13 @@ document.addEventListener('DOMContentLoaded', function () {
 
       data: {
 
-        labels: ['Operativos', 'En Mantenimiento', 'En Falla'],
+        labels: ['Saludables', 'En observación', 'En riesgo', 'Críticos', 'Sin datos'],
 
         datasets: [{
 
-          data: [{{ health.operativos }}, {{ health.mantenimiento }}, {{ health.falla }}],
+          data: [{{ asset_health.counts.healthy }}, {{ asset_health.counts.watch }}, {{ asset_health.counts.at_risk }}, {{ asset_health.counts.critical }}, {{ asset_health.counts.unknown }}],
 
-          backgroundColor: ['#38a169', '#ed8936', '#e53e3e'],
+          backgroundColor: ['#38a169', '#3182ce', '#ed8936', '#e53e3e', '#718096'],
 
           borderColor: chartBorder,
 

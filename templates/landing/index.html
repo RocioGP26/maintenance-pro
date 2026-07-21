@@ -3,8 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Maintix | Plataforma SaaS para controlar la operación empresarial</title>
-  <meta name="description" content="Maintix ayuda a empresas en crecimiento a organizar, controlar y hacer crecer su operación mediante una plataforma SaaS modular para mantenimiento e inventario. Prueba gratis {{ trial_dias }} días.">
+  {% include "_favicon.html" %}
+  <title>Roustix | Plataforma SaaS para controlar la operación empresarial</title>
+  <meta name="description" content="Roustix ayuda a empresas en crecimiento a organizar, controlar y hacer crecer su operación mediante una plataforma SaaS modular para mantenimiento e inventario. Prueba gratis {{ trial_dias }} días.">
   {% from "_cdn_assets.html" import google_fonts_inter_extra_bold, bootstrap_icons_css %}
   {{ google_fonts_inter_extra_bold() }}
   {{ bootstrap_icons_css() }}
@@ -33,7 +34,7 @@
               {{ cta_demo }}
             </a>
           </div>
-          <p class="landing-hero-note">Comienza hoy. Prueba Maintix durante {{ trial_dias }} días sin compromiso.</p>
+          <p class="landing-hero-note">Comienza hoy. Prueba Roustix durante {{ trial_dias }} días sin compromiso.</p>
         </div>
 
         <div class="landing-hero-mockups" aria-hidden="true">
@@ -161,7 +162,7 @@
         <p class="landing-eyebrow text-center">Sectores</p>
         <h2 class="landing-section-title text-center">El sector adapta el discurso, no el producto</h2>
         <p class="landing-section-sub text-center mx-auto">
-          Maintix no es un software vertical. Es una plataforma modular cuyo lenguaje
+          Roustix no es un software vertical. Es una plataforma modular cuyo lenguaje
           se ajusta a tu operación — industria, comercio, agro, talleres o distribución.
         </p>
         <div class="landing-sectors-grid">
@@ -229,7 +230,7 @@
     <section id="contacto" class="landing-cta-band">
       <div class="container-xl text-center">
         <h2>Recupera el control de tu operación.</h2>
-        <p>Comienza hoy. Prueba Maintix durante {{ trial_dias }} días sin compromiso.</p>
+        <p>Comienza hoy. Prueba Roustix durante {{ trial_dias }} días sin compromiso.</p>
         <div class="landing-hero-ctas justify-content-center">
           <a href="{{ url_for('onboarding.wizard') }}" class="landing-btn landing-btn-light">
             <i class="bi bi-rocket-takeoff"></i> {{ cta_final }}

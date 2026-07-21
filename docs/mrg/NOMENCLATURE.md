@@ -1,13 +1,13 @@
 # Nomenclatura · MRG
 
-**Código:** MRG · Maintix Reference Guide  
+**Código:** MRG · Roustix Reference Guide
 **Suite docs:** 11 · Sprint 10 · **v1.0.0**
 
 ## Capítulos (01 – 10)
 
 | Código | Archivo | Título funcional |
 |--------|---------|------------------|
-| **MRG-01-INTRO** | `01-intro-filosofia.md` | Filosofía de Maintix |
+| **MRG-01-INTRO** | `01-intro-filosofia.md` | Filosofía de Roustix |
 | **MRG-02-MAINT** | `02-maintenance.md` | Mantenimiento |
 | **MRG-03-INV** | `03-inventario.md` | Inventario |
 | **MRG-04-PUR** | `04-compras.md` | Compras |

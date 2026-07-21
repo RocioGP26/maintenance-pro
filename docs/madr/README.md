@@ -1,4 +1,4 @@
-# MADR · Maintix Architecture Decision Records
+# MADR · Roustix Architecture Decision Records
 
 📋 Planificado
 

@@ -1,6 +1,6 @@
-# Maintix UX Laws · Cultura de desarrollo
+# Roustix UX Laws · Cultura de desarrollo
 
-Estas no son sugerencias ni decoración de manual. Son la **cultura de desarrollo de Maintix**.
+Estas no son sugerencias ni decoración de manual. Son la **cultura de desarrollo de Roustix**.
 
 Cada nueva funcionalidad debe cumplir las **cinco UX Laws** antes de considerarse lista para producción.  
 **Si incumple una sola ley, se rediseña antes del merge.**
@@ -31,7 +31,7 @@ Sin datos ≠ sin valor. Todo empty state explica qué es la pantalla y ofrece C
 
 Guardar, eliminar, enviar, importar — el usuario **siempre** sabe que el sistema recibió la acción.
 
-→ Toast, alert, loading · DEC-004 · Maintix Motion ≤ 300ms
+→ Toast, alert, loading · DEC-004 · Roustix Motion ≤ 300ms
 
 ---
 

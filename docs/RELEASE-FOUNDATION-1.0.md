@@ -1,11 +1,11 @@
 # Release · Documentation Suite · Fundación 1.0
 
-**Maintix Documentation Suite — Release 1.0**  
-**Fecha:** 10 de julio de 2026  
+**Roustix Documentation Suite — Release 1.0**
+**Fecha:** 10 de julio de 2026
 **Estado:** ✔ **DOCUMENTACIÓN FUNDACIONAL COMPLETA**
 
-> Los seis primeros sprints construyeron los cimientos de Maintix.  
-> A partir del **Sprint 7 (MRL)**, ya no definimos qué es Maintix — creamos estándares para que crezca con consistencia.
+> Los seis primeros sprints construyeron los cimientos de Roustix.
+> A partir del **Sprint 7 (MRL)**, ya no definimos qué es Roustix — creamos estándares para que crezca con consistencia.
 
 ---
 
@@ -48,7 +48,7 @@ Cada documento evoluciona **de forma independiente**:
 
 Sin rehacer toda la suite.
 
-**Siguiente sprint:** **Sprint 7 · MRL v1.0** — Maintix Reporting Language
+**Siguiente sprint:** **Sprint 7 · MRL v1.0** — Roustix Reporting Language
 
 ---
 
@@ -61,4 +61,4 @@ Sin rehacer toda la suite.
 
 ---
 
-*Maintix Documentation Suite · Fundación 1.0 · Julio 2026*
+*Roustix Documentation Suite · Fundación 1.0 · Julio 2026*

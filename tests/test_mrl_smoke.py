@@ -46,11 +46,11 @@ class TestMRLSmoke(unittest.TestCase):
         self.assertEqual(meta.doc_code, "DOC-010")
         self.assertEqual(meta.tenant, meta.empresa_id)
         self.assertEqual(meta.documento, "DOC-010")
-        self.assertEqual(meta.sistema, "Maintix")
+        self.assertEqual(meta.sistema, "Roustix")
         self.assertIn("Empresa Demo", meta.empresa_nombre)
         payload = meta.as_dict()
         self.assertEqual(payload["tenant"], 1)
-        self.assertEqual(payload["generado_por"], "Maintix")
+        self.assertEqual(payload["generado_por"], "Roustix")
 
     def test_metadata_rejects_invalid_doc(self) -> None:
         with self.assertRaises(ValueError):

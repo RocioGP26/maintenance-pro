@@ -2,7 +2,7 @@
 
 **Código:** MRL-11-META · Complemento Sprint 7
 
-> Todo documento generado por Maintix lleva **metadatos consistentes** — en el header visible, en el footer y en las propiedades del archivo (PDF/Excel).
+> Todo documento generado por Roustix lleva **metadatos consistentes** — en el header visible, en el footer y en las propiedades del archivo (PDF/Excel).
 
 ---
 
@@ -19,7 +19,7 @@
 | **Idioma** | Locale del documento | Sí | `es-CO` |
 | **Hash** | Integridad / verificación | Opcional | `sha256:abc…` |
 
-\* Exportaciones automáticas programadas pueden usar `Sistema · Maintix`.
+\* Exportaciones automáticas programadas pueden usar `Sistema · Roustix`.
 
 ---
 
@@ -28,10 +28,10 @@
 | Capa | Campos |
 |------|--------|
 | **Header visible** (MRL-04) | Documento · Empresa · Fecha · Usuario · Módulo |
-| **Footer** (MRL-FTR-001) | Página · «Generado por Maintix» · Versión MRL |
+| **Footer** (MRL-FTR-001) | Página · «Generado por Roustix» · Versión MRL |
 | **PDF properties** | Title, Author, Subject, Creator, CreationDate |
 | **Excel** | Fila 1 metadatos o hoja `_meta` |
-| **CSV** | Línea comentario `# Maintix · DOC-003 · …` |
+| **CSV** | Línea comentario `# Roustix · DOC-003 · …` |
 
 ---
 

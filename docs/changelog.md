@@ -1,7 +1,151 @@
-# Changelog · Maintix Documentation Suite
+# Changelog · Roustix Documentation Suite
 
 > Este changelog pertenece a la documentación. Los cambios de la aplicación se
 > registran por separado en [`/CHANGELOG.md`](../CHANGELOG.md).
+
+## [1.21.0] — 2026-07-21 · Sprint 21 · Asset Health
+
+### Added
+- Puntaje explicable de salud por activo con cuatro factores ponderados.
+- Confianza de datos, razones accionables y bandas operativas.
+- Portafolio con filtros, detalle por factor e historial de snapshots.
+- Actualización transaccional desde lecturas, OT, incidencias y automatizaciones.
+- Alerta de activos en riesgo y migración `nu2k8m04r37c`.
+
+### Changed
+- El dashboard reemplaza el gráfico simple de estados por Asset Health real.
+
+### Status
+- ✅ Sprint 21 finalizado.
+- 📋 Siguiente: Sprint 22 · API pública, webhooks y derechos técnicos por plan.
+
+---
+
+## [1.20.0] — 2026-07-21 · Sprint 20 · Maintenance Automation
+
+### Added
+- Reglas configurables de umbral por medidor y tenant.
+- Control de cruce, enfriamiento e idempotencia por regla + lectura.
+- Acciones de aviso interno y creación automática de OT.
+- Destinatarios por rol, historial de evaluaciones y auditoría.
+- Migración Alembic `ls0i6k82p15a` y pruebas del motor.
+- Alertas personales por novedades de bitácora y centro de lectura contextual.
+
+### Changed
+- `Completada` representa trabajo técnico terminado y pendiente de validación.
+- `Cerrada` queda reservada al administrador o supervisor y es el único estado
+  que cierra definitivamente un ticket vinculado.
+- La campana administrativa muestra las OT pendientes de cierre.
+- Migración complementaria `mt1j7l93q26b` para entregas de bitácora.
+
+### Status
+- ✅ Sprint 20 finalizado.
+- 📋 Siguiente: Sprint 21 · Asset Health avanzado y analítica de condición.
+
+---
+
+## [1.19.5] — 2026-07-21 · Sprint 19.5 · Meters & Closure
+
+### Added
+- Medidores acumulativos e instantáneos por activo con rangos de referencia.
+- Lecturas históricas con ejecutor, registrador, fecha efectiva y OT opcional.
+- Validación y justificación de regresiones, reinicios, rollover y valores fuera de rango.
+- Correcciones inmutables, eventos auditables y migración idempotente de horas de operación.
+- Migración Alembic `kr9h5j71o04z` y cierre integral de Sprint 19.
+
+### Status
+- ✅ Sprint 19 finalizado.
+- 📋 Siguiente: Sprint 20 · disparadores de mantenimiento y automatizaciones configurables.
+
+---
+
+## [1.19.4] — 2026-07-21 · Sprint 19.4 · Context Log
+
+### Added
+- Bitácora común para órdenes de trabajo, incidencias y activos.
+- Visibilidad interna o dirigida al reportante de la incidencia.
+- Entradas inmutables y correcciones vinculadas al original.
+- Adjuntos privados con validación, checksum y descarga autorizada.
+- Auditoría de creación, carga y descarga.
+- Migración Alembic `jq8g4i60n93y` y pruebas tenant-safe.
+
+### Status
+- ✅ Sprint 19.4 finalizado.
+- 📋 Siguiente: Sprint 19.5 · medidores, lecturas, integración y cierre.
+
+---
+
+## [1.19.3] — 2026-07-21 · Sprint 19.3 · Evidence & Review
+
+### Added
+- Evidencias privadas con validación de contenido, límite de tamaño y checksum.
+- Conformidad, justificación obligatoria y resolución supervisada de hallazgos.
+- Confirmación de firma exclusiva del técnico autenticado.
+- Revisión formal del checklist y auditoría de descargas y decisiones.
+- Migración Alembic `ip7f3h59m82x` y pruebas de seguridad y autoría.
+
+### Status
+- ✅ Sprint 19.3 finalizado.
+- 📋 Siguiente: Sprint 19.4 · bitácora contextual y archivos adjuntos.
+
+---
+
+## [1.19.2] — 2026-07-21 · Sprint 19.2 · Executable Work Order Checklist
+
+### Added
+- Asignación de procedimientos publicados a órdenes de trabajo.
+- Checklist histórico con snapshots y progreso calculado en servidor.
+- Respuestas con autoría técnica y registro delegado auditables.
+- Acceso del técnico limitado a la OT asignada.
+- Bloqueo de finalización de la OT cuando faltan pasos obligatorios.
+- Migración Alembic `hn6e2g48l71w` y pruebas de tenant, roles y progreso.
+
+### Status
+- ✅ Sprint 19.2 finalizado.
+- 📋 Siguiente: Sprint 19.3 · evidencias, no conformidades, firma y auditoría.
+
+---
+
+## [1.19.1] — 2026-07-21 · Sprint 19.1 · Procedure Catalog
+
+### Added
+- Catálogo tenant-safe de procedimientos de mantenimiento.
+- Versiones inmutables con estados borrador, publicada y retirada.
+- Pasos ordenados con siete tipos de respuesta y configuración JSON validada.
+- Historial auditable de creación, edición, publicación y retiro.
+- Pantallas y permisos para gestión administrativa y consulta operativa.
+- Migración Alembic `gm5d1f37k60v` y pruebas de integridad, tenant y roles.
+
+### Status
+- ✅ Sprint 19.1 finalizado.
+- 📋 Siguiente: Sprint 19.2 · checklist ejecutable dentro de la OT.
+
+---
+
+## [1.19.0] — 2026-07-21 · Sprint 19.0 · Maintenance Execution Design
+
+### Added
+- Charter de procedimientos, checklists, bitácora contextual y medidores.
+- Arquitectura tenant-safe y modelos propuestos de ejecución.
+- Estados, permisos, autoría delegada y catálogo de eventos para Sprint 20.
+- Matriz de migración para OT históricas, `checklist_registro`, `IncidentHistory` y horas de operación.
+
+### Status
+- ✅ Sprint 19.0 formalizado · sin lógica de negocio nueva.
+- 📋 Siguiente: Sprint 19.1 · catálogo y versionado de procedimientos.
+
+---
+
+## [1.18.0] — 2026-07-14 · Sprint 18 · Seguridad e Identidad
+
+### Added
+- Gestión de sesiones, expiración, revocación y auditoría de identidad.
+- Política configurable por tenant y administración de sesiones activas.
+
+### Status
+- ✅ Sprint 18 cerrado.
+
+---
 
 ## [1.17.0] — 2026-07-11 · Sprint 16.5 · Purchasing cierre
 
@@ -97,7 +241,7 @@
 ## [1.14.0] — 2026-07-10 · MDO v1.0.0 · Sprint 13 finalizado
 
 ### Added
-- **MDO v1.0.0** — Maintix Documentation Operations completo (10 capítulos)
+- **MDO v1.0.0** — Roustix Documentation Operations completo (10 capítulos)
 - **MDO-08** · Portal Documental · **MDO-09** · Búsqueda · **MDO-10** · Cierre y gobernanza
 
 ### Changed
@@ -111,7 +255,7 @@
 ## [1.13.0] — 2026-07-10 · MDO · Sprint 13 en curso
 
 ### Added
-- **MDO v0.1.0** — Maintix Documentation Operations · infraestructura `/mdo/`
+- **MDO v0.1.0** — Roustix Documentation Operations · infraestructura `/mdo/`
 - **MDO-01** – **MDO-07** · capítulos fundacionales
 
 ### Status
@@ -153,7 +297,7 @@
 ## [1.10.0] — 2026-07-10 · MCM v1.0.0 · Sprint 11 finalizado
 
 ### Added
-- **Maintix Commercial Manual v1.0.0** — 10 capítulos + Appendix
+- **Roustix Commercial Manual v1.0.0** — 10 capítulos + Appendix
 - MCM-10-PARTNERS · portada `/mcm/` · checklist cierre Sprint 11
 
 ### Changed
@@ -184,7 +328,7 @@
 ## [1.7.0] — 2026-07-10 · Sprint 10 · MRG iniciado
 
 ### Added
-- **MRG v0.1.0** — Maintix Reference Guide · guía funcional del producto
+- **MRG v0.1.0** — Roustix Reference Guide · guía funcional del producto
 - MRG-01-INTRO · estructura 10 capítulos · `/mrg/` · `mrg_routes.py`
 - Borradores MRG-02 – MRG-10 alineados a producto actual
 
@@ -219,10 +363,10 @@
 
 ---
 
-## [1.5.4] — 2026-07-10 · MSD-05 Maintix CLI
+## [1.5.4] — 2026-07-10 · MSD-05 Roustix CLI
 
 ### Added
-- MSD-05-CLI · maintix-cli · automatización · códigos de salida
+- MSD-05-CLI · roustix-cli · automatización · códigos de salida
 
 ---
 
@@ -251,7 +395,7 @@
 ## [1.5.0] — 2026-07-10 · Sprint 9 · MSD iniciado
 
 ### Added
-- **MSD v0.1** — Maintix SDK & Developer Portal · `/msd/`
+- **MSD v0.1** — Roustix SDK & Developer Portal · `/msd/`
 - MSD-01-PHIL · estructura 9 capítulos · strategy · NOMENCLATURE
 - Blueprint `msd_routes.py` · placeholder `openapi.v1.yaml`
 - Catálogo docs hub actualizado · MAG Sprint 8 cerrado
@@ -269,7 +413,7 @@
 ## [1.4.0] — 2026-07-10 · Sprint 8 · MAG
 
 ### Added
-- **MAG v1.0** — Maintix API Guide (10 capítulos) · `/mag/`
+- **MAG v1.0** — Roustix API Guide (10 capítulos) · `/mag/`
 - Filosofía API · JWT · multi-tenant · recursos `/api/v1`
 - Errores · versionado · webhooks · ejemplos · rate limits
 - Par MPA (interno) ↔ MAG (externo) documentado
@@ -294,7 +438,7 @@
 - Tag recomendado: `docs-foundation-1.0`
 
 ### Added · Sprint 7
-- **MRL v1.0** — Maintix Report Language (10 capítulos) · `/mrl/`
+- **MRL v1.0** — Roustix Report Language (10 capítulos) · `/mrl/`
 - DOC-001 – DOC-010 · bloques MRL-HDR/TBL/KPI/CHT
 - Estándares PDF (ReportLab) · Excel · CSV
 
@@ -320,7 +464,7 @@
 ## [1.1.0] — 2026-07-10 · Sprint 6 · MPA
 
 ### Added
-- **MPA v1.0** — Maintix Platform Architecture (10 capítulos) · `/mpa/`
+- **MPA v1.0** — Roustix Platform Architecture (10 capítulos) · `/mpa/`
 - Reorganización suite **01–10**: MPA (05), MRL (06), MAG (07), SDK (08), Developer (09), Release Notes (10)
 - Hubs: `developer/`, `sdk/`, `release-notes/`
 
@@ -346,7 +490,7 @@
 - [RELEASE-v1.0.md](RELEASE-v1.0.md) — notas del release interno
 - [VERSIONING.md](VERSIONING.md) — política de congelamiento y bumps
 - Hubs **07 API** · **08 Architecture** · **09 Roadmap** (placeholders)
-- Enlaces cruzados Maintix Docs en catálogos MBB · MDL · MUX · MCM
+- Enlaces cruzados Roustix Docs en catálogos MBB · MDL · MUX · MCM
 
 ### Contexto
 - MCM Sprint 5 completo (10 capítulos)

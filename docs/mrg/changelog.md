@@ -135,7 +135,7 @@
 ## [0.1.6] — 2026-07-10 · MRG-07 Administración
 
 ### Added
-- **MRG-07-ADMIN** completo — tenant vs Mantis · roles · onboarding · seguridad
+- **MRG-07-ADMIN** completo — tenant vs Roustix Platform · roles · onboarding · seguridad
 - Gestión usuarios · sedes · configuración · integración cross-módulo · buenas prácticas
 
 ---

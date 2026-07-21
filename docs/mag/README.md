@@ -1,10 +1,10 @@
-# MAG · Maintix API Guide
+# MAG · Roustix API Guide
 
 **Código:** MAG · Suite docs **07**  
 **Versión:** v1.0.12 · Sprint 8 · **MAG v1.0 completo**  
 **Frase:** Toda la operación. Una sola plataforma.
 
-> La forma **oficial** de interactuar con Maintix desde el exterior — no solo una lista de endpoints.
+> La forma **oficial** de interactuar con Roustix desde el exterior — no solo una lista de endpoints.
 
 ## Ver manual
 
@@ -16,7 +16,7 @@ python run.py
 
 ## Objetivo
 
-Documentar cómo integradores, partners y desarrolladores se conectan a Maintix: filosofía, JWT, multi-tenant, recursos, errores, versionado, webhooks y buenas prácticas.
+Documentar cómo integradores, partners y desarrolladores se conectan a Roustix: filosofía, JWT, multi-tenant, recursos, errores, versionado, webhooks y buenas prácticas.
 
 **MPA** describe la arquitectura interna; **MAG** describe el contrato externo.
 
@@ -44,7 +44,7 @@ Documentar cómo integradores, partners y desarrolladores se conectan a Maintix:
 | [API reference](../api/README.md) | OpenAPI (planificado) |
 | [SDK](../sdk/README.md) | Clientes oficiales · [MSD](/msd/) Sprint 9 |
 
-## Maintix Documentation Suite
+## Roustix Documentation Suite
 
 | Meta | Enlace |
 |------|--------|

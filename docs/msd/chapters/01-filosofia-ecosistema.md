@@ -10,7 +10,7 @@
 
 ## Objetivo del capítulo
 
-Establecer la **filosofía del ecosistema para desarrolladores** de Maintix: cómo el Sprint 9 transforma la documentación de la API en una experiencia práctica para integradores, partners y equipos de ingeniería.
+Establecer la **filosofía del ecosistema para desarrolladores** de Roustix: cómo el Sprint 9 transforma la documentación de la API en una experiencia práctica para integradores, partners y equipos de ingeniería.
 
 ---
 
@@ -28,7 +28,7 @@ Sprint 9 responde la pregunta siguiente:
 
 > *«Leí la documentación. ¿Cómo integro en producción esta semana?»*
 
-**MSD (Maintix SDK & Developer Portal)** cierra esa brecha.
+**MSD (Roustix SDK & Developer Portal)** cierra esa brecha.
 
 | Fase | Producto | Rol |
 |------|----------|-----|
@@ -54,12 +54,12 @@ La documentación no termina en la especificación. Debe incluir **herramientas 
 ## 3 · Componentes del ecosistema MSD
 
 ```
-Maintix Developer Experience
+Roustix Developer Experience
 │
-├── Developer Portal      developer.maintix.app
+├── Developer Portal      developer.roustix.app
 ├── OpenAPI 3.1           openapi.v1.yaml
 ├── SDK oficiales         Python · JavaScript · PHP
-├── CLI                   maintix-cli
+├── CLI                   roustix-cli
 ├── Sandbox               tenant demo · datos ficticios
 ├── API Explorer          Try it · desde OpenAPI
 ├── Quick Start           guías paso a paso
@@ -76,7 +76,7 @@ Cada componente consume el **mismo contrato MAG**.
 |-----|-----|
 | `/api/v1/auth/login` | `client.auth.login()` |
 | MAG-04 recursos | `client.maintenance.assets` |
-| MAG-06 errores | SDK lanza `MaintixError(code=...)` |
+| MAG-06 errores | SDK lanza `RoustixError(code=...)` |
 | MAG-09 ejemplos | Quick Start ejecutable |
 | MAG-07 OpenAPI | `openapi.v1.yaml` generado |
 
@@ -93,7 +93,7 @@ Cada componente consume el **mismo contrato MAG**.
 | Integrador interno | Automatizar procesos | SDK + Quick Start |
 | Partner SaaS | Conectar ERP/CRM | Portal + colecciones |
 | Desarrollador freelance | Prototipo rápido | Sandbox + Explorer |
-| Equipo Maintix | Validar contrato | OpenAPI + CLI |
+| Equipo Roustix | Validar contrato | OpenAPI + CLI |
 
 **Developer Docs (suite 09)** sigue siendo para quien **contribuye al repositorio** — no confundir con MSD.
 
@@ -116,10 +116,10 @@ Cada componente consume el **mismo contrato MAG**.
 
 | Entrega | Descripción | Capítulo |
 |---------|-------------|----------|
-| Portal | developer.maintix.app | [MSD-02](02-developer-portal.md) |
+| Portal | developer.roustix.app | [MSD-02](02-developer-portal.md) |
 | OpenAPI 3.1 | `openapi.v1.yaml` | [MSD-03](03-openapi.md) |
 | SDK | Python · JS · PHP | [MSD-04](04-sdk-oficiales.md) |
-| CLI | `maintix-cli` | [MSD-05](05-cli.md) |
+| CLI | `roustix-cli` | [MSD-05](05-cli.md) |
 | Sandbox | API Explorer | [MSD-06](06-sandbox-explorer.md) |
 | Quick Start | Guías | [MSD-07](07-quick-start.md) |
 | Colecciones | Postman · Insomnia | [MSD-08](08-colecciones.md) |
@@ -146,7 +146,7 @@ python run.py
 
 MSD v1.0 se considerará completo cuando:
 
-- [ ] Existe portal accesible (local o `developer.maintix.app`)
+- [ ] Existe portal accesible (local o `developer.roustix.app`)
 - [ ] OpenAPI 3.1 publicado y sincronizado con MAG-04
 - [ ] Al menos un SDK oficial publicado (Python recomendado)
 - [ ] Quick Start ejecutable de principio a fin

@@ -142,7 +142,7 @@ class BaseExcelExporter:
 |---------|----------|
 | Header de columnas | Fondo `#042C53`, texto blanco, bold |
 | Zebra | Filas pares `#F4F7FB` |
-| Meta superior | Empresa, NIT, título DOC, fecha, «Generado por Maintix» |
+| Meta superior | Empresa, NIT, título DOC, fecha, «Generado por Roustix» |
 | Nombre hoja | Tipo DOC corto (ej. `Inventario`, `OT`) |
 | Nombre archivo | Ver `utils.filename_for(meta, "xlsx")` |
 
@@ -258,4 +258,4 @@ No crear blueprint `mrl_bp` para exports; MRL es librería interna.
 
 ---
 
-*MRL-ARCH · Sprint 15 · Maintix · 2026-07-10*
+*MRL-ARCH · Sprint 15 · Roustix · 2026-07-10*

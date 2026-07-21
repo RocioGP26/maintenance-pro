@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}Automatizaciones — {{ app_name }}{% endblock %}
+{% block page_title %}Automatizaciones de mantenimiento{% endblock %}
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
+  <div><p class="text-muted mb-0">Reglas deterministas que evalúan lecturas y generan avisos u órdenes de trabajo.</p></div>
+  <div class="d-flex gap-2"><a class="btn btn-outline-secondary" href="{{ url_for('maintenance_automation.notifications') }}"><i class="bi bi-bell me-1"></i>Avisos</a><a class="btn btn-primary" href="{{ url_for('maintenance_automation.rule_new') }}"><i class="bi bi-plus-lg me-1"></i>Nueva regla</a></div>
+</div>
+<div class="card card-dashboard"><div class="table-responsive"><table class="table align-middle mb-0">
+  <thead><tr><th>Regla</th><th>Activo / medidor</th><th>Condición</th><th>Acción</th><th>Ejecuciones</th><th>Estado</th><th></th></tr></thead>
+  <tbody>{% for rule in rules %}<tr>
+    <td><strong>{{ rule.name }}</strong><div class="small text-muted">{{ rule.description or 'Sin descripción' }}</div></td>
+    <td>{{ rule.meter.machine.codigo }} · {{ rule.meter.name }}</td>
+    <td><span class="font-monospace">{{ operators.get(rule.operator, rule.operator) }} {{ rule.threshold }} {{ rule.meter.unit }}</span>{% if rule.crossing_only %}<div class="small text-muted">Solo al cruzar</div>{% endif %}</td>
+    <td>{{ 'Crear OT' if rule.action_type == 'create_work_order' else 'Avisar' }}</td>
+    <td>{{ rule.executions|length }}</td>
+    <td><span class="badge text-bg-{{ 'success' if rule.active else 'secondary' }}">{{ 'Activa' if rule.active else 'Inactiva' }}</span></td>
+    <td><a class="btn btn-sm btn-outline-primary" href="{{ url_for('maintenance_automation.rule_detail', rule_id=rule.id) }}">Ver</a></td>
+  </tr>{% else %}<tr><td colspan="7" class="text-center text-muted py-5">No existen automatizaciones configuradas.</td></tr>{% endfor %}</tbody>
+</table></div></div>
+{% endblock %}

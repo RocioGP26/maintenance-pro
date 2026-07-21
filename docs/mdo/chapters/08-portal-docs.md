@@ -2,7 +2,7 @@
 
 **Código:** MDO-08 · Sprint 13.8 · **Entregado**
 
-> El portal documental es el **producto de lectura** de Maintix Docs: la capa que convierte manuales dispersos en una experiencia unificada, navegable y profesional.
+> El portal documental es el **producto de lectura** de Roustix Docs: la capa que convierte manuales dispersos en una experiencia unificada, navegable y profesional.
 
 **Toda la operación. Una sola plataforma.**
 
@@ -20,7 +20,7 @@ Este capítulo es el **manual del portal** — referencia para diseño, desarrol
 
 ## 1 · Filosofía
 
-El portal no es un listado de enlaces. Es la **puerta de entrada** al ecosistema de conocimiento Maintix.
+El portal no es un listado de enlaces. Es la **puerta de entrada** al ecosistema de conocimiento Roustix.
 
 | Principio | Aplicación |
 |-----------|------------|
@@ -58,7 +58,7 @@ docs/{manual}/  (Markdown + index.html + assets)
 
 La homepage del portal (`/docs/`) debe comunicar:
 
-1. **Qué es Maintix Docs** — suite documental oficial
+1. **Qué es Roustix Docs** — suite documental oficial
 2. **Versión de la suite** — banner de release
 3. **Acceso rápido** — cards por manual
 4. **Tagline** — *Toda la operación. Una sola plataforma.*
@@ -127,12 +127,12 @@ Patrón estándar (implementado en MDO, MKT, MCM, MRG…):
 Patrón objetivo:
 
 ```
-Maintix Docs  ›  MDO  ›  MDO-08 · Portal Documental
+Roustix Docs  ›  MDO  ›  MDO-08 · Portal Documental
 ```
 
 | Nivel | Ejemplo |
 |-------|---------|
-| 1 | Maintix Docs → `/docs/` |
+| 1 | Roustix Docs → `/docs/` |
 | 2 | Manual → `/mdo/` |
 | 3 | Capítulo → `chapters/08-portal-docs.md` |
 
@@ -190,7 +190,7 @@ Cada manual en `/docs/` se presenta como **card**:
 |----------|-----------|
 | Número suite | `01` · `12` · `13` |
 | Nombre | MRG · MCM · MDO |
-| Código | `Maintix Reference Guide` |
+| Código | `Roustix Reference Guide` |
 | Descripción | Una línea de propósito |
 | Badge | Versión · estado · sprint |
 | Link | URL del manual |
@@ -270,7 +270,7 @@ Flujo: merge → bump VERSIONS → tag opcional → deploy portal.
 
 ## Filosofía del capítulo
 
-El portal es la **cara pública** del conocimiento Maintix. Debe sentirse tan cuidado como el producto que documenta.
+El portal es la **cara pública** del conocimiento Roustix. Debe sentirse tan cuidado como el producto que documenta.
 
 ---
 

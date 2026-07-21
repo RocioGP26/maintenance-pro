@@ -3,7 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Prueba Maintix — {{ trial_dias }} días gratis</title>
+  {% include "_favicon.html" %}
+  <title>Prueba Roustix — {{ trial_dias }} días gratis</title>
   {% from "_cdn_assets.html" import google_fonts_inter, bootstrap_css, bootstrap_icons_css, bootstrap_js %}
   {{ google_fonts_inter() }}
   {{ bootstrap_css() }}
@@ -226,8 +227,8 @@
             </div>
             <ul class="list-unstyled small text-muted mb-0">
               <li><i class="bi bi-check2 text-success"></i> Ubicación operativa de tu negocio</li>
-              <li><i class="bi bi-check2 text-success"></i> Con Maintix Maintenance: categorías, estados y OT de ejemplo</li>
-              <li><i class="bi bi-check2 text-success"></i> Con Maintix Inventory: catálogo y proveedor comercial de ejemplo</li>
+              <li><i class="bi bi-check2 text-success"></i> Con Roustix Maintenance: categorías, estados y OT de ejemplo</li>
+              <li><i class="bi bi-check2 text-success"></i> Con Roustix Inventory: catálogo y proveedor comercial de ejemplo</li>
             </ul>
 
             {% elif step == 4 %}
@@ -244,14 +245,14 @@
                   <input type="radio" name="modulos_preset" value="mantenimiento" class="onboarding-module-radio"
                          {% if modulos_preset == 'mantenimiento' %}checked{% endif %}>
                   <span class="onboarding-module-icon"><i class="bi bi-wrench-adjustable"></i></span>
-                  <strong class="d-block">Maintix Maintenance</strong>
+                  <strong class="d-block">Roustix Maintenance</strong>
                   <span class="small text-muted">Activos, OT, repuestos técnicos, MTBF y cumplimiento preventivo.</span>
                 </label>
                 <label class="onboarding-module-card onboarding-module-card--preset">
                   <input type="radio" name="modulos_preset" value="inventario" class="onboarding-module-radio"
                          {% if modulos_preset == 'inventario' %}checked{% endif %}>
                   <span class="onboarding-module-icon"><i class="bi bi-cart3"></i></span>
-                  <strong class="d-block">Maintix Inventory</strong>
+                  <strong class="d-block">Roustix Inventory</strong>
                   <span class="small text-muted">Productos, compras, ventas y proveedores comerciales para tiendas.</span>
                 </label>
                 <label class="onboarding-module-card onboarding-module-card--preset">

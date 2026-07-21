@@ -6,7 +6,7 @@ Complementa definiciones en [north-star.md](north-star.md) · instrumentación e
 
 ---
 
-## Objetivos globales (Maintix)
+## Objetivos globales (Roustix)
 
 | Métrica | Sigla | Objetivo global | Definición |
 |---------|-------|-----------------|------------|
@@ -58,7 +58,7 @@ El objetivo global **3 / 2 / 15** aplica cuando el contexto es el flujo crítico
 
 ## Dashboard interno (roadmap)
 
-Métricas a visualizar en Maintix interno:
+Métricas a visualizar en Roustix interno:
 
 - P50 / P95 TTFAV, TTCOT, TTFFI por tenant y release
 - Correlación con abandono trial

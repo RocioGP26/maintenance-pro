@@ -1,4 +1,4 @@
-"""Sirve MPA (docs/mpa/) — Maintix Platform Architecture en /mpa/."""
+"""Sirve MPA (docs/mpa/) — Roustix Platform Architecture en /mpa/."""
 
 from __future__ import annotations
 

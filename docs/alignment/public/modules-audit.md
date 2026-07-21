@@ -16,8 +16,8 @@ MCM-05 distingue **producción** vs **roadmap**. El sitio debe mostrar solo lo v
 
 | Módulo | MCM-05 | Landing / producto | Mostrar público |
 |--------|--------|-------------------|-----------------|
-| **Maintix Maintenance** | ✅ Producción | «Mantenimiento» | ✅ |
-| **Maintix Inventory** | ✅ Producción | «Inventario comercial» | ✅ |
+| **Roustix Maintenance** | ✅ Producción | «Mantenimiento» | ✅ |
+| **Roustix Inventory** | ✅ Producción | «Inventario comercial» | ✅ |
 | **CRM** | 📋 Roadmap | pre-CRM interno only | 📋 etiqueta roadmap |
 | **Purchasing** | 📋 / 🟡 parcial | compras en Inventory | 📋 no módulo separado |
 | **Analytics / BI** | 📋 | dashboards básicos | 📋 no «Analytics module» |
@@ -28,8 +28,8 @@ MCM-05 distingue **producción** vs **roadmap**. El sitio debe mostrar solo lo v
 
 | Aspecto | MCM-05 | Landing | Estado |
 |---------|--------|---------|--------|
-| Nombre módulo mant. | Maintix Maintenance | Mantenimiento / CMMS | 🟡 |
-| Nombre inventario | Maintix Inventory | Inventario comercial | 🟡 |
+| Nombre módulo mant. | Roustix Maintenance | Mantenimiento / CMMS | 🟡 |
+| Nombre inventario | Roustix Inventory | Inventario comercial | 🟡 |
 | Expansión modular | Start → +módulos | mencionado en hero | 🟡 |
 | Over-promise CRM | prohibido | no explícito en landing | ✅ |
 

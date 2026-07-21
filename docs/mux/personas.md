@@ -1,6 +1,6 @@
 # MUX · Perfiles de usuario
 
-Maintix se diseña para personas con nombre, edad y frustraciones — no para «usuario genérico».
+Roustix se diseña para personas con nombre, edad y frustraciones — no para «usuario genérico».
 
 ## Activos (v1.1)
 

@@ -2,7 +2,7 @@
 
 **Código:** MRG-10-BEST · Sprint 10.10 · **Entregado**
 
-> Implementar Maintix correctamente no es solo «dar acceso». Es **configurar tenant, módulos, datos maestros y procesos** alineados al negocio del cliente — y **adoptarlo** en la operación diaria.
+> Implementar Roustix correctamente no es solo «dar acceso». Es **configurar tenant, módulos, datos maestros y procesos** alineados al negocio del cliente — y **adoptarlo** en la operación diaria.
 
 **Toda la operación. Una sola plataforma.**
 
@@ -10,7 +10,7 @@
 
 ## Objetivo del capítulo
 
-Recopilar buenas prácticas para implementadores, consultores y administradores de tenant — cierre del **Maintix Reference Guide v1.0**.
+Recopilar buenas prácticas para implementadores, consultores y administradores de tenant — cierre del **Roustix Reference Guide v1.0**.
 
 ---
 
@@ -107,7 +107,7 @@ MRG es base para:
 
 ## 8 · Adopción del sistema
 
-Una implementación exitosa no depende únicamente de la configuración inicial. También requiere que los usuarios **incorporen Maintix como parte de su operación diaria**.
+Una implementación exitosa no depende únicamente de la configuración inicial. También requiere que los usuarios **incorporen Roustix como parte de su operación diaria**.
 
 | Recomendación | Beneficio |
 |---------------|-----------|
@@ -134,7 +134,7 @@ Una implementación exitosa no depende únicamente de la configuración inicial.
 
 ## 10 · Evolución continua
 
-Maintix está diseñado para **crecer junto con la organización**.
+Roustix está diseñado para **crecer junto con la organización**.
 
 Una implementación típica evoluciona en etapas:
 
@@ -176,13 +176,13 @@ Cada nueva implementación debe buscar primero la **estabilidad operativa** ante
 
 ## Filosofía del capítulo
 
-Maintix entrega valor cuando la **operación del cliente** se refleja fielmente en la plataforma. Las buenas prácticas de MRG-10 convierten documentación en **resultado medible**.
+Roustix entrega valor cuando la **operación del cliente** se refleja fielmente en la plataforma. Las buenas prácticas de MRG-10 convierten documentación en **resultado medible**.
 
 ---
 
 ## Resultado · Sprint 10
 
-Con MRG v1.0, la documentación funcional de Maintix alcanza el mismo nivel de soluciones empresariales consolidadas.
+Con MRG v1.0, la documentación funcional de Roustix alcanza el mismo nivel de soluciones empresariales consolidadas.
 
 | Suite | Estado | Alcance |
 |-------|--------|---------|
@@ -194,7 +194,7 @@ Con MRG v1.0, la documentación funcional de Maintix alcanza el mismo nivel de s
 | **MUX** | 🟡 | UX, diseño y experiencia |
 | **MRL** | 🟡 | Estándares de reportes y documentos |
 
-Maintix dispone de un **ecosistema documental integral**: arquitectura, integración, experiencia del desarrollador y funcionamiento del producto.
+Roustix dispone de un **ecosistema documental integral**: arquitectura, integración, experiencia del desarrollador y funcionamiento del producto.
 
 ---
 
@@ -210,4 +210,4 @@ Maintix dispone de un **ecosistema documental integral**: arquitectura, integrac
 
 ---
 
-→ [MRG-01 · Intro](01-intro-filosofia.md) · [Índice MRG](/mrg/) · [Maintix Docs](/docs/)
+→ [MRG-01 · Intro](01-intro-filosofia.md) · [Índice MRG](/mrg/) · [Roustix Docs](/docs/)

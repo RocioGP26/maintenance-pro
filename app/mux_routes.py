@@ -1,4 +1,4 @@
-"""Sirve MUX (docs/mux/) — Maintix User Experience Guide en /mux/."""
+"""Sirve MUX (docs/mux/) — Roustix User Experience Guide en /mux/."""
 
 from __future__ import annotations
 

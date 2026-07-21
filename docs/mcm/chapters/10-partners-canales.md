@@ -2,7 +2,7 @@
 
 **Código:** MCM-10-PARTNERS · Sprint 11.10 · **Entregado**
 
-> Maintix no crece solo con venta directa. Crece con **canales**, **partners** y un equipo comercial que repite el mismo mensaje en todo el mercado.
+> Roustix no crece solo con venta directa. Crece con **canales**, **partners** y un equipo comercial que repite el mismo mensaje en todo el mercado.
 
 **Toda la operación. Una sola plataforma.**
 
@@ -12,7 +12,7 @@
 
 ## Objetivo del capítulo
 
-Definir el **programa de partners y canales** comerciales, el **cierre del ciclo de venta** y la **conclusión oficial** del Maintix Commercial Manual v1.0.0.
+Definir el **programa de partners y canales** comerciales, el **cierre del ciclo de venta** y la **conclusión oficial** del Roustix Commercial Manual v1.0.0.
 
 Este capítulo cierra Sprint 11 — el manual comercial queda listo para equipo interno, implementadores, distribuidores y aliados.
 
@@ -27,7 +27,7 @@ Este capítulo cierra Sprint 11 — el manual comercial queda listo para equipo 
 | **MRG respalda al partner** | Implementación documentada · no improvisación |
 | **Crecimiento modular** | Partner vende Start → cliente expande en la misma plataforma |
 
-**Regla:** un partner no vende «su versión de Maintix». Vende **Maintix** con el playbook MCM.
+**Regla:** un partner no vende «su versión de Roustix». Vende **Roustix** con el playbook MCM.
 
 ---
 
@@ -150,7 +150,7 @@ Buenas prácticas operativas — detalle en [appendix/buenas-practicas-comercial
 
 ---
 
-## 9 · Relación documental · Suite Maintix
+## 9 · Relación documental · Suite Roustix
 
 | Manual | Rol |
 |--------|-----|
@@ -166,7 +166,7 @@ Hub: [/docs/](/docs/)
 
 ## Exit Criteria · MCM v1.0.0
 
-El **Maintix Commercial Manual** se considera **finalizado** cuando:
+El **Roustix Commercial Manual** se considera **finalizado** cuando:
 
 - [x] 10 capítulos entregados (MCM-01 – MCM-10)
 - [x] Apéndices documentados
@@ -178,7 +178,7 @@ El **Maintix Commercial Manual** se considera **finalizado** cuando:
 
 ## Cierre · Sprint 11
 
-**Maintix Commercial Manual · Version 1.0.0**
+**Roustix Commercial Manual · Version 1.0.0**
 
 | # | Capítulo |
 |---|----------|
@@ -194,12 +194,12 @@ El **Maintix Commercial Manual** se considera **finalizado** cuando:
 | 10 | Partners y canales |
 | — | **Appendix** |
 
-> **MRG explica cómo funciona. MCM explica por qué comprar Maintix.**
+> **MRG explica cómo funciona. MCM explica por qué comprar Roustix.**
 
 **Sprint 11 – Commercial Manual (MCM) · ✅ Finalizado**
 
-→ [Maintix Docs](/docs/) · [MRG v1.0](/mrg/)
+→ [Roustix Docs](/docs/) · [MRG v1.0](/mrg/)
 
 ---
 
-*MCM-10-PARTNERS · Maintix Commercial Manual · v1.0.0 · 2026*
+*MCM-10-PARTNERS · Roustix Commercial Manual · v1.0.0 · 2026*

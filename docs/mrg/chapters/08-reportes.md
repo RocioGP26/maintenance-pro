@@ -2,7 +2,7 @@
 
 **Código:** MRG-08-REPORTS · Sprint 10.8 · **Entregado** · **v1.0.1** · Sprint 14 ALIGN ✅
 
-> Maintix ofrece **dashboards operativos**, reportes web por módulo y **exportaciones** (Excel, estándar PDF vía MRL) para decisiones basadas en datos del tenant.
+> Roustix ofrece **dashboards operativos**, reportes web por módulo y **exportaciones** (Excel, estándar PDF vía MRL) para decisiones basadas en datos del tenant.
 
 **Toda la operación. Una sola plataforma.**
 
@@ -209,7 +209,7 @@ Indicadores / Dashboard
 
 ## Filosofía del capítulo
 
-Los reportes no son un anexo: son la **consecuencia medible** de operar bien en Maintix. Cada OT cerrada, cada venta y cada compra alimentan indicadores que permiten decidir con datos.
+Los reportes no son un anexo: son la **consecuencia medible** de operar bien en Roustix. Cada OT cerrada, cada venta y cada compra alimentan indicadores que permiten decidir con datos.
 
 ---
 

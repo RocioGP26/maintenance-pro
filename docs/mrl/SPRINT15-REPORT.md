@@ -220,4 +220,4 @@ motores Excel/PDF y la metadata corporativa consolidados por MRL.
 
 ---
 
-*Sprint 15 · MRL Foundation — Report & Document Engine · Maintix · 2026-07-11 · Sprint 15.0–15.5 ✅ · Sprint finalizado*
+*Sprint 15 · MRL Foundation — Report & Document Engine · Roustix · 2026-07-11 · Sprint 15.0–15.5 ✅ · Sprint finalizado*

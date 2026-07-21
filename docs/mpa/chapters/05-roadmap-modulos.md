@@ -2,7 +2,7 @@
 
 **Código:** MPA-05-ROAD · Sprint 6.5
 
-> El futuro de Maintix **como plataforma**, no como lista de features sueltas. Cada módulo nuevo debe encajar en el stack Tenant → Módulos → Permisos → Datos → Dashboards.
+> El futuro de Roustix **como plataforma**, no como lista de features sueltas. Cada módulo nuevo debe encajar en el stack Tenant → Módulos → Permisos → Datos → Dashboards.
 
 ---
 
@@ -12,6 +12,7 @@
 |--------|-------|----------------|
 | ✅ **Maintenance** | `mantenimiento` | Manufactura, logística, salud, plantas |
 | ✅ **Inventory** | `inventario` | Comercio, retail, distribución, agro |
+| ✅ **Purchasing** | `purchasing` | Abastecimiento, recepción y CxP |
 
 **Capacidades transversales activas:** tenancy, roles, onboarding sectorial, dashboards, reportes PDF, import/export Excel (Inventory), auditoría plataforma, backups.
 
@@ -21,7 +22,9 @@
 
 | Módulo | Propósito | Dependencias |
 |--------|-----------|--------------|
-| **Purchasing** | Compras unificadas (técnicas + comerciales) · Sprint 16.0 diseño ✅ | Inventory, Maintenance, MRL, MAG |
+| **Maintenance Execution** | Sprint 19 ✅ · procedimientos, checklist, evidencia, bitácora y medidores | Maintenance, MRG, MUX |
+| **Maintenance Automation** | Sprint 20 ✅ · disparadores por lecturas, avisos y creación gobernada de OT | Maintenance Execution, IAM |
+| **Asset Health** | Sprint 21 ✅ · puntaje explicable, confianza, señales e historial | Maintenance Execution, Automation |
 | **CRM** | Clientes, pipeline, seguimiento comercial | Inventory |
 | **Sales Pro** | Cotizaciones, pedidos, facturación ligera | Inventory, CRM |
 | **Analytics** | KPIs cruzados, tendencias, export BI | Datos de todos los módulos activos |
@@ -62,7 +65,7 @@
 | Anti-roadmap | Por qué |
 |--------------|---------|
 | Fork por país | Un código, configuración por tenant |
-| Producto separado «Maintix CMMS» | Maintenance es módulo |
+| Producto separado «Roustix CMMS» | Maintenance es módulo |
 | ERP monolítico en un sprint | Finance llega cuando la operación esté consolidada |
 | Features sin módulo definido | Todo entra en el mapa MPA-02 |
 

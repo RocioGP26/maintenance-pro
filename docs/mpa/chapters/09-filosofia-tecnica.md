@@ -2,7 +2,7 @@
 
 **Código:** MPA-09-PHIL · Sprint 6.9
 
-> Las decisiones que mantienen Maintix como **plataforma** y evitan que se convierta en un monolito de parches.
+> Las decisiones que mantienen Roustix como **plataforma** y evitan que se convierta en un monolito de parches.
 
 ---
 
@@ -69,7 +69,7 @@ Un cambio está hecho cuando:
 
 ---
 
-## 6 · De Mantis a Maintix
+## 6 · De Mantis a Roustix
 
 El nombre cambió. La lección no:
 

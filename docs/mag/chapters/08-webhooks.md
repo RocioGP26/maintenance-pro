@@ -10,9 +10,9 @@
 
 ## Objetivo del capítulo
 
-Definir el **estándar oficial de Webhooks Maintix** — el mecanismo mediante el cual la plataforma notifica eventos a sistemas externos en **tiempo real**.
+Definir el **estándar oficial de Webhooks Roustix** — el mecanismo mediante el cual la plataforma notifica eventos a sistemas externos en **tiempo real**.
 
-Mientras la API REST ([MAG-04](04-recursos.md)) funciona bajo **request → response**, los Webhooks permiten que Maintix **inicie la comunicación** cuando ocurre un evento de negocio.
+Mientras la API REST ([MAG-04](04-recursos.md)) funciona bajo **request → response**, los Webhooks permiten que Roustix **inicie la comunicación** cuando ocurre un evento de negocio.
 
 Los Webhooks forman parte del **contrato público** y utilizan el mismo modelo de autenticación, versionado y nomenclatura definido en MAG.
 
@@ -23,7 +23,7 @@ Los Webhooks forman parte del **contrato público** y utilizan el mismo modelo d
 **REST responde. Webhooks notifican.**
 
 ```
-Cliente                    Maintix
+Cliente                    Roustix
    │                          │
    │  GET /assets             │
    │ ───────────────────────► │
@@ -37,7 +37,7 @@ vs
 Orden creada
       │
       ▼
-  Maintix
+  Roustix
       │
  POST Webhook
       │
@@ -55,7 +55,7 @@ El objetivo es eliminar consultas periódicas (**polling**) innecesarias.
 Evento de negocio
         │
         ▼
-Módulo Maintix
+Módulo Roustix
         │
         ▼
 Event Dispatcher
@@ -88,7 +88,7 @@ Content-Type: application/json
 
 ```json
 {
-  "url": "https://empresa.com/webhooks/maintix",
+  "url": "https://empresa.com/webhooks/roustix",
   "events": [
     "work_order.created",
     "stock.low"
@@ -191,7 +191,7 @@ Claves en **inglés** — envelope alineado con MAG-04/MAG-05.
 Cada entrega incluye:
 
 ```http
-X-Maintix-Signature: sha256=6f9c...
+X-Roustix-Signature: sha256=6f9c...
 ```
 
 | Aspecto | Valor |
@@ -270,9 +270,9 @@ Cambios incompatibles de payload → política [MAG-07](07-versionado.md).
 **Evento:** OT creada
 
 ```http
-POST https://empresa.com/webhooks/maintix
+POST https://empresa.com/webhooks/roustix
 Content-Type: application/json
-X-Maintix-Signature: sha256=...
+X-Roustix-Signature: sha256=...
 X-Event-Id: 89fd...
 ```
 
@@ -293,7 +293,7 @@ X-Event-Id: 89fd...
 
 **Respuesta esperada del cliente:** `HTTP 200 OK` (≤ 5 s)
 
-Errores de validación del endpoint receptor → fuera de alcance MAG; Maintix solo registra HTTP status.
+Errores de validación del endpoint receptor → fuera de alcance MAG; Roustix solo registra HTTP status.
 
 ---
 
@@ -322,7 +322,7 @@ Alineado con [MAG-06 · Auditoría de errores](06-manejo-errores.md) y MPA-07.
 
 | # | Regla |
 |---|-------|
-| 1 | Validar siempre `X-Maintix-Signature` |
+| 1 | Validar siempre `X-Roustix-Signature` |
 | 2 | Responder rápidamente (≤ 5 s) |
 | 3 | Procesar de forma asíncrona cuando sea posible |
 | 4 | Implementar idempotencia usando `X-Event-Id` |
@@ -365,7 +365,7 @@ Este capítulo se considera **implementado** cuando:
 - [ ] Existe un servicio centralizado de Webhooks
 - [ ] Todos los eventos siguen la nomenclatura oficial
 - [ ] Todos los payloads utilizan el formato estándar
-- [ ] Los Webhooks incluyen firma `X-Maintix-Signature`
+- [ ] Los Webhooks incluyen firma `X-Roustix-Signature`
 - [ ] Se implementan reintentos automáticos para errores temporales
 - [ ] Todos los envíos quedan auditados
 - [ ] La documentación y el código utilizan el mismo catálogo de eventos
@@ -376,7 +376,7 @@ Este capítulo se considera **implementado** cuando:
 
 Una integración moderna no espera a que el cliente pregunte qué ocurrió. La plataforma informa los cambios **en el momento en que suceden**, de forma segura, verificable y predecible.
 
-**MAG-08 convierte a Maintix en una plataforma orientada a eventos**, preparada para integrarse con ERP, CRM, Power BI, plataformas de mensajería y futuros servicios distribuidos.
+**MAG-08 convierte a Roustix en una plataforma orientada a eventos**, preparada para integrarse con ERP, CRM, Power BI, plataformas de mensajería y futuros servicios distribuidos.
 
 ---
 
@@ -386,7 +386,7 @@ Una integración moderna no espera a que el cliente pregunte qué ocurrió. La p
 |---------|-------|
 | **Contrato** | ✅ Definido |
 | **Implementación actual** | 📋 Planificada |
-| **Seguridad** | HMAC-SHA256 · `X-Maintix-Signature` |
+| **Seguridad** | HMAC-SHA256 · `X-Roustix-Signature` |
 | **Compatibilidad** | API REST v1 |
 | **Siguiente capítulo** | [MAG-09 · Ejemplos y SDK](09-ejemplos.md) |
 

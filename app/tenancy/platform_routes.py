@@ -1,4 +1,4 @@
-"""Panel web de superadministración de plataforma (dueña de Maintix)."""
+"""Panel web de superadministración de plataforma (dueña de Roustix)."""
 
 from __future__ import annotations
 
@@ -91,7 +91,7 @@ def _iniciar_impersonacion_usuario(user: User) -> None:
             "impersonate_start",
             user_id=user.id,
             username=user.username,
-            detalle="Acceso de soporte Maintix (registro auditable)",
+            detalle="Acceso de soporte Roustix (registro auditable)",
         )
 
 
@@ -136,7 +136,7 @@ def login():
             if verificar_totp(request.form.get("totp", "")):
                 session.pop(MFA_PENDING_KEY, None)
                 session["platform_admin"] = True
-                session["platform_actor"] = "Soporte Maintix (Plataforma)"
+                session["platform_actor"] = "Soporte Roustix (Plataforma)"
                 session.permanent = True
                 return _redirect_tras_login_plataforma()
             flash("Código de autenticación incorrecto.", "danger")
@@ -159,7 +159,7 @@ def login():
                     totp_habilitado=True,
                 )
             session["platform_admin"] = True
-            session["platform_actor"] = "Soporte Maintix (Plataforma)"
+            session["platform_actor"] = "Soporte Roustix (Plataforma)"
             session.permanent = True
             return _redirect_tras_login_plataforma()
         flash("Clave de plataforma incorrecta.", "danger")

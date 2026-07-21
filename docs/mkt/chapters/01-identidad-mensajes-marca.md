@@ -2,7 +2,7 @@
 
 **Código:** MKT-01 · Sprint 12.1 · **Entregado**
 
-> MCM explica **por qué comprar** Maintix. MKT define **cómo comunicarlo** en cada activo — web, pitch, email, brochure y redes.
+> MCM explica **por qué comprar** Roustix. MKT define **cómo comunicarlo** en cada activo — web, pitch, email, brochure y redes.
 
 **Toda la operación. Una sola plataforma.**
 
@@ -12,7 +12,7 @@
 
 ## Objetivo del capítulo
 
-Establecer la **identidad comercial operativa** de Maintix: visión, misión, personalidad, tono, slogans, mensajes **aprobados**, arquitectura del mensaje y vocabulario — la **Biblia de Marketing** para todo material del Sprint 12 y campañas futuras.
+Establecer la **identidad comercial operativa** de Roustix: visión, misión, personalidad, tono, slogans, mensajes **aprobados**, arquitectura del mensaje y vocabulario — la **Biblia de Marketing** para todo material del Sprint 12 y campañas futuras.
 
 **Regla:** si un copy no está aquí o en MCM, **no se publica** sin revisión de marketing/comercial.
 
@@ -38,7 +38,7 @@ MKT **no reemplaza** MBB ni MCM. Los **operacionaliza** en copy corto, repetible
 
 ### En 2036 queremos que…
 
-- Decir «lo tenemos en Maintix» signifique **control operativo** total
+- Decir «lo tenemos en Roustix» signifique **control operativo** total
 - PYMEs de cualquier sector operen con madurez digital comparable a grandes grupos
 - El ecosistema cubra mantenimiento, inventario, ventas, compras, activos y analítica
 - Partners e implementadores desplieguen con MCM + MRG sin reinventar el mensaje
@@ -66,7 +66,7 @@ MKT **no reemplaza** MBB ni MCM. Los **operacionaliza** en copy corto, repetible
 | **Técnico** | Registrar y cerrar OT en minutos |
 | **Gerente** | Ver KPIs sin pedir reportes manuales |
 | **Comercio** | Vender con stock real y cartera clara |
-| **Plataforma (Mantis)** | Operar tenants con trazabilidad y soporte |
+| **Plataforma (Roustix Platform)** | Operar tenants con trazabilidad y soporte |
 
 → [MRG-01 · Filosofía](/mrg/chapters/01-intro-filosofia.md)
 
@@ -84,7 +84,7 @@ El propósito responde al **por qué** existimos antes del **qué** ofrecemos. E
 
 ## 5 · Personalidad de marca (comercial)
 
-Cómo debe **sentirse** Maintix en ventas y marketing:
+Cómo debe **sentirse** Roustix en ventas y marketing:
 
 | Atributo | Somos | No somos |
 |----------|-------|----------|
@@ -141,7 +141,7 @@ Cómo debe **sentirse** Maintix en ventas y marketing:
 | **Tagline de marca** | *Toda la operación. Una sola plataforma.* | Logo lockup · footer · cierre slides |
 | **Pilar de crecimiento** | *La transformación comienza con un módulo. El crecimiento ocurre dentro de una sola plataforma.* | Planes · expansión · partners |
 | **Slogan comercial** | *No necesitas otro software. Necesitas recuperar el control de tu operación.* | Cierre emocional · ads · OBJ-005 |
-| **Una frase (producto)** | *Maintix es la plataforma que ayuda a las empresas a organizar, controlar y hacer crecer su operación desde un único lugar.* | Hero · meta · LinkedIn bio |
+| **Una frase (producto)** | *Roustix es la plataforma que ayuda a las empresas a organizar, controlar y hacer crecer su operación desde un único lugar.* | Hero · meta · LinkedIn bio |
 
 **Regla:** no mezclar tagline y slogan en la misma línea visual. Tagline = **cómo**; slogan = **por qué duele hoy**.
 
@@ -153,13 +153,13 @@ Cómo debe **sentirse** Maintix en ventas y marketing:
 
 Copy **listo para copiar** en activos Sprint 12:
 
-### Maintix en una frase
+### Roustix en una frase
 
-> Maintix es la plataforma que ayuda a las empresas a organizar, controlar y hacer crecer su operación desde un único lugar.
+> Roustix es la plataforma que ayuda a las empresas a organizar, controlar y hacer crecer su operación desde un único lugar.
 
 ### Elevator pitch (completo)
 
-> Maintix es una plataforma SaaS modular que ayuda a empresas en crecimiento a controlar su operación diaria desde un solo lugar. Comienza con mantenimiento o inventario y evoluciona hacia una plataforma empresarial completa, sin migraciones ni sistemas desconectados.
+> Roustix es una plataforma SaaS modular que ayuda a empresas en crecimiento a controlar su operación diaria desde un solo lugar. Comienza con mantenimiento o inventario y evoluciona hacia una plataforma empresarial completa, sin migraciones ni sistemas desconectados.
 
 ### Origen (storytelling)
 
@@ -167,7 +167,7 @@ Copy **listo para copiar** en activos Sprint 12:
 
 ### Trial CTA
 
-> Comienza hoy. Prueba Maintix durante **15 días** sin compromiso.
+> Comienza hoy. Prueba Roustix durante **15 días** sin compromiso.
 
 ### Qué sí prometemos
 
@@ -196,7 +196,7 @@ Todo contenido MKT (MKT-02 – MKT-10) debe anclarse en **al menos un pilar**:
 |---|-------|---------------|-----------|
 | 1 | **Control operativo** | Un solo lugar para la verdad operativa | MCM-01 · MCM-02 |
 | 2 | **Plataforma modular** | Un módulo hoy · suite mañana | MCM-05 · MPA |
-| 3 | **Sin migración** | Crece en Maintix · no cambies de vendor | MCM-04 · MCM-06 |
+| 3 | **Sin migración** | Crece en Roustix · no cambies de vendor | MCM-04 · MCM-06 |
 | 4 | **Operación real** | Mantenimiento e inventario en producción | MRG-02 · MRG-03 |
 | 5 | **LatAm PYME en crecimiento** | De Excel a plataforma en días | MCM-03 · ICP |
 
@@ -230,7 +230,7 @@ Todo contenido MKT (MKT-02 – MKT-10) debe anclarse en **al menos un pilar**:
 
 ## 11 · Arquitectura del mensaje
 
-Marco obligatorio para **cualquier copy** — landing, email, post, brochure o guion. Permite que copywriters y agencias construyan textos nuevos **sin perder la esencia** de Maintix.
+Marco obligatorio para **cualquier copy** — landing, email, post, brochure o guion. Permite que copywriters y agencias construyan textos nuevos **sin perder la esencia** de Roustix.
 
 ### La cadena (5 pasos)
 
@@ -241,7 +241,7 @@ Consecuencia
     ↓
 Transformación
     ↓
-Maintix
+Roustix
     ↓
 Resultado
 ```
@@ -251,10 +251,10 @@ Resultado
 | **Problema** | ¿Qué usa o hace hoy la empresa? | Excel · WhatsApp · papeles · sistemas desconectados |
 | **Consecuencia** | ¿Qué le cuesta ese caos? | Errores · retrasos · dinero perdido · decisiones a ciegas |
 | **Transformación** | ¿Qué cambia en su forma de operar? | Centralizar · organizar · anticipar · tener visibilidad |
-| **Maintix** | ¿Cómo lo logra la plataforma? | Un módulo · un login · trazabilidad · datos en un solo lugar |
+| **Roustix** | ¿Cómo lo logra la plataforma? | Un módulo · un login · trazabilidad · datos en un solo lugar |
 | **Resultado** | ¿Qué gana el negocio? | Control · crecimiento · mejores decisiones · productividad |
 
-**Regla:** los pasos 1–3 hablan del **dolor del cliente**. Maintix aparece en el paso 4 como **puente**, no como protagonista desde la primera línea. El resultado (paso 5) cierra con **beneficio medible**, no con feature.
+**Regla:** los pasos 1–3 hablan del **dolor del cliente**. Roustix aparece en el paso 4 como **puente**, no como protagonista desde la primera línea. El resultado (paso 5) cierra con **beneficio medible**, no con feature.
 
 ### Ejemplos aprobados
 
@@ -267,7 +267,7 @@ Errores y datos duplicados
     ↓
 Control de la información
     ↓
-Maintix
+Roustix
     ↓
 Crecimiento con datos confiables
 ```
@@ -281,7 +281,7 @@ Pierdes dinero y tiempo
     ↓
 Centralizas la operación
     ↓
-Maintix
+Roustix
     ↓
 Tomas mejores decisiones
 ```
@@ -295,7 +295,7 @@ Paradas imprevistas y costos ocultos
     ↓
 Mantenimiento planificado y trazable
     ↓
-Maintix
+Roustix
     ↓
 Menos paradas · más vida útil del activo
 ```
@@ -309,7 +309,7 @@ Ventas perdidas y sobrestock
     ↓
 Inventario en tiempo real
     ↓
-Maintix
+Roustix
     ↓
 Vendes con confianza · compras con criterio
 ```

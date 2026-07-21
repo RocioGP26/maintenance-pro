@@ -2,7 +2,7 @@
 
 **Código:** MCM-03-MARKETS · Sprint 11.3 · **Entregado**
 
-> Maintix no vende para una industria específica. Vende para organizaciones cuya operación necesita **mayor control**.  
+> Roustix no vende para una industria específica. Vende para organizaciones cuya operación necesita **mayor control**.
 > Los sectores ayudan a **adaptar el lenguaje**, no a limitar el producto.
 
 **Toda la operación. Una sola plataforma.**
@@ -13,7 +13,7 @@
 
 ## Objetivo del capítulo
 
-Definir los **sectores objetivo**, los problemas que enfrentan y cómo posicionar Maintix en cada uno — manteniendo una **propuesta de valor común**.
+Definir los **sectores objetivo**, los problemas que enfrentan y cómo posicionar Roustix en cada uno — manteniendo una **propuesta de valor común**.
 
 Este capítulo sirve como guía para **ventas**, **marketing**, **partners** e **implementadores**.
 
@@ -21,7 +21,7 @@ Este capítulo sirve como guía para **ventas**, **marketing**, **partners** e *
 
 ## 1 · Filosofía
 
-Maintix **no es un software vertical**.
+Roustix **no es un software vertical**.
 
 Es una **plataforma empresarial modular** cuya implementación cambia según la operación del cliente.
 
@@ -36,7 +36,7 @@ El sector modifica:
 
 **Pero no cambia el producto.**
 
-**Regla del vendedor:** el sector **adapta el discurso**, no redefine Maintix. La puerta de entrada la define el **dolor dominante** (MCM-01), no el rubro del RUT.
+**Regla del vendedor:** el sector **adapta el discurso**, no redefine Roustix. La puerta de entrada la define el **dolor dominante** (MCM-01), no el rubro del RUT.
 
 → Filosofía comercial: [MCM-01-INTRO](01-intro-filosofia-comercial.md) · Detalle funcional por módulo: [MRG](/mrg/)
 
@@ -62,7 +62,7 @@ El sector modifica:
 
 ## 3 · Industria y manufactura
 
-Es el **origen natural** de Maintix — experiencia industrial en Colombia (INR).
+Es el **origen natural** de Roustix — experiencia industrial en Colombia (INR).
 
 ### Dolor
 
@@ -202,7 +202,7 @@ Empresas que necesitan controlar **múltiples bodegas**, alto volumen de SKUs y 
 
 ### Valor
 
-Maintix ayuda a mantener **una única fuente de información** entre bodega, ventas y gerencia.
+Roustix ayuda a mantener **una única fuente de información** entre bodega, ventas y gerencia.
 
 **Mensaje comercial:**
 
@@ -282,7 +282,7 @@ Comenzar por el mayor dolor
 
 ## 11 · Posicionamiento
 
-Maintix **no compite por industria**. **Compite por resolver operaciones.**
+Roustix **no compite por industria**. **Compite por resolver operaciones.**
 
 | ❌ Conversación incorrecta | ✅ Conversación correcta |
 |---------------------------|--------------------------|
@@ -325,7 +325,7 @@ Este capítulo se considera **implementado** cuando:
 
 ## Filosofía del capítulo
 
-Maintix **no cambia** según la industria.
+Roustix **no cambia** según la industria.
 
 Lo que cambia es la **forma de explicar el mismo valor**.
 
@@ -355,4 +355,4 @@ Cada sector tiene un lenguaje distinto, pero todos buscan exactamente lo mismo:
 
 ---
 
-*MCM-03-MARKETS · Maintix Commercial Manual · Sprint 11 · 2026*
+*MCM-03-MARKETS · Roustix Commercial Manual · Sprint 11 · 2026*

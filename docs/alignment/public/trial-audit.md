@@ -13,7 +13,7 @@
 | ¿Flujo trial existe? | ✅ Wizard 4 pasos |
 | ¿Duración MCM-06? | **15 días** |
 | ¿Default producto? | ✅ `trial_dias` default **15** (`REGLAS_DEFAULT`) |
-| ¿Copy Maintix? | ✅ Wizard alineado MCM-06 · sin «Mantis» en recorrido |
+| ¿Copy Roustix? | ✅ Wizard alineado MCM-06 · sin «Mantis» en recorrido |
 
 ---
 
@@ -37,7 +37,7 @@
 |----------|--------|
 | Tagline trial {{ trial_dias }} días | ✅ |
 | Banner «un módulo primero» | ✅ |
-| Maintix Maintenance / Inventory | ✅ |
+| Roustix Maintenance / Inventory | ✅ |
 | CTA final «Comenzar prueba gratuita» | ✅ |
 | Enlaces demo · FAQ en footer | ✅ |
 | Plan Start · 1 módulo en copy paso 4 | ✅ |

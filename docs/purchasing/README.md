@@ -1,4 +1,4 @@
-# Sprint 16 · Maintix Purchasing
+# Sprint 16 · Roustix Purchasing
 
 **Estado:** Sprint 16.0–16.5 ✅ · Purchasing operativo
 **Módulo:** `purchasing` · **Prefijo técnico:** `Pur` · **MRG:** MRG-04-PUR

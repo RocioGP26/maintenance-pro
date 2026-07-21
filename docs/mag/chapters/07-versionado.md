@@ -10,7 +10,7 @@
 
 ## Objetivo del capítulo
 
-Definir la **estrategia oficial de versionado** de la API Maintix, garantizando que las integraciones existentes continúen funcionando mientras la plataforma evoluciona.
+Definir la **estrategia oficial de versionado** de la API Roustix, garantizando que las integraciones existentes continúen funcionando mientras la plataforma evoluciona.
 
 El objetivo del versionado no es permitir múltiples APIs diferentes, sino ofrecer una **evolución controlada** del contrato público.
 
@@ -32,7 +32,7 @@ El contrato evoluciona de forma **predecible**.
 
 ## 2 · Estrategia oficial
 
-Maintix versiona la API mediante la **URL**:
+Roustix versiona la API mediante la **URL**:
 
 ```
 /api/v1/
@@ -50,7 +50,7 @@ POST /api/v1/auth/login
 
 - headers (`Accept-Version`, etc.)
 - query string (`?version=1`)
-- media types (`application/vnd.maintix.v1+json`)
+- media types (`application/vnd.roustix.v1+json`)
 
 → [MAG-05 · §11 Versionado](05-convenciones-nombres.md#11--versionado)
 
@@ -266,9 +266,9 @@ Este capítulo se considera **implementado** cuando:
 
 ## Filosofía del capítulo
 
-Una API estable permite que las integraciones duren **años**. El versionado protege esa estabilidad, haciendo posible que Maintix evolucione sin obligar a sus clientes a reescribir integraciones en cada actualización.
+Una API estable permite que las integraciones duren **años**. El versionado protege esa estabilidad, haciendo posible que Roustix evolucione sin obligar a sus clientes a reescribir integraciones en cada actualización.
 
-**MAG-07 define el ciclo de vida del contrato público de Maintix** — compatibilidad, migraciones controladas y evolución predecible.
+**MAG-07 define el ciclo de vida del contrato público de Roustix** — compatibilidad, migraciones controladas y evolución predecible.
 
 ---
 

@@ -139,7 +139,7 @@
 ## [1.0.0] — 2026-07-10 · Sprint 8 completo
 
 ### Added
-- **MAG v1.0** — Maintix API Guide (10 capítulos)
+- **MAG v1.0** — Roustix API Guide (10 capítulos)
 - Catálogo HTML `/mag/`
 - Códigos MAG-01-PHIL … MAG-10-LIM
 - Contrato `/api/v1` · migración desde rutas legacy documentada

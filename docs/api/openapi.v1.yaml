@@ -1,19 +1,19 @@
 openapi: 3.1.0
 info:
-  title: Maintix API
+  title: Roustix API
   version: 1.0.0
   description: |
-    Contrato oficial Maintix API v1 — fuente machine-readable alineada a MAG v1.0.
+    Contrato oficial Roustix API v1 — fuente machine-readable alineada a MAG v1.0.
     MAG describe la API para personas; OpenAPI describe la misma API para herramientas.
   contact:
-    name: Maintix Developer Support
-    url: https://developer.maintix.app
+    name: Roustix Developer Support
+    url: https://developer.roustix.app
   license:
     name: Proprietary
-    url: https://maintix.app/terms
+    url: https://roustix.app/terms
 
 servers:
-  - url: https://api.maintix.app/api/v1
+  - url: https://api.roustix.app/api/v1
     description: Producción
   - url: http://127.0.0.1:5000/api/v1
     description: Desarrollo local
@@ -43,7 +43,7 @@ paths:
   /version:
     get:
       tags: [System]
-      summary: Consultar versión de Maintix
+      summary: Consultar versión de Roustix
       operationId: systemVersion
       security: []
       responses:
@@ -434,7 +434,7 @@ components:
       properties:
         application:
           type: string
-          const: Maintix
+          const: Roustix
         version:
           type: string
           pattern: '^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)'

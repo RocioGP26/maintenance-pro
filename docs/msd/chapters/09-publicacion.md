@@ -10,7 +10,7 @@
 
 ## Objetivo del capítulo
 
-Definir el proceso oficial de **publicación, distribución y mantenimiento** de los artefactos para desarrolladores de Maintix: documentación, OpenAPI, SDK, CLI y colecciones.
+Definir el proceso oficial de **publicación, distribución y mantenimiento** de los artefactos para desarrolladores de Roustix: documentación, OpenAPI, SDK, CLI y colecciones.
 
 **MSD-09 establece el ciclo de vida del ecosistema de desarrollo**, garantizando que todos los componentes evolucionen de forma sincronizada con MAG y con cada versión de la plataforma.
 
@@ -22,7 +22,7 @@ Publicar no es subir archivos.
 
 Es **distribuir un ecosistema coherente**.
 
-Cada versión de Maintix debe publicar simultáneamente:
+Cada versión de Roustix debe publicar simultáneamente:
 
 ```
 Código / MAG
@@ -57,10 +57,10 @@ Cada versión publica los siguientes componentes:
 | **SDK Python** | ✅ Estrategia MSD-04 | 📋 PyPI pendiente |
 | **SDK JavaScript** | ✅ Estrategia MSD-04 | 📋 npm pendiente |
 | **SDK PHP** | ✅ Estrategia MSD-04 | 📋 Packagist pendiente |
-| **Maintix CLI** | ✅ Estrategia MSD-05 | 📋 PyPI pendiente |
+| **Roustix CLI** | ✅ Estrategia MSD-05 | 📋 PyPI pendiente |
 | **Colección Postman** | ✅ Snapshot v1 | 🟢 `docs/api/collections/` |
 | **Colección Insomnia** | ✅ Snapshot v1 | 🟢 `docs/api/collections/` |
-| **Developer Portal** | ✅ MSD-02 | 🟡 `/msd/` · 📋 `developer.maintix.app` |
+| **Developer Portal** | ✅ MSD-02 | 🟡 `/msd/` · 📋 `developer.roustix.app` |
 
 Todos siguen el **mismo número de versión del ecosistema** cuando se publiquen paquetes (`1.x` ↔ MAG v1).
 
@@ -70,13 +70,13 @@ Todos siguen el **mismo número de versión del ecosistema** cuando se publiquen
 
 | Artefacto | Plataforma |
 |-----------|------------|
-| SDK Python | **PyPI** (`maintix`) |
-| SDK JavaScript | **npm** (`@maintix/sdk`) |
-| SDK PHP | **Packagist** (`maintix/sdk`) |
-| CLI | **PyPI** (`maintix-cli`) |
+| SDK Python | **PyPI** (`roustix`) |
+| SDK JavaScript | **npm** (`@roustix/sdk`) |
+| SDK PHP | **Packagist** (`roustix/sdk`) |
+| CLI | **PyPI** (`roustix-cli`) |
 | OpenAPI | Repositorio + `GET /api/v1/openapi.json` |
 | Colecciones | `docs/api/collections/` + Portal |
-| Documentación | **Developer Portal** · Maintix Docs |
+| Documentación | **Developer Portal** · Roustix Docs |
 
 ---
 
@@ -90,7 +90,7 @@ Todos los componentes siguen el contrato definido en [MAG-07](/mag/chapters/07-v
 | OpenAPI | **v1** (`info.version: 1.0.0`) |
 | SDK | **1.x** |
 | CLI | **1.x** |
-| Colecciones | **v1** (`Maintix API v1`) |
+| Colecciones | **v1** (`Roustix API v1`) |
 | MSD (docs) | **v1.0.0** |
 
 **No pueden existir** SDK o CLI oficiales incompatibles con la versión vigente de MAG.
@@ -100,7 +100,7 @@ Todos los componentes siguen el contrato definido en [MAG-07](/mag/chapters/07-v
 ## 5 · Flujo de publicación
 
 ```
-Nueva versión Maintix
+Nueva versión Roustix
           │
           ▼
    Actualizar MAG
@@ -162,7 +162,7 @@ Cada publicación incorpora un **historial de cambios**.
 **Ejemplo:**
 
 ```
-Maintix SDK 1.2.0
+Roustix SDK 1.2.0
 
 + Nuevo módulo Inventory
 + Nuevos endpoints Work Orders
@@ -202,7 +202,7 @@ MAG v1
 Los desarrolladores disponen de un **único punto de acceso**:
 
 ```
-https://developer.maintix.app
+https://developer.roustix.app
 ```
 
 **Local (transitorio):** http://127.0.0.1:5000/msd/
@@ -287,7 +287,7 @@ Este capítulo se considera **implementado** cuando:
 
 Una plataforma moderna no termina en su API. Su verdadero valor aparece cuando cualquier desarrollador puede **descubrirla, instalar sus herramientas, integrarlas y mantenerlas** con confianza.
 
-**MSD-09 cierra el ecosistema para desarrolladores de Maintix**, unificando documentación, OpenAPI, SDK, CLI, Sandbox y Portal bajo un proceso de publicación coherente, automatizado y versionado.
+**MSD-09 cierra el ecosistema para desarrolladores de Roustix**, unificando documentación, OpenAPI, SDK, CLI, Sandbox y Portal bajo un proceso de publicación coherente, automatizado y versionado.
 
 ---
 
@@ -323,7 +323,7 @@ Una plataforma moderna no termina en su API. Su verdadero valor aparece cuando c
 
 **Sprint 9 (MSD v1.0) queda 100% completado en documentación.**
 
-Con este sprint, Maintix dispone de un **ecosistema completo para desarrolladores** — comparable a plataformas SaaS consolidadas:
+Con este sprint, Roustix dispone de un **ecosistema completo para desarrolladores** — comparable a plataformas SaaS consolidadas:
 
 - contrato API (**MAG v1.0**)
 - especificación **OpenAPI 3.1**
@@ -335,4 +335,4 @@ MAG describe el contrato. **MSD entrega la experiencia.**
 
 ---
 
-→ [Índice MSD](/msd/) · [MAG v1.0](/mag/) · [Maintix Docs](/docs/)
+→ [Índice MSD](/msd/) · [MAG v1.0](/mag/) · [Roustix Docs](/docs/)

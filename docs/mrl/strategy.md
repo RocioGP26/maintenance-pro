@@ -2,7 +2,7 @@
 
 ## Objetivo
 
-**Maintix Report Language v1.0** — estándar único para PDF, Excel, CSV y documentos impresos.
+**Roustix Report Language v1.0** — estándar único para PDF, Excel, CSV y documentos impresos.
 
 ## Posición en la suite
 

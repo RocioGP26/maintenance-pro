@@ -1,5 +1,5 @@
 /**
- * MDL 1.0 — Maintix Design Language · Design Tokens
+ * MDL 1.0 — Roustix Design Language · Design Tokens
  * Fuente de verdad para componentes mtx-*
  * Regla: nunca valores sueltos — siempre var(--mdl-*)
  */
@@ -57,7 +57,7 @@
   --mdl-bp-xl: 1280px;
   --mdl-bp-2xl: 1536px;
 
-  /* ── Maintix Motion ── */
+  /* ── Roustix Motion ── */
   --mdl-duration-hover: 150ms;
   --mdl-duration-fade: 200ms;
   --mdl-duration-modal: 250ms;

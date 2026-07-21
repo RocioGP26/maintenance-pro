@@ -19,7 +19,7 @@
 
 ## Contexto
 
-Atiende clientes en tiempo real. Maintix compite con la velocidad del papel y la confianza del cliente — **no puede hacer esperar al comprador**.
+Atiende clientes en tiempo real. Roustix compite con la velocidad del papel y la confianza del cliente — **no puede hacer esperar al comprador**.
 
 ## Objetivos
 
@@ -30,7 +30,7 @@ Atiende clientes en tiempo real. Maintix compite con la velocidad del papel y la
 
 ## Necesidades UX
 
-| Necesidad | Cómo la responde Maintix |
+| Necesidad | Cómo la responde Roustix |
 |-----------|--------------------------|
 | Flujo continuo | Cliente → productos → pago en una secuencia |
 | Stock visible | Badge «disponible / agotado» en línea de venta |

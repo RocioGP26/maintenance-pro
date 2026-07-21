@@ -1,4 +1,4 @@
-# Release Notes · Maintix Documentation
+# Release Notes · Roustix Documentation
 
 **Suite docs 10** — historial de versiones del **producto documental**.
 
@@ -7,7 +7,7 @@
 
 ---
 
-## Suite · Maintix Documentation
+## Suite · Roustix Documentation
 
 | Versión | Fecha | Tag Git | Notas |
 |---------|-------|---------|-------|
@@ -34,7 +34,7 @@ Registro de versiones: [VERSIONS.md](../VERSIONS.md)
 
 ## Producto (aplicación)
 
-Release notes de la app Maintix → planificado (semver app + migraciones Alembic).
+Release notes de la app Roustix → planificado (semver app + migraciones Alembic).
 
 ---
 

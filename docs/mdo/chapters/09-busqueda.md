@@ -12,7 +12,7 @@
 
 ## Objetivo del capítulo
 
-Definir cómo los usuarios **encuentran información** en Maintix Docs: búsqueda global, índices, tags, cross-references, URLs permanentes y estrategias anti-duplicación.
+Definir cómo los usuarios **encuentran información** en Roustix Docs: búsqueda global, índices, tags, cross-references, URLs permanentes y estrategias anti-duplicación.
 
 ---
 
@@ -131,7 +131,7 @@ Para portal público futuro:
 
 | Práctica |
 |----------|
-| Título único por página: `{Código} · {Título} · Maintix Docs` |
+| Título único por página: `{Código} · {Título} · Roustix Docs` |
 | Meta description desde objetivo del capítulo |
 | URLs legibles: `/mrg/chapters/03-inventario` |
 | `lang="es"` en HTML |
@@ -152,7 +152,7 @@ Para portal público futuro:
 Ejemplo estable:
 
 ```
-https://docs.maintix.com/mdo/chapters/09-busqueda
+https://docs.roustix.com/mdo/chapters/09-busqueda
 ```
 
 ---

@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}Asset Health — {{ app_name }}{% endblock %}
+{% block page_title %}Asset Health{% endblock %}
+{% block header_toolbar %}
+{% if can_refresh %}<form method="post" action="{{ url_for('asset_health.refresh') }}">{% include "_csrf.html" %}<button class="btn btn-outline-primary btn-sm"><i class="bi bi-arrow-repeat me-1"></i>Actualizar snapshots</button></form>{% endif %}
+{% endblock %}
+{% block content %}
+<div class="alert alert-light border small text-muted mb-3" role="note">
+  Esta es una evaluación actual. Solo el factor de confiabilidad considera los
+  correctivos de los últimos 90 días; los demás factores utilizan el estado, las
+  OT pendientes, las incidencias abiertas y las lecturas vigentes.
+</div>
+<div class="row g-3 mb-4">
+  <div class="col-sm-4"><div class="card card-dashboard h-100"><div class="card-body"><div class="text-muted small">Salud promedio</div><div class="display-6 fw-semibold">{{ health.average if health.average is not none else '—' }}{% if health.average is not none %}<small class="fs-6">/100</small>{% endif %}</div></div></div></div>
+  <div class="col-sm-4"><div class="card card-dashboard h-100"><div class="card-body"><div class="text-muted small">Confianza promedio</div><div class="display-6 fw-semibold">{{ health.confidence if health.confidence is not none else '—' }}{% if health.confidence is not none %}<small class="fs-6">%</small>{% endif %}</div></div></div></div>
+  <div class="col-sm-4"><div class="card card-dashboard h-100"><div class="card-body"><div class="text-muted small">En riesgo o críticos</div><div class="display-6 fw-semibold text-danger">{{ health.counts.at_risk + health.counts.critical }}</div></div></div></div>
+</div>
+
+<div class="card card-dashboard mb-3"><div class="card-body"><form class="row g-2">
+  <div class="col-md-5"><input class="form-control" name="q" value="{{ q }}" placeholder="Buscar activo, código o ubicación"></div>
+  <div class="col-md-3"><select class="form-select" name="band"><option value="">Todas las bandas</option>{% for key, meta in band_meta.items() %}<option value="{{ key }}" {% if band_filter == key %}selected{% endif %}>{{ meta.label }}</option>{% endfor %}</select></div>
+  <div class="col-md-2"><select class="form-select" name="criticality"><option value="">Toda criticidad</option>{% for key in ['baja','media','alta','critica'] %}<option value="{{ key }}" {% if criticality_filter == key %}selected{% endif %}>{{ key|title }}</option>{% endfor %}</select></div>
+  <div class="col-md-2 d-grid"><button class="btn btn-primary">Filtrar</button></div>
+</form></div></div>
+
+<div class="card card-dashboard"><div class="table-responsive"><table class="table table-hover align-middle mb-0">
+  <thead><tr><th>Activo</th><th>Salud</th><th>Confianza</th><th>Factor más débil</th><th>Motivo principal</th><th></th></tr></thead>
+  <tbody>{% for item in items %}{% set weakest = item.factors|sort(attribute='score')|first %}<tr>
+    <td><strong>{{ item.machine.codigo }}</strong><div class="small text-muted">{{ item.machine.nombre }} · {{ item.machine.ubicacion or 'Sin ubicación' }}</div></td>
+    <td><span class="badge text-bg-{{ item.tone }}">{{ item.band_label }}</span><div class="fw-semibold mt-1">{{ item.score }}/100</div></td>
+    <td><div class="progress" style="height:.55rem;min-width:7rem"><div class="progress-bar" style="width:{{ item.confidence }}%"></div></div><small>{{ item.confidence }}%</small></td>
+    <td>{{ weakest.label }} <strong>{{ weakest.score }}</strong><div class="small text-muted">Peso {{ weakest.weight }}%</div></td>
+    <td class="small">{{ item.reasons[0] if item.reasons else 'Sin señales adversas' }}</td>
+    <td><a class="btn btn-sm btn-outline-primary" href="{{ url_for('asset_health.detail', machine_id=item.machine.id) }}">Analizar</a></td>
+  </tr>{% else %}<tr><td colspan="6" class="text-center text-muted py-5">No hay activos para los filtros seleccionados.</td></tr>{% endfor %}</tbody>
+</table></div></div>
+{% endblock %}

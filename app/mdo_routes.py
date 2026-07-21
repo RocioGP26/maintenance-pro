@@ -1,4 +1,4 @@
-"""Sirve MDO (docs/mdo/) — Maintix Documentation Operations en /mdo/."""
+"""Sirve MDO (docs/mdo/) — Roustix Documentation Operations en /mdo/."""
 
 from __future__ import annotations
 

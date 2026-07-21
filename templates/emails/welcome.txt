@@ -1,5 +1,5 @@
 Hola {{ user.etiqueta() }},
 
-¡Bienvenido a Maintix! El correo de {{ empresa.razon_social }} quedó confirmado y tu cuenta ya está habilitada.
+¡Bienvenido a Roustix! El correo de {{ empresa.razon_social }} quedó confirmado y tu cuenta ya está habilitada.
 
 Ya puedes iniciar sesión con tu usuario {{ user.username }} y comenzar a configurar la operación.

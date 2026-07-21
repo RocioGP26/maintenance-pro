@@ -30,7 +30,7 @@ Configura la empresa una vez y mantiene el sistema vivo: usuarios, permisos, sec
 
 ## Necesidades UX
 
-| Necesidad | Cómo la responde Maintix |
+| Necesidad | Cómo la responde Roustix |
 |-----------|--------------------------|
 | Wizard guiado | Onboarding paso a paso, no formulario único |
 | Seguridad visible | Roles IAM explícitos, sin sorpresas |

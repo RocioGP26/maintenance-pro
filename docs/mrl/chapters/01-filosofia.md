@@ -2,7 +2,7 @@
 
 **Código:** MRL-01-PHIL · Sprint 7.1
 
-> Los reportes son parte del producto. Un PDF no es un archivo adjunto — es una **extensión de Maintix**.
+> Los reportes son parte del producto. Un PDF no es un archivo adjunto — es una **extensión de Roustix**.
 
 ---
 
@@ -15,7 +15,7 @@ Sin estándar, cada módulo inventa:
 - KPIs en formatos aleatorios
 - Tipografías y márgenes inconsistentes
 
-El usuario reconoce Maintix en pantalla (MDL) pero **no en el PDF** que imprime o envía por correo.
+El usuario reconoce Roustix en pantalla (MDL) pero **no en el PDF** que imprime o envía por correo.
 
 ---
 
@@ -36,7 +36,7 @@ El usuario reconoce Maintix en pantalla (MDL) pero **no en el PDF** que imprime 
 
 | ❌ Mentalidad antigua | ✅ Mentalidad MRL |
 |----------------------|-------------------|
-| «Hacer un PDF que funcione» | «Generar un documento Maintix» |
+| «Hacer un PDF que funcione» | «Generar un documento Roustix» |
 | Estilo por desarrollador | Estilo por **MRL** |
 | Copiar/pegar estilos ReportLab | Bloques `MRL-HDR-001`, `MRL-TBL-001` |
 | Solo pantalla importa | Pantalla **y** papel cuentan la misma historia |
@@ -50,7 +50,7 @@ El usuario reconoce Maintix en pantalla (MDL) pero **no en el PDF** que imprime 
 | Cliente (factura, cotización) | Confianza, claridad, marca seria |
 | Gerente (ejecutivo, KPIs) | Decisiones rápidas, datos legibles |
 | Técnico (OT, activo) | Información completa, sin adornos |
-| Auditor (auditoría, export) | Trazabilidad, fecha, origen Maintix |
+| Auditor (auditoría, export) | Trazabilidad, fecha, origen Roustix |
 
 ---
 

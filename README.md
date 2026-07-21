@@ -1,4 +1,4 @@
-# Maintix — Enterprise Management Platform
+# Roustix — Enterprise Management Platform
 
 Plataforma web para operación empresarial: activos, órdenes de trabajo, inventario, ventas y dashboard por sector.
 
@@ -12,9 +12,16 @@ Plataforma web para operación empresarial: activos, órdenes de trabajo, invent
 
 ## Filosofía de desarrollo
 
-Cada nueva funcionalidad desarrollada para Maintix deberá cumplir las **cinco UX Laws** (MUX) antes de ser considerada lista para producción.
+Cada nueva funcionalidad desarrollada para Roustix deberá cumplir las **cinco UX Laws** (MUX) antes de ser considerada lista para producción.
 
 **Si una funcionalidad incumple una sola ley, deberá rediseñarse antes del merge.**
+
+## Identidad y compatibilidad
+
+La marca oficial del producto es **Roustix**. Los códigos documentales existentes
+(`MBB`, `MDL`, `MUX`, `MPA`, `MAG`, `MSD`, `MDO`, `MRG`, `MRL`) y el prefijo
+histórico `MTX-*` se conservan como identificadores técnicos estables. No deben
+renombrarse sin una migración versionada de rutas, documentos y contratos.
 
 | Ley | Regla |
 |-----|-------|
@@ -145,13 +152,13 @@ requirements.txt
 - Dashboard con KPIs y planeación mensual preventiva
 - Configuración de empresa (logo, jornada laboral, moneda)
 
-## Documentación · Maintix Documentation Suite
+## Documentación · Roustix Documentation Suite
 
 **Índice maestro:** http://127.0.0.1:5000/docs/
 
 | # | Código | Proyecto | URL local |
 |---|--------|----------|-----------|
-| — | — | **Maintix Docs** (índice) | http://127.0.0.1:5000/docs/ |
+| — | — | **Roustix Docs** (índice) | http://127.0.0.1:5000/docs/ |
 | 01 | **MBB** | Brand Book | http://127.0.0.1:5000/brandbook/ |
 | 02 | **MDL** | Design Language | http://127.0.0.1:5000/mdl/ |
 | 03 | **MUX** | User Experience | http://127.0.0.1:5000/mux/ |
@@ -168,7 +175,7 @@ requirements.txt
 ### Técnica
 
 - [Arquitectura por sectores](docs/arquitectura-sectores.md)
-- [Brand Book textual v1](docs/brand-book-maintix.md)
+- [Brand Book textual v1](docs/brand-book-roustix.md)
 
 ## Licencia
 

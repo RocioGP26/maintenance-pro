@@ -1,9 +1,9 @@
-# Ecosistema Maintix · Documentation Suite
+# Ecosistema Roustix · Documentation Suite
 
 **Índice:** [/docs/](http://127.0.0.1:5000/docs/)
 
 ```
-MAINTIX DOCS · Sprint 13
+ROUSTIX DOCS · Sprint 13
 ├── 01 Brand Book (MBB)     ✅ v2.0 · Congelado
 ├── 02 MDL                  ✅ v1.0 · Congelado
 ├── 03 MUX                  ✅ v1.2 · Congelado

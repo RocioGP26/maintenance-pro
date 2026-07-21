@@ -4,7 +4,7 @@
 
 > Una identidad. Un token. Una empresa.
 
-Toda petición autenticada a Maintix se realiza mediante **JSON Web Token (JWT)**. El token identifica al usuario, la empresa (tenant) y el rol, evitando que el cliente tenga que enviar información sensible en cada solicitud.
+Toda petición autenticada a Roustix se realiza mediante **JSON Web Token (JWT)**. El token identifica al usuario, la empresa (tenant) y el rol, evitando que el cliente tenga que enviar información sensible en cada solicitud.
 
 La autenticación no solo valida quién es el usuario; también determina **qué empresa está usando**, **qué módulos tiene activos** y **qué permisos posee**.
 
@@ -31,7 +31,7 @@ Cliente almacena token
 Authorization: Bearer <token>
    │
    ▼
-API Maintix
+API Roustix
 ```
 
 ---
@@ -146,7 +146,7 @@ El servidor **nunca** confía en `empresa_id` enviado en query o body si contrad
 
 ### Claims reservados
 
-Maintix reserva los siguientes claims para futuras versiones. **No deben ser usados por integradores:**
+Roustix reserva los siguientes claims para futuras versiones. **No deben ser usados por integradores:**
 
 | Claim | Uso previsto |
 |-------|--------------|
@@ -237,7 +237,7 @@ En la versión actual el cliente **elimina el token almacenado**. En futuras ver
 
 La autenticación **no concede permisos por sí sola**.
 
-Después de validar el token, Maintix verifica:
+Después de validar el token, Roustix verifica:
 
 1. Que el usuario exista
 2. Que la empresa esté activa
@@ -253,7 +253,7 @@ Solo entonces se procesa la petición.
 
 | Modo | Uso |
 |------|-----|
-| **Cookie de sesión** | App web Maintix (Flask-Login) |
+| **Cookie de sesión** | App web Roustix (Flask-Login) |
 | **JWT Bearer** | Integraciones, scripts, partners |
 
 `@tenant_required` acepta ambos: JWT en header o sesión activa.
@@ -262,7 +262,7 @@ Solo entonces se procesa la petición.
 
 ## 12 · Filosofía del capítulo
 
-El JWT no solo identifica al usuario. Identifica el **contexto completo de operación**: empresa, plan, módulos y permisos. Cada solicitud a Maintix ocurre dentro de ese contexto.
+El JWT no solo identifica al usuario. Identifica el **contexto completo de operación**: empresa, plan, módulos y permisos. Cada solicitud a Roustix ocurre dentro de ese contexto.
 
 ---
 
