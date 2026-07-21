@@ -7,12 +7,12 @@
 | Producto | Versión actual | Fuente canónica | Changelog | Tag Git |
 |---|---:|---|---|---|
 | **Aplicación Flask** | **v1.0.6** | [`app/version.py`](../app/version.py) | [`CHANGELOG.md`](../CHANGELOG.md) | `v1.0.0` *(pendiente de publicar)* |
-| **Suite documental** | **v1.21.0** | Este archivo | [changelog.md](changelog.md) | `docs-vX.Y` |
+| **Suite documental** | **v1.22.0** | Este archivo | [changelog.md](changelog.md) | `docs-vX.Y` |
 
 La aplicación y la documentación son productos versionados de forma
 independiente. Flujo de release del software: [APP_VERSIONING.md](APP_VERSIONING.md).
 
-**Suite actual:** **v1.21.0** (Sprint 21 · Asset Health avanzado)
+**Suite actual:** **v1.22.0** (Sprint 22.0 · API pública y Webhooks · contrato)
 **Últimos tags:** `docs-v1.0` · `docs-foundation-1.0` (recomendado)
 
 ---
@@ -21,6 +21,7 @@ independiente. Flujo de release del software: [APP_VERSIONING.md](APP_VERSIONING
 
 | Versión | Fecha | Tag Git | Notas |
 |---------|-------|---------|-------|
+| **v1.22.0** | 2026-07-21 | *(pendiente)* | **API pública y Webhooks** · diseño y contrato Sprint 22.0 |
 | **v1.21.0** | 2026-07-21 | *(pendiente)* | **Asset Health** · puntaje explicable, confianza e historial |
 | **v1.20.0** | 2026-07-21 | *(pendiente)* | **Maintenance Automation** · reglas, acciones e idempotencia |
 | **v1.19.5** | 2026-07-21 | *(pendiente)* | **Maintenance Execution** · medidores, lecturas y cierre Sprint 19 |

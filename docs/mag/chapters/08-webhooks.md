@@ -191,14 +191,15 @@ Claves en **inglés** — envelope alineado con MAG-04/MAG-05.
 Cada entrega incluye:
 
 ```http
-X-Roustix-Signature: sha256=6f9c...
+X-Roustix-Timestamp: 1784664930
+X-Roustix-Signature: v1=6f9c...
 ```
 
 | Aspecto | Valor |
 |---------|-------|
 | Algoritmo | **HMAC-SHA256** |
 | Secreto | Compartido en registro del webhook |
-| Input | Raw body JSON (bytes exactos recibidos) |
+| Input | `timestamp + "." + raw body JSON` |
 
 ```
 Payload JSON
@@ -213,7 +214,8 @@ SHA256
 Header Signature
 ```
 
-El receptor **debe** validar la firma antes de procesar el evento.
+El receptor **debe** validar la firma en tiempo constante y rechazar timestamps
+con más de cinco minutos de diferencia antes de procesar el evento.
 
 → [MPA-07 · Seguridad](/mpa/chapters/07-seguridad.md)
 
@@ -225,7 +227,8 @@ El receptor **debe** validar la firma antes de procesar el evento.
 |-------------------|--------|
 | **2xx** | Entregado · no reintentar |
 | **5xx** · timeout · network error | Reintento automático |
-| **4xx** | **No** reintentar · marcar fallo |
+| **408**, **425**, **429** | Reintentar; respetar `Retry-After` acotado |
+| Otros **4xx** | **No** reintentar · marcar fallo |
 
 | Intento | Espera |
 |---------|--------|
@@ -244,7 +247,7 @@ Tras el intento 5 → estado **`FAILED`** · registrado · notificación al admi
 Cada evento posee un identificador único:
 
 ```http
-X-Event-Id: 6a1d92b4-8c3e-4f1a-9d2b-1e7f8a9b0c1d
+X-Roustix-Event-Id: 6a1d92b4-8c3e-4f1a-9d2b-1e7f8a9b0c1d
 ```
 
 El cliente debe almacenar ese ID para **no procesar dos veces** el mismo evento. Esto permite reintentos seguros.
@@ -273,7 +276,8 @@ Cambios incompatibles de payload → política [MAG-07](07-versionado.md).
 POST https://empresa.com/webhooks/roustix
 Content-Type: application/json
 X-Roustix-Signature: sha256=...
-X-Event-Id: 89fd...
+X-Roustix-Timestamp: 1784664930
+X-Roustix-Event-Id: 89fd...
 ```
 
 ```json
@@ -310,7 +314,7 @@ Todos los envíos quedan registrados.
 - respuesta HTTP
 - tiempo de respuesta
 - cantidad de reintentos
-- `X-Event-Id`
+- `X-Roustix-Event-Id`
 
 **No se almacena** información sensible del payload cuando el plan de retención lo prohíba.
 
@@ -325,7 +329,7 @@ Alineado con [MAG-06 · Auditoría de errores](06-manejo-errores.md) y MPA-07.
 | 1 | Validar siempre `X-Roustix-Signature` |
 | 2 | Responder rápidamente (≤ 5 s) |
 | 3 | Procesar de forma asíncrona cuando sea posible |
-| 4 | Implementar idempotencia usando `X-Event-Id` |
+| 4 | Implementar idempotencia usando `X-Roustix-Event-Id` |
 | 5 | No depender del orden de llegada de los eventos |
 | 6 | Responder **2xx** únicamente cuando el evento haya sido **aceptado** |
 | 7 | Registrar errores para facilitar soporte |
@@ -385,7 +389,7 @@ Una integración moderna no espera a que el cliente pregunte qué ocurrió. La p
 | Aspecto | Valor |
 |---------|-------|
 | **Contrato** | ✅ Definido |
-| **Implementación actual** | 📋 Planificada |
+| **Implementación actual** | 🟡 Contrato Sprint 22.0 · código previsto en 22.3 |
 | **Seguridad** | HMAC-SHA256 · `X-Roustix-Signature` |
 | **Compatibilidad** | API REST v1 |
 | **Siguiente capítulo** | [MAG-09 · Ejemplos y SDK](09-ejemplos.md) |

@@ -25,6 +25,7 @@
 | **Maintenance Execution** | Sprint 19 ✅ · procedimientos, checklist, evidencia, bitácora y medidores | Maintenance, MRG, MUX |
 | **Maintenance Automation** | Sprint 20 ✅ · disparadores por lecturas, avisos y creación gobernada de OT | Maintenance Execution, IAM |
 | **Asset Health** | Sprint 21 ✅ · puntaje explicable, confianza, señales e historial | Maintenance Execution, Automation |
+| **API pública y Webhooks** | Sprint 22.0 ✅ contrato · implementación 22.1–22.5 | MAG, tenancy, IAM, planes |
 | **CRM** | Clientes, pipeline, seguimiento comercial | Inventory |
 | **Sales Pro** | Cotizaciones, pedidos, facturación ligera | Inventory, CRM |
 | **Analytics** | KPIs cruzados, tendencias, export BI | Datos de todos los módulos activos |
@@ -44,8 +45,8 @@
 |--------------------|-------------|
 | **Finance** | CxC/CxP consolidado, conciliación, centros de costo |
 | **IAM avanzado** | SSO, SCIM, políticas por sede |
-| **Webhooks** | Eventos de plataforma para integradores |
-| **API pública** | Contratos estables documentados en MAG |
+| **Webhooks** | Sprint 22 · outbox, firma HMAC, entregas y reintentos |
+| **API pública** | Sprint 22 · credenciales, scopes y contratos estables MAG |
 
 ---
 

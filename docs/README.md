@@ -1,4 +1,4 @@
-# Roustix Documentation Suite · v1.21.0
+# Roustix Documentation Suite · v1.22.0
 
 **Producto documental independiente** del software de aplicación.
 
@@ -26,6 +26,7 @@ python run.py
 | Sprint 19 · Maintenance Execution | [maintenance-execution/README.md](maintenance-execution/README.md) |
 | Sprint 20 · Maintenance Automation | [maintenance-automation/README.md](maintenance-automation/README.md) |
 | Sprint 21 · Asset Health | [asset-health/README.md](asset-health/README.md) |
+| Sprint 22 · API pública y Webhooks | [api/README.md](api/README.md) |
 
 ---
 

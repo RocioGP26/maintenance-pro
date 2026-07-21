@@ -26,8 +26,8 @@
 | **Excel** | ✅ Inventory | Import/export productos, movimientos |
 | **PDF** | ✅ Ambos módulos | Reportes ReportLab — ver MRL (06) |
 | **WhatsApp** | 📋 Planificado | Alertas OT, avisos stock (LatAm crítico) |
-| **API REST** | 🟡 Interna | JWT tenancy API, admin API |
-| **Webhooks** | 📋 Planificado | `orden.creada`, `stock.bajo`, etc. |
+| **API REST** | 🟡 Sprint 22 | JWT existente; contrato público y API keys definidos en 22.0 |
+| **Webhooks** | 🟡 Sprint 22 | Contrato cerrado; implementación prevista en 22.3 |
 | **ERP** | 📋 Planificado | Siigo, Alegra, SAP B1 — por demanda sector |
 | **Power BI** | 📋 Planificado | Export datasets / API Analytics |
 
@@ -63,7 +63,7 @@ Reportes actuales incluyen órdenes de trabajo, inventario y listados operativos
 |-----|-----------|------|
 | Tenancy API | Integraciones por empresa | JWT |
 | Admin API | Automatización interna | Token admin |
-| API pública (futuro) | Partners | API key + OAuth |
+| API pública (Sprint 22) | Integraciones por empresa | API key con scopes; OAuth futuro |
 
 Documentación de contratos → **[MAG-04 Recursos](/mag/chapters/04-recursos.md)** · [MAG (07)](/mag/) · **SDK (08)**.
 

@@ -1,36 +1,41 @@
-# API · Referencia técnica Roustix
+# API pública y Webhooks · Sprint 22
 
-**Código:** MTX-API · Suite docs **07** (complemento MAG)
+**Estado:** Sprint 22.0 · Diseño y contrato finalizado
 
-Referencia **machine-readable** — complementa [MAG](../mag/README.md) (guía conceptual para integradores).
+**Implementación:** planificada desde Sprint 22.1
 
-## Contenido
+**Base canónica:** `/api/v1`
 
-| Sección | Descripción | Estado |
-|---------|-------------|--------|
-| [MAG v1.0](/mag/) | Guía completa API | ✅ Sprint 8 |
-| [MSD v1.0](/msd/) | SDK & Developer Portal | ✅ Sprint 9 completo |
-| OpenAPI 3.1 | `openapi.v1.yaml` · `/api/v1/openapi.json` | ✅ Core |
-| Colecciones | [collections/](collections/README.md) | ✅ Snapshot v1 |
-| Tenancy API | `app/tenancy/api_routes.py` | ✅ Parcial |
+Sprint 22 convierte la API tenant existente y el contrato MAG en una superficie
+pública, segura y operable. La documentación describe capacidades acordadas;
+solo `openapi.v1.yaml` identifica rutas ya expuestas o listas para consumo.
 
-## Rutas implementadas (legacy)
+## Documentos
 
-| Método | Ruta MAG v1 | MAG v1 equivalente |
-|--------|-------------|-------------------|
-| POST | `/api/auth/login` | `/api/v1/auth/login` |
-| GET | `/api/me` | `/api/v1/me` |
-| GET | `/api/activos` | `/api/v1/maintenance/assets` |
-| GET | `/api/activos/{id}` | `/api/v1/maintenance/assets/{id}` |
-| GET | `/api/admin/resumen` | `/api/v1/admin/summary` |
+| Documento | Propósito |
+|---|---|
+| [Charter](charter.md) | Objetivo, alcance, decisiones y Definition of Done |
+| [Arquitectura](architecture.md) | Componentes, aislamiento, outbox y observabilidad |
+| [Contrato API v1](api-contract.md) | Recursos, respuestas, filtros y errores |
+| [Autenticación, permisos y planes](permissions-plans.md) | JWT, API keys, scopes y derechos técnicos |
+| [Contrato de webhooks](webhooks.md) | Eventos, firma, entregas y reintentos |
+| [Roadmap](roadmap.md) | Sub-sprints 22.1–22.5 |
+| [Reporte Sprint 22.0](SPRINT22-REPORT.md) | Evidencia de cierre documental |
+| [Changelog](changelog.md) | Evolución del contrato Sprint 22 |
+| [OpenAPI actual](openapi.v1.yaml) | Especificación machine-readable vigente |
 
-## Relacionado
+## Situación inicial
 
-| Doc | Rol |
-|-----|-----|
-| [MAG](/mag/) | Contrato oficial · JWT · webhooks |
-| [MSD](/msd/) | Portal · SDK · OpenAPI · Sprint 9 |
-| [MPA-06](../mpa/chapters/06-integraciones.md) | Estrategia integraciones |
-| [SDK](../sdk/README.md) | Paquetes oficiales |
+- JWT y rutas `/api/v1` tenant-safe ya existen parcialmente.
+- Activos, OT y resumen administrativo tienen endpoints de lectura.
+- La API todavía mezcla respuestas legacy con el contrato MAG.
+- No existen credenciales dedicadas a integraciones ni entrega de webhooks.
+- Los planes actuales limitan principalmente activos; Sprint 22 añade derechos
+  técnicos sin acoplar el código a etiquetas comerciales.
 
-→ [Índice maestro](../README.md) · [/docs/](http://127.0.0.1:5000/docs/)
+## Fuentes relacionadas
+
+- [MAG · API Guide](../mag/README.md)
+- [MAG-08 · Webhooks](../mag/chapters/08-webhooks.md)
+- [MPA-06 · Integraciones](../mpa/chapters/06-integraciones.md)
+- [SDK](../sdk/README.md)
