@@ -94,5 +94,5 @@ Endpoint: `active`, `paused`, `disabled`.
 Entrega: `pending`, `processing`, `delivered`, `retry_scheduled`, `failed`.
 
 Una tarea `processing` abandonada vuelve a `pending` mediante lease con
-expiración. Los endpoints con fallos consecutivos generan alerta; la política de
-desactivación automática se configura en Sprint 22.3 y queda auditada.
+expiración. Los endpoints con fallos consecutivos se desactivan automáticamente
+tras el umbral configurado y quedan auditados.

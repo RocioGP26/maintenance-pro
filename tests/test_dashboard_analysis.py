@@ -111,6 +111,8 @@ class TestDashboardAnalysisSeparation(unittest.TestCase):
         self.assertIn("Análisis · Mantenimiento", html)
         self.assertIn("MTBF planta", html)
         self.assertIn("MTTR prom.", html)
+        self.assertIn("Estadísticas de los técnicos", html)
+        self.assertIn("Porcentaje completado", html)
         self.assertIn('action="/analisis/mantenimiento"', html)
 
     def test_sidebar_separates_start_and_analysis(self):

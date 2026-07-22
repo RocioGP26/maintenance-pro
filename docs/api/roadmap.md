@@ -9,7 +9,7 @@
 - firma, idempotencia, reintentos y SSRF;
 - derechos técnicos desacoplados del nombre comercial del plan.
 
-## 22.1 · Credenciales de integración
+## 22.1 · Credenciales de integración — finalizado
 
 - modelo y migración de API keys;
 - creación, listado, rotación y revocación;
@@ -17,36 +17,41 @@
 - middleware unificado JWT/API key;
 - scopes, auditoría y pruebas tenant-safe.
 
-## 22.2 · API pública Maintenance
+## 22.2 · API pública Maintenance — finalizado
 
-- convergencia de envelopes y errores;
-- activos y OT con filtros incrementales;
-- incidencias de lectura y creación;
-- medidores y registro idempotente de lecturas;
-- rate limit general y actualización de OpenAPI/colecciones.
+- envelopes y errores normalizados;
+- activos, OT, incidencias, medidores y lecturas;
+- `X-Request-Id`, paginación y filtros incrementales;
+- rate limit por identidad;
+- creación idempotente de incidencias y lecturas;
+- notificaciones por área; integración con automatizaciones y Asset Health;
+- migración `qy5n1p37u60f`; OpenAPI y colecciones Postman/Insomnia;
+- pruebas de contrato.
 
-## 22.3 · Webhooks
+## 22.3 · Webhooks — finalizado
 
 - endpoints y suscripciones;
 - outbox transaccional;
 - worker de entregas y leases;
 - HMAC, validación SSRF, reintentos e historial;
-- eventos iniciales de Maintenance y Asset Health.
+- eventos: incidencia creada/estado; OT creada/asignada/completada/cerrada;
+  lectura fuera de rango; cambio de Asset Health.
 
-## 22.4 · Derechos técnicos y observabilidad
+## 22.4 · Seguridad y observabilidad — finalizado
 
-- entitlements por catálogo/tenant;
-- límites de credenciales, solicitudes, endpoints y retención;
-- métricas, alertas, dashboard administrativo y reenvío manual;
-- matriz comercial aprobada para Trial, Start, Scale y Enterprise.
+- firma HMAC verificable y ventana temporal;
+- límites de solicitudes / credenciales / endpoints por entitlement;
+- registro de entregas, stats y retención;
+- reintentos y desactivación automática auditada;
+- protección de datos por tenant.
 
-## 22.5 · Integración y cierre
+## 22.5 · Documentación y cierre — finalizado
 
-- OpenAPI como contrato verificable;
-- Postman/Insomnia actualizados;
-- pruebas de carga y seguridad;
-- runbook operativo y recuperación;
-- alineación MAG, MPA, MSD, SDK y release.
+- documentación para integradores;
+- ejemplos curl/Python y receptor HMAC;
+- colección de pruebas Postman Sprint 22;
+- auditoría de credenciales y webhooks;
+- pruebas de aislamiento entre empresas.
 
 ## Dependencias desbloqueadas
 

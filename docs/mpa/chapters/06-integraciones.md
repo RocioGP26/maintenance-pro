@@ -26,8 +26,8 @@
 | **Excel** | ✅ Inventory | Import/export productos, movimientos |
 | **PDF** | ✅ Ambos módulos | Reportes ReportLab — ver MRL (06) |
 | **WhatsApp** | 📋 Planificado | Alertas OT, avisos stock (LatAm crítico) |
-| **API REST** | 🟡 Sprint 22 | JWT existente; contrato público y API keys definidos en 22.0 |
-| **Webhooks** | 🟡 Sprint 22 | Contrato cerrado; implementación prevista en 22.3 |
+| **API REST** | 🟢 Sprint 22 | 22.0–22.5 ✅ completo |
+| **Webhooks** | 🟢 Sprint 22 | Outbox, HMAC, reintentos, docs de integradores ✅ |
 | **ERP** | 📋 Planificado | Siigo, Alegra, SAP B1 — por demanda sector |
 | **Power BI** | 📋 Planificado | Export datasets / API Analytics |
 

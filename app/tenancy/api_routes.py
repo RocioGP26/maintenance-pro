@@ -2,12 +2,25 @@
 
 from __future__ import annotations
 
+from datetime import datetime
 from functools import wraps
 from typing import Any, Callable
 
 from flask import Blueprint, current_app, g, jsonify, make_response, request
 
 from app import limiter
+from app.integrations.authorization import scope_required
+from app.public_api.contract import (
+    PUBLIC_API_LIMIT,
+    ApiContractError,
+    api_error,
+    api_rate_key,
+    iso_utc,
+    pagination_meta,
+    parse_datetime_parameter,
+    parse_pagination,
+    success,
+)
 from app.models import Empresa, Machine, User, WorkOrder
 from app.modules import MODULO_MANTENIMIENTO, modulos_activos_de, modulos_mag_de
 from app.permissions import normalize_rol
@@ -64,6 +77,8 @@ def _empresa_actual() -> Empresa | None:
 def _require_maintenance_module():
     emp = _empresa_actual()
     if emp is None or MODULO_MANTENIMIENTO not in modulos_activos_de(emp):
+        if request.path.startswith("/api/v1"):
+            return api_error("MODULE_REQUIRED", "Módulo maintenance no activo para este tenant.", 403)
         return jsonify({"error": "Módulo maintenance no activo para este tenant"}), 403
     return None
 
@@ -89,6 +104,9 @@ def _asset_mag_item(m: Machine) -> dict[str, Any]:
         "critical": bool(m.es_critico),
         "location": m.ubicacion or "",
         "criticality": m.criticidad or "media",
+        "area": m.area or "",
+        "created_at": iso_utc(m.created_at),
+        "updated_at": iso_utc(m.updated_at),
     }
 
 
@@ -107,6 +125,9 @@ def _work_order_mag_item(wo: WorkOrder) -> dict[str, Any]:
         "type": wo.tipo,
         "status": _WO_STATUS_MAG.get(st, st),
         "priority": wo.prioridad,
+        "scheduled_date": wo.fecha_programada.isoformat() if wo.fecha_programada else None,
+        "created_at": iso_utc(wo.created_at),
+        "updated_at": iso_utc(wo.updated_at),
     }
 
 
@@ -172,49 +193,64 @@ def login():
     return _login_impl()
 
 
-def _me_impl():
+def _me_data():
     emp = _empresa_actual()
-    return jsonify(
-        {
-            "user_id": g.user_id,
-            "empresa_id": g.empresa_id,
-            "empresa_slug": g.empresa_slug,
-            "rol": g.user_rol,
-            "modules": modulos_mag_de(emp),
-        }
-    )
+    data = {
+        "identity_type": getattr(g, "auth_type", None),
+        "user_id": g.user_id,
+        "empresa_id": g.empresa_id,
+        "empresa_slug": g.empresa_slug,
+        "rol": g.user_rol,
+        "modules": modulos_mag_de(emp),
+    }
+    if getattr(g, "auth_type", None) == "api_key":
+        data["credential_id"] = g.integration_credential_id
+        data["scopes"] = list(g.api_scopes)
+    return data
 
 
 @tenancy_api_bp.route("/api/v1/me", methods=["GET"])
 @tenant_required
+@limiter.limit(PUBLIC_API_LIMIT, key_func=api_rate_key)
 def me_v1():
-    return _me_impl()
+    return success(_me_data())
 
 
 @tenancy_api_bp.route("/api/me", methods=["GET"])
 @tenant_required
 @_legacy_deprecation("/api/v1/me")
 def me():
-    return _me_impl()
+    return jsonify(_me_data())
 
 
 @tenancy_api_bp.route("/api/v1/maintenance/assets", methods=["GET"])
 @tenant_required
+@scope_required("maintenance.assets:read")
+@limiter.limit(PUBLIC_API_LIMIT, key_func=api_rate_key)
 def listar_assets_v1():
     denied = _require_maintenance_module()
     if denied:
         return denied
-    machines = query_tenant(Machine).order_by(Machine.codigo).all()
-    page = max(1, int(request.args.get("page", 1) or 1))
-    page_size = min(200, max(1, int(request.args.get("page_size", 50) or 50)))
-    total = len(machines)
-    start = (page - 1) * page_size
-    chunk = machines[start : start + page_size]
-    return jsonify(
-        {
-            "data": [_asset_mag_item(m) for m in chunk],
-            "meta": _pagination_meta(total, page, page_size),
-        }
+    page, page_size = parse_pagination({"status", "criticality", "area", "updated_since"})
+    query = query_tenant(Machine)
+    if request.args.get("status"):
+        reverse = {value: key for key, value in _ASSET_STATUS_MAG.items()}
+        value = request.args["status"].strip().lower()
+        query = query.filter(Machine.status == reverse.get(value, value))
+    if request.args.get("criticality"):
+        query = query.filter(Machine.criticidad == request.args["criticality"].strip().lower())
+    if request.args.get("area"):
+        query = query.filter(Machine.area == request.args["area"].strip())
+    since = parse_datetime_parameter(request.args.get("updated_since"), "updated_since")
+    if since:
+        query = query.filter(Machine.updated_at >= since)
+    total = query.count()
+    items = query.order_by(Machine.updated_at.desc(), Machine.id.desc()).offset(
+        (page - 1) * page_size
+    ).limit(page_size).all()
+    return success(
+        [_asset_mag_item(item) for item in items],
+        pagination=pagination_meta(total, page, page_size),
     )
 
 
@@ -236,14 +272,16 @@ def listar_activos():
 
 @tenancy_api_bp.route("/api/v1/maintenance/assets/<int:asset_id>", methods=["GET"])
 @tenant_required
+@scope_required("maintenance.assets:read")
+@limiter.limit(PUBLIC_API_LIMIT, key_func=api_rate_key)
 def detalle_asset_v1(asset_id: int):
     denied = _require_maintenance_module()
     if denied:
         return denied
     machine = query_tenant(Machine).filter_by(id=asset_id).first()
     if not machine or not verificar_pertenencia(machine):
-        return jsonify({"error": "Activo no encontrado"}), 404
-    return jsonify({"data": _asset_mag_item(machine)})
+        raise ApiContractError("RESOURCE_NOT_FOUND", "Activo no encontrado.", 404)
+    return success(_asset_mag_item(machine))
 
 
 @tenancy_api_bp.route("/api/activos/<int:activo_id>", methods=["GET"])
@@ -269,21 +307,48 @@ def detalle_activo(activo_id: int):
 
 @tenancy_api_bp.route("/api/v1/maintenance/work-orders", methods=["GET"])
 @tenant_required
+@scope_required("maintenance.work_orders:read")
+@limiter.limit(PUBLIC_API_LIMIT, key_func=api_rate_key)
 def listar_work_orders_v1():
     denied = _require_maintenance_module()
     if denied:
         return denied
-    page = max(1, int(request.args.get("page", 1) or 1))
-    page_size = min(200, max(1, int(request.args.get("page_size", 50) or 50)))
-    q = query_tenant(WorkOrder).order_by(WorkOrder.created_at.desc())
-    total = q.count()
-    start = (page - 1) * page_size
-    orders = q.offset(start).limit(page_size).all()
-    return jsonify(
-        {
-            "data": [_work_order_mag_item(wo) for wo in orders],
-            "meta": _pagination_meta(total, page, page_size),
-        }
+    page, page_size = parse_pagination(
+        {"status", "priority", "type", "asset_id", "updated_since", "date_from", "date_to"}
+    )
+    query = query_tenant(WorkOrder)
+    if request.args.get("status"):
+        reverse = {value: key for key, value in _WO_STATUS_MAG.items()}
+        value = request.args["status"].strip().lower()
+        query = query.filter(WorkOrder.status == reverse.get(value, value))
+    if request.args.get("priority"):
+        query = query.filter(WorkOrder.prioridad == request.args["priority"].strip().lower())
+    if request.args.get("type"):
+        query = query.filter(WorkOrder.tipo == request.args["type"].strip().lower())
+    if request.args.get("asset_id"):
+        try:
+            query = query.filter(WorkOrder.machine_id == int(request.args["asset_id"]))
+        except ValueError as exc:
+            raise ApiContractError("INVALID_PARAMETER", "asset_id debe ser entero.") from exc
+    since = parse_datetime_parameter(request.args.get("updated_since"), "updated_since")
+    if since:
+        query = query.filter(WorkOrder.updated_at >= since)
+    for arg, operator in (("date_from", "ge"), ("date_to", "le")):
+        if request.args.get(arg):
+            try:
+                value = datetime.fromisoformat(request.args[arg]).date()
+            except ValueError as exc:
+                raise ApiContractError("INVALID_PARAMETER", f"{arg} debe usar YYYY-MM-DD.") from exc
+            query = query.filter(
+                WorkOrder.fecha_programada >= value if operator == "ge" else WorkOrder.fecha_programada <= value
+            )
+    total = query.count()
+    items = query.order_by(WorkOrder.updated_at.desc(), WorkOrder.id.desc()).offset(
+        (page - 1) * page_size
+    ).limit(page_size).all()
+    return success(
+        [_work_order_mag_item(item) for item in items],
+        pagination=pagination_meta(total, page, page_size),
     )
 
 

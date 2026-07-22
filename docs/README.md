@@ -1,4 +1,4 @@
-# Roustix Documentation Suite · v1.22.0
+# Roustix Documentation Suite · v1.22.5
 
 **Producto documental independiente** del software de aplicación.
 

@@ -93,8 +93,10 @@ def create_app(config_name: str | None = None):
         )
         return response
 
+    from app.public_api.contract import register_public_api_contract
     from app.tenancy.middleware import register_tenancy_middleware
 
+    register_public_api_contract(app)
     register_tenancy_middleware(app)
 
     from app.branding import (
@@ -323,6 +325,8 @@ def create_app(config_name: str | None = None):
     from app.openapi_routes import openapi_bp
     from app.docs_routes import docs_bp
     from app.file_storage import storage_bp
+    from app.integrations.routes import integrations_bp
+    from app.public_api.maintenance import public_maintenance_bp
 
     app.register_blueprint(health_bp)
     app.register_blueprint(routes.bp)
@@ -342,6 +346,8 @@ def create_app(config_name: str | None = None):
     app.register_blueprint(openapi_bp)
     app.register_blueprint(docs_bp)
     app.register_blueprint(storage_bp)
+    app.register_blueprint(integrations_bp)
+    app.register_blueprint(public_maintenance_bp)
     app.register_blueprint(onboarding_bp)
     app.register_blueprint(inv_comercial_bp)
     app.register_blueprint(purchasing_bp)
@@ -353,6 +359,7 @@ def create_app(config_name: str | None = None):
     app.register_blueprint(platform_bp)
 
     csrf.exempt(tenancy_api_bp)
+    csrf.exempt(public_maintenance_bp)
     csrf.exempt(admin_bp)
     csrf.exempt(health_bp)
 

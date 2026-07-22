@@ -339,6 +339,198 @@ class TenantActivityLog(db.Model):
     user = db.relationship("User", backref=db.backref("actividad_logs", lazy="dynamic"))
 
 
+class IntegrationCredential(db.Model):
+    """Credencial técnica tenant-safe para la API pública de Roustix."""
+
+    __tablename__ = "integration_credentials"
+    __table_args__ = (
+        db.UniqueConstraint("key_prefix", name="uq_integration_credentials_key_prefix"),
+    )
+
+    id = db.Column(db.Integer, primary_key=True)
+    empresa_id = db.Column(
+        db.Integer, db.ForeignKey("empresas.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    name = db.Column(db.String(120), nullable=False)
+    key_prefix = db.Column(db.String(48), nullable=False, index=True)
+    secret_hash = db.Column(db.String(256), nullable=False)
+    scopes_json = db.Column(db.Text, nullable=False, default="[]")
+    environment = db.Column(db.String(16), nullable=False, default="test", index=True)
+    expires_at = db.Column(db.DateTime, nullable=True, index=True)
+    last_used_at = db.Column(db.DateTime, nullable=True)
+    revoked_at = db.Column(db.DateTime, nullable=True, index=True)
+    created_by_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=True, index=True)
+    rotated_from_id = db.Column(
+        db.Integer, db.ForeignKey("integration_credentials.id"), nullable=True, index=True
+    )
+    created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow, index=True)
+
+    empresa = db.relationship(
+        "Empresa", backref=db.backref("integration_credentials", lazy="dynamic")
+    )
+    created_by = db.relationship("User", foreign_keys=[created_by_id])
+    rotated_from = db.relationship("IntegrationCredential", remote_side=[id], uselist=False)
+
+    @property
+    def scopes(self) -> list[str]:
+        try:
+            value = json.loads(self.scopes_json or "[]")
+        except (TypeError, json.JSONDecodeError):
+            return []
+        return sorted({str(item) for item in value if isinstance(item, str)})
+
+    def set_scopes(self, scopes: list[str]) -> None:
+        self.scopes_json = json.dumps(sorted(set(scopes)), ensure_ascii=False)
+
+    @property
+    def active(self) -> bool:
+        now = datetime.utcnow()
+        return self.revoked_at is None and (self.expires_at is None or self.expires_at > now)
+
+
+class ApiIdempotencyRecord(db.Model):
+    """Respuesta persistida para escrituras públicas idempotentes."""
+
+    __tablename__ = "api_idempotency_records"
+    __table_args__ = (
+        db.UniqueConstraint(
+            "empresa_id",
+            "actor_key",
+            "operation",
+            "idempotency_key",
+            name="uq_api_idempotency_tenant_actor_operation_key",
+        ),
+    )
+
+    id = db.Column(db.Integer, primary_key=True)
+    empresa_id = db.Column(
+        db.Integer, db.ForeignKey("empresas.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    credential_id = db.Column(
+        db.Integer,
+        db.ForeignKey("integration_credentials.id", ondelete="CASCADE"),
+        nullable=True,
+        index=True,
+    )
+    actor_key = db.Column(db.String(80), nullable=False)
+    operation = db.Column(db.String(80), nullable=False)
+    idempotency_key = db.Column(db.String(120), nullable=False)
+    request_hash = db.Column(db.String(64), nullable=False)
+    resource_type = db.Column(db.String(40), nullable=False)
+    resource_id = db.Column(db.Integer, nullable=False)
+    response_json = db.Column(db.Text, nullable=False)
+    status_code = db.Column(db.Integer, nullable=False, default=201)
+    created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow, index=True)
+
+    credential = db.relationship("IntegrationCredential")
+
+
+class WebhookEndpoint(db.Model):
+    """URL HTTPS suscrita a eventos de integración del tenant."""
+
+    __tablename__ = "webhook_endpoints"
+
+    id = db.Column(db.Integer, primary_key=True)
+    empresa_id = db.Column(
+        db.Integer, db.ForeignKey("empresas.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    name = db.Column(db.String(120), nullable=False)
+    url = db.Column(db.String(500), nullable=False)
+    secret_sealed = db.Column(db.Text, nullable=False)
+    events_json = db.Column(db.Text, nullable=False, default="[]")
+    environment = db.Column(db.String(16), nullable=False, default="test", index=True)
+    status = db.Column(db.String(16), nullable=False, default="active", index=True)
+    failure_count = db.Column(db.Integer, nullable=False, default=0)
+    disabled_at = db.Column(db.DateTime, nullable=True)
+    created_by_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=True, index=True)
+    created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow, index=True)
+    updated_at = db.Column(
+        db.DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow
+    )
+
+    empresa = db.relationship("Empresa", backref=db.backref("webhook_endpoints", lazy="dynamic"))
+    created_by = db.relationship("User", foreign_keys=[created_by_id])
+
+    @property
+    def events(self) -> list[str]:
+        try:
+            value = json.loads(self.events_json or "[]")
+        except (TypeError, json.JSONDecodeError):
+            return []
+        return sorted({str(item) for item in value if isinstance(item, str)})
+
+    def set_events(self, events: list[str]) -> None:
+        self.events_json = json.dumps(sorted(set(events)), ensure_ascii=False)
+
+    @property
+    def active(self) -> bool:
+        return self.status == "active" and self.disabled_at is None
+
+
+class IntegrationEvent(db.Model):
+    """Evento de outbox escrito en la misma transacción de negocio."""
+
+    __tablename__ = "integration_events"
+    __table_args__ = (
+        db.UniqueConstraint("public_id", name="uq_integration_events_public_id"),
+    )
+
+    id = db.Column(db.Integer, primary_key=True)
+    public_id = db.Column(db.String(40), nullable=False, index=True)
+    empresa_id = db.Column(
+        db.Integer, db.ForeignKey("empresas.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    event_type = db.Column(db.String(80), nullable=False, index=True)
+    api_version = db.Column(db.String(8), nullable=False, default="v1")
+    resource_type = db.Column(db.String(40), nullable=False)
+    resource_id = db.Column(db.Integer, nullable=False)
+    occurred_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow, index=True)
+    payload_json = db.Column(db.Text, nullable=False)
+    created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow, index=True)
+
+    empresa = db.relationship("Empresa")
+
+
+class WebhookDelivery(db.Model):
+    """Intento de entrega de un evento hacia un endpoint."""
+
+    __tablename__ = "webhook_deliveries"
+    __table_args__ = (
+        db.UniqueConstraint(
+            "event_id",
+            "endpoint_id",
+            "attempt",
+            name="uq_webhook_deliveries_event_endpoint_attempt",
+        ),
+    )
+
+    id = db.Column(db.Integer, primary_key=True)
+    empresa_id = db.Column(
+        db.Integer, db.ForeignKey("empresas.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    event_id = db.Column(
+        db.Integer, db.ForeignKey("integration_events.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    endpoint_id = db.Column(
+        db.Integer, db.ForeignKey("webhook_endpoints.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    attempt = db.Column(db.Integer, nullable=False, default=1)
+    status = db.Column(db.String(24), nullable=False, default="pending", index=True)
+    next_attempt_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow, index=True)
+    lease_expires_at = db.Column(db.DateTime, nullable=True)
+    http_status = db.Column(db.Integer, nullable=True)
+    duration_ms = db.Column(db.Integer, nullable=True)
+    error_code = db.Column(db.String(64), nullable=True)
+    response_excerpt = db.Column(db.String(255), nullable=True)
+    created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow, index=True)
+    updated_at = db.Column(
+        db.DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow
+    )
+
+    event = db.relationship("IntegrationEvent", backref=db.backref("deliveries", lazy="dynamic"))
+    endpoint = db.relationship("WebhookEndpoint", backref=db.backref("deliveries", lazy="dynamic"))
+
+
 class PlatformAuditLog(db.Model):
     """Auditoría de acciones del superadmin de plataforma (visible al cliente)."""
 
@@ -744,6 +936,7 @@ class Machine(db.Model):
     es_critico = db.Column(db.Boolean, default=False)
     notas = db.Column(db.Text, default="")
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow, index=True)
 
     sede = db.relationship("Sede", backref="machines")
     parent = db.relationship("Machine", remote_side=[id], backref="hijos")
@@ -826,6 +1019,43 @@ class Machine(db.Model):
 
     def sync_criticidad_critico(self) -> None:
         self.es_critico = (self.criticidad or "media") in ("alta", "critica")
+
+
+MACHINE_CATALOG_COLUMN_CAMPOS = ("marca", "modelo", "fabricante", "area", "ubicacion")
+MACHINE_CATALOG_CUSTOM_CLAVES = ("planta",)
+MACHINE_CATALOG_CAMPOS = MACHINE_CATALOG_COLUMN_CAMPOS + MACHINE_CATALOG_CUSTOM_CLAVES
+MACHINE_CATALOG_LABELS = {
+    "marca": "Marca",
+    "modelo": "Modelo",
+    "fabricante": "Fabricante",
+    "area": "Área",
+    "ubicacion": "Ubicación específica",
+    "planta": "Planta",
+}
+
+
+class MachineCatalogValue(db.Model):
+    """Catálogo tenant de valores reutilizables (marca, modelo, fabricante, área, ubicación)."""
+
+    __tablename__ = "machine_catalog_values"
+    __table_args__ = (
+        db.UniqueConstraint(
+            "empresa_id", "campo", "valor_norm", name="uq_machine_catalog_empresa_campo_valor"
+        ),
+    )
+
+    id = db.Column(db.Integer, primary_key=True)
+    empresa_id = db.Column(
+        db.Integer, db.ForeignKey("empresas.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    campo = db.Column(db.String(32), nullable=False, index=True)
+    valor = db.Column(db.String(120), nullable=False, default="")
+    valor_norm = db.Column(db.String(120), nullable=False, default="")
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    empresa = db.relationship(
+        "Empresa", backref=db.backref("machine_catalog_values", lazy="dynamic")
+    )
 
 
 class MachineMonthlyPlan(db.Model):
@@ -1171,6 +1401,7 @@ class WorkOrder(db.Model):
     proveedor_incluye_insumos = db.Column(db.Boolean, default=False)
     fecha_limite = db.Column(db.Date, nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow, index=True)
 
     proveedor = db.relationship("Proveedor", backref=db.backref("work_orders", lazy="dynamic"))
     supervisor = db.relationship(
@@ -1940,6 +2171,7 @@ class Incident(db.Model):
     work_order_id = db.Column(
         db.Integer, db.ForeignKey("work_orders.id"), nullable=True, index=True
     )
+    updated_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow, index=True)
 
     machine = db.relationship("Machine", backref="incidents")
     empresa = db.relationship("Empresa", backref="incidents")

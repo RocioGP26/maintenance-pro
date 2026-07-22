@@ -223,6 +223,106 @@ paths:
         "401":
           $ref: "#/components/responses/Unauthorized"
 
+  /maintenance/incidents:
+    get:
+      tags: [Maintenance]
+      summary: Listar incidencias del tenant
+      operationId: maintenanceIncidentsList
+      parameters:
+        - $ref: "#/components/parameters/Page"
+        - $ref: "#/components/parameters/PageSize"
+        - {name: status, in: query, schema: {type: string}}
+        - {name: priority, in: query, schema: {type: string}}
+        - {name: asset_id, in: query, schema: {type: integer}}
+        - {name: updated_since, in: query, schema: {type: string, format: date-time}}
+      responses:
+        "200": {description: Incidencias paginadas}
+        "401": {$ref: "#/components/responses/Unauthorized"}
+        "403": {$ref: "#/components/responses/Forbidden"}
+    post:
+      tags: [Maintenance]
+      summary: Reportar incidencia de forma idempotente
+      operationId: maintenanceIncidentsCreate
+      parameters:
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: "#/components/schemas/IncidentCreate"}
+      responses:
+        "201": {description: Incidencia creada o respuesta idempotente}
+        "400": {$ref: "#/components/responses/BadRequest"}
+        "409": {description: Conflicto de idempotencia}
+
+  /maintenance/incidents/{incident_id}:
+    get:
+      tags: [Maintenance]
+      summary: Consultar incidencia
+      operationId: maintenanceIncidentsGet
+      parameters:
+        - $ref: "#/components/parameters/IncidentId"
+      responses:
+        "200": {description: Incidencia del tenant}
+        "404": {$ref: "#/components/responses/NotFound"}
+
+  /maintenance/work-orders/{work_order_id}:
+    get:
+      tags: [Maintenance]
+      summary: Consultar orden de trabajo
+      operationId: maintenanceWorkOrdersGet
+      parameters:
+        - $ref: "#/components/parameters/WorkOrderId"
+      responses:
+        "200": {description: Orden de trabajo del tenant}
+        "404": {$ref: "#/components/responses/NotFound"}
+
+  /maintenance/assets/{asset_id}/meters:
+    get:
+      tags: [Maintenance]
+      summary: Listar medidores de un activo
+      operationId: maintenanceAssetMetersList
+      parameters:
+        - $ref: "#/components/parameters/AssetId"
+        - $ref: "#/components/parameters/Page"
+        - $ref: "#/components/parameters/PageSize"
+        - {name: active, in: query, schema: {type: boolean}}
+        - {name: updated_since, in: query, schema: {type: string, format: date-time}}
+      responses:
+        "200": {description: Medidores paginados}
+        "404": {$ref: "#/components/responses/NotFound"}
+
+  /maintenance/meters/{meter_id}/readings:
+    get:
+      tags: [Maintenance]
+      summary: Listar lecturas de un medidor
+      operationId: maintenanceMeterReadingsList
+      parameters:
+        - $ref: "#/components/parameters/MeterId"
+        - $ref: "#/components/parameters/Page"
+        - $ref: "#/components/parameters/PageSize"
+        - {name: measured_since, in: query, schema: {type: string, format: date-time}}
+        - {name: measured_until, in: query, schema: {type: string, format: date-time}}
+      responses:
+        "200": {description: Lecturas paginadas}
+        "404": {$ref: "#/components/responses/NotFound"}
+    post:
+      tags: [Maintenance]
+      summary: Registrar lectura idempotente
+      operationId: maintenanceMeterReadingsCreate
+      parameters:
+        - $ref: "#/components/parameters/MeterId"
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: "#/components/schemas/MeterReadingCreate"}
+      responses:
+        "201": {description: Lectura creada o respuesta idempotente}
+        "400": {$ref: "#/components/responses/BadRequest"}
+        "409": {description: Conflicto de idempotencia}
+
   /admin/summary:
     get:
       tags: [Admin]
@@ -240,13 +340,94 @@ paths:
         "403":
           $ref: "#/components/responses/Forbidden"
 
+  /admin/integration-credentials:
+    get:
+      tags: [Admin]
+      summary: Listar credenciales de integración del tenant
+      operationId: integrationCredentialsList
+      security:
+        - cookieAuth: []
+      responses:
+        "200":
+          description: Credenciales sin secretos recuperables
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/IntegrationCredential"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+    post:
+      tags: [Admin]
+      summary: Crear credencial de integración
+      description: El campo secret aparece únicamente en esta respuesta.
+      operationId: integrationCredentialsCreate
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/IntegrationCredentialCreate"
+      responses:
+        "201":
+          description: Credencial emitida con secreto de visualización única
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+
+  /admin/integration-credentials/{credential_id}/rotate:
+    post:
+      tags: [Admin]
+      summary: Rotar credencial
+      operationId: integrationCredentialsRotate
+      security:
+        - cookieAuth: []
+      parameters:
+        - $ref: "#/components/parameters/CredentialId"
+      responses:
+        "201":
+          description: Nueva credencial y secreto de visualización única
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /admin/integration-credentials/{credential_id}/revoke:
+    post:
+      tags: [Admin]
+      summary: Revocar credencial inmediatamente
+      operationId: integrationCredentialsRevoke
+      security:
+        - cookieAuth: []
+      parameters:
+        - $ref: "#/components/parameters/CredentialId"
+      responses:
+        "200":
+          description: Credencial revocada
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
 components:
   securitySchemes:
     bearerAuth:
       type: http
       scheme: bearer
-      bearerFormat: JWT
-      description: JWT emitido por POST /auth/login · MAG-02
+      bearerFormat: JWT or rtx_* API key
+      description: JWT de usuario o API key de integración · MAG-02
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: session
+      description: Sesión web administrativa de Roustix
 
   parameters:
     Page:
@@ -270,6 +451,35 @@ components:
       required: true
       schema:
         type: integer
+    CredentialId:
+      name: credential_id
+      in: path
+      required: true
+      schema:
+        type: integer
+    IncidentId:
+      name: incident_id
+      in: path
+      required: true
+      schema: {type: integer}
+    WorkOrderId:
+      name: work_order_id
+      in: path
+      required: true
+      schema: {type: integer}
+    MeterId:
+      name: meter_id
+      in: path
+      required: true
+      schema: {type: integer}
+    IdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: true
+      schema:
+        type: string
+        minLength: 8
+        maxLength: 120
 
   schemas:
     LoginRequest:
@@ -313,6 +523,95 @@ components:
           type: string
         rol:
           type: string
+        identity_type:
+          type: string
+          enum: [session, jwt, api_key]
+        credential_id:
+          type: integer
+        scopes:
+          type: array
+          items:
+            type: string
+
+    IntegrationCredentialCreate:
+      type: object
+      required: [name, environment, scopes]
+      properties:
+        name:
+          type: string
+          maxLength: 120
+        environment:
+          type: string
+          enum: [test, live]
+        scopes:
+          type: array
+          minItems: 1
+          uniqueItems: true
+          items:
+            type: string
+        expires_at:
+          type: [string, "null"]
+          format: date-time
+
+    IncidentCreate:
+      type: object
+      required: [title, description, responsible_area, type]
+      properties:
+        title: {type: string, maxLength: 200}
+        description: {type: string}
+        asset_id: {type: [integer, "null"]}
+        reported_by: {type: string, maxLength: 200}
+        reporter_area: {type: string, maxLength: 120}
+        responsible_area: {type: string, maxLength: 120}
+        location: {type: string, maxLength: 200}
+        type:
+          type: string
+          enum: [mecanica, electrica, hidraulica, seguridad, ambiental, otro]
+        priority:
+          type: string
+          enum: [baja, media, alta, critica]
+        equipment_stopped: {type: boolean, default: false}
+        event_date: {type: [string, "null"], format: date}
+        event_time: {type: [string, "null"], pattern: "^[0-2][0-9]:[0-5][0-9]$"}
+
+    MeterReadingCreate:
+      type: object
+      required: [value]
+      properties:
+        value: {type: [number, string]}
+        measured_at: {type: string, format: date-time}
+        work_order_id: {type: integer}
+        notes: {type: string, maxLength: 500}
+        anomaly_type:
+          type: string
+          enum: [reset, replacement, rollover, sequence_adjustment, out_of_range]
+        justification: {type: string, maxLength: 500}
+        correction_of_id: {type: integer}
+
+    IntegrationCredential:
+      type: object
+      properties:
+        credential_id:
+          type: integer
+        name:
+          type: string
+        key_prefix:
+          type: string
+        environment:
+          type: string
+          enum: [test, live]
+        scopes:
+          type: array
+          items:
+            type: string
+        active:
+          type: boolean
+        expires_at:
+          type: [string, "null"]
+          format: date-time
+        last_used_at:
+          type: [string, "null"]
+          format: date-time
 
     User:
       type: object

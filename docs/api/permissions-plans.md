@@ -71,9 +71,8 @@ capacidad resolubles desde el catálogo o una asignación por tenant:
 | `webhooks.retention_days` | entero |
 | `webhooks.manual_retry` | booleano |
 
-La asignación comercial definitiva a Trial, Start, Scale y Enterprise se decide
-en Sprint 22.4. Hasta entonces, la API pública queda deshabilitada por defecto y
-solo se activa explícitamente para tenants de prueba.
+La asignación comercial a Trial, Start, Grow, Scale y Enterprise está definida
+en la matriz de entitlements de Sprint 22.4 (`app/integrations/entitlements.py`).
 
 ## Revocación automática
 

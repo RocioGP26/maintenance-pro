@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import json
 import re
-from datetime import datetime
+from datetime import datetime, timezone
 from decimal import Decimal, InvalidOperation
 
 from app import db
@@ -62,6 +62,8 @@ def can_manage_meters(user, machine: Machine) -> bool:
 
 
 def can_record_reading(user, meter: AssetMeter) -> bool:
+    if getattr(user, "is_integration", False):
+        return meter.active and getattr(user, "empresa_id", None) == meter.empresa_id
     return meter.active and can_view_meters(user, meter.machine)
 
 
@@ -163,12 +165,17 @@ def _measured_at(value) -> datetime:
     if not raw:
         return datetime.now().replace(second=0, microsecond=0)
     try:
-        return datetime.fromisoformat(raw)
+        parsed = datetime.fromisoformat(raw.replace("Z", "+00:00"))
+        if parsed.tzinfo is not None:
+            parsed = parsed.astimezone(timezone.utc).replace(tzinfo=None)
+        return parsed
     except ValueError as exc:
         raise ValueError("La fecha y hora de lectura no son válidas.") from exc
 
 
 def _performer(actor, machine: Machine, raw_id):
+    if getattr(actor, "is_integration", False) and not raw_id:
+        return actor
     if not _manager(actor):
         return actor
     performer_id = int(raw_id or actor.id)
@@ -255,6 +262,9 @@ def record_reading(meter: AssetMeter, actor, form) -> MeterReading:
         empresa_id=meter.empresa_id, meter_id=meter.id, reading_id=reading.id,
         event=event, actor_id=actor.id, detail=detail[:500],
     ))
+    from app.integrations.emitters import emit_meter_reading
+
+    emit_meter_reading(reading, flagged=flagged)
     from app.maintenance_automation.service import evaluate_reading
 
     evaluate_reading(reading)

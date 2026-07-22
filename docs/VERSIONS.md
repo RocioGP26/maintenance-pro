@@ -7,12 +7,12 @@
 | Producto | Versión actual | Fuente canónica | Changelog | Tag Git |
 |---|---:|---|---|---|
 | **Aplicación Flask** | **v1.0.8** | [`app/version.py`](../app/version.py) | [`CHANGELOG.md`](../CHANGELOG.md) | `v1.0.0` *(pendiente de publicar)* |
-| **Suite documental** | **v1.22.0** | Este archivo | [changelog.md](changelog.md) | `docs-vX.Y` |
+| **Suite documental** | **v1.22.5** | Este archivo | [changelog.md](changelog.md) | `docs-vX.Y` |
 
 La aplicación y la documentación son productos versionados de forma
 independiente. Flujo de release del software: [APP_VERSIONING.md](APP_VERSIONING.md).
 
-**Suite actual:** **v1.22.0** (Sprint 22.0 · API pública y Webhooks · contrato)
+**Suite actual:** **v1.22.5** (Sprint 22 completo · API pública y Webhooks)
 **Últimos tags:** `docs-v1.0` · `docs-foundation-1.0` (recomendado)
 
 ---
@@ -21,6 +21,11 @@ independiente. Flujo de release del software: [APP_VERSIONING.md](APP_VERSIONING
 
 | Versión | Fecha | Tag Git | Notas |
 |---------|-------|---------|-------|
+| **v1.22.5** | 2026-07-22 | *(pendiente)* | **Cierre Sprint 22** · guía integradores, colección, auditoría ✅ |
+| **v1.22.4** | 2026-07-22 | *(pendiente)* | **Seguridad y observabilidad** · entitlements, HMAC, stats ✅ |
+| **v1.22.3** | 2026-07-22 | *(pendiente)* | **Webhooks** · outbox, HMAC, reintentos y catálogo de eventos ✅ |
+| **v1.22.2** | 2026-07-22 | *(pendiente)* | **API pública Maintenance** · recursos v1, idempotencia y contrato ✅ |
+| **v1.22.1** | 2026-07-22 | *(pendiente)* | **API pública** · credenciales técnicas, scopes y auditoría |
 | **v1.22.0** | 2026-07-21 | *(pendiente)* | **API pública y Webhooks** · diseño y contrato Sprint 22.0 |
 | **v1.21.0** | 2026-07-21 | *(pendiente)* | **Asset Health** · puntaje explicable, confianza e historial |
 | **v1.20.0** | 2026-07-21 | *(pendiente)* | **Maintenance Automation** · reglas, acciones e idempotencia |

@@ -46,6 +46,17 @@
   {% if campo.obligatorio %}
   <div class="form-text">Marca al menos una opción.</div>
   {% endif %}
+  {% elif campo.tipo == 'text' and campo.clave in ('planta',) %}
+  <div class="creatable-select" data-campo="{{ campo.clave }}" data-placeholder="Buscar o crear {{ campo.nombre|lower }}…">
+    <input type="hidden" name="campo_{{ campo.id }}" id="campo_{{ campo.id }}" class="creatable-select-value"
+           value="{{ val }}" {% if campo.obligatorio %}required{% endif %}>
+    <div class="creatable-select-box form-control" tabindex="-1">
+      <div class="creatable-select-chips"></div>
+      <input type="text" id="campo_{{ campo.id }}_search" class="creatable-select-input" autocomplete="off" spellcheck="false"
+             {% if campo.obligatorio %}aria-required="true"{% endif %}>
+    </div>
+    <div class="creatable-select-menu d-none" role="listbox"></div>
+  </div>
   {% elif campo.tipo == 'text' and campo.texto_tamano_efectivo == 'largo' %}
   <textarea name="campo_{{ campo.id }}" id="campo_{{ campo.id }}" class="form-control" rows="2"
             {% if campo.obligatorio %}required{% endif %}>{{ val }}</textarea>

@@ -33,6 +33,11 @@ def create_incident_notifications(
     if not incident.id or not incident.empresa_id or not incident.area_responsable:
         return []
 
+    if event_key == "area_reported":
+        from app.integrations.emitters import emit_incident_created
+
+        emit_incident_created(incident)
+
     candidates = User.query.filter_by(
         empresa_id=incident.empresa_id,
         activo=True,

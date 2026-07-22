@@ -613,6 +613,97 @@
 
 </div>
 
+<div class="row g-4 mt-1">
+  <div class="col-12">
+    <div class="card card-dashboard">
+      <div class="card-body pb-0">
+        <div class="dash-card-head">
+          <div class="d-flex align-items-start gap-2">
+            <span class="dash-card-head-icon" aria-hidden="true"><i class="bi bi-person-badge"></i></span>
+            <div>
+              <h5 class="card-title mb-0">Estadísticas de los técnicos</h5>
+              <p class="text-muted small mb-0 mt-1">
+                Solo aparecen técnicos con órdenes asignadas en el período.
+                Pendientes, completados y porcentajes se calculan por técnico.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="table-responsive">
+        <table class="table table-sm table-hover align-middle mb-0 dash-stats-table">
+          <thead>
+            <tr>
+              <th>Técnico</th>
+              <th class="text-end">Total</th>
+              <th class="text-end">Pendientes</th>
+              <th class="text-end">Completados</th>
+              <th class="text-end">Porcentaje pendiente</th>
+              <th class="text-end">Porcentaje completado</th>
+              <th class="text-end">Costo total</th>
+              <th class="text-end">Tiempo (min)</th>
+              <th class="text-end">Costo promedio</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for fila in estadisticas_tecnicos.filas %}
+            <tr>
+              <td class="fw-semibold">{{ fila.label }}</td>
+              <td class="text-end">{{ fila.total }}</td>
+              <td class="text-end">{{ fila.pendientes }}</td>
+              <td class="text-end">{{ fila.completados }}</td>
+              <td class="text-end">{{ '%.1f'|format(fila.pct_pendiente) }}%</td>
+              <td class="text-end">{{ '%.1f'|format(fila.pct_completado) }}%</td>
+              <td class="text-end">{{ formato_moneda(fila.costo_total, empresa_actual.moneda) }}</td>
+              <td class="text-end">{{ fila.tiempo_min }}</td>
+              <td class="text-end">{{ formato_moneda(fila.costo_promedio, empresa_actual.moneda) }}</td>
+            </tr>
+            {% else %}
+            <tr>
+              <td colspan="9" class="text-center text-muted py-3">
+                Sin órdenes asignadas a técnicos en el período seleccionado.
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% if estadisticas_tecnicos.filas %}
+      <div class="dash-stats-kpi">
+        <div>
+          <span class="valor">{{ estadisticas_tecnicos.total_programados }}</span>
+          <span class="label">Total programados</span>
+        </div>
+        <div>
+          <span class="valor">{{ estadisticas_tecnicos.total_pendientes }}</span>
+          <span class="label">Pendientes</span>
+        </div>
+        <div>
+          <span class="valor">{{ estadisticas_tecnicos.total_completados }}</span>
+          <span class="label">Completados</span>
+        </div>
+        <div>
+          <span class="valor">{{ estadisticas_tecnicos.tasa_completacion }}%</span>
+          <span class="label">Tasa completación</span>
+        </div>
+        <div>
+          <span class="valor">{{ formato_moneda(estadisticas_tecnicos.costo_total, empresa_actual.moneda) }}</span>
+          <span class="label">Costo total</span>
+        </div>
+        <div>
+          <span class="valor">{{ estadisticas_tecnicos.tiempo_label }}</span>
+          <span class="label">Tiempo efectivo</span>
+        </div>
+        <div>
+          <span class="valor">{{ formato_moneda(estadisticas_tecnicos.promedio_mtto, empresa_actual.moneda) }}</span>
+          <span class="label">Promedio por mtto.</span>
+        </div>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
 {% endblock %}
 
 

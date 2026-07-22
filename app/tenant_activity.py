@@ -23,6 +23,9 @@ ACTIVITY_LABELS = {
     "factura_pagada": "Pago registrado",
     "acceso_bloqueado": "Acceso bloqueado",
     "work_order_assigned": "Orden de trabajo asignada",
+    "integration_credential_created": "Credencial de integración creada",
+    "integration_credential_rotated": "Credencial de integración rotada",
+    "integration_credential_revoked": "Credencial de integración revocada",
 }
 
 

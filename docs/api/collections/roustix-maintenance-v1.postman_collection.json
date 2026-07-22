@@ -1,0 +1,19 @@
+{
+  "info": {"name": "Roustix Maintenance API v1 · Sprint 22.2", "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"},
+  "auth": {"type": "bearer", "bearer": [{"key": "token", "value": "{{roustix_api_key}}", "type": "string"}]},
+  "variable": [
+    {"key": "base_url", "value": "http://127.0.0.1:5000/api/v1"},
+    {"key": "roustix_api_key", "value": "rtx_test_REPLACE_ME"},
+    {"key": "asset_id", "value": "1"}, {"key": "work_order_id", "value": "1"}, {"key": "meter_id", "value": "1"}
+  ],
+  "item": [
+    {"name": "Identidad", "request": {"method": "GET", "url": "{{base_url}}/me"}},
+    {"name": "Activos incrementales", "request": {"method": "GET", "url": "{{base_url}}/maintenance/assets?page=1&page_size=50&updated_since=2026-01-01T00:00:00Z"}},
+    {"name": "Órdenes de trabajo", "request": {"method": "GET", "url": "{{base_url}}/maintenance/work-orders?status=open&page=1&page_size=50"}},
+    {"name": "Detalle OT", "request": {"method": "GET", "url": "{{base_url}}/maintenance/work-orders/{{work_order_id}}"}},
+    {"name": "Incidencias", "request": {"method": "GET", "url": "{{base_url}}/maintenance/incidents?page=1&page_size=50"}},
+    {"name": "Reportar incidencia", "request": {"method": "POST", "header": [{"key": "Content-Type", "value": "application/json"}, {"key": "Idempotency-Key", "value": "incident-{{$guid}}"}], "body": {"mode": "raw", "raw": "{\n  \"title\": \"Vibración anormal\",\n  \"description\": \"Reporte desde integración\",\n  \"responsible_area\": \"Mantenimiento\",\n  \"reporter_area\": \"Producción\",\n  \"type\": \"mecanica\",\n  \"priority\": \"alta\",\n  \"asset_id\": {{asset_id}}\n}"}, "url": "{{base_url}}/maintenance/incidents"}},
+    {"name": "Medidores del activo", "request": {"method": "GET", "url": "{{base_url}}/maintenance/assets/{{asset_id}}/meters"}},
+    {"name": "Registrar lectura", "request": {"method": "POST", "header": [{"key": "Content-Type", "value": "application/json"}, {"key": "Idempotency-Key", "value": "reading-{{$guid}}"}], "body": {"mode": "raw", "raw": "{\n  \"value\": \"125.50\",\n  \"measured_at\": \"2026-07-22T14:30:00Z\",\n  \"notes\": \"Lectura desde integración\"\n}"}, "url": "{{base_url}}/maintenance/meters/{{meter_id}}/readings"}}
+  ]
+}

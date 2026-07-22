@@ -187,6 +187,7 @@ def save_health_snapshot(machine: Machine, *, trigger: str, actor_id: int | None
     latest = AssetHealthSnapshot.query.filter_by(
         empresa_id=machine.empresa_id, machine_id=machine.id
     ).order_by(AssetHealthSnapshot.calculated_at.desc()).first()
+    previous_band = latest.band if latest else None
     factors_json = json.dumps(result["factors"], ensure_ascii=False, sort_keys=True)
     reasons_json = json.dumps(result["reasons"], ensure_ascii=False)
     if latest and latest.score == result["score"] and latest.confidence == result["confidence"] and latest.band == result["band"] and latest.factors_json == factors_json and latest.reasons_json == reasons_json:
@@ -198,6 +199,11 @@ def save_health_snapshot(machine: Machine, *, trigger: str, actor_id: int | None
         trigger=(trigger or "manual")[:48], actor_id=actor_id,
     )
     db.session.add(snapshot)
+    db.session.flush()
+    if previous_band != snapshot.band:
+        from app.integrations.emitters import emit_asset_health_band_changed
+
+        emit_asset_health_band_changed(snapshot, previous_band=previous_band)
     return snapshot
 
 

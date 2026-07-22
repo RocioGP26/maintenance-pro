@@ -1677,6 +1677,100 @@ a.header-user-name:hover {
   color: #fff;
 }
 
+.dash-stats-table {
+  --bs-table-bg: transparent;
+  --bs-table-color: var(--dash-text);
+  --bs-table-border-color: var(--dash-card-border);
+  --bs-table-hover-bg: rgba(15, 23, 42, 0.04);
+  --bs-table-hover-color: var(--dash-text);
+  --bs-table-striped-bg: transparent;
+  margin-bottom: 0;
+}
+
+.dash-stats-table thead th {
+  background: #1e3a5f;
+  border-bottom-color: rgba(255, 255, 255, 0.12);
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.dash-stats-table tbody td {
+  background: var(--dash-card-bg, #fff);
+  border-color: var(--dash-card-border);
+  color: var(--dash-text);
+  font-size: 0.875rem;
+}
+
+.dash-stats-kpi {
+  border-top: 1px solid var(--dash-card-border);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 0;
+  padding: 0.85rem 0.25rem;
+}
+
+.dash-stats-kpi > div {
+  border-right: 1px solid var(--dash-card-border);
+  flex: 1 1 7.5rem;
+  min-width: 6.5rem;
+  padding: 0.25rem 1rem;
+}
+
+.dash-stats-kpi > div:last-child {
+  border-right: 0;
+}
+
+.dash-stats-kpi .valor {
+  color: var(--dash-accent, var(--bs-primary));
+  display: block;
+  font-size: 1.15rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.dash-stats-kpi .label {
+  color: var(--dash-text-muted);
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.theme-dashboard-dark .dash-stats-table {
+  --bs-table-bg: #1a2332;
+  --bs-table-color: rgba(255, 255, 255, 0.88);
+  --bs-table-border-color: rgba(255, 255, 255, 0.08);
+  --bs-table-hover-bg: rgba(55, 138, 221, 0.12);
+  --bs-table-hover-color: #fff;
+}
+
+.theme-dashboard-dark .dash-stats-table thead th {
+  background: #2563eb;
+  border-bottom-color: rgba(255, 255, 255, 0.18);
+  color: #fff;
+}
+
+.theme-dashboard-dark .dash-stats-table tbody td {
+  background: #1a2332;
+  border-color: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.theme-dashboard-dark .dash-stats-table tbody tr:hover td {
+  background: rgba(55, 138, 221, 0.12);
+  color: #fff;
+}
+
+.theme-dashboard-dark .dash-stats-kpi .valor {
+  color: #38bdf8;
+}
+
+.theme-dashboard-dark .dash-stats-kpi .label {
+  color: rgba(255, 255, 255, 0.55);
+}
+
 .chart-box {
   position: relative;
   height: 220px;
@@ -2261,6 +2355,27 @@ fieldset.form-activo-seccion > legend.form-seccion-encabezado {
   padding: 0;
   margin-bottom: 1rem;
   border: 0;
+}
+
+/* Evita la línea fantasma del marker de <summary> sobre el input */
+.activo-url-externa > summary {
+  cursor: pointer;
+  display: block;
+}
+.activo-url-externa > summary::-webkit-details-marker {
+  display: none;
+}
+.activo-url-externa > summary::before {
+  content: "▸ ";
+  display: inline-block;
+  width: 0.9em;
+}
+.activo-url-externa[open] > summary::before {
+  content: "▾ ";
+}
+.activo-url-externa > summary + div {
+  display: block;
+  width: 100%;
 }
 
 .form-ot-seccion .form-seccion-encabezado {
@@ -3120,4 +3235,152 @@ a.prov-kpi-card--link:hover {
   font-weight: 700;
   line-height: 1rem;
   text-align: center;
+}
+
+/* Creatable Select + Chip (marca / modelo / fabricante) */
+.creatable-select {
+  position: relative;
+}
+.creatable-select-box {
+  align-items: center;
+  cursor: text;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  min-height: calc(1.5em + 0.75rem + 2px);
+  padding: 0.25rem 0.5rem;
+}
+.creatable-select-box:focus-within {
+  border-color: #86b7fe;
+  box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}
+.creatable-select-chips {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+.creatable-chip {
+  align-items: center;
+  background: #e8f1fb;
+  border: 1px solid #bfd4f2;
+  border-radius: 999px;
+  color: #0b3d6e;
+  display: inline-flex;
+  font-size: 0.85rem;
+  font-weight: 600;
+  gap: 0.15rem;
+  line-height: 1.2;
+  max-width: 100%;
+  padding: 0.15rem 0.2rem 0.15rem 0.65rem;
+}
+.creatable-chip-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.creatable-chip-remove {
+  align-items: center;
+  background: transparent;
+  border: 0;
+  border-radius: 999px;
+  color: #185fa5;
+  cursor: pointer;
+  display: inline-flex;
+  font-size: 1rem;
+  height: 1.35rem;
+  justify-content: center;
+  line-height: 1;
+  padding: 0;
+  width: 1.35rem;
+}
+.creatable-chip-remove:hover {
+  background: rgba(24, 95, 165, 0.12);
+  color: #0b3d6e;
+}
+.creatable-select-input {
+  background: transparent;
+  border: 0;
+  flex: 1 1 6rem;
+  font-size: 0.95rem;
+  min-width: 4rem;
+  outline: none;
+  padding: 0.2rem 0;
+  width: auto;
+}
+.creatable-select.has-value .creatable-select-input {
+  flex: 1 1 2.5rem;
+  min-width: 2.5rem;
+}
+.creatable-select-menu {
+  background: #fff;
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  border-radius: 0.5rem;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.12);
+  left: 0;
+  max-height: 14rem;
+  overflow: auto;
+  padding: 0.35rem;
+  position: absolute;
+  right: 0;
+  top: calc(100% + 0.25rem);
+  z-index: 30;
+}
+.creatable-select-option {
+  background: transparent;
+  border: 0;
+  border-radius: 0.35rem;
+  color: #0f172a;
+  cursor: pointer;
+  display: block;
+  flex: 1 1 auto;
+  font-size: 0.9rem;
+  min-width: 0;
+  padding: 0.45rem 0.65rem;
+  text-align: left;
+}
+.creatable-select-row {
+  align-items: stretch;
+  display: flex;
+  gap: 0.15rem;
+}
+.creatable-select-row.is-active,
+.creatable-select-row:hover {
+  background: #eef5fc;
+  border-radius: 0.35rem;
+}
+.creatable-select-row .creatable-select-option:hover,
+.creatable-select-row .creatable-select-option.is-active {
+  background: transparent;
+}
+.creatable-select-delete {
+  align-items: center;
+  background: transparent;
+  border: 0;
+  border-radius: 0.35rem;
+  color: #94a3b8;
+  cursor: pointer;
+  display: inline-flex;
+  flex: 0 0 auto;
+  justify-content: center;
+  padding: 0 0.55rem;
+}
+.creatable-select-delete:hover {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+.creatable-select-option:hover,
+.creatable-select-option.is-active {
+  background: #eef5fc;
+  color: #0b3d6e;
+}
+.creatable-select-option-create {
+  border-top: 1px solid rgba(15, 23, 42, 0.08);
+  color: #185fa5;
+  font-weight: 600;
+  margin-top: 0.2rem;
+}
+.creatable-select-empty {
+  font-size: 0.85rem;
+  padding: 0.55rem 0.65rem;
 }
