@@ -33,6 +33,16 @@ def _logo(empresa):
     if not has_app_context() or not (getattr(empresa, "logo", "") or "").strip():
         return ""
     valor = empresa.logo.strip().replace("\\", "/").lstrip("/")
+    from app.file_storage import key_from_reference, read_bytes
+
+    storage_key = key_from_reference(valor)
+    if storage_key:
+        try:
+            imagen = Image(BytesIO(read_bytes(storage_key)), width=28 * mm, height=18 * mm)
+            imagen.hAlign = "CENTER"
+            return imagen
+        except (FileNotFoundError, OSError):
+            return ""
     if valor.startswith("static/"):
         valor = valor[7:]
     ruta = (Path(current_app.static_folder) / valor).resolve()
@@ -49,6 +59,17 @@ def _imagen_activo(machine):
     valor = (getattr(machine, "foto_url", "") or "").strip()
     if not has_app_context() or not valor or valor.startswith(("http://", "https://")):
         return None
+    from app.file_storage import key_from_reference, read_bytes
+
+    storage_key = key_from_reference(valor)
+    if storage_key:
+        try:
+            imagen = Image(BytesIO(read_bytes(storage_key)))
+            imagen._restrictSize(62 * mm, 42 * mm)
+            imagen.hAlign = "CENTER"
+            return imagen
+        except (FileNotFoundError, OSError):
+            return None
     valor = valor.replace("\\", "/").lstrip("/")
     if valor.startswith("static/"):
         valor = valor[7:]

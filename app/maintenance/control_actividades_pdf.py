@@ -90,6 +90,16 @@ def _logo_empresa(empresa):
     if not has_app_context() or not (getattr(empresa, "logo", "") or "").strip():
         return ""
     value = empresa.logo.strip().replace("\\", "/").lstrip("/")
+    from app.file_storage import key_from_reference, read_bytes
+
+    storage_key = key_from_reference(value)
+    if storage_key:
+        try:
+            image = Image(BytesIO(read_bytes(storage_key)), width=23 * mm, height=13 * mm)
+            image.hAlign = "CENTER"
+            return image
+        except (FileNotFoundError, OSError):
+            return ""
     if value.startswith("static/"):
         value = value[7:]
     path = (Path(current_app.static_folder) / value).resolve()

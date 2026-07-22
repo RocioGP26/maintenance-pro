@@ -27,6 +27,17 @@ python scripts/backup_neon.py
 
 Los archivos se guardan en `backups/` (configurable con `BACKUP_DIR`).
 
+Cada copia creada por la aplicación se verifica automáticamente. Para verificar
+una copia existente o restaurarla en un destino controlado:
+
+```powershell
+flask --app run:app verify-backup backups/neon_YYYYMMDD_HHMMSS.sql.gz
+flask --app run:app restore-db backups/neon_YYYYMMDD_HHMMSS.sql.gz --target $RESTORE_DATABASE_URL --yes
+```
+
+La restauración debe apuntar primero a una base temporal, nunca directamente a
+producción. Después se ejecutan health checks y pruebas de integridad funcional.
+
 ### Variables de entorno
 
 | Variable | Descripción |
@@ -47,7 +58,13 @@ Programación sugerida: `0 3 * * *` (diario 03:00 UTC).
 
 ### GitHub Actions (backup diario)
 
-El workflow `.github/workflows/backup.yml` ejecuta un `pg_dump` cada día a las 03:00 UTC y guarda `backup.sql` como artefacto (`roustix-backup`, 14 días de retención).
+El workflow `.github/workflows/backup.yml` ejecuta un `pg_dump` en formato custom
+cada día a las 03:00 UTC, verifica su índice con `pg_restore --list` y conserva
+`backup.dump` junto con su manifiesto durante 30 días.
+
+Los archivos de clientes se respaldan por separado; consulte
+`docs/production-storage.md`. Una prueba de recuperación válida incluye base de
+datos y almacenamiento de objetos.
 
 Configuración en GitHub:
 

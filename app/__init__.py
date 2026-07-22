@@ -121,6 +121,7 @@ def create_app(config_name: str | None = None):
         if (
             endpoint in SOLICITANTE_ENDPOINTS
             or endpoint == "static"
+            or endpoint == "storage.media"
             or endpoint.startswith("onboarding.")
             or endpoint.startswith("health.")
         ):
@@ -195,6 +196,10 @@ def create_app(config_name: str | None = None):
 
     app.jinja_env.finalize = texto_legible
     app.jinja_env.filters["texto_legible"] = texto_legible
+
+    from app.file_storage import url_for_reference
+
+    app.jinja_env.globals["media_url"] = url_for_reference
 
     from app.custom_fields import seccion_campos_cuatro_por_fila
     from app.password_policy import PASSWORD_REQUIREMENTS_TEXT
@@ -317,6 +322,7 @@ def create_app(config_name: str | None = None):
     from app.mdo_routes import mdo_bp
     from app.openapi_routes import openapi_bp
     from app.docs_routes import docs_bp
+    from app.file_storage import storage_bp
 
     app.register_blueprint(health_bp)
     app.register_blueprint(routes.bp)
@@ -335,6 +341,7 @@ def create_app(config_name: str | None = None):
     app.register_blueprint(mdo_bp)
     app.register_blueprint(openapi_bp)
     app.register_blueprint(docs_bp)
+    app.register_blueprint(storage_bp)
     app.register_blueprint(onboarding_bp)
     app.register_blueprint(inv_comercial_bp)
     app.register_blueprint(purchasing_bp)

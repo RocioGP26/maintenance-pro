@@ -3,18 +3,18 @@
 from __future__ import annotations
 
 import hashlib
-from pathlib import Path
 from uuid import uuid4
 
-from flask import current_app
 from werkzeug.utils import secure_filename
+
+from pathlib import Path
+
+from flask import current_app
+
+from app.file_storage import local_path, read_bytes, save_bytes, tenant_key
 
 ALLOWED = {"pdf":"application/pdf", "png":"image/png", "jpg":"image/jpeg", "jpeg":"image/jpeg", "webp":"image/webp"}
 MAX_BYTES = 5 * 1024 * 1024
-
-
-def log_storage_root():
-    return Path(current_app.root_path).resolve().parent / "data" / "maintenance_log"
 
 
 def save_log_file(file, empresa_id: int, entry_id: int):
@@ -35,14 +35,22 @@ def save_log_file(file, empresa_id: int, entry_id: int):
     }[ext]
     if not valid:
         raise ValueError("El contenido no corresponde al formato declarado.")
-    key = Path(str(empresa_id)) / str(entry_id) / f"{uuid4().hex}.{ext}"
-    target = (log_storage_root() / key).resolve(); root = log_storage_root().resolve()
-    if root not in target.parents: raise ValueError("Ruta de archivo no válida.")
-    target.parent.mkdir(parents=True, exist_ok=True); target.write_bytes(content)
-    return {"storage_key":key.as_posix(), "original_name":original, "mime_type":ALLOWED[ext], "size_bytes":len(content), "checksum":hashlib.sha256(content).hexdigest(), "path":target}
+    key = tenant_key(empresa_id, "bitacora", entry_id, f"{uuid4().hex}.{ext}")
+    save_bytes(key, content, content_type=ALLOWED[ext])
+    return {"storage_key":key, "original_name":original, "mime_type":ALLOWED[ext], "size_bytes":len(content), "checksum":hashlib.sha256(content).hexdigest()}
 
 
 def resolve_log_file(storage_key: str):
-    root = log_storage_root().resolve(); target = (root / (storage_key or "")).resolve()
-    if root not in target.parents: raise ValueError("Ruta de archivo no válida.")
-    return target
+    if not (storage_key or "").startswith("empresas/"):
+        root = Path(current_app.root_path).resolve().parent / "data" / "maintenance_log"
+        target = (root / (storage_key or "")).resolve()
+        if root.resolve() not in target.parents:
+            raise ValueError("Ruta de archivo no válida.")
+        return target
+    return local_path(storage_key)
+
+
+def read_log_file(storage_key: str) -> bytes:
+    if not (storage_key or "").startswith("empresas/"):
+        return resolve_log_file(storage_key).read_bytes()
+    return read_bytes(storage_key)

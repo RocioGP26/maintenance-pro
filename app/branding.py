@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Optional
 
-from flask import url_for
+from app.file_storage import key_from_reference, url_for_reference
 
 if TYPE_CHECKING:
     from app.models import Empresa
@@ -22,9 +22,7 @@ def empresa_logo_url_or_none(empresa: Optional["Empresa"]) -> Optional[str]:
     logo = normalizar_logo_empresa(empresa.logo.strip())
     if not logo:
         return None
-    if logo.startswith(("http://", "https://")):
-        return logo
-    return url_for("static", filename=logo)
+    return url_for_reference(logo)
 
 
 def normalizar_logo_empresa(logo: str) -> Optional[str]:
@@ -33,6 +31,8 @@ def normalizar_logo_empresa(logo: str) -> Optional[str]:
     if not value:
         return None
     if value.startswith("https://"):
+        return value
+    if key_from_reference(value):
         return value
     if value.startswith("uploads/") and ".." not in value and not value.startswith("//"):
         return value

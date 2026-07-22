@@ -46,6 +46,50 @@ def backup_db():
     click.echo(f"Backup guardado en: {path}")
 
 
+@click.command("verify-backup")
+@click.argument("path", type=click.Path(exists=True, dir_okay=False, path_type=str))
+def verify_backup_command(path: str):
+    """Verifica integridad y formato de una copia sin restaurarla."""
+    from app.backup_service import verify_backup
+
+    verify_backup(path)
+    click.echo(f"Backup verificado: {path}")
+
+
+@click.command("restore-db")
+@click.argument("path", type=click.Path(exists=True, dir_okay=False, path_type=str))
+@click.option("--target", required=True, help="Archivo SQLite o URL PostgreSQL de destino.")
+@click.option("--yes", is_flag=True, help="Confirma que el destino puede ser reemplazado.")
+def restore_db_command(path: str, target: str, yes: bool):
+    """Restaura una copia en un destino indicado expresamente."""
+    if not yes:
+        raise click.ClickException("Usa --yes después de verificar el destino de restauración.")
+    from app.backup_service import restore_postgresql_backup, restore_sqlite_backup
+
+    if path.endswith(".db"):
+        restored = restore_sqlite_backup(path, target)
+        click.echo(f"SQLite restaurado y verificado en: {restored}")
+    elif path.endswith(".sql.gz"):
+        restore_postgresql_backup(path, target)
+        click.echo("PostgreSQL restaurado correctamente.")
+    else:
+        raise click.ClickException("Formato de respaldo no reconocido.")
+
+
+@click.command("migrate-storage")
+@click.option("--apply", is_flag=True, help="Copia los archivos y actualiza sus referencias.")
+@with_appcontext
+def migrate_storage_command(apply: bool):
+    """Inventaría o migra archivos históricos al backend configurado."""
+    from app.storage_migration import migrate_legacy_storage
+
+    stats = migrate_legacy_storage(apply=apply)
+    mode = "APLICADA" if apply else "SIMULACIÓN"
+    click.echo(f"Migración de almacenamiento ({mode}): {stats}")
+    if not apply:
+        click.echo("Ejecuta nuevamente con --apply después de revisar el inventario.")
+
+
 @click.command("version")
 def version_command():
     """Muestra la versión SemVer y el build Git de Roustix."""
@@ -56,4 +100,7 @@ def version_command():
 def register_cli(app) -> None:
     app.cli.add_command(maintenance)
     app.cli.add_command(backup_db)
+    app.cli.add_command(verify_backup_command)
+    app.cli.add_command(restore_db_command)
+    app.cli.add_command(migrate_storage_command)
     app.cli.add_command(version_command)

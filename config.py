@@ -105,6 +105,17 @@ class Config:
     NEON_PROJECT_ID = os.environ.get("NEON_PROJECT_ID", "").strip()
     NEON_API_KEY = os.environ.get("NEON_API_KEY", "").strip()
     BACKUP_DIR = os.environ.get("BACKUP_DIR", str(BASE_DIR / "backups"))
+
+    # Archivos de clientes. ``s3`` funciona con S3, Cloudflare R2 y Backblaze B2.
+    STORAGE_BACKEND = os.environ.get("STORAGE_BACKEND", "local").strip().lower()
+    STORAGE_LOCAL_ROOT = os.environ.get(
+        "STORAGE_LOCAL_ROOT", str(BASE_DIR / "data" / "object_storage")
+    )
+    STORAGE_BUCKET = os.environ.get("STORAGE_BUCKET", "").strip()
+    STORAGE_ENDPOINT_URL = os.environ.get("STORAGE_ENDPOINT_URL", "").strip()
+    STORAGE_REGION = os.environ.get("STORAGE_REGION", "auto").strip()
+    STORAGE_ACCESS_KEY_ID = os.environ.get("STORAGE_ACCESS_KEY_ID", "").strip()
+    STORAGE_SECRET_ACCESS_KEY = os.environ.get("STORAGE_SECRET_ACCESS_KEY", "")
     # Evita errores cuando Neon suspende la BD por inactividad (scale-to-zero)
     SQLALCHEMY_ENGINE_OPTIONS = {
         "pool_pre_ping": True,
@@ -147,6 +158,12 @@ class ProductionConfig(Config):
             logging.getLogger(__name__).warning(
                 "DATABASE_URL no está configurada: se usa SQLite local. "
                 "En producción conecta Neon/PostgreSQL para persistencia."
+            )
+        if app.config.get("STORAGE_BACKEND") != "s3":
+            import logging
+
+            logging.getLogger(__name__).warning(
+                "STORAGE_BACKEND no es s3: los archivos de clientes no son persistentes."
             )
 
 

@@ -13,7 +13,7 @@
 
 <div class="card mb-3"><div class="card-header fw-semibold"><i class="bi bi-card-heading me-1"></i>Identificación</div><div class="card-body">
   <div class="row g-3 align-items-start">
-    {% if machine.foto_url %}<div class="col-12 col-lg-3"><img src="{{ machine.foto_url if machine.foto_url.startswith('http') else url_for('static', filename=machine.foto_url) }}" class="img-fluid rounded border" alt="{{ machine.nombre }}"></div>{% endif %}
+    {% if machine.foto_url %}<div class="col-12 col-lg-3"><img src="{{ media_url(machine.foto_url) }}" class="img-fluid rounded border" alt="{{ machine.nombre }}"></div>{% endif %}
     <div class="col"><div class="row g-3">
       {% set datos = [('Código',machine.codigo),('Nombre',machine.nombre),('Tipo',machine.tipo_etiqueta),('Estado',status_meta.label),('Sector',sector_label),('Criticidad',machine.criticidad),('Marca',machine.marca),('Modelo',machine.modelo),('Número de serie',machine.numero_serie),('Fabricante',machine.fabricante),('Fecha de fabricación',machine.fecha_fabricacion.strftime('%d/%m/%Y') if machine.fecha_fabricacion else ''),('Fecha de instalación',machine.fecha_instalacion.strftime('%d/%m/%Y') if machine.fecha_instalacion else '')] %}
       {% for etiqueta, valor in datos %}<div class="col-12 col-md-6 col-xl-4"><div class="text-muted small">{{ etiqueta }}</div><div class="fw-medium">{{ valor or '—' }}</div></div>{% endfor %}

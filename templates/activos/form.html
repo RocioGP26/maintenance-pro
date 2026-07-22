@@ -292,7 +292,7 @@
                        accept="image/png,image/jpeg,image/webp">
                 <div class="form-text">PNG, JPG o WEBP. Tamaño máximo: 5 MB.</div>
                 {% if machine and machine.foto_url %}
-                {% set foto_actual = machine.foto_url if machine.foto_url.startswith(('http://', 'https://')) else url_for('static', filename=machine.foto_url) %}
+                {% set foto_actual = media_url(machine.foto_url) %}
                 <div class="mt-2">
                   <img src="{{ foto_actual }}" alt="Imagen actual de {{ machine.nombre }}"
                        class="img-thumbnail" style="max-width:220px;max-height:160px;object-fit:cover;">

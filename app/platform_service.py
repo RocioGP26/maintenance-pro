@@ -88,10 +88,13 @@ def _uploads_root() -> str:
 
 
 def storage_bytes_empresa(empresa_id: int) -> int:
+    from app.file_storage import size_for_prefix
+
+    object_total = size_for_prefix(f"empresas/{int(empresa_id)}")
     carpeta = os.path.join(_uploads_root(), str(empresa_id))
     if not os.path.isdir(carpeta):
-        return 0
-    total = 0
+        return object_total
+    total = object_total
     for raiz, _dirs, archivos in os.walk(carpeta):
         for nombre in archivos:
             try:

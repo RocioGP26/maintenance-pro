@@ -7,6 +7,8 @@ from typing import Any, Optional
 
 from flask import url_for
 
+from app.file_storage import url_for_reference
+
 from app.models import (
     WORK_ORDER_TERMINAL_STATUSES,
     Machine,
@@ -34,9 +36,7 @@ def _machine_foto_url(machine: Machine) -> Optional[str]:
     url = (machine.foto_url or "").strip()
     if not url:
         return None
-    if url.startswith(("http://", "https://")):
-        return url
-    return url_for("static", filename=url)
+    return url_for_reference(url)
 
 
 def _maintenance_por_maquina(machine_ids: list[int]) -> dict[int, dict[str, Optional[date]]]:

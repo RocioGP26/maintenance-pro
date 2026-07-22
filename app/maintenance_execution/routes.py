@@ -48,13 +48,14 @@ from app.maintenance_execution.service import (
     response_for_evidence,
     review_checklist,
 )
-from app.maintenance_execution.evidence import resolve_evidence_path, save_evidence_file
+from app.maintenance_execution.evidence import read_evidence_file, save_evidence_file
 from app.maintenance_execution.log_service import (
     attach_log_file, audit_log_access, can_view_log, can_write_log,
     create_log_entry, entries_for_context, log_notifications_for_user,
     mark_log_notification_read, resolve_log_context,
 )
-from app.maintenance_execution.log_storage import resolve_log_file, save_log_file
+from app.maintenance_execution.log_storage import read_log_file, save_log_file
+from app.file_storage import delete as delete_stored_file
 from app.maintenance_execution.meter_service import (
     can_manage_meters,
     can_record_reading,
@@ -422,7 +423,7 @@ def work_order_checklist_execute(work_order_id: int):
     ).first_or_404()
     if not can_access_checklist(checklist, current_user):
         abort(403)
-    saved_paths = []
+    saved_keys = []
     try:
         save_checklist_responses(checklist, current_user.id, request.form)
         for step in checklist.procedure_version.steps:
@@ -437,7 +438,7 @@ def work_order_checklist_execute(work_order_id: int):
                 stored = save_evidence_file(
                     upload, checklist.empresa_id, checklist.id
                 )
-                saved_paths.append(stored.pop("path"))
+                saved_keys.append(stored["storage_key"])
                 register_evidence_metadata(
                     response, current_user.id, **stored
                 )
@@ -445,8 +446,8 @@ def work_order_checklist_execute(work_order_id: int):
         flash("Checklist completado." if checklist.status == "completed" else "Avance del checklist guardado.", "success")
     except ValueError as exc:
         db.session.rollback()
-        for path in saved_paths:
-            path.unlink(missing_ok=True)
+        for key in saved_keys:
+            delete_stored_file(key)
         flash(str(exc), "danger")
     return redirect(url_for("maintenance_execution.work_order_checklist", work_order_id=work_order.id))
 
@@ -484,10 +485,8 @@ def work_order_checklist_evidence_download(work_order_id: int, evidence_id: int)
         id=evidence_id, empresa_id=_empresa_id(), checklist_id=checklist.id
     ).first_or_404()
     try:
-        path = resolve_evidence_path(evidence.storage_key)
-    except ValueError:
-        abort(404)
-    if not path.is_file():
+        content = read_evidence_file(evidence.storage_key)
+    except (ValueError, FileNotFoundError):
         abort(404)
     db.session.add(WorkOrderChecklistEvent(
         empresa_id=checklist.empresa_id,
@@ -497,7 +496,8 @@ def work_order_checklist_evidence_download(work_order_id: int, evidence_id: int)
         detail=evidence.original_name[:500],
     ))
     db.session.commit()
-    return send_file(path, as_attachment=True, download_name=evidence.original_name, mimetype=evidence.mime_type)
+    from io import BytesIO
+    return send_file(BytesIO(content), as_attachment=True, download_name=evidence.original_name, mimetype=evidence.mime_type)
 
 
 @maintenance_execution_bp.route("/context/<entity_type>/<int:entity_id>/log", methods=["GET", "POST"])
@@ -510,7 +510,7 @@ def context_log(entity_type: str, entity_id: int):
         abort(404)
     if not can_view_log(current_user, entity_type, entity):
         abort(403)
-    saved_paths = []
+    saved_keys = []
     if request.method == "POST":
         try:
             entry = create_log_entry(current_user, entity_type, entity, request.form)
@@ -518,14 +518,14 @@ def context_log(entity_type: str, entity_id: int):
                 if not upload or not upload.filename:
                     continue
                 stored = save_log_file(upload, entry.empresa_id, entry.id)
-                saved_paths.append(stored.pop("path"))
+                saved_keys.append(stored["storage_key"])
                 attach_log_file(entry, current_user.id, stored)
             db.session.commit()
             flash("Entrada agregada a la bitácora.", "success")
             return redirect(url_for("maintenance_execution.context_log", entity_type=entity_type, entity_id=entity.id))
         except (ValueError, TypeError) as exc:
             db.session.rollback()
-            for path in saved_paths: path.unlink(missing_ok=True)
+            for key in saved_keys: delete_stored_file(key)
             flash(str(exc), "danger")
     if entity_type == "work_order":
         title = f"{entity.numero or ('OT-' + str(entity.id))} · {entity.titulo}"
@@ -553,12 +553,12 @@ def context_log_attachment_download(attachment_id: int):
     entity = entry.work_order or entry.incident or entry.machine
     if not can_view_log(current_user, entity_type, entity): abort(403)
     if current_user.id == getattr(entity, "user_id", None) and entry.visibility != "requester": abort(403)
-    try: path = resolve_log_file(attachment.storage_key)
-    except ValueError: abort(404)
-    if not path.is_file(): abort(404)
+    try: content = read_log_file(attachment.storage_key)
+    except (ValueError, FileNotFoundError): abort(404)
     audit_log_access(entry, current_user.id, "log_attachment_downloaded", attachment.original_name)
     db.session.commit()
-    return send_file(path, as_attachment=True, download_name=attachment.original_name, mimetype=attachment.mime_type)
+    from io import BytesIO
+    return send_file(BytesIO(content), as_attachment=True, download_name=attachment.original_name, mimetype=attachment.mime_type)
 
 
 @maintenance_execution_bp.get("/context/notifications")

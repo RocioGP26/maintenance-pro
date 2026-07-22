@@ -3,11 +3,15 @@
 from __future__ import annotations
 
 import hashlib
-from pathlib import Path
 from uuid import uuid4
 
-from flask import current_app
 from werkzeug.utils import secure_filename
+
+from pathlib import Path
+
+from flask import current_app
+
+from app.file_storage import local_path, read_bytes, save_bytes, tenant_key
 
 
 ALLOWED_EVIDENCE = {
@@ -18,10 +22,6 @@ ALLOWED_EVIDENCE = {
     "webp": "image/webp",
 }
 MAX_EVIDENCE_BYTES = 5 * 1024 * 1024
-
-
-def evidence_root() -> Path:
-    return Path(current_app.root_path).resolve().parent / "data" / "checklist_evidence"
 
 
 def save_evidence_file(file, empresa_id: int, checklist_id: int):
@@ -46,26 +46,29 @@ def save_evidence_file(file, empresa_id: int, checklist_id: int):
     }
     if not signatures.get(extension, False):
         raise ValueError("El contenido del archivo no corresponde al formato declarado.")
-    relative = Path(str(empresa_id)) / str(checklist_id) / f"{uuid4().hex}.{extension}"
-    target = (evidence_root() / relative).resolve()
-    root = evidence_root().resolve()
-    if root not in target.parents:
-        raise ValueError("Ruta de evidencia no válida.")
-    target.parent.mkdir(parents=True, exist_ok=True)
-    target.write_bytes(content)
+    key = tenant_key(empresa_id, "checklists", checklist_id, f"{uuid4().hex}.{extension}")
+    save_bytes(key, content, content_type=ALLOWED_EVIDENCE[extension])
     return {
-        "storage_key": relative.as_posix(),
+        "storage_key": key,
         "original_name": original,
         "mime_type": ALLOWED_EVIDENCE[extension],
         "size_bytes": len(content),
         "checksum": hashlib.sha256(content).hexdigest(),
-        "path": target,
     }
 
 
-def resolve_evidence_path(storage_key: str) -> Path:
-    root = evidence_root().resolve()
-    target = (root / (storage_key or "")).resolve()
-    if root not in target.parents:
-        raise ValueError("Ruta de evidencia no válida.")
-    return target
+def resolve_evidence_path(storage_key: str):
+    """Compatibilidad para pruebas/herramientas que usan el backend local."""
+    if not (storage_key or "").startswith("empresas/"):
+        root = Path(current_app.root_path).resolve().parent / "data" / "checklist_evidence"
+        target = (root / (storage_key or "")).resolve()
+        if root.resolve() not in target.parents:
+            raise ValueError("Ruta de evidencia no válida.")
+        return target
+    return local_path(storage_key)
+
+
+def read_evidence_file(storage_key: str) -> bytes:
+    if not (storage_key or "").startswith("empresas/"):
+        return resolve_evidence_path(storage_key).read_bytes()
+    return read_bytes(storage_key)

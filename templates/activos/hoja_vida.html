@@ -51,7 +51,7 @@
   <div class="card-header fw-semibold"><i class="bi bi-info-circle me-1"></i>Información general</div>
   <div class="card-body">
     <div class="row g-3 align-items-start">
-      {% if machine.foto_url %}<div class="col-12 col-lg-3"><img src="{{ machine.foto_url if machine.foto_url.startswith('http') else url_for('static', filename=machine.foto_url) }}" class="img-fluid rounded border" alt="Imagen de {{ machine.nombre }}"></div>{% endif %}
+      {% if machine.foto_url %}<div class="col-12 col-lg-3"><img src="{{ media_url(machine.foto_url) }}" class="img-fluid rounded border" alt="Imagen de {{ machine.nombre }}"></div>{% endif %}
       <div class="col">
         <div class="row g-3">
           {% set base = [

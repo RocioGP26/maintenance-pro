@@ -18,7 +18,8 @@ jobs:
       - name: Backup
         run: |
           URL="${DATABASE_URL//+psycopg/}"
-          pg_dump "$URL" > backup.sql
+          pg_dump --format=custom --no-owner --no-acl --file=backup.dump "$URL"
+          pg_restore --list backup.dump > backup.manifest
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
 
@@ -26,5 +27,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: roustix-backup
-          path: backup.sql
-          retention-days: 14
+          path: |
+            backup.dump
+            backup.manifest
+          retention-days: 30

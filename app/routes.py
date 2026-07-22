@@ -1322,19 +1322,17 @@ def _guardar_imagen_activo(machine: Machine, archivo) -> None:
     ext = nombre.rsplit(".", 1)[-1].lower() if "." in nombre else ""
     if ext not in ACTIVO_IMAGE_EXTENSIONS:
         raise ValueError("Formato de imagen no permitido. Use PNG, JPG o WEBP.")
-    carpeta = os.path.join(
-        current_app.static_folder, "uploads", "empresas", str(machine.empresa_id), "activos"
-    )
-    os.makedirs(carpeta, exist_ok=True)
+    from app.file_storage import delete, reference, save_bytes, tenant_key
+
+    content = archivo.stream.read()
+    if not content:
+        raise ValueError("La imagen está vacía.")
     for old_ext in ACTIVO_IMAGE_EXTENSIONS:
-        old_path = os.path.join(carpeta, f"{machine.id}.{old_ext}")
-        if os.path.isfile(old_path) and old_ext != ext:
-            try:
-                os.remove(old_path)
-            except OSError:
-                pass
-    archivo.save(os.path.join(carpeta, f"{machine.id}.{ext}"))
-    machine.foto_url = f"uploads/empresas/{machine.empresa_id}/activos/{machine.id}.{ext}"
+        if old_ext != ext:
+            delete(tenant_key(machine.empresa_id, "activos", f"{machine.id}.{old_ext}"))
+    key = tenant_key(machine.empresa_id, "activos", f"{machine.id}.{ext}")
+    save_bytes(key, content, content_type=f"image/{'jpeg' if ext in {'jpg', 'jpeg'} else ext}")
+    machine.foto_url = reference(key)
 
 
 def _save_machine_custom_fields(
@@ -4369,6 +4367,10 @@ INFORME_OT_EXTENSIONES = {"pdf", "doc", "docx", "xls", "xlsx", "png", "jpg", "jp
 
 
 def _ruta_informe_ot(informe: WorkOrderInforme) -> str:
+    from app.file_storage import key_from_reference
+
+    if key_from_reference(informe.ruta_archivo):
+        raise ValueError("El informe está en almacenamiento de objetos.")
     raiz = os.path.abspath(current_app.static_folder)
     ruta = os.path.abspath(os.path.join(raiz, informe.ruta_archivo.replace("/", os.sep)))
     if os.path.commonpath([raiz, ruta]) != raiz:
@@ -4391,16 +4393,20 @@ def ordenes_informe_upload(id):
         flash("Formato no permitido. Usa PDF, Word, Excel o una imagen.", "danger")
         return redirect(url_for("main.ordenes_edit", id=wo.id) + "#informes-tecnicos")
     empresa_id = wo.empresa_id or _current_empresa_id()
-    carpeta_rel = f"uploads/empresas/{empresa_id}/ordenes/{wo.id}/informes"
-    carpeta_abs = os.path.join(current_app.static_folder, *carpeta_rel.split("/"))
-    os.makedirs(carpeta_abs, exist_ok=True)
+    from app.file_storage import reference, save_bytes, tenant_key
+
     nombre_guardado = f"{uuid4().hex}.{extension}"
-    archivo.save(os.path.join(carpeta_abs, nombre_guardado))
+    content = archivo.stream.read()
+    if not content:
+        flash("El informe técnico está vacío.", "danger")
+        return redirect(url_for("main.ordenes_edit", id=wo.id) + "#informes-tecnicos")
+    key = tenant_key(empresa_id, "ordenes", wo.id, "informes", nombre_guardado)
+    save_bytes(key, content, content_type=archivo.mimetype or "application/octet-stream")
     informe = WorkOrderInforme(
         empresa_id=empresa_id,
         work_order_id=wo.id,
         nombre_original=original,
-        ruta_archivo=f"{carpeta_rel}/{nombre_guardado}",
+        ruta_archivo=reference(key),
         descripcion=(request.form.get("informe_descripcion") or "").strip()[:255],
         user_id=current_user.id,
     )
@@ -4412,12 +4418,21 @@ def ordenes_informe_upload(id):
 
 @bp.route("/ordenes/<int:id>/informes/<int:informe_id>/descargar")
 def ordenes_informe_download(id, informe_id):
+    from io import BytesIO
     from flask import send_file
+    from app.file_storage import key_from_reference, read_bytes
 
     wo = _get_work_order_or_404(id)
     informe = WorkOrderInforme.query.filter_by(
         id=informe_id, work_order_id=wo.id, empresa_id=wo.empresa_id
     ).first_or_404()
+    key = key_from_reference(informe.ruta_archivo)
+    if key:
+        try:
+            content = read_bytes(key)
+        except FileNotFoundError:
+            abort(404)
+        return send_file(BytesIO(content), as_attachment=True, download_name=informe.nombre_original)
     ruta = _ruta_informe_ot(informe)
     if not os.path.isfile(ruta):
         abort(404)
@@ -4432,10 +4447,15 @@ def ordenes_informe_delete(id, informe_id):
     informe = WorkOrderInforme.query.filter_by(
         id=informe_id, work_order_id=wo.id, empresa_id=wo.empresa_id
     ).first_or_404()
-    ruta = _ruta_informe_ot(informe)
+    from app.file_storage import delete as delete_stored_file, key_from_reference
+
+    key = key_from_reference(informe.ruta_archivo)
+    ruta = None if key else _ruta_informe_ot(informe)
     db.session.delete(informe)
     db.session.commit()
-    if os.path.isfile(ruta):
+    if key:
+        delete_stored_file(key)
+    elif ruta and os.path.isfile(ruta):
         os.remove(ruta)
     flash("Informe técnico eliminado.", "success")
     return redirect(url_for("main.ordenes_edit", id=wo.id) + "#informes-tecnicos")
@@ -5596,9 +5616,9 @@ def configuracion_campos_delete(id):
 
 def _empresa_logo_url(empresa: Optional[Empresa]) -> str:
     if empresa and empresa.logo:
-        if empresa.logo.startswith(("http://", "https://")):
-            return empresa.logo
-        return url_for("static", filename=empresa.logo)
+        from app.file_storage import url_for_reference
+
+        return url_for_reference(empresa.logo) or url_for("static", filename=APP_LOGO_PATH)
     return url_for("static", filename=APP_LOGO_PATH)
 
 
@@ -5613,13 +5633,17 @@ def _guardar_logo_empresa(empresa: Empresa, archivo) -> None:
     ext = nombre.rsplit(".", 1)[-1].lower() if "." in nombre else ""
     if ext not in EMPRESA_LOGO_EXTENSIONS:
         raise ValueError("Formato de imagen no permitido. Use PNG, JPG o WEBP.")
-    carpeta = os.path.join(
-        current_app.static_folder, "uploads", "empresas", str(empresa.id)
-    )
-    os.makedirs(carpeta, exist_ok=True)
-    ruta_abs = os.path.join(carpeta, f"logo.{ext}")
-    archivo.save(ruta_abs)
-    empresa.logo = f"uploads/empresas/{empresa.id}/logo.{ext}"
+    from app.file_storage import delete, reference, save_bytes, tenant_key
+
+    content = archivo.stream.read()
+    if not content:
+        raise ValueError("La imagen está vacía.")
+    for old_ext in EMPRESA_LOGO_EXTENSIONS:
+        if old_ext != ext:
+            delete(tenant_key(empresa.id, f"logo.{old_ext}"))
+    key = tenant_key(empresa.id, f"logo.{ext}")
+    save_bytes(key, content, content_type=f"image/{'jpeg' if ext in {'jpg', 'jpeg'} else ext}")
+    empresa.logo = reference(key)
 
 
 @bp.route("/configuracion/empresa", methods=["GET", "POST"])

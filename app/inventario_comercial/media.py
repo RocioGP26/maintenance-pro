@@ -2,10 +2,9 @@
 
 from __future__ import annotations
 
-import os
 from typing import TYPE_CHECKING, Optional
 
-from flask import current_app, url_for
+from app.file_storage import delete, key_from_reference, reference, save_bytes, tenant_key, url_for_reference
 from werkzeug.utils import secure_filename
 
 if TYPE_CHECKING:
@@ -21,6 +20,8 @@ def normalizar_imagen_producto(ruta: str) -> Optional[str]:
         return None
     if value.startswith("https://"):
         return value
+    if key_from_reference(value):
+        return value
     if value.startswith("uploads/") and ".." not in value and not value.startswith("//"):
         return value
     return None
@@ -32,9 +33,7 @@ def producto_imagen_url_or_none(producto: Optional["InvProducto"]) -> Optional[s
     ref = normalizar_imagen_producto(producto.imagen.strip())
     if not ref:
         return None
-    if ref.startswith("https://"):
-        return ref
-    return url_for("static", filename=ref)
+    return url_for_reference(ref)
 
 
 def guardar_imagen_producto_archivo(producto: "InvProducto", archivo) -> None:
@@ -46,24 +45,15 @@ def guardar_imagen_producto_archivo(producto: "InvProducto", archivo) -> None:
     ext = nombre.rsplit(".", 1)[-1].lower() if "." in nombre else ""
     if ext not in PRODUCTO_IMAGEN_EXTENSIONS:
         raise ValueError("Formato de imagen no permitido. Use PNG, JPG o WEBP.")
-    carpeta = os.path.join(
-        current_app.static_folder,
-        "uploads",
-        "empresas",
-        str(producto.empresa_id),
-        "productos",
-    )
-    os.makedirs(carpeta, exist_ok=True)
-    ruta_abs = os.path.join(carpeta, f"{producto.id}.{ext}")
+    content = archivo.stream.read()
+    if not content:
+        raise ValueError("La imagen está vacía.")
     for old_ext in PRODUCTO_IMAGEN_EXTENSIONS:
-        old_path = os.path.join(carpeta, f"{producto.id}.{old_ext}")
-        if os.path.isfile(old_path) and old_ext != ext:
-            try:
-                os.remove(old_path)
-            except OSError:
-                pass
-    archivo.save(ruta_abs)
-    producto.imagen = f"uploads/empresas/{producto.empresa_id}/productos/{producto.id}.{ext}"
+        if old_ext != ext:
+            delete(tenant_key(producto.empresa_id, "productos", f"{producto.id}.{old_ext}"))
+    key = tenant_key(producto.empresa_id, "productos", f"{producto.id}.{ext}")
+    save_bytes(key, content, content_type=f"image/{'jpeg' if ext in {'jpg', 'jpeg'} else ext}")
+    producto.imagen = reference(key)
 
 
 def aplicar_imagen_producto(producto: "InvProducto", form, archivo) -> None:
