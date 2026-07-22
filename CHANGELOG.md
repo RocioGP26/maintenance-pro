@@ -10,6 +10,12 @@ La suite documental mantiene un ciclo independiente en
 
 ### Added
 
+- Espacio reservado para cambios aún no publicados.
+
+## [1.0.9] - 2026-07-22
+
+### Added
+
 - Sprint 22.1: credenciales de integración tenant-safe con API keys para
   pruebas y producción, secreto de única visualización y hash `scrypt`.
 - Administración de creación, listado, rotación y revocación, con scopes,
@@ -28,6 +34,10 @@ La suite documental mantiene un ciclo independiente en
   desactivación automática y aislamiento tenant.
 - Sprint 22.5: guía para integradores, ejemplos, colección de pruebas, auditoría
   y cierre del programa Sprint 22.
+
+### Notes
+
+- feat: Sprint 22 API/webhooks y catálogo creatable (#10).
 
 ## [1.0.8] - 2026-07-22
 
@@ -198,7 +208,7 @@ La suite documental mantiene un ciclo independiente en
 
 - Este release formaliza el versionado; no modifica funcionalidades de negocio.
 
-[Unreleased]: https://github.com/RocioGP26/maintenance-pro/compare/v1.0.8...HEAD
+[Unreleased]: https://github.com/RocioGP26/maintenance-pro/compare/v1.0.9...HEAD
 [1.0.0]: https://github.com/RocioGP26/maintenance-pro/releases/tag/v1.0.0
 [1.0.1]: https://github.com/RocioGP26/maintenance-pro/compare/v1.0.0...v1.0.1
 [1.0.2]: https://github.com/RocioGP26/maintenance-pro/compare/v1.0.1...v1.0.2
@@ -208,3 +218,4 @@ La suite documental mantiene un ciclo independiente en
 [1.0.6]: https://github.com/RocioGP26/maintenance-pro/compare/v1.0.5...v1.0.6
 [1.0.7]: https://github.com/RocioGP26/maintenance-pro/compare/v1.0.6...v1.0.7
 [1.0.8]: https://github.com/RocioGP26/maintenance-pro/compare/v1.0.7...v1.0.8
+[1.0.9]: https://github.com/RocioGP26/maintenance-pro/compare/v1.0.8...v1.0.9
