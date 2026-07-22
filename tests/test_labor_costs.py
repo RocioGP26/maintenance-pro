@@ -18,6 +18,7 @@ from app.models import (
     WorkOrderEjecucionTipo,
     WorkOrderJornada,
     WorkOrderRepuesto,
+    WorkOrderStatus,
 )
 from app.routes import _parse_jornadas_json, _parse_tarifa_hora_equipo
 
@@ -295,6 +296,9 @@ class TestLaborCostReport(unittest.TestCase):
             },
         )
         machine = Machine.query.filter_by(codigo="CT-001").one()
+        order = WorkOrder.query.filter_by(machine_id=machine.id).one()
+        order.status = WorkOrderStatus.CERRADA.value
+        db.session.commit()
         empresa = db.session.get(Empresa, machine.empresa_id)
         campo = CampoPersonalizado(
             empresa_id=machine.empresa_id,
@@ -326,13 +330,16 @@ class TestLaborCostReport(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         html = response.get_data(as_text=True)
         self.assertIn("Costo total de mantenimiento", html)
-        self.assertIn("Costo repuestos", html)
+        self.assertIn(">Repuestos<", html)
         self.assertIn("$62.000", html)
-        self.assertIn('data-bs-toggle="collapse"', html)
+        self.assertIn("Órdenes de trabajo pendientes", html)
+        self.assertIn("Historial de órdenes de trabajo", html)
         self.assertIn('data-bs-target="#ot-avances-', html)
         self.assertIn('class="collapse" id="ot-avances-', html)
-        self.assertIn("Desplegar", html)
-        self.assertIn("Recoger", html)
+        self.assertIn("Desplegar avances", html)
+        self.assertIn("ot-row-toggle", html)
+        self.assertIn("Total", html)
+        self.assertIn("Inicio / finalización", html)
         self.assertNotIn("<th>Técnico realizador</th>", html)
         self.assertIn("<th>Técnico / proveedor</th>", html)
         self.assertIn('data-bs-target="#sector-info-details"', html)
@@ -343,7 +350,7 @@ class TestLaborCostReport(unittest.TestCase):
         order = WorkOrder.query.filter_by(machine_id=machine.id).one()
         order_label = order.numero or f"#{order.id}"
         self.assertIn(
-            f'href="/ordenes/{order.id}/editar" class="fw-semibold">{order_label}',
+            f'href="/ordenes/{order.id}/editar">{order_label}',
             html,
         )
         self.assertNotIn(">Ver</a>", html)

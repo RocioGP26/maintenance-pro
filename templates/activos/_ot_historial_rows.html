@@ -1,0 +1,149 @@
+{# Filas de OT. Vars: ordenes, avances_por_ot, prefijo, mostrar_estado, mostrar_avances, mostrar_costos, mensaje_vacio #}
+{% set mostrar_avances = mostrar_avances if mostrar_avances is defined else true %}
+{% set mostrar_costos = mostrar_costos if mostrar_costos is defined else true %}
+{% set modo_pendientes = (not mostrar_avances) and (not mostrar_costos) %}
+{% if modo_pendientes %}
+  {% set cols = 5 %}
+{% else %}
+  {% set cols = 5 + (1 if mostrar_estado else 0) + (1 if mostrar_avances else 0) + (4 if mostrar_costos else 0) %}
+{% endif %}
+{% for orden in ordenes %}
+{% set avances = avances_por_ot.get(orden.id, []) if mostrar_avances else [] %}
+{% set tipo_label = wo_tipo_meta(orden.tipo).label %}
+{% if orden.tipo == 'correctivo' %}
+  {% set tipo_detalle = tipo_label ~ (' — Requirió Paro' if orden.maquina_requirio_paro else ' — Sin Paro') %}
+{% else %}
+  {% set tipo_detalle = tipo_label %}
+{% endif %}
+{% set inicio_ot = orden.fecha_inicio or (avances[0].jornada.fecha_inicio if avances else none) %}
+{% set fin_ot = orden.fecha_cierre or (avances[-1].jornada.fecha_fin if avances else none) %}
+{% if mostrar_avances %}
+  {% set obs_ot = (avances[0].jornada.descripcion_avance if avances and avances[0].jornada.descripcion_avance else (orden.descripcion or ''))|trim %}
+{% else %}
+  {% set obs_ot = (orden.descripcion or '')|trim %}
+{% endif %}
+<tr class="ot-historial-row">
+  {% if modo_pendientes %}
+  <td class="font-monospace small">
+    <a href="{{ url_for('main.ordenes_edit', id=orden.id) }}">{{ orden.numero or ('#' ~ orden.id) }}</a>
+  </td>
+  <td class="text-nowrap small">
+    {{ orden.fecha_programada.strftime('%d/%m/%Y') if orden.fecha_programada else '—' }}
+  </td>
+  <td>{{ tipo_label }}</td>
+  <td><span class="{{ wo_status_meta(orden.status).badge_class }}">{{ wo_status_meta(orden.status).label }}</span></td>
+  <td>{{ orden.titulo or '—' }}</td>
+  {% else %}
+  {% if mostrar_avances %}
+  <td>
+    <button
+      type="button"
+      class="ot-row-toggle"
+      data-bs-toggle="collapse"
+      data-bs-target="#ot-avances-{{ prefijo }}-{{ orden.id }}"
+      aria-expanded="false"
+      aria-controls="ot-avances-{{ prefijo }}-{{ orden.id }}"
+      title="Ver avances de la OT">
+      <i class="bi bi-chevron-right" aria-hidden="true"></i>
+      <span class="visually-hidden">Desplegar avances</span>
+    </button>
+  </td>
+  {% endif %}
+  <td class="font-monospace small">
+    <a href="{{ url_for('main.ordenes_edit', id=orden.id) }}">{{ orden.numero or ('#' ~ orden.id) }}</a>
+  </td>
+  <td class="text-nowrap small">
+    {% if inicio_ot %}
+      <div>{{ inicio_ot|formato_fecha_hora('%d/%m/%Y %H:%M') }}</div>
+      {% if fin_ot %}<div class="text-muted">{{ fin_ot|formato_fecha_hora('%d/%m/%Y %H:%M') }}</div>{% endif %}
+    {% else %}
+      {{ orden.fecha_programada.strftime('%d/%m/%Y') if orden.fecha_programada else '—' }}
+    {% endif %}
+  </td>
+  <td class="text-nowrap">{{ orden.tiempo_gastado_label }}</td>
+  <td style="min-width:12rem">
+    <div class="fw-semibold">{{ orden.titulo or '—' }}</div>
+    <div class="small text-muted">{{ tipo_detalle }}</div>
+  </td>
+  {% if mostrar_estado %}
+  <td><span class="{{ wo_status_meta(orden.status).badge_class }}">{{ wo_status_meta(orden.status).label }}</span></td>
+  {% endif %}
+  <td style="min-width:12rem">{{ obs_ot or '—' }}</td>
+  {% if mostrar_costos %}
+  <td class="text-end">{{ formato_moneda(orden.costo_repuestos_total, empresa_actual.moneda) }}</td>
+  <td class="text-end">{{ formato_moneda(orden.costo_herramientas_total, empresa_actual.moneda) }}</td>
+  <td class="text-end">{{ formato_moneda(orden.costo_mano_obra_total, empresa_actual.moneda) }}</td>
+  <td class="text-end fw-semibold">{{ formato_moneda(orden.costo_total_mantenimiento, empresa_actual.moneda) }}</td>
+  {% endif %}
+  {% endif %}
+</tr>
+{% if mostrar_avances %}
+<tr class="ot-avances-row">
+  <td colspan="{{ cols }}" class="p-0 border-0">
+    <div class="collapse" id="ot-avances-{{ prefijo }}-{{ orden.id }}">
+      <div class="ot-avances-panel px-3 py-2 border-bottom">
+        <div class="small fw-semibold mb-2">
+          <i class="bi bi-list-check me-1"></i>Avances de {{ orden.numero or ('OT #' ~ orden.id) }}
+        </div>
+        {% if avances %}
+        <div class="table-responsive border rounded bg-body">
+          <table class="table table-sm align-middle mb-0">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Fecha y horario</th>
+                <th>Técnico / proveedor</th>
+                <th>Trabajo realizado</th>
+                <th>Paro</th>
+                <th>Recibido por</th>
+                <th>Repuestos instalados</th>
+                <th class="text-end">Herramientas</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for avance in avances %}
+              {% set jornada = avance.jornada %}
+              <tr>
+                <td>{{ jornada.orden or loop.index }}</td>
+                <td class="text-nowrap">
+                  {{ avance.fecha.strftime('%d/%m/%Y') if avance.fecha else '—' }}
+                  <br><small class="text-muted">{{ avance.hora_inicio or '—' }} - {{ avance.hora_fin or '—' }} · {{ avance.duracion }}</small>
+                </td>
+                <td>
+                  {% set empresa_avance = (orden.proveedor.nombre if orden.proveedor else orden.empresa_tercerizada) if orden.es_ejecucion_externa else (empresa_actual.razon_social if empresa_actual else '') %}
+                  <span class="d-block">{{ jornada.tecnico_label }}</span>
+                  {% if empresa_avance %}<small class="d-block text-muted">{{ empresa_avance }}</small>{% endif %}
+                </td>
+                <td style="min-width:220px">{{ jornada.descripcion_avance or '—' }}</td>
+                <td>
+                  <span class="badge {% if jornada.requirio_paro %}text-bg-danger{% else %}text-bg-success{% endif %}">
+                    {{ 'Sí' if jornada.requirio_paro else 'No' }}
+                  </span>
+                </td>
+                <td>{{ jornada.recibido_por or '—' }}</td>
+                <td>
+                  {% for linea in avance.repuestos %}
+                  <div>{{ linea.spare_part.nombre if linea.spare_part else 'Repuesto' }} × {{ linea.cantidad }}</div>
+                  {% else %}
+                  <span class="text-muted">—</span>
+                  {% endfor %}
+                </td>
+                <td class="text-end">{{ formato_moneda(jornada.costo_herramientas_total, empresa_actual.moneda) }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% else %}
+        <div class="text-muted small py-1">Esta OT todavía no tiene avances registrados.</div>
+        {% endif %}
+      </div>
+    </div>
+  </td>
+</tr>
+{% endif %}
+{% else %}
+<tr>
+  <td colspan="{{ cols }}" class="text-center text-muted py-3">{{ mensaje_vacio }}</td>
+</tr>
+{% endfor %}

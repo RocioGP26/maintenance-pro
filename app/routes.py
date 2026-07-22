@@ -2233,17 +2233,30 @@ def activos_hoja_vida(id):
         .order_by(Incident.reportado_en.desc())
         .all()
     )
+    ordenes_historial = [
+        orden
+        for orden in ordenes
+        if (orden.status or "").strip().lower() in WORK_ORDER_TERMINAL_STATUSES
+        or (orden.status or "").strip().lower() in ("cerrado",)
+    ]
+    historial_ids = {orden.id for orden in ordenes_historial}
+    ordenes_pendientes = [orden for orden in ordenes if orden.id not in historial_ids]
     ctx.update(
         ordenes=ordenes,
+        ordenes_historial=ordenes_historial,
+        ordenes_pendientes=ordenes_pendientes,
         incidentes=incidentes,
         total_preventivos=sum(1 for orden in ordenes if orden.tipo == "preventivo"),
         total_correctivos=sum(1 for orden in ordenes if orden.tipo == "correctivo"),
-        costo_repuestos=sum(orden.costo_repuestos_total for orden in ordenes),
-        costo_herramientas=sum(orden.costo_herramientas_total for orden in ordenes),
-        costo_mano_obra=sum(orden.costo_mano_obra_total for orden in ordenes),
-        costo_servicios=sum(orden.costo_servicio_externo for orden in ordenes),
-        costo_total_mantenimiento=sum(orden.costo_total_mantenimiento for orden in ordenes),
+        costo_repuestos=sum(orden.costo_repuestos_total for orden in ordenes_historial),
+        costo_herramientas=sum(orden.costo_herramientas_total for orden in ordenes_historial),
+        costo_mano_obra=sum(orden.costo_mano_obra_total for orden in ordenes_historial),
+        costo_servicios=sum(orden.costo_servicio_externo for orden in ordenes_historial),
+        costo_total_mantenimiento=sum(
+            orden.costo_total_mantenimiento for orden in ordenes_historial
+        ),
         avances_por_ot=_avances_hoja_vida(ordenes),
+        tiempo_efectivo_label=_tiempo_efectivo_hoja_vida(ordenes_historial),
         status_meta=machine_status_meta(machine.status),
     )
     return render_template("activos/hoja_vida.html", **ctx)
@@ -2326,6 +2339,20 @@ def _avances_hoja_vida(ordenes):
             )
         resultado[orden.id] = avances
     return resultado
+
+
+def _tiempo_efectivo_hoja_vida(ordenes) -> str:
+    """Suma el tiempo efectivo de las OT del activo para el pie del historial."""
+    from app.work_time import formatear_duracion, wo_tiempo_gastado_minutos
+
+    total = 0
+    for orden in ordenes:
+        mins = wo_tiempo_gastado_minutos(orden)
+        if mins:
+            total += int(mins)
+    if not total:
+        return "—"
+    return f"{formatear_duracion(total)} ({total} min)"
 
 
 @bp.route("/activos/<int:id>/hoja-vida/pdf")
