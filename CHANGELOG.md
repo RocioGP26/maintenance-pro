@@ -29,6 +29,12 @@ La suite documental mantiene un ciclo independiente en
 - Sprint 22.5: guía para integradores, ejemplos, colección de pruebas, auditoría
   y cierre del programa Sprint 22.
 
+## [1.0.8] - 2026-07-22
+
+### Changed
+
+- feat: historial y OT pendientes en hoja de vida (#9).
+
 ## [1.0.7] - 2026-07-21
 
 ### Changed
@@ -192,7 +198,7 @@ La suite documental mantiene un ciclo independiente en
 
 - Este release formaliza el versionado; no modifica funcionalidades de negocio.
 
-[Unreleased]: https://github.com/RocioGP26/maintenance-pro/compare/v1.0.7...HEAD
+[Unreleased]: https://github.com/RocioGP26/maintenance-pro/compare/v1.0.8...HEAD
 [1.0.0]: https://github.com/RocioGP26/maintenance-pro/releases/tag/v1.0.0
 [1.0.1]: https://github.com/RocioGP26/maintenance-pro/compare/v1.0.0...v1.0.1
 [1.0.2]: https://github.com/RocioGP26/maintenance-pro/compare/v1.0.1...v1.0.2
@@ -201,3 +207,4 @@ La suite documental mantiene un ciclo independiente en
 [1.0.5]: https://github.com/RocioGP26/maintenance-pro/compare/v1.0.4...v1.0.5
 [1.0.6]: https://github.com/RocioGP26/maintenance-pro/compare/v1.0.5...v1.0.6
 [1.0.7]: https://github.com/RocioGP26/maintenance-pro/compare/v1.0.6...v1.0.7
+[1.0.8]: https://github.com/RocioGP26/maintenance-pro/compare/v1.0.7...v1.0.8
