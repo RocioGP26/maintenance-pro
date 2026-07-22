@@ -127,20 +127,41 @@
             {% with titulo=activo_secciones_labels.tecnica, seccion_key='tecnica' %}{% include 'activos/_seccion_encabezado.html' %}{% endwith %}
             <div class="row g-3">
               <div class="col-md-4">
-                <label class="form-label">Marca</label>
-                <input type="text" name="marca" class="form-control" value="{{ machine.marca if machine else '' }}">
+                <label class="form-label" for="marca_search">Marca</label>
+                <div class="creatable-select" data-campo="marca" data-placeholder="Buscar o crear marca…">
+                  <input type="hidden" name="marca" class="creatable-select-value" value="{{ machine.marca if machine else '' }}">
+                  <div class="creatable-select-box form-control" tabindex="-1">
+                    <div class="creatable-select-chips"></div>
+                    <input type="text" id="marca_search" class="creatable-select-input" autocomplete="off" spellcheck="false">
+                  </div>
+                  <div class="creatable-select-menu d-none" role="listbox"></div>
+                </div>
               </div>
               <div class="col-md-4">
-                <label class="form-label">Modelo</label>
-                <input type="text" name="modelo" class="form-control" value="{{ machine.modelo if machine else '' }}">
+                <label class="form-label" for="modelo_search">Modelo</label>
+                <div class="creatable-select" data-campo="modelo" data-placeholder="Buscar o crear modelo…">
+                  <input type="hidden" name="modelo" class="creatable-select-value" value="{{ machine.modelo if machine else '' }}">
+                  <div class="creatable-select-box form-control" tabindex="-1">
+                    <div class="creatable-select-chips"></div>
+                    <input type="text" id="modelo_search" class="creatable-select-input" autocomplete="off" spellcheck="false">
+                  </div>
+                  <div class="creatable-select-menu d-none" role="listbox"></div>
+                </div>
               </div>
               <div class="col-md-4">
                 <label class="form-label">Número de serie</label>
                 <input type="text" name="numero_serie" class="form-control" value="{{ machine.numero_serie if machine else '' }}">
               </div>
               <div class="col-md-6">
-                <label class="form-label">Fabricante</label>
-                <input type="text" name="fabricante" class="form-control" value="{{ machine.fabricante if machine else '' }}">
+                <label class="form-label" for="fabricante_search">Fabricante</label>
+                <div class="creatable-select" data-campo="fabricante" data-placeholder="Buscar o crear fabricante…">
+                  <input type="hidden" name="fabricante" class="creatable-select-value" value="{{ machine.fabricante if machine else '' }}">
+                  <div class="creatable-select-box form-control" tabindex="-1">
+                    <div class="creatable-select-chips"></div>
+                    <input type="text" id="fabricante_search" class="creatable-select-input" autocomplete="off" spellcheck="false">
+                  </div>
+                  <div class="creatable-select-menu d-none" role="listbox"></div>
+                </div>
               </div>
               <div class="col-md-6">
                 <label class="form-label">Fecha de fabricación</label>
@@ -166,14 +187,26 @@
                 </select>
               </div>
               <div class="col-md-4">
-                <label class="form-label" for="area">Área</label>
-                <input type="text" name="area" id="area" class="form-control"
-                       value="{{ machine.area if machine else '' }}" placeholder="Producción, almacén…">
+                <label class="form-label" for="area_search">Área</label>
+                <div class="creatable-select" data-campo="area" data-placeholder="Buscar o crear área…">
+                  <input type="hidden" name="area" class="creatable-select-value" value="{{ machine.area if machine else '' }}">
+                  <div class="creatable-select-box form-control" tabindex="-1">
+                    <div class="creatable-select-chips"></div>
+                    <input type="text" id="area_search" class="creatable-select-input" autocomplete="off" spellcheck="false">
+                  </div>
+                  <div class="creatable-select-menu d-none" role="listbox"></div>
+                </div>
               </div>
               <div class="col-md-4">
-                <label class="form-label" for="ubicacion">Ubicación específica</label>
-                <input type="text" name="ubicacion" id="ubicacion" class="form-control"
-                       value="{{ machine.ubicacion if machine else '' }}" placeholder="Línea 2, bodega B">
+                <label class="form-label" for="ubicacion_search">Ubicación específica</label>
+                <div class="creatable-select" data-campo="ubicacion" data-placeholder="Buscar o crear ubicación…">
+                  <input type="hidden" name="ubicacion" class="creatable-select-value" value="{{ machine.ubicacion if machine else '' }}">
+                  <div class="creatable-select-box form-control" tabindex="-1">
+                    <div class="creatable-select-chips"></div>
+                    <input type="text" id="ubicacion_search" class="creatable-select-input" autocomplete="off" spellcheck="false">
+                  </div>
+                  <div class="creatable-select-menu d-none" role="listbox"></div>
+                </div>
               </div>
             </div>
             {% with seccion_key='ubicacion' %}{% include "activos/_campos_seccion.html" %}{% endwith %}
@@ -299,21 +332,61 @@
                   <div class="small text-muted mt-1">Selecciona otro archivo para reemplazarla.</div>
                 </div>
                 {% endif %}
-                <details class="mt-2">
+                <details class="mt-2 activo-url-externa">
                   <summary class="small text-primary">Usar una URL externa</summary>
-                  <input type="url" name="foto_url" class="form-control mt-2" placeholder="https://"
-                         value="{{ machine.foto_url if machine and machine.foto_url.startswith(('http://', 'https://')) else '' }}">
+                  <div class="mt-2">
+                    <input type="url" name="foto_url" class="form-control" placeholder="https://"
+                           value="{{ machine.foto_url if machine and machine.foto_url.startswith(('http://', 'https://')) else '' }}">
+                  </div>
                 </details>
               </div>
               <div class="col-md-6">
-                <label class="form-label">Manual técnico (URL)</label>
-                <input type="url" name="manual_url" class="form-control" placeholder="https://"
-                       value="{{ machine.manual_url if machine else '' }}">
+                <label class="form-label" for="manual_archivo">Manual técnico (PDF)</label>
+                <input type="file" name="manual_archivo" id="manual_archivo" class="form-control"
+                       accept="application/pdf,.pdf">
+                <div class="form-text">PDF. Tamaño máximo: 15 MB.</div>
+                {% if machine and machine.manual_url %}
+                {% set manual_href = media_url(machine.manual_url) %}
+                {% if manual_href %}
+                <div class="mt-2">
+                  <a href="{{ manual_href }}" target="_blank" rel="noopener" class="btn btn-sm btn-outline-primary">
+                    <i class="bi bi-file-earmark-pdf me-1"></i>Ver manual actual
+                  </a>
+                  <div class="small text-muted mt-1">Selecciona otro PDF para reemplazarlo.</div>
+                </div>
+                {% endif %}
+                {% endif %}
+                <details class="mt-2 activo-url-externa">
+                  <summary class="small text-primary">Usar una URL externa</summary>
+                  <div class="mt-2">
+                    <input type="url" name="manual_url" class="form-control" placeholder="https://"
+                           value="{{ machine.manual_url if machine and machine.manual_url.startswith(('http://', 'https://')) else '' }}">
+                  </div>
+                </details>
               </div>
               <div class="col-md-6">
-                <label class="form-label">Ficha técnica (URL)</label>
-                <input type="url" name="ficha_tecnica_url" class="form-control" placeholder="https://"
-                       value="{{ machine.ficha_tecnica_url if machine else '' }}">
+                <label class="form-label" for="ficha_archivo">Ficha técnica (PDF)</label>
+                <input type="file" name="ficha_archivo" id="ficha_archivo" class="form-control"
+                       accept="application/pdf,.pdf">
+                <div class="form-text">PDF. Tamaño máximo: 15 MB.</div>
+                {% if machine and machine.ficha_tecnica_url %}
+                {% set ficha_href = media_url(machine.ficha_tecnica_url) %}
+                {% if ficha_href %}
+                <div class="mt-2">
+                  <a href="{{ ficha_href }}" target="_blank" rel="noopener" class="btn btn-sm btn-outline-primary">
+                    <i class="bi bi-file-earmark-pdf me-1"></i>Ver ficha actual
+                  </a>
+                  <div class="small text-muted mt-1">Selecciona otro PDF para reemplazarla.</div>
+                </div>
+                {% endif %}
+                {% endif %}
+                <details class="mt-2 activo-url-externa">
+                  <summary class="small text-primary">Usar una URL externa</summary>
+                  <div class="mt-2">
+                    <input type="url" name="ficha_tecnica_url" class="form-control" placeholder="https://"
+                           value="{{ machine.ficha_tecnica_url if machine and machine.ficha_tecnica_url.startswith(('http://', 'https://')) else '' }}">
+                  </div>
+                </details>
               </div>
             </div>
             {% with seccion_key='documentacion' %}{% include "activos/_campos_seccion.html" %}{% endwith %}
@@ -649,6 +722,405 @@
     selTipo.addEventListener('change', filtrarCamposPorCategoria);
     filtrarCamposPorCategoria();
   }
+
+  (function initCreatableSelects() {
+    var csrfToken = {{ csrf_token()|tojson }};
+    var apiBase = {{ url_for('main.activos_api_catalogo', campo='__campo__')|tojson }}.replace('__campo__', '');
+    var initial = {{ catalogo_tecnico|default({})|tojson }};
+    var cache = {};
+    Object.keys(initial || {}).forEach(function (k) {
+      cache[k] = (initial[k] || []).map(function (v) {
+        if (v && typeof v === 'object') return { id: v.id, valor: v.valor };
+        return { id: null, valor: v };
+      });
+    });
+
+    function esc(s) {
+      return String(s || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    function apiUrl(campo) {
+      return apiBase + encodeURIComponent(campo);
+    }
+
+    function norm(v) {
+      return String(v || '').trim().toLowerCase().replace(/\s+/g, ' ');
+    }
+
+    function filterItems(items, q) {
+      var term = norm(q);
+      if (!term) return (items || []).slice(0, 40);
+      return (items || []).filter(function (it) {
+        return norm(it.valor).indexOf(term) >= 0;
+      }).slice(0, 40);
+    }
+
+    function exactMatch(items, q) {
+      var term = norm(q);
+      if (!term) return null;
+      for (var i = 0; i < (items || []).length; i++) {
+        if (norm(items[i].valor) === term) return items[i];
+      }
+      return null;
+    }
+
+    function rememberItem(campo, item) {
+      cache[campo] = cache[campo] || [];
+      if (!exactMatch(cache[campo], item.valor)) {
+        cache[campo].push(item);
+        cache[campo].sort(function (a, b) {
+          return String(a.valor).localeCompare(String(b.valor), 'es');
+        });
+      }
+    }
+
+    function loadItems(campo, q, cb) {
+      fetch(apiUrl(campo) + '?q=' + encodeURIComponent(q || ''), {
+        credentials: 'same-origin',
+        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+      })
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+          if (data && data.ok) cache[campo] = data.items || [];
+          cb(cache[campo] || []);
+        })
+        .catch(function () { cb(cache[campo] || []); });
+    }
+
+    function createValor(campo, valor, cb) {
+      fetch(apiUrl(campo), {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': csrfToken,
+          'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: JSON.stringify({ valor: valor })
+      })
+        .then(function (r) { return r.json().then(function (d) { return { ok: r.ok, data: d }; }); })
+        .then(function (res) {
+          if (res.data && res.data.ok && res.data.item) {
+            rememberItem(campo, res.data.item);
+            cb(true, res.data.item);
+          } else {
+            cb(false, null, (res.data && res.data.error) || 'No se pudo crear.');
+          }
+        })
+        .catch(function () { cb(false, null, 'No se pudo crear.'); });
+    }
+
+    function deleteValor(campo, valor, cb) {
+      fetch(apiUrl(campo), {
+        method: 'DELETE',
+        credentials: 'same-origin',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': csrfToken,
+          'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: JSON.stringify({ valor: valor })
+      })
+        .then(function (r) { return r.json().then(function (d) { return { ok: r.ok, data: d }; }); })
+        .then(function (res) {
+          if (res.data && res.data.ok) {
+            cache[campo] = (cache[campo] || []).filter(function (x) {
+              return norm(x.valor) !== norm(valor);
+            });
+            cb(true, res.data.message || 'Eliminado.', res.data.usos || 0);
+          } else {
+            cb(false, (res.data && res.data.error) || 'No se pudo eliminar.');
+          }
+        })
+        .catch(function () { cb(false, 'No se pudo eliminar.'); });
+    }
+
+    function closeMenus(except) {
+      document.querySelectorAll('.creatable-select-menu').forEach(function (m) {
+        if (except && m === except) return;
+        m.classList.add('d-none');
+      });
+    }
+
+    document.querySelectorAll('.creatable-select').forEach(function (root) {
+      var campo = root.getAttribute('data-campo');
+      var storeId = root.getAttribute('data-store') === 'id';
+      var placeholder = root.getAttribute('data-placeholder') || 'Buscar o crear…';
+      var hidden = root.querySelector('.creatable-select-value');
+      var box = root.querySelector('.creatable-select-box');
+      var chips = root.querySelector('.creatable-select-chips');
+      var input = root.querySelector('.creatable-select-input');
+      var menu = root.querySelector('.creatable-select-menu');
+      if (!campo || !hidden || !box || !chips || !input || !menu) return;
+
+      var activeIndex = -1;
+      var labelById = {};
+
+      (cache[campo] || []).forEach(function (it) {
+        if (it && it.id != null) labelById[String(it.id)] = it.valor;
+      });
+      if (hidden.dataset.label) {
+        labelById[String(hidden.value || '')] = hidden.dataset.label;
+      }
+
+      function currentValue() {
+        return (hidden.value || '').trim();
+      }
+
+      function currentLabel() {
+        var val = currentValue();
+        if (!val) return '';
+        if (storeId) return labelById[val] || hidden.dataset.label || val;
+        return val;
+      }
+
+      function syncUi() {
+        var valor = currentValue();
+        var label = currentLabel();
+        if (valor) {
+          chips.innerHTML =
+            '<span class="creatable-chip">' +
+              '<span class="creatable-chip-label">' + esc(label) + '</span>' +
+              '<button type="button" class="creatable-chip-remove" title="Quitar del activo" aria-label="Quitar del activo">' +
+                '<i class="bi bi-x" aria-hidden="true"></i>' +
+              '</button>' +
+            '</span>';
+          input.value = '';
+          input.placeholder = '';
+          root.classList.add('has-value');
+        } else {
+          chips.innerHTML = '';
+          input.placeholder = placeholder;
+          root.classList.remove('has-value');
+        }
+      }
+
+      function setValueFromItem(item) {
+        if (!item || !item.valor) {
+          hidden.value = '';
+          delete hidden.dataset.label;
+          syncUi();
+          closeMenus();
+          return;
+        }
+        if (storeId) {
+          hidden.value = item.id != null ? String(item.id) : '';
+          hidden.dataset.label = item.valor;
+          if (item.id != null) labelById[String(item.id)] = item.valor;
+        } else {
+          hidden.value = item.valor;
+        }
+        syncUi();
+        closeMenus();
+        input.blur();
+      }
+
+      function setValue(valor) {
+        setValueFromItem({ id: null, valor: valor });
+      }
+
+      function clearValue() {
+        setValueFromItem(null);
+        input.focus();
+        openMenu();
+      }
+
+      function renderMenu(items, q) {
+        var typed = (q || '').trim();
+        var match = exactMatch(items, typed);
+        var html = '';
+        if (!items.length && !typed) {
+          html = '<div class="creatable-select-empty text-muted">Escribe para buscar o crear. Usa la papelera para eliminar del catálogo.</div>';
+        } else {
+          items.forEach(function (it, idx) {
+            if (it && it.id != null) labelById[String(it.id)] = it.valor;
+            html +=
+              '<div class="creatable-select-row">' +
+                '<button type="button" class="creatable-select-option" role="option" data-index="' + idx + '" data-valor="' + esc(it.valor) + '" data-id="' + esc(it.id != null ? it.id : '') + '">' +
+                  esc(it.valor) +
+                '</button>' +
+                '<button type="button" class="creatable-select-delete" data-valor="' + esc(it.valor) + '" title="Eliminar del catálogo" aria-label="Eliminar del catálogo">' +
+                  '<i class="bi bi-trash" aria-hidden="true"></i>' +
+                '</button>' +
+              '</div>';
+          });
+          if (typed && !match) {
+            html +=
+              '<button type="button" class="creatable-select-option creatable-select-option-create" role="option" data-create="1" data-valor="' + esc(typed) + '">' +
+                '<i class="bi bi-plus-circle me-1" aria-hidden="true"></i>Crear «' + esc(typed) + '»' +
+              '</button>';
+          }
+        }
+        menu.innerHTML = html;
+        menu.classList.remove('d-none');
+        activeIndex = -1;
+      }
+
+      function openMenu() {
+        var q = currentValue() ? '' : (input.value || '');
+        renderMenu(filterItems(cache[campo] || [], q), q);
+        loadItems(campo, q, function (items) {
+          if (!menu.classList.contains('d-none')) {
+            renderMenu(filterItems(items, q), q);
+          }
+        });
+      }
+
+      function removeFromCatalog(valor) {
+        if (!valor) return;
+        if (!window.confirm('¿Eliminar «' + valor + '» del catálogo?\nSe quitará de la lista de sugerencias.')) {
+          return;
+        }
+        deleteValor(campo, valor, function (ok, msg, usos) {
+          if (!ok) {
+            window.alert(msg || 'No se pudo eliminar.');
+            return;
+          }
+          if (norm(currentLabel()) === norm(valor) || norm(currentValue()) === norm(valor)) {
+            setValueFromItem(null);
+          }
+          var extra = usos ? ('\n(Todavía aparece en ' + usos + ' registro' + (usos === 1 ? '' : 's') + '.)') : '';
+          openMenu();
+          if (extra) window.alert((msg || 'Eliminado del catálogo.') + extra);
+        });
+      }
+
+      function highlightOption(delta) {
+        var opts = menu.querySelectorAll('.creatable-select-option');
+        if (!opts.length) return;
+        activeIndex = (activeIndex + delta + opts.length) % opts.length;
+        opts.forEach(function (el, i) {
+          el.classList.toggle('is-active', i === activeIndex);
+          var row = el.closest('.creatable-select-row');
+          if (row) row.classList.toggle('is-active', i === activeIndex);
+        });
+        opts[activeIndex].scrollIntoView({ block: 'nearest' });
+      }
+
+      function commitTyped() {
+        if (currentValue()) return;
+        var typed = (input.value || '').trim();
+        if (!typed) return;
+        var existing = exactMatch(cache[campo] || [], typed);
+        if (existing) {
+          setValueFromItem(existing);
+          return;
+        }
+        createValor(campo, typed, function (ok, item, err) {
+          if (!ok) {
+            window.alert(err || 'No se pudo crear.');
+            return;
+          }
+          setValueFromItem(item);
+        });
+      }
+
+      box.addEventListener('click', function (ev) {
+        if (ev.target.closest('.creatable-chip-remove')) return;
+        input.focus();
+        openMenu();
+      });
+
+      chips.addEventListener('click', function (ev) {
+        var btn = ev.target.closest('.creatable-chip-remove');
+        if (!btn) return;
+        ev.preventDefault();
+        clearValue();
+      });
+
+      input.addEventListener('focus', openMenu);
+
+      input.addEventListener('input', function () {
+        var typed = input.value;
+        if (hidden.value) {
+          hidden.value = '';
+          delete hidden.dataset.label;
+          chips.innerHTML = '';
+          root.classList.remove('has-value');
+          input.placeholder = placeholder;
+          input.value = typed;
+        }
+        var q = input.value || '';
+        renderMenu(filterItems(cache[campo] || [], q), q);
+        loadItems(campo, q, function (items) {
+          renderMenu(filterItems(items, q), q);
+        });
+      });
+
+      input.addEventListener('keydown', function (ev) {
+        if (ev.key === 'ArrowDown') {
+          ev.preventDefault();
+          if (menu.classList.contains('d-none')) openMenu();
+          highlightOption(1);
+          return;
+        }
+        if (ev.key === 'ArrowUp') {
+          ev.preventDefault();
+          if (menu.classList.contains('d-none')) openMenu();
+          highlightOption(-1);
+          return;
+        }
+        if (ev.key === 'Enter') {
+          ev.preventDefault();
+          var active = menu.querySelector('.creatable-select-option.is-active');
+          if (active && !menu.classList.contains('d-none')) {
+            active.click();
+            return;
+          }
+          commitTyped();
+          return;
+        }
+        if (ev.key === 'Escape') {
+          menu.classList.add('d-none');
+          return;
+        }
+        if ((ev.key === 'Backspace' || ev.key === 'Delete') && !input.value && currentValue()) {
+          clearValue();
+        }
+      });
+
+      menu.addEventListener('mousedown', function (ev) {
+        ev.preventDefault();
+      });
+
+      menu.addEventListener('click', function (ev) {
+        var del = ev.target.closest('.creatable-select-delete');
+        if (del) {
+          removeFromCatalog(del.getAttribute('data-valor') || '');
+          return;
+        }
+        var btn = ev.target.closest('.creatable-select-option');
+        if (!btn) return;
+        var valor = btn.getAttribute('data-valor') || '';
+        var idAttr = btn.getAttribute('data-id');
+        if (btn.getAttribute('data-create') === '1') {
+          createValor(campo, valor, function (ok, item, err) {
+            if (!ok) {
+              window.alert(err || 'No se pudo crear.');
+              return;
+            }
+            setValueFromItem(item);
+          });
+          return;
+        }
+        setValueFromItem({
+          id: idAttr ? idAttr : null,
+          valor: valor
+        });
+      });
+
+      syncUi();
+    });
+
+    document.addEventListener('click', function (ev) {
+      if (ev.target.closest('.creatable-select')) return;
+      closeMenus();
+    });
+  })();
 })();
 </script>
 {% endblock %}

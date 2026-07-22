@@ -182,6 +182,11 @@ from app.work_time import (
 
 EMPRESA_LOGO_EXTENSIONS = {"png", "jpg", "jpeg", "webp"}
 ACTIVO_IMAGE_EXTENSIONS = {"png", "jpg", "jpeg", "webp"}
+ACTIVO_DOC_EXTENSIONS = {"pdf"}
+ACTIVO_DOC_CAMPOS = {
+    "manual": "manual_url",
+    "ficha": "ficha_tecnica_url",
+}
 ZONAS_EMPRESA = (
     ("America/Bogota", "América / Bogotá"),
     ("America/Mexico_City", "América / Ciudad de México"),
@@ -1258,6 +1263,9 @@ def _apply_machine_base_fields(machine: Machine, form) -> Optional[str]:
     machine.marca = form.get("marca", "").strip()
     machine.modelo = form.get("modelo", "").strip()
     machine.fabricante = form.get("fabricante", "").strip()
+    from app.machine_catalog import sincronizar_catalogo_desde_maquina
+
+    sincronizar_catalogo_desde_maquina(machine)
     machine.numero_serie = form.get("numero_serie", "").strip()
     machine.fecha_fabricacion = _parse_form_date(form.get("fecha_fabricacion"))
     machine.fecha_ingreso = _parse_form_date(form.get("fecha_ingreso"))
@@ -1285,8 +1293,12 @@ def _apply_machine_base_fields(machine: Machine, form) -> Optional[str]:
     machine.garantia_hasta = calcular_garantia_hasta(
         machine.fecha_compra, machine.tiempo_garantia_meses
     )
-    machine.manual_url = form.get("manual_url", "").strip()
-    machine.ficha_tecnica_url = form.get("ficha_tecnica_url", "").strip()
+    machine.manual_url = _documento_url_desde_form(
+        form.get("manual_url"), machine.manual_url
+    )
+    machine.ficha_tecnica_url = _documento_url_desde_form(
+        form.get("ficha_tecnica_url"), machine.ficha_tecnica_url
+    )
     foto_url = form.get("foto_url", "").strip()
     if foto_url:
         machine.foto_url = foto_url
@@ -1312,6 +1324,14 @@ def _apply_machine_base_fields(machine: Machine, form) -> Optional[str]:
     return None
 
 
+def _documento_url_desde_form(raw: Optional[str], actual: Optional[str]) -> str:
+    """Solo reemplaza con URL http(s); conserva PDF almacenado si el campo queda vacío."""
+    valor = (raw or "").strip()
+    if valor.startswith(("http://", "https://")):
+        return valor
+    return (actual or "").strip()
+
+
 def _guardar_imagen_activo(machine: Machine, archivo) -> None:
     """Guarda la fotografía del activo dentro del espacio de su empresa."""
     if not archivo or not getattr(archivo, "filename", None):
@@ -1335,10 +1355,52 @@ def _guardar_imagen_activo(machine: Machine, archivo) -> None:
     machine.foto_url = reference(key)
 
 
+def _guardar_documento_activo(machine: Machine, archivo, tipo: str) -> None:
+    """Guarda manual o ficha técnica en PDF dentro del almacenamiento del tenant."""
+    if not archivo or not getattr(archivo, "filename", None):
+        return
+    attr = ACTIVO_DOC_CAMPOS.get(tipo)
+    if not attr:
+        raise ValueError("Tipo de documento no válido.")
+    if not machine.id or not machine.empresa_id:
+        raise ValueError("El activo debe estar guardado antes de cargar el documento.")
+    nombre = secure_filename(archivo.filename)
+    ext = nombre.rsplit(".", 1)[-1].lower() if "." in nombre else ""
+    if ext not in ACTIVO_DOC_EXTENSIONS:
+        raise ValueError("Formato de documento no permitido. Use PDF.")
+    from app.file_storage import delete, key_from_reference, reference, save_bytes, tenant_key
+
+    content = archivo.stream.read()
+    if not content:
+        raise ValueError("El documento PDF está vacío.")
+    max_bytes = 15 * 1024 * 1024
+    if len(content) > max_bytes:
+        raise ValueError("El PDF supera el tamaño máximo de 15 MB.")
+    actual = getattr(machine, attr, "") or ""
+    old_key = key_from_reference(actual)
+    if old_key:
+        delete(old_key)
+    key = tenant_key(machine.empresa_id, "activos", f"{machine.id}-{tipo}.pdf")
+    save_bytes(key, content, content_type="application/pdf")
+    setattr(machine, attr, reference(key))
+
+
+def _guardar_adjuntos_activo(machine: Machine, files) -> None:
+    _guardar_imagen_activo(machine, files.get("foto_archivo"))
+    _guardar_documento_activo(machine, files.get("manual_archivo"), "manual")
+    _guardar_documento_activo(machine, files.get("ficha_archivo"), "ficha")
+
+
 def _save_machine_custom_fields(
     machine: Machine, form, empresa_id: int, sector: str, machine_type_id: int
 ) -> Optional[str]:
+    from app.machine_catalog import (
+        MACHINE_CATALOG_CUSTOM_CLAVES,
+        sincronizar_catalogo_campos_personalizados,
+    )
+
     campos = campos_para_tipo(empresa_id, sector, machine_type_id)
+    custom_catalog: dict[str, str] = {}
     for campo in campos:
         val, err = valor_campo_desde_form(campo, form)
         if err:
@@ -1352,6 +1414,9 @@ def _save_machine_custom_fields(
             db.session.add(
                 ActivoCampoValor(machine_id=machine.id, campo_id=campo.id, valor=val)
             )
+        if campo.clave in MACHINE_CATALOG_CUSTOM_CLAVES:
+            custom_catalog[campo.clave] = val or ""
+    sincronizar_catalogo_campos_personalizados(empresa_id, custom_catalog)
     return None
 
 
@@ -1463,7 +1528,14 @@ def _activos_form_context(
             if machine and machine.valor_compra is not None
             else ""
         ),
+        "catalogo_tecnico": _catalogo_tecnico_form(eid),
     }
+
+
+def _catalogo_tecnico_form(empresa_id: Optional[int]) -> dict:
+    from app.machine_catalog import catalogo_contexto_formulario
+
+    return catalogo_contexto_formulario(empresa_id)
 
 
 PROXIMOS_MANTENIMIENTOS_LIMITE = 8
@@ -1820,6 +1892,19 @@ def dashboard(
     workload_empty = sum(workload_values) == 0
     workload_total = sum(workload_values)
 
+    from sqlalchemy.orm import joinedload
+
+    ordenes_stats_tecnicos = (
+        _wo_in_period_query(start, end, sector, machine_ids)
+        .options(
+            joinedload(WorkOrder.technician),
+            joinedload(WorkOrder.jornadas),
+        )
+        .filter(WorkOrder.technician_id.isnot(None))
+        .all()
+    )
+    estadisticas_tecnicos = _estadisticas_tecnicos_analisis(ordenes_stats_tecnicos)
+
     pareto_rows = (
         _wo_in_period_query(start, end, sector, machine_ids)
         .join(Machine, Machine.id == WorkOrder.machine_id)
@@ -2086,6 +2171,7 @@ def dashboard(
         workload_values=workload_values,
         workload_total=workload_total,
         workload_empty=workload_empty,
+        estadisticas_tecnicos=estadisticas_tecnicos,
         pareto_labels=[item["label"] for item in pareto_items],
         pareto_values=[item["total"] for item in pareto_items],
         pareto_percentages=pareto_porcentajes,
@@ -2234,17 +2320,16 @@ def activos_hoja_vida(id):
         .all()
     )
     ordenes_historial = [
-        orden
-        for orden in ordenes
-        if (orden.status or "").strip().lower() in WORK_ORDER_TERMINAL_STATUSES
-        or (orden.status or "").strip().lower() in ("cerrado",)
+        orden for orden in ordenes if _ot_es_historial_hoja_vida(orden)
     ]
     historial_ids = {orden.id for orden in ordenes_historial}
     ordenes_pendientes = [orden for orden in ordenes if orden.id not in historial_ids]
+    estadisticas_equipo = _estadisticas_equipo_hoja_vida(ordenes)
     ctx.update(
         ordenes=ordenes,
         ordenes_historial=ordenes_historial,
         ordenes_pendientes=ordenes_pendientes,
+        estadisticas_equipo=estadisticas_equipo,
         incidentes=incidentes,
         total_preventivos=sum(1 for orden in ordenes if orden.tipo == "preventivo"),
         total_correctivos=sum(1 for orden in ordenes if orden.tipo == "correctivo"),
@@ -2301,6 +2386,11 @@ def activos_ficha_tecnica_pdf(id):
     )
 
 
+def _ot_es_historial_hoja_vida(orden) -> bool:
+    status = (orden.status or "").strip().lower()
+    return status in WORK_ORDER_TERMINAL_STATUSES or status == "cerrado"
+
+
 def _avances_hoja_vida(ordenes):
     """Organiza cada jornada y los repuestos instalados en ella."""
     resultado = {}
@@ -2341,18 +2431,109 @@ def _avances_hoja_vida(ordenes):
     return resultado
 
 
-def _tiempo_efectivo_hoja_vida(ordenes) -> str:
-    """Suma el tiempo efectivo de las OT del activo para el pie del historial."""
-    from app.work_time import formatear_duracion, wo_tiempo_gastado_minutos
+def _tiempo_efectivo_minutos_hoja_vida(ordenes) -> int:
+    from app.work_time import wo_tiempo_gastado_minutos
 
     total = 0
     for orden in ordenes:
         mins = wo_tiempo_gastado_minutos(orden)
         if mins:
             total += int(mins)
+    return total
+
+
+def _tiempo_efectivo_hoja_vida(ordenes) -> str:
+    """Suma el tiempo efectivo de las OT del activo para el pie del historial."""
+    from app.work_time import formatear_duracion
+
+    total = _tiempo_efectivo_minutos_hoja_vida(ordenes)
     if not total:
         return "—"
     return f"{formatear_duracion(total)} ({total} min)"
+
+
+def _estadisticas_por_grupo_hoja_vida(grupos: dict, label_fn) -> dict:
+    """Filas + totales de estadísticas (equipo o técnicos) para hoja de vida / análisis."""
+    filas = []
+    for clave, lista in sorted(grupos.items(), key=lambda item: label_fn(item[0], item[1])):
+        completados = [orden for orden in lista if _ot_es_historial_hoja_vida(orden)]
+        pendientes = [orden for orden in lista if not _ot_es_historial_hoja_vida(orden)]
+        total = len(lista)
+        n_completados = len(completados)
+        n_pendientes = len(pendientes)
+        costo_total = sum(orden.costo_total_mantenimiento for orden in completados)
+        tiempo_min = _tiempo_efectivo_minutos_hoja_vida(completados)
+        filas.append(
+            {
+                "clave": clave,
+                "label": label_fn(clave, lista),
+                "total": total,
+                "pendientes": n_pendientes,
+                "completados": n_completados,
+                "pct_pendiente": round((n_pendientes / total) * 100, 1) if total else 0.0,
+                "pct_completado": round((n_completados / total) * 100, 1) if total else 0.0,
+                "costo_total": costo_total,
+                "tiempo_min": tiempo_min,
+                "costo_promedio": round(costo_total / n_completados, 2) if n_completados else 0.0,
+            }
+        )
+
+    total_programados = sum(fila["total"] for fila in filas)
+    total_completados = sum(fila["completados"] for fila in filas)
+    total_pendientes = sum(fila["pendientes"] for fila in filas)
+    costo_total = sum(fila["costo_total"] for fila in filas)
+    tiempo_min = sum(fila["tiempo_min"] for fila in filas)
+    return {
+        "filas": filas,
+        "total_programados": total_programados,
+        "total_pendientes": total_pendientes,
+        "total_completados": total_completados,
+        "tasa_completacion": (
+            round((total_completados / total_programados) * 100) if total_programados else 0
+        ),
+        "costo_total": costo_total,
+        "tiempo_min": tiempo_min,
+        "tiempo_label": f"{tiempo_min}m" if tiempo_min else "0m",
+        "promedio_mtto": (
+            round(costo_total / total_completados, 2) if total_completados else 0.0
+        ),
+    }
+
+
+def _estadisticas_equipo_hoja_vida(ordenes) -> dict:
+    """Resumen por tipo de mantenimiento para la hoja de vida del activo."""
+    from collections import defaultdict
+
+    grupos: dict[str, list] = defaultdict(list)
+    for orden in ordenes:
+        tipo = (orden.tipo or "").strip().lower() or "correctivo"
+        grupos[tipo].append(orden)
+
+    stats = _estadisticas_por_grupo_hoja_vida(
+        grupos, lambda tipo, _lista: wo_tipo_meta(tipo)["label"]
+    )
+    for fila in stats["filas"]:
+        fila["tipo"] = fila["clave"]
+        fila["tipo_label"] = fila["label"]
+    return stats
+
+
+def _estadisticas_tecnicos_analisis(ordenes) -> dict:
+    """Resumen por técnico asignado para Análisis → Mantenimiento."""
+    from collections import defaultdict
+
+    grupos: dict[int, list] = defaultdict(list)
+    for orden in ordenes:
+        tid = orden.technician_id
+        if not tid:
+            continue
+        grupos[tid].append(orden)
+
+    def _label(tid: int, lista: list) -> str:
+        tech = lista[0].technician if lista else None
+        return tech.nombre if tech and tech.nombre else f"Técnico #{tid}"
+
+    return _estadisticas_por_grupo_hoja_vida(grupos, _label)
 
 
 @bp.route("/activos/<int:id>/hoja-vida/pdf")
@@ -2472,6 +2653,50 @@ def activos_api_sugerir_codigo():
     )
 
 
+@bp.route("/activos/api/catalogo/<campo>", methods=["GET", "POST", "DELETE"])
+def activos_api_catalogo(campo):
+    from app.machine_catalog import (
+        MACHINE_CATALOG_LABELS,
+        campo_catalogo_valido,
+        eliminar_valor_catalogo,
+        listar_valores_catalogo,
+        upsert_valor_catalogo,
+    )
+
+    if not campo_catalogo_valido(campo):
+        return jsonify({"ok": False, "error": "Campo de catálogo no válido."}), 400
+    eid = _current_empresa_id()
+    if not eid:
+        return jsonify({"ok": False, "error": "Sin empresa en sesión."}), 400
+    campo = campo.strip().lower()
+    label = MACHINE_CATALOG_LABELS.get(campo, campo)
+
+    if request.method == "GET":
+        q = request.args.get("q", "")
+        items = listar_valores_catalogo(eid, campo, q=q)
+        db.session.commit()
+        return jsonify({"ok": True, "campo": campo, "label": label, "items": items})
+
+    if not can_edit(current_user):
+        return jsonify({"ok": False, "error": "No tienes permiso para modificar el catálogo."}), 403
+
+    payload = request.get_json(silent=True) or {}
+    valor = (payload.get("valor") or request.form.get("valor") or "").strip()
+
+    if request.method == "POST":
+        row = upsert_valor_catalogo(eid, campo, valor)
+        if row is None:
+            return jsonify({"ok": False, "error": f"Indica un valor de {label.lower()} válido."}), 400
+        db.session.commit()
+        return jsonify({"ok": True, "item": {"id": row.id, "valor": row.valor}})
+
+    ok, mensaje, usos = eliminar_valor_catalogo(eid, campo, valor)
+    if not ok:
+        return jsonify({"ok": False, "error": mensaje, "usos": usos}), 400
+    db.session.commit()
+    return jsonify({"ok": True, "message": mensaje, "usos": usos})
+
+
 @bp.route("/activos/nuevo", methods=["GET", "POST"])
 def activos_new():
     tipos = _machine_types_activos()
@@ -2522,7 +2747,7 @@ def activos_new():
                     flash(err_campo, "danger")
                 else:
                     try:
-                        _guardar_imagen_activo(m, request.files.get("foto_archivo"))
+                        _guardar_adjuntos_activo(m, request.files)
                         db.session.commit()
                         flash(f"Activo registrado con código {m.codigo}.", "success")
                         return redirect(url_for("main.activos_list"))
@@ -2555,7 +2780,11 @@ def activos_edit(id):
     from sqlalchemy.orm import joinedload
 
     m = _filter_empresa(
-        Machine.query.options(joinedload(Machine.responsable)).filter_by(id=id), Machine
+        Machine.query.options(
+            joinedload(Machine.responsable),
+            joinedload(Machine.sede),
+        ).filter_by(id=id),
+        Machine,
     ).first_or_404()
     tipos = _machine_types_para_formulario(m)
     if not tipos:
@@ -2584,7 +2813,7 @@ def activos_edit(id):
                 flash(err_campo, "danger")
             else:
                 try:
-                    _guardar_imagen_activo(m, request.files.get("foto_archivo"))
+                    _guardar_adjuntos_activo(m, request.files)
                     db.session.commit()
                     flash("Activo actualizado.", "success")
                     return redirect(url_for("main.activos_list"))

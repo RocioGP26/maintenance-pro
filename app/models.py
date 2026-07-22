@@ -828,6 +828,43 @@ class Machine(db.Model):
         self.es_critico = (self.criticidad or "media") in ("alta", "critica")
 
 
+MACHINE_CATALOG_COLUMN_CAMPOS = ("marca", "modelo", "fabricante", "area", "ubicacion")
+MACHINE_CATALOG_CUSTOM_CLAVES = ("planta",)
+MACHINE_CATALOG_CAMPOS = MACHINE_CATALOG_COLUMN_CAMPOS + MACHINE_CATALOG_CUSTOM_CLAVES
+MACHINE_CATALOG_LABELS = {
+    "marca": "Marca",
+    "modelo": "Modelo",
+    "fabricante": "Fabricante",
+    "area": "Área",
+    "ubicacion": "Ubicación específica",
+    "planta": "Planta",
+}
+
+
+class MachineCatalogValue(db.Model):
+    """Catálogo tenant de valores reutilizables (marca, modelo, fabricante, área, ubicación)."""
+
+    __tablename__ = "machine_catalog_values"
+    __table_args__ = (
+        db.UniqueConstraint(
+            "empresa_id", "campo", "valor_norm", name="uq_machine_catalog_empresa_campo_valor"
+        ),
+    )
+
+    id = db.Column(db.Integer, primary_key=True)
+    empresa_id = db.Column(
+        db.Integer, db.ForeignKey("empresas.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    campo = db.Column(db.String(32), nullable=False, index=True)
+    valor = db.Column(db.String(120), nullable=False, default="")
+    valor_norm = db.Column(db.String(120), nullable=False, default="")
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    empresa = db.relationship(
+        "Empresa", backref=db.backref("machine_catalog_values", lazy="dynamic")
+    )
+
+
 class MachineMonthlyPlan(db.Model):
     """Meta de horas mensuales programadas por activo (planeación OT)."""
 

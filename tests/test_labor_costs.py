@@ -334,6 +334,8 @@ class TestLaborCostReport(unittest.TestCase):
         self.assertIn("$62.000", html)
         self.assertIn("Órdenes de trabajo pendientes", html)
         self.assertIn("Historial de órdenes de trabajo", html)
+        self.assertIn("Estadísticas del equipo", html)
+        self.assertIn("Tasa completación", html)
         self.assertIn('data-bs-target="#ot-avances-', html)
         self.assertIn('class="collapse" id="ot-avances-', html)
         self.assertIn("Desplegar avances", html)
