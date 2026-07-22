@@ -10,7 +10,24 @@ La suite documental mantiene un ciclo independiente en
 
 ### Added
 
-- Espacio reservado para cambios aún no publicados.
+- Sprint 22.1: credenciales de integración tenant-safe con API keys para
+  pruebas y producción, secreto de única visualización y hash `scrypt`.
+- Administración de creación, listado, rotación y revocación, con scopes,
+  expiración, último uso y auditoría por empresa.
+- Middleware Bearer unificado JWT/API key y autorización por scopes en la API
+  pública de activos y órdenes de trabajo.
+- Sprint 22.2: API pública Maintenance para activos, OT, incidencias, medidores
+  y lecturas con contrato uniforme, filtros incrementales y rate limit.
+- Escrituras idempotentes aisladas por tenant e identidad para incidencias y
+  lecturas, reutilizando notificaciones, automatizaciones y Asset Health.
+- Migración `qy5n1p37u60f`, OpenAPI y colecciones Postman/Insomnia; pruebas de
+  contrato. Sprint 22.2 cerrado.
+- Sprint 22.3: webhooks con outbox, firma HMAC, SSRF y reintentos; eventos de
+  incidencias, OT, lecturas fuera de rango y Asset Health.
+- Sprint 22.4: entitlements por plan, rate limits, registro/stats de entregas,
+  desactivación automática y aislamiento tenant.
+- Sprint 22.5: guía para integradores, ejemplos, colección de pruebas, auditoría
+  y cierre del programa Sprint 22.
 
 ## [1.0.7] - 2026-07-21
 

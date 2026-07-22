@@ -269,7 +269,8 @@
         {% set es_submenu_config_empresa = ep == 'main.configuracion_empresa' %}
         {% set es_submenu_campos = ep and ep.startswith('main.configuracion_campos') %}
         {% set es_submenu_seguridad = ep == 'main.seguridad_sesiones' %}
-        {% set menu_admin_abierto = es_submenu_usuarios or es_submenu_config_empresa or es_submenu_campos or es_submenu_seguridad %}
+        {% set es_submenu_integraciones = ep and ep.startswith('integrations.') %}
+        {% set menu_admin_abierto = es_submenu_usuarios or es_submenu_config_empresa or es_submenu_campos or es_submenu_seguridad or es_submenu_integraciones %}
         <p class="sidebar-module-label px-3 small text-uppercase text-white-50 mb-1 mt-2">Administración</p>
         <div class="sidebar-nav-group">
           <button type="button" class="nav-link sidebar-nav-toggle w-100 text-start {% if menu_admin_abierto %}active-parent{% endif %}"
@@ -292,6 +293,10 @@
             <a class="nav-link nav-link-sub {% if es_submenu_seguridad %}active{% endif %}"
                href="{{ url_for('main.seguridad_sesiones') }}">
               <i class="bi bi-shield-check me-2"></i> Seguridad y sesiones
+            </a>
+            <a class="nav-link nav-link-sub {% if es_submenu_integraciones %}active{% endif %}"
+               href="{{ url_for('integrations.credentials_page') }}">
+              <i class="bi bi-key me-2"></i> Credenciales API
             </a>
             {% endif %}
             {% if perm.config %}

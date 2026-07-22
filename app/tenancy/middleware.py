@@ -44,12 +44,16 @@ def _reset_tenant_context() -> None:
     g.empresa_slug = None
     g.user_id = None
     g.user_rol = None
+    g.auth_type = None
+    g.integration_credential_id = None
+    g.api_scopes = ()
 
 
 def _load_from_session_user() -> None:
     if not current_user.is_authenticated:
         return
     g.user_id = current_user.id
+    g.auth_type = "session"
     g.user_rol = getattr(current_user, "rol", None)
     g.empresa_id = getattr(current_user, "empresa_id", None)
     empresa = getattr(current_user, "empresa", None)
@@ -90,6 +94,10 @@ def _verificar_modulo_activo(endpoint: str):
     empresa = Empresa.query.get(int(eid))
     if empresa_tiene_modulo(empresa, modulo):
         return None
+    if request.path.startswith("/api/v1"):
+        from app.public_api.contract import api_error
+
+        return api_error("MODULE_REQUIRED", "El módulo requerido no está activo.", 403)
     flash("Tu plan no incluye este módulo.", "warning")
     if empresa_tiene_modulo(empresa, MODULO_INVENTARIO):
         return redirect(url_for("inv_comercial.dashboard_inventario"))
@@ -117,6 +125,10 @@ def _verificar_modulo_rol(endpoint: str):
         except (TypeError, ValueError):
             usuario = None
     if modulo == MODULO_INVENTARIO and usuario is not None and not can_access_inventory(usuario):
+        if request.path.startswith("/api/v1"):
+            from app.public_api.contract import api_error
+
+            return api_error("PERMISSION_DENIED", "Sin permiso para este módulo.", 403)
         if rol == UserRole.ADMIN.value:
             flash("Los administradores del área de Mantenimiento no tienen acceso a Inventario.", "warning")
         else:
@@ -125,6 +137,10 @@ def _verificar_modulo_rol(endpoint: str):
     if rol == UserRole.VENDEDOR.value and modulo == MODULO_MANTENIMIENTO:
         if endpoint == "main.incidencia" or endpoint.startswith("main.incidencias"):
             return None
+        if request.path.startswith("/api/v1"):
+            from app.public_api.contract import api_error
+
+            return api_error("PERMISSION_DENIED", "Sin permiso para este módulo.", 403)
         flash("El rol Vendedor solo tiene acceso a Inventario comercial.", "warning")
         return redirect(url_for("inv_comercial.dashboard_inventario"))
     return None
@@ -144,6 +160,10 @@ def _verificar_bloqueo_tenant(endpoint: str):
     if puede:
         return None
     if request.path.startswith("/api/"):
+        if request.path.startswith("/api/v1"):
+            from app.public_api.contract import api_error
+
+            return api_error(codigo, mensaje, 403)
         return jsonify({"error": mensaje, "codigo": codigo}), 403
     if codigo == "email_no_verificado":
         if current_user.is_authenticated:
@@ -169,15 +189,66 @@ def register_tenancy_middleware(app: Flask) -> None:
         if auth.startswith("Bearer "):
             token = auth[7:].strip()
             if not token:
+                if request.path.startswith("/api/v1"):
+                    from app.public_api.contract import api_error
+
+                    return api_error("INVALID_TOKEN", "Token vacío.", 401)
                 return jsonify({"error": "Token vacío"}), 401
+            if token.startswith(("rtx_test_", "rtx_live_")):
+                if not request.path.startswith("/api/v1/"):
+                    return jsonify({"error": "La API key solo es válida en /api/v1"}), 401
+                from app.integrations.credentials import authenticate_credential_result
+
+                credential, error_code = authenticate_credential_result(token)
+                if credential is None:
+                    messages = {
+                        "api_key_expired": "API key expirada",
+                        "api_key_revoked": "API key revocada",
+                    }
+                    if request.path.startswith("/api/v1"):
+                        from app.public_api.contract import api_error
+
+                        return api_error(
+                            error_code,
+                            messages.get(error_code, "API key inválida"),
+                            401,
+                        )
+                    return jsonify(
+                        {
+                            "error": messages.get(error_code, "API key inválida"),
+                            "codigo": error_code,
+                        }
+                    ), 401
+                g.auth_type = "api_key"
+                g.integration_credential_id = credential.id
+                g.api_scopes = tuple(credential.scopes)
+                g.empresa_id = credential.empresa_id
+                g.empresa_slug = credential.empresa.slug if credential.empresa else None
+                _sync_ordenes_vencidas()
+                bloqueo = _verificar_bloqueo_tenant(endpoint)
+                if bloqueo is not None:
+                    return bloqueo
+                modulo = _verificar_modulo_activo(endpoint)
+                if modulo is not None:
+                    return modulo
+                return None
             try:
                 payload = verificar_token(token, app.config["SECRET_KEY"])
             except jwt.ExpiredSignatureError:
+                if request.path.startswith("/api/v1"):
+                    from app.public_api.contract import api_error
+
+                    return api_error("TOKEN_EXPIRED", "Token expirado.", 401)
                 return jsonify({"error": "Token expirado"}), 401
             except jwt.InvalidTokenError:
+                if request.path.startswith("/api/v1"):
+                    from app.public_api.contract import api_error
+
+                    return api_error("INVALID_TOKEN", "Token inválido.", 401)
                 return jsonify({"error": "Token inválido"}), 401
 
             g.user_id = payload.get("sub")
+            g.auth_type = "jwt"
             g.empresa_id = payload.get("empresa_id")
             g.empresa_slug = payload.get("empresa_slug")
             g.user_rol = payload.get("rol")

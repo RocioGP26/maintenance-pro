@@ -127,6 +127,7 @@ def aplicar_estado_tras_jornadas(wo: WorkOrder, accion: str | None) -> None:
     """Tras registrar jornadas: En proceso, Abierta o Completada."""
     if _es_terminal(wo.status) or (wo.status or "").strip().lower() == WorkOrderStatus.CERRADA.value:
         return
+    previous = wo.status
     key = (accion or "en_proceso").strip().lower()
     if key == "completado":
         wo.status = WorkOrderStatus.COMPLETADO.value
@@ -134,6 +135,9 @@ def aplicar_estado_tras_jornadas(wo: WorkOrder, accion: str | None) -> None:
         wo.status = WorkOrderStatus.ABIERTA.value
     else:
         wo.status = WorkOrderStatus.EN_PROCESO.value
+    from app.integrations.emitters import emit_work_order_status_changed
+
+    emit_work_order_status_changed(wo, previous_status=previous)
 
 
 def resolver_estado_al_guardar(
@@ -152,10 +156,14 @@ def resolver_estado_al_guardar(
     4. Por fecha programada (sin jornadas o automático)
     """
     hoy = hoy or date.today()
+    previous = wo.status
     manual = (status_manual or "").strip().lower()
 
     if manual == WorkOrderStatus.CERRADA.value:
         wo.status = WorkOrderStatus.CERRADA.value
+        from app.integrations.emitters import emit_work_order_status_changed
+
+        emit_work_order_status_changed(wo, previous_status=previous)
         return
 
     if _es_terminal(wo.status) and manual != WorkOrderStatus.COMPLETADO.value:
@@ -167,12 +175,18 @@ def resolver_estado_al_guardar(
 
     if manual == WorkOrderStatus.COMPLETADO.value:
         wo.status = WorkOrderStatus.COMPLETADO.value
+        from app.integrations.emitters import emit_work_order_status_changed
+
+        emit_work_order_status_changed(wo, previous_status=previous)
         return
 
     if manual == WorkOrderStatus.CERRADA.value:
         return
 
     wo.status = estado_inicial_por_fecha(wo.fecha_programada, hoy)
+    from app.integrations.emitters import emit_work_order_status_changed
+
+    emit_work_order_status_changed(wo, previous_status=previous)
 
 
 def normalizar_estado_orden_por_fecha(wo: WorkOrder, hoy: date | None = None) -> None:

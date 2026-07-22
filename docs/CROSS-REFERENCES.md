@@ -8,7 +8,7 @@
 
 **Sprint 21 · Asset Health:** [charter](asset-health/SPRINT21-REPORT.md) · [arquitectura](asset-health/architecture.md) · [contrato de cálculo](asset-health/contracts.md) · [MRG-02](mrg/chapters/02-maintenance.md) · [MPA-05](mpa/chapters/05-roadmap-modulos.md)
 
-**Sprint 22 · API pública y Webhooks:** [charter](api/charter.md) · [arquitectura](api/architecture.md) · [contrato REST](api/api-contract.md) · [webhooks](api/webhooks.md) · [permisos y planes](api/permissions-plans.md) · [MAG](mag/README.md) · [MPA-06](mpa/chapters/06-integraciones.md)
+**Sprint 22 · API pública y Webhooks (completo ✅):** [guía integradores](api/integrator-guide.md) · [ejemplos](api/examples.md) · [colecciones](api/collections/README.md) · [charter](api/charter.md) · [arquitectura](api/architecture.md) · [contrato REST](api/api-contract.md) · [webhooks](api/webhooks.md) · [permisos y planes](api/permissions-plans.md) · [reporte 22.5](api/SPRINT22.5-REPORT.md) · [MAG](mag/README.md) · [MPA-06](mpa/chapters/06-integraciones.md)
 
 Convenciones para enlazar manuales de forma **consistente**. Objetivo: un lector siempre puede saltar de marca → producto → experiencia → ventas → arquitectura.
 

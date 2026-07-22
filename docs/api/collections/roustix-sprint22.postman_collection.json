@@ -1,0 +1,150 @@
+{
+  "info": {
+    "name": "Roustix API v1 · Sprint 22.5",
+    "description": "Colección de pruebas: Maintenance + Webhooks admin + identidad. Alineada a integrator-guide.md",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [{ "key": "token", "value": "{{roustix_api_key}}", "type": "string" }]
+  },
+  "variable": [
+    { "key": "base_url", "value": "http://127.0.0.1:5000/api/v1" },
+    { "key": "roustix_api_key", "value": "rtx_test_REPLACE_ME" },
+    { "key": "asset_id", "value": "1" },
+    { "key": "work_order_id", "value": "1" },
+    { "key": "meter_id", "value": "1" },
+    { "key": "endpoint_id", "value": "1" },
+    { "key": "delivery_id", "value": "1" }
+  ],
+  "item": [
+    {
+      "name": "Public · Identidad",
+      "item": [
+        { "name": "GET me", "request": { "method": "GET", "url": "{{base_url}}/me" } }
+      ]
+    },
+    {
+      "name": "Public · Maintenance",
+      "item": [
+        {
+          "name": "List assets (incremental)",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/maintenance/assets?page=1&page_size=50&updated_since=2026-01-01T00:00:00Z"
+          }
+        },
+        {
+          "name": "Get asset",
+          "request": { "method": "GET", "url": "{{base_url}}/maintenance/assets/{{asset_id}}" }
+        },
+        {
+          "name": "List work orders",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/maintenance/work-orders?page=1&page_size=50"
+          }
+        },
+        {
+          "name": "Get work order",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/maintenance/work-orders/{{work_order_id}}"
+          }
+        },
+        {
+          "name": "List incidents",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/maintenance/incidents?page=1&page_size=50"
+          }
+        },
+        {
+          "name": "Create incident (idempotent)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Idempotency-Key", "value": "incident-{{$guid}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Vibración anormal\",\n  \"description\": \"Reporte desde integración\",\n  \"responsible_area\": \"Mantenimiento\",\n  \"reporter_area\": \"Producción\",\n  \"type\": \"mecanica\",\n  \"priority\": \"alta\",\n  \"asset_id\": {{asset_id}}\n}"
+            },
+            "url": "{{base_url}}/maintenance/incidents"
+          }
+        },
+        {
+          "name": "List asset meters",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/maintenance/assets/{{asset_id}}/meters"
+          }
+        },
+        {
+          "name": "Create meter reading (idempotent)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Idempotency-Key", "value": "reading-{{$guid}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"value\": \"125.50\",\n  \"measured_at\": \"2026-07-22T14:30:00Z\",\n  \"notes\": \"Lectura desde integración\"\n}"
+            },
+            "url": "{{base_url}}/maintenance/meters/{{meter_id}}/readings"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin · Webhooks (sesión cookie)",
+      "auth": { "type": "noauth" },
+      "item": [
+        {
+          "name": "List endpoints",
+          "request": { "method": "GET", "url": "{{base_url}}/admin/webhooks" }
+        },
+        {
+          "name": "Create endpoint",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"ERP receptor\",\n  \"url\": \"https://example.com/hooks/roustix\",\n  \"environment\": \"live\",\n  \"events\": [\"incident.created\", \"work_order.completed\", \"meter.reading_flagged\", \"asset_health.band_changed\"]\n}"
+            },
+            "url": "{{base_url}}/admin/webhooks"
+          }
+        },
+        {
+          "name": "Webhook stats",
+          "request": { "method": "GET", "url": "{{base_url}}/admin/webhook-stats" }
+        },
+        {
+          "name": "List deliveries",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/admin/webhook-deliveries?endpoint_id={{endpoint_id}}"
+          }
+        },
+        {
+          "name": "Retry delivery",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/admin/webhook-deliveries/{{delivery_id}}/retry"
+          }
+        },
+        {
+          "name": "Integration audit",
+          "request": { "method": "GET", "url": "{{base_url}}/admin/integration-audit" }
+        },
+        {
+          "name": "Dispatch pending",
+          "request": { "method": "POST", "url": "{{base_url}}/admin/webhooks/dispatch" }
+        }
+      ]
+    }
+  ]
+}

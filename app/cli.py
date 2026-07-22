@@ -97,6 +97,36 @@ def version_command():
     click.echo(f"Build: {get_build_commit() or 'local'}")
 
 
+@click.group()
+def webhooks():
+    """Worker y utilidades de webhooks (Sprint 22.3)."""
+    pass
+
+
+@webhooks.command("deliver")
+@click.option("--limit", default=50, show_default=True, help="Máximo de entregas a procesar.")
+@with_appcontext
+def webhooks_deliver(limit: int):
+    """Procesa entregas pendientes con firma HMAC y reintentos."""
+    from app.integrations.webhooks import process_pending_deliveries
+
+    stats = process_pending_deliveries(limit=limit)
+    click.echo(f"Webhooks: {stats}")
+
+
+@webhooks.command("prune")
+@click.option("--empresa-id", type=int, default=None, help="Limita la retención a un tenant.")
+@with_appcontext
+def webhooks_prune(empresa_id: int | None):
+    """Purga historial de entregas según retención del plan."""
+    from app.integrations.webhooks import prune_deliveries
+    from app import db
+
+    removed = prune_deliveries(empresa_id)
+    db.session.commit()
+    click.echo(f"Entregas eliminadas: {removed}")
+
+
 def register_cli(app) -> None:
     app.cli.add_command(maintenance)
     app.cli.add_command(backup_db)
@@ -104,3 +134,4 @@ def register_cli(app) -> None:
     app.cli.add_command(restore_db_command)
     app.cli.add_command(migrate_storage_command)
     app.cli.add_command(version_command)
+    app.cli.add_command(webhooks)

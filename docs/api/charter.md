@@ -55,13 +55,15 @@ de negocio de forma segura, versionada, auditable y aislada por tenant.
 
 ## Definition of Done de Sprint 22 completo
 
-- [ ] La clave secreta solo se muestra al crear o rotar una credencial.
-- [ ] Los secretos persisten únicamente mediante hash seguro.
-- [ ] Cada endpoint valida tenant, scope, módulo, permiso y derecho técnico.
-- [ ] Activos, incidencias, OT, medidores y lecturas cumplen el contrato v1.
-- [ ] Los eventos se escriben mediante outbox transaccional.
-- [ ] Webhooks incluyen firma, timestamp, idempotencia e historial.
-- [ ] Existen reintentos y reenvío manual autorizados.
-- [ ] Rate limits devuelven `429` y `Retry-After`.
-- [ ] OpenAPI y colecciones coinciden con la implementación.
-- [ ] Hay pruebas de tenant, scopes, revocación, SSRF, firma y duplicados.
+- [x] La clave secreta solo se muestra al crear o rotar una credencial.
+- [x] Los secretos persisten únicamente mediante hash seguro.
+- [x] Cada endpoint valida tenant, scope, módulo, permiso y derecho técnico.
+- [x] Activos, incidencias, OT, medidores y lecturas cumplen el contrato v1.
+- [x] Los eventos se escriben mediante outbox transaccional.
+- [x] Webhooks incluyen firma, timestamp, idempotencia e historial.
+- [x] Existen reintentos y reenvío manual autorizados.
+- [x] Rate limits devuelven `429` y `Retry-After`.
+- [x] OpenAPI y colecciones coinciden con la implementación.
+- [x] Hay pruebas de tenant, scopes, revocación, SSRF, firma y duplicados.
+
+**Cierre:** Sprint 22.5 · 2026-07-22 · suite documental **v1.22.5**.

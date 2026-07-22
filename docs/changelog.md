@@ -3,6 +3,71 @@
 > Este changelog pertenece a la documentación. Los cambios de la aplicación se
 > registran por separado en [`/CHANGELOG.md`](../CHANGELOG.md).
 
+## [1.22.5] — 2026-07-22 · Sprint 22.5 · Documentación y cierre
+
+### Added
+- Guía para integradores, ejemplos y colección Postman Sprint 22.
+- Auditoría admin de credenciales/webhooks.
+- Pruebas de aislamiento entre empresas.
+- Cierre del programa Sprint 22 (API pública y Webhooks).
+
+### Status
+- ✅ Sprint 22.5 finalizado.
+- ✅ Sprint 22 completo.
+
+## [1.22.4] — 2026-07-22 · Sprint 22.4 · Seguridad y observabilidad
+
+### Added
+- Entitlements por plan; rate limit y cupos de credenciales/endpoints.
+- Firma HMAC verificable; registro de entregas con excerpt y stats.
+- Reintentos, retención, desactivación automática auditada.
+- Aislamiento tenant en outbox/entregas; migración `sa7p3r59w82h`.
+
+### Status
+- ✅ Sprint 22.4 finalizado.
+- ✅ Sprint 22.5 finalizado · programa Sprint 22 cerrado.
+
+## [1.22.3] — 2026-07-22 · Sprint 22.3 · Webhooks
+
+### Added
+- Outbox transaccional y endpoints de webhook con secreto sellado.
+- Firma HMAC, SSRF, reintentos, leases y worker CLI.
+- Eventos: incidencia creada/estado; OT creada/asignada/completada/cerrada;
+  lectura fuera de rango; cambio de Asset Health.
+-   Admin REST de endpoints y entregas; migración `rz6o2q48v71g`.
+
+### Status
+- ✅ Sprint 22.3–22.5 finalizados · programa Sprint 22 cerrado.
+
+## [1.22.2] — 2026-07-22 · Sprint 22.2 · API pública Maintenance
+
+### Added
+- API pública de activos, OT, incidencias, medidores y lecturas.
+- Envelopes y errores normalizados; `X-Request-Id`, paginación y filtros incrementales.
+- Rate limit por identidad; creación idempotente de incidencias y lecturas.
+- Notificaciones por área; integración con automatizaciones y Asset Health.
+- Migración `qy5n1p37u60f`; OpenAPI y colecciones Postman/Insomnia.
+- Pruebas de contrato.
+
+### Status
+- ✅ Sprint 22.2 finalizado.
+- 📋 Siguiente: Sprint 22.3 · Webhooks.
+
+---
+
+## [1.22.1] — 2026-07-22 · Sprint 22.1 · Credenciales de integración
+
+### Added
+- Identidad técnica tenant-safe mediante API keys con scopes.
+- Ciclo de vida de creación, rotación, expiración y revocación.
+- Administración web/REST, auditoría y contrato OpenAPI actualizado.
+- Reporte de cierre y pruebas de aislamiento entre empresas.
+
+### Status
+- ✅ Sprint 22.1–22.5 finalizados · programa Sprint 22 cerrado.
+
+---
+
 ## [1.22.0] — 2026-07-21 · Sprint 22.0 · API pública y Webhooks
 
 ### Added

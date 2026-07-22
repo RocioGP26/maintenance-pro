@@ -1,0 +1,12 @@
+{
+  "_type": "export", "__export_format": 4, "__export_date": "2026-07-22T00:00:00.000Z", "__export_source": "roustix.sprint22.2",
+  "resources": [
+    {"_id": "wrk_roustix_maintenance_v1", "_type": "workspace", "name": "Roustix Maintenance API v1", "scope": "collection"},
+    {"_id": "env_roustix_maintenance_v1", "_type": "environment", "parentId": "wrk_roustix_maintenance_v1", "name": "Base Environment", "data": {"base_url": "http://127.0.0.1:5000/api/v1", "api_key": "rtx_test_REPLACE_ME", "asset_id": 1, "meter_id": 1}},
+    {"_id": "req_assets_v1", "_type": "request", "parentId": "wrk_roustix_maintenance_v1", "name": "Activos", "method": "GET", "url": "{{ _.base_url }}/maintenance/assets?page=1&page_size=50", "headers": [{"name": "Authorization", "value": "Bearer {{ _.api_key }}"}]},
+    {"_id": "req_incidents_v1", "_type": "request", "parentId": "wrk_roustix_maintenance_v1", "name": "Incidencias", "method": "GET", "url": "{{ _.base_url }}/maintenance/incidents?page=1&page_size=50", "headers": [{"name": "Authorization", "value": "Bearer {{ _.api_key }}"}]},
+    {"_id": "req_incident_create_v1", "_type": "request", "parentId": "wrk_roustix_maintenance_v1", "name": "Reportar incidencia", "method": "POST", "url": "{{ _.base_url }}/maintenance/incidents", "headers": [{"name": "Authorization", "value": "Bearer {{ _.api_key }}"}, {"name": "Content-Type", "value": "application/json"}, {"name": "Idempotency-Key", "value": "incident-example-001"}], "body": {"mimeType": "application/json", "text": "{\"title\":\"Vibración anormal\",\"description\":\"Reporte desde integración\",\"responsible_area\":\"Mantenimiento\",\"type\":\"mecanica\",\"asset_id\":{{ _.asset_id }}}"}},
+    {"_id": "req_meters_v1", "_type": "request", "parentId": "wrk_roustix_maintenance_v1", "name": "Medidores", "method": "GET", "url": "{{ _.base_url }}/maintenance/assets/{{ _.asset_id }}/meters", "headers": [{"name": "Authorization", "value": "Bearer {{ _.api_key }}"}]},
+    {"_id": "req_reading_create_v1", "_type": "request", "parentId": "wrk_roustix_maintenance_v1", "name": "Registrar lectura", "method": "POST", "url": "{{ _.base_url }}/maintenance/meters/{{ _.meter_id }}/readings", "headers": [{"name": "Authorization", "value": "Bearer {{ _.api_key }}"}, {"name": "Content-Type", "value": "application/json"}, {"name": "Idempotency-Key", "value": "reading-example-001"}], "body": {"mimeType": "application/json", "text": "{\"value\":\"125.50\",\"measured_at\":\"2026-07-22T14:30:00Z\"}"}}
+  ]
+}

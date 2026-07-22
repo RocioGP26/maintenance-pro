@@ -4599,7 +4599,9 @@ def ordenes_asignar_tecnico(id):
     wo.ejecucion_tipo = WorkOrderEjecucionTipo.INTERNO.value
     if previous_id != technician.id:
         from app.tenant_activity import registrar_actividad_tenant
+        from app.integrations.emitters import emit_work_order_assigned
 
+        emit_work_order_assigned(wo, previous_technician_id=previous_id)
         registrar_actividad_tenant(
             _current_empresa_id(),
             "work_order_assigned",
@@ -6481,6 +6483,9 @@ def _cambiar_estado(inc, nuevo, accion, comentario=""):
             current_user.id if current_user.is_authenticated else None
         ),
     )
+    from app.integrations.emitters import emit_incident_status_changed
+
+    emit_incident_status_changed(inc, previous_status=anterior, new_status=nuevo)
     if inc.machine:
         from app.asset_health.service import save_health_snapshot
 

@@ -34,6 +34,9 @@ def asignar_numero_ot(wo: WorkOrder, anio: Optional[int] = None) -> str:
     wo.numero = numero
     wo.folio_anio = folio_anio
     wo.folio_seq = folio_seq
+    from app.integrations.emitters import emit_work_order_created
+
+    emit_work_order_created(wo)
     return numero
 
 
