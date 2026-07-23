@@ -1,0 +1,192 @@
+{% extends "base.html" %}
+{% block title %}Cronograma preventivo — {{ machine.codigo }} — {{ app_name }}{% endblock %}
+{% block page_title %}Cronograma preventivo{% endblock %}
+
+{% block header_toolbar %}
+<a href="{{ url_for('main.activos_cronogramas_index', anio=anio) }}" class="btn btn-outline-secondary btn-sm">
+  <i class="bi bi-grid"></i> Todos los cronogramas
+</a>
+<a href="{{ url_for('main.activos_cronograma_pdf', id=machine.id, anio=anio) }}" class="btn btn-outline-danger btn-sm">
+  <i class="bi bi-file-earmark-pdf"></i> PDF
+</a>
+<a href="{{ url_for('main.activos_hoja_vida', id=machine.id) }}" class="btn btn-outline-primary btn-sm">
+  <i class="bi bi-file-earmark-medical"></i> Hoja de vida
+</a>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-3">
+  <div>
+    <h1 class="h4 mb-1">{{ machine.codigo }} · {{ machine.nombre }}</h1>
+    <p class="text-muted small mb-0">
+      Solo mantenimiento preventivo. PROG = OT programadas · EJEC = OT completadas/cerradas.
+    </p>
+  </div>
+  <form class="d-flex gap-2 align-items-center" method="get">
+    <label class="small text-muted mb-0" for="anio">Año</label>
+    <input type="number" class="form-control form-control-sm" style="width:6rem" id="anio" name="anio"
+           value="{{ anio }}" min="2020" max="2100">
+    <button type="submit" class="btn btn-sm btn-primary">Ver</button>
+  </form>
+</div>
+
+<div class="card border-0 shadow-sm mb-3">
+  <div class="card-body d-flex flex-wrap gap-2">
+    {% if perm.editar %}
+    <form method="post" action="{{ url_for('main.activos_cronograma_aplicar_plantilla', id=machine.id) }}">
+      {% include "_csrf.html" %}
+      <input type="hidden" name="anio" value="{{ anio }}">
+      <button type="submit" class="btn btn-outline-secondary btn-sm"
+              onclick="return confirm('¿Aplicar plantilla de preventivos del sector de la empresa?');">
+        <i class="bi bi-magic"></i> Aplicar plantilla del sector
+      </button>
+    </form>
+    {% endif %}
+    {% if perm.crear %}
+    <form method="post" action="{{ url_for('main.activos_cronograma_generar_ot', id=machine.id) }}">
+      {% include "_csrf.html" %}
+      <input type="hidden" name="anio" value="{{ anio }}">
+      <button type="submit" class="btn btn-primary btn-sm"
+              onclick="return confirm('¿Generar OT preventivas del año {{ anio }} según los planes?');">
+        <i class="bi bi-calendar-plus"></i> Generar OT del año
+      </button>
+    </form>
+    {% endif %}
+  </div>
+</div>
+
+{% if not cronograma.filas %}
+<div class="alert alert-info">
+  Este activo aún no tiene planes preventivos. Aplica la plantilla del sector o crea OT preventivas
+  desde <a href="{{ url_for('main.ordenes_new') }}">Nueva OT</a>.
+</div>
+{% else %}
+<div class="table-responsive cronograma-wrap mb-4">
+  <table class="table table-sm table-bordered cronograma-table align-middle mb-0">
+    <thead>
+      <tr>
+        <th rowspan="2" class="text-center">N°</th>
+        <th rowspan="2">Instrucciones (actividad OT)</th>
+        <th rowspan="2" class="text-center">F</th>
+        {% for mes in meses %}
+        <th colspan="4" class="text-center">{{ mes }}</th>
+        {% endfor %}
+      </tr>
+      <tr>
+        {% for mes in meses %}
+          {% for s in range(1, 5) %}
+          <th class="text-center cronograma-sem">{{ s }}</th>
+          {% endfor %}
+        {% endfor %}
+      </tr>
+    </thead>
+    <tbody>
+      {% for fila in cronograma.filas %}
+      <tr class="cronograma-prog">
+        <td class="text-center" rowspan="2"><strong>{{ fila.numero }}</strong></td>
+        <td rowspan="2" class="cronograma-act">{{ fila.actividad }}</td>
+        <td class="text-center" rowspan="2"><span class="badge text-bg-light border">{{ fila.frecuencia_codigo }}</span></td>
+        {% for m in range(1, 13) %}
+          {% for s in range(1, 5) %}
+          <td class="text-center cronograma-cell">{% if fila.celdas[m][s].prog %}<strong>{{ fila.celdas[m][s].prog }}</strong>{% endif %}</td>
+          {% endfor %}
+        {% endfor %}
+      </tr>
+      <tr class="cronograma-ejec">
+        {% for m in range(1, 13) %}
+          {% for s in range(1, 5) %}
+          <td class="text-center cronograma-cell cronograma-cell--ejec">{% if fila.celdas[m][s].ejec %}<span class="text-success fw-semibold">{{ fila.celdas[m][s].ejec }}</span>{% endif %}</td>
+          {% endfor %}
+        {% endfor %}
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<div class="row g-3 mb-4">
+  <div class="col-lg-7">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-header bg-white"><strong>Seguimiento al cumplimiento · {{ anio }}</strong></div>
+      <div class="card-body table-responsive">
+        <table class="table table-sm mb-0">
+          <thead>
+            <tr>
+              <th></th>
+              <th class="text-center">Total</th>
+              {% for mes in meses %}
+              <th class="text-center">{{ mes }}</th>
+              {% endfor %}
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Programado</td>
+              <td class="text-center">{{ cronograma.cumplimiento.prog_total }}</td>
+              {% for m in range(1, 13) %}
+              <td class="text-center">{{ cronograma.cumplimiento.por_mes[m].prog }}</td>
+              {% endfor %}
+            </tr>
+            <tr>
+              <td>Ejecutado</td>
+              <td class="text-center">{{ cronograma.cumplimiento.ejec_total }}</td>
+              {% for m in range(1, 13) %}
+              <td class="text-center">{{ cronograma.cumplimiento.por_mes[m].ejec }}</td>
+              {% endfor %}
+            </tr>
+            <tr>
+              <td>% cumplimiento</td>
+              <td class="text-center fw-semibold">
+                {% if cronograma.cumplimiento.pct_total is not none %}{{ cronograma.cumplimiento.pct_total }}%{% else %}—{% endif %}
+              </td>
+              {% for m in range(1, 13) %}
+              <td class="text-center">
+                {% if cronograma.cumplimiento.por_mes[m].pct is not none %}{{ cronograma.cumplimiento.por_mes[m].pct }}%{% else %}—{% endif %}
+              </td>
+              {% endfor %}
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-5">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-header bg-white"><strong>Observaciones</strong></div>
+      <div class="card-body">
+        {% if cronograma.observaciones %}
+        <ul class="small mb-0 ps-3">
+          {% for o in cronograma.observaciones %}
+          <li class="mb-2">
+            <strong>{% if o.fecha %}{{ o.fecha.strftime('%d/%m/%Y') }}{% else %}—{% endif %}</strong>
+            ({{ o.numero }}): {{ o.texto }}
+          </li>
+          {% endfor %}
+        </ul>
+        {% else %}
+        <p class="text-muted small mb-0">Sin OT preventivas completadas en {{ anio }}.</p>
+        {% endif %}
+        <hr>
+        <p class="small text-muted mb-0">
+          <strong>Convenciones:</strong>
+          I Inspección · L Lubricación · A Ajuste · LZ Limpieza · MG General · R Revisión · C Calibración ·
+          F: S Semanal · M Mensual · BI · TR · SE · AN · ok = realizado.
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block head_extra %}
+<style>
+.cronograma-wrap { max-height: 70vh; overflow: auto; border: 1px solid #e5e7eb; border-radius: .5rem; }
+.cronograma-table { font-size: .72rem; min-width: 1100px; }
+.cronograma-table thead th { background: #042c53; color: #fff; position: sticky; top: 0; z-index: 2; }
+.cronograma-sem { min-width: 1.4rem; padding: .15rem !important; }
+.cronograma-act { min-width: 14rem; max-width: 22rem; }
+.cronograma-cell { min-width: 1.35rem; padding: .15rem !important; }
+.cronograma-ejec td { background: #f0fff4; }
+</style>
+{% endblock %}

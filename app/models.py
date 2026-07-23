@@ -1345,6 +1345,7 @@ class PreventiveMaintenancePlan(db.Model):
     actividad_key = db.Column(db.String(220), nullable=False, index=True)
     frecuencia_valor = db.Column(db.Integer, default=1, nullable=False)
     frecuencia_unidad = db.Column(db.String(16), default="meses", nullable=False)
+    tipo_codigo = db.Column(db.String(8), default="I", nullable=False)
     activo = db.Column(db.Boolean, default=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
@@ -2893,6 +2894,11 @@ def ensure_asset_base_columns():
     _add_column_if_missing("machines", "fecha_ingreso", "fecha_ingreso DATE")
     _add_column_if_missing("machines", "tiempo_garantia_meses", "tiempo_garantia_meses INTEGER")
     _add_column_if_missing("machines", "moneda_compra", "moneda_compra VARCHAR(8)")
+    _add_column_if_missing(
+        "preventive_maintenance_plans",
+        "tipo_codigo",
+        "tipo_codigo VARCHAR(8) DEFAULT 'I'",
+    )
     _migrate_anio_fabricacion_a_fecha()
 
 

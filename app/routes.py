@@ -2560,6 +2560,156 @@ def _estadisticas_tecnicos_analisis(ordenes) -> dict:
     return _estadisticas_por_grupo_hoja_vida(grupos, _label)
 
 
+@bp.route("/activos/cronogramas")
+def activos_cronogramas_index():
+    """Listado de cronogramas preventivos + PDF masivo."""
+    from datetime import date as date_cls
+
+    anio = request.args.get("anio", type=int) or date_cls.today().year
+    machines = (
+        _scope_machines_current_user(_filter_empresa(Machine.query, Machine))
+        .order_by(Machine.codigo)
+        .all()
+    )
+    return render_template(
+        "activos/cronogramas_index.html",
+        machines=machines,
+        anio=anio,
+    )
+
+
+@bp.route("/activos/cronogramas/pdf")
+def activos_cronogramas_pdf_all():
+    from datetime import date as date_cls
+    from io import BytesIO
+
+    from flask import send_file
+
+    from app.maintenance.cronograma_pdf import export_cronogramas_bulk_pdf
+    from app.maintenance.cronograma_preventivo import construir_cronograma
+
+    anio = request.args.get("anio", type=int) or date_cls.today().year
+    machines = (
+        _scope_machines_current_user(_filter_empresa(Machine.query, Machine))
+        .order_by(Machine.codigo)
+        .all()
+    )
+    cronogramas = [construir_cronograma(m, anio) for m in machines]
+    # Solo activos con al menos un plan o OT preventiva
+    cronogramas = [c for c in cronogramas if c.filas]
+    contenido, nombre = export_cronogramas_bulk_pdf(current_user.empresa, cronogramas)
+    return send_file(
+        BytesIO(contenido),
+        mimetype="application/pdf",
+        as_attachment=True,
+        download_name=nombre,
+    )
+
+
+@bp.route("/activos/<int:id>/cronograma")
+def activos_cronograma(id):
+    from datetime import date as date_cls
+
+    from app.maintenance.cronograma_preventivo import (
+        FRECUENCIA_CODIGO_CHOICES,
+        MESES_ES,
+        TIPO_ACTIVIDAD_CHOICES,
+        construir_cronograma,
+    )
+    from app.models import PreventiveMaintenancePlan
+
+    machine = _scope_machines_current_user(
+        _filter_empresa(Machine.query.filter_by(id=id), Machine)
+    ).first_or_404()
+    anio = request.args.get("anio", type=int) or date_cls.today().year
+    cronograma = construir_cronograma(machine, anio)
+    planes = (
+        PreventiveMaintenancePlan.query.filter_by(machine_id=machine.id, activo=True)
+        .order_by(PreventiveMaintenancePlan.id)
+        .all()
+    )
+    return render_template(
+        "activos/cronograma.html",
+        machine=machine,
+        cronograma=cronograma,
+        anio=anio,
+        meses=MESES_ES,
+        tipos_actividad=TIPO_ACTIVIDAD_CHOICES,
+        frecuencias=FRECUENCIA_CODIGO_CHOICES,
+        planes=planes,
+    )
+
+
+@bp.route("/activos/<int:id>/cronograma/pdf")
+def activos_cronograma_pdf(id):
+    from datetime import date as date_cls
+    from io import BytesIO
+
+    from flask import send_file
+
+    from app.maintenance.cronograma_pdf import export_cronograma_pdf
+    from app.maintenance.cronograma_preventivo import construir_cronograma
+
+    machine = _scope_machines_current_user(
+        _filter_empresa(Machine.query.filter_by(id=id), Machine)
+    ).first_or_404()
+    anio = request.args.get("anio", type=int) or date_cls.today().year
+    cronograma = construir_cronograma(machine, anio)
+    contenido, nombre = export_cronograma_pdf(current_user.empresa, cronograma)
+    return send_file(
+        BytesIO(contenido),
+        mimetype="application/pdf",
+        as_attachment=True,
+        download_name=nombre,
+    )
+
+
+@bp.route("/activos/<int:id>/cronograma/aplicar-plantilla", methods=["POST"])
+def activos_cronograma_aplicar_plantilla(id):
+    from app.maintenance.cronograma_preventivo import aplicar_plantillas_sector
+
+    machine = _scope_machines_current_user(
+        _filter_empresa(Machine.query.filter_by(id=id), Machine)
+    ).first_or_404()
+    if not can_edit(current_user):
+        flash("No tienes permiso para editar activos.", "warning")
+        return redirect(url_for("main.activos_cronograma", id=id))
+    planes = aplicar_plantillas_sector(machine)
+    db.session.commit()
+    flash(f"Plantilla del sector aplicada ({len(planes)} actividades).", "success")
+    anio = request.args.get("anio") or request.form.get("anio")
+    return redirect(url_for("main.activos_cronograma", id=id, anio=anio))
+
+
+@bp.route("/activos/<int:id>/cronograma/generar-ot", methods=["POST"])
+def activos_cronograma_generar_ot(id):
+    from datetime import date as date_cls
+
+    from app.maintenance.cronograma_preventivo import generar_ot_cronograma_anio
+
+    machine = _scope_machines_current_user(
+        _filter_empresa(Machine.query.filter_by(id=id), Machine)
+    ).first_or_404()
+    if not can_create_work_order(current_user):
+        flash("No tienes permiso para generar órdenes de trabajo.", "warning")
+        return redirect(url_for("main.activos_cronograma", id=id))
+    anio = request.form.get("anio", type=int) or date_cls.today().year
+    total, errores = generar_ot_cronograma_anio(machine, anio=anio)
+    db.session.commit()
+    if total:
+        flash(f"Se generaron {total} OT preventivas para {anio}.", "success")
+    elif errores:
+        flash(errores[0], "warning")
+    else:
+        flash(
+            f"No se crearon OT nuevas (ya existían o no hay planes). Año {anio}.",
+            "info",
+        )
+    for err in errores[1:3]:
+        flash(err, "warning")
+    return redirect(url_for("main.activos_cronograma", id=id, anio=anio))
+
+
 @bp.route("/activos/<int:id>/hoja-vida/pdf")
 def activos_hoja_vida_pdf(id):
     from io import BytesIO
@@ -2771,10 +2921,17 @@ def activos_new():
                     flash(err_campo, "danger")
                 else:
                     try:
+                        from app.maintenance.cronograma_preventivo import aplicar_plantillas_sector
+
+                        aplicar_plantillas_sector(m)
                         _guardar_adjuntos_activo(m, request.files)
                         db.session.commit()
-                        flash(f"Activo registrado con código {m.codigo}.", "success")
-                        return redirect(url_for("main.activos_list"))
+                        flash(
+                            f"Activo registrado con código {m.codigo}. "
+                            "Se aplicó la plantilla de preventivos del sector.",
+                            "success",
+                        )
+                        return redirect(url_for("main.activos_cronograma", id=m.id))
                     except ValueError as exc:
                         db.session.rollback()
                         flash(str(exc), "danger")

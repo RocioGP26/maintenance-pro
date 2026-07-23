@@ -103,8 +103,10 @@ def get_or_create_plan(
     actividad: str,
     frecuencia_valor: int,
     frecuencia_unidad: str,
+    tipo_codigo: str = "I",
 ) -> PreventiveMaintenancePlan:
     key = actividad_key(actividad)
+    tipo = (tipo_codigo or "I").strip().upper()[:8] or "I"
     plan = PreventiveMaintenancePlan.query.filter_by(
         machine_id=machine_id, actividad_key=key
     ).first()
@@ -116,12 +118,15 @@ def get_or_create_plan(
             actividad_key=key,
             frecuencia_valor=frecuencia_valor,
             frecuencia_unidad=frecuencia_unidad,
+            tipo_codigo=tipo,
         )
         db.session.add(plan)
     else:
         plan.actividad = actividad.strip()
         plan.frecuencia_valor = frecuencia_valor
         plan.frecuencia_unidad = frecuencia_unidad
+        if tipo:
+            plan.tipo_codigo = tipo
     return plan
 
 
@@ -250,6 +255,7 @@ def crear_programacion_preventiva_anio(
     autorizado_por: str = "",
     recibido_por: str = "",
     empresa_tercerizada: str = "",
+    omitir_validacion_actividad_abierta: bool = False,
 ) -> Tuple[List[WorkOrder], Optional[str]]:
     """
     Crea las OT preventivas del año en curso según la frecuencia indicada.
@@ -261,9 +267,10 @@ def crear_programacion_preventiva_anio(
     if not fecha_inicio:
         return [], "Indica la primera fecha programada para generar el calendario del año."
 
-    err_dup = validar_actividad_preventiva_nueva(machine_id, actividad)
-    if err_dup:
-        return [], err_dup
+    if not omitir_validacion_actividad_abierta:
+        err_dup = validar_actividad_preventiva_nueva(machine_id, actividad)
+        if err_dup:
+            return [], err_dup
 
     unidad = (frecuencia_unidad or "meses").lower()
     if unidad not in {u for u, _ in PREVENTIVE_FREQUENCY_UNITS}:
