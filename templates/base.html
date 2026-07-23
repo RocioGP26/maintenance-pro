@@ -264,7 +264,7 @@
           </div>
         </div>
         {% endif %}
-        {% if empresa_actual and (perm.equipo or perm.config) %}
+        {% if empresa_actual and (perm.equipo or perm.config or perm.integraciones) %}
         {% set es_submenu_usuarios = ep and (ep.startswith('main.equipo') or ep == 'main.mi_perfil') %}
         {% set es_submenu_config_empresa = ep == 'main.configuracion_empresa' %}
         {% set es_submenu_campos = ep and ep.startswith('main.configuracion_campos') %}
@@ -294,6 +294,8 @@
                href="{{ url_for('main.seguridad_sesiones') }}">
               <i class="bi bi-shield-check me-2"></i> Seguridad y sesiones
             </a>
+            {% endif %}
+            {% if perm.integraciones %}
             <a class="nav-link nav-link-sub {% if es_submenu_integraciones %}active{% endif %}"
                href="{{ url_for('integrations.credentials_page') }}">
               <i class="bi bi-key me-2"></i> Credenciales API

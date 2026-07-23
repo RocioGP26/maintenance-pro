@@ -11,9 +11,22 @@ El header es siempre `Authorization: Bearer <credential>`. El prefijo
 `rtx_live_` o `rtx_test_` permite enrutar API keys sin exponer su hash. Una key
 pertenece a exactamente una empresa y no puede cambiar de tenant.
 
+## Quién puede gestionar API keys (UI y admin REST)
+
+| Rol / perfil | Acceso |
+|---|---|
+| Superadministrador | Sí — total |
+| Administrador con área **TI / TIC / Sistemas / Infraestructura** | Sí — crear, rotar, revocar |
+| Administrador operativo (Mantenimiento u otras áreas) | No |
+| Supervisor / Técnico / Operario | No |
+
+Las API keys dan acceso a datos sin pasar por la UI. Por eso solo el área de
+Sistemas / TIC (o Superadmin) debe emitirlas. El permiso de producto es
+`can_manage_integrations` (`perm.integraciones` en plantillas).
+
 ## Ciclo de vida de API keys
 
-1. Un administrador autorizado asigna nombre, ambiente, scopes y expiración.
+1. Un administrador de Sistemas / TIC (o Superadmin) asigna nombre, ambiente, scopes y expiración.
 2. Roustix muestra el secreto completo una sola vez.
 3. Solo se persisten prefijo identificable y hash resistente a ataques offline.
 4. Cada uso válido actualiza `last_used_at` de manera acotada.

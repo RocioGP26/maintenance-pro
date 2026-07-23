@@ -60,17 +60,27 @@ class TestIntegrationCredentials(unittest.TestCase):
             empresa_id=self.company.id,
             username="apiadmin",
             rol="admin",
+            area="TIC",
             activo=True,
             onboarding_completado=True,
         )
         self.admin.set_password(self.PASSWORD)
+        self.ops_admin = User(
+            empresa_id=self.company.id,
+            username="opsadmin",
+            rol="admin",
+            area="Mantenimiento",
+            activo=True,
+            onboarding_completado=True,
+        )
+        self.ops_admin.set_password(self.PASSWORD)
         own_type = MachineType(
             empresa_id=self.company.id, clave="api-own", nombre="Equipo API", prefijo="API"
         )
         other_type = MachineType(
             empresa_id=self.other_company.id, clave="api-other", nombre="Otro", prefijo="OTH"
         )
-        db.session.add_all([self.admin, own_type, other_type])
+        db.session.add_all([self.admin, self.ops_admin, own_type, other_type])
         db.session.flush()
         self.own_asset = Machine(
             empresa_id=self.company.id,
@@ -235,6 +245,27 @@ class TestIntegrationCredentials(unittest.TestCase):
                 empresa_id=self.company.id, tipo="integration_credential_created"
             ).first()
         )
+
+    def test_maintenance_admin_cannot_manage_integration_credentials(self):
+        from app.permissions import can_manage_integrations
+
+        self.assertTrue(can_manage_integrations(self.admin))
+        self.assertFalse(can_manage_integrations(self.ops_admin))
+
+        client = self.app.test_client()
+        login = client.post(
+            "/login",
+            data={
+                "username": self.ops_admin.username,
+                "empresa_slug": self.company.slug,
+                "password": self.PASSWORD,
+            },
+        )
+        self.assertEqual(login.status_code, 302)
+        page = client.get("/administracion/integraciones/credenciales")
+        self.assertEqual(page.status_code, 302)
+        listed = client.get("/api/v1/admin/integration-credentials")
+        self.assertEqual(listed.status_code, 403)
 
 
 if __name__ == "__main__":

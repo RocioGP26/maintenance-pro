@@ -74,6 +74,7 @@ class TestWebhooks(unittest.TestCase):
             empresa_id=self.company.id,
             username="wh-admin",
             rol="admin",
+            area="TIC",
             activo=True,
             onboarding_completado=True,
         )
