@@ -53,6 +53,7 @@ class TestWebhookSecurityObservability(unittest.TestCase):
             empresa_id=self.company.id,
             username="sec-admin",
             rol="admin",
+            area="Sistemas",
             activo=True,
             onboarding_completado=True,
         )

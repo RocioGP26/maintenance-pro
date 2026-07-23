@@ -57,6 +57,7 @@ class TestApiTenantIsolation(unittest.TestCase):
             empresa_id=self.a.id,
             username="admin-a",
             rol="admin",
+            area="TI",
             activo=True,
             onboarding_completado=True,
         )

@@ -18,7 +18,7 @@ from app.integrations.credentials import (
 )
 from app.public_api.contract import PUBLIC_API_LIMIT, api_rate_key, success
 from app.models import IntegrationCredential, WebhookDelivery, WebhookEndpoint
-from app.permissions import can_manage_equipo
+from app.permissions import can_manage_integrations
 from app.tenant_activity import registrar_actividad_tenant
 from app.integrations.webhooks import (
     WebhookError,
@@ -37,7 +37,8 @@ integrations_bp = Blueprint("integrations", __name__)
 
 
 def _admin_empresa_id() -> int | None:
-    if not current_user.is_authenticated or not can_manage_equipo(current_user):
+    """Solo Superadmin o Admin de área TI/TIC/Sistemas."""
+    if not current_user.is_authenticated or not can_manage_integrations(current_user):
         return None
     return int(current_user.empresa_id) if current_user.empresa_id else None
 
@@ -87,7 +88,10 @@ def _value(data: dict, key: str, default=None):
 def credentials_page():
     empresa_id = _admin_empresa_id()
     if empresa_id is None:
-        flash("Solo los administradores pueden gestionar integraciones.", "warning")
+        flash(
+            "Solo el área de Sistemas / TIC puede gestionar credenciales API e integraciones.",
+            "warning",
+        )
         return redirect(url_for("main.dashboard"))
     revealed_secret = None
     if request.method == "POST":

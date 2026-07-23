@@ -92,15 +92,25 @@ def normalize_area_name(value: Optional[str]) -> str:
         "tic": "tic",
         "sistemas": "tic",
         "tic sistemas": "tic",
+        "sistemas de informacion": "tic",
         "tecnologia": "tic",
         "tecnologia informacion": "tic",
         "tecnologia de la informacion": "tic",
+        "infraestructura": "tic",
+        "infraestructura ti": "tic",
+        "infraestructura tic": "tic",
+        "informatica": "tic",
     }
     return aliases.get(normalized, normalized)
 
 
 def _area_normalizada(user) -> str:
     return normalize_area_name(getattr(user, "area", ""))
+
+
+def is_systems_area(user) -> bool:
+    """True cuando el área del usuario es TI / TIC / Sistemas / Infraestructura."""
+    return _area_normalizada(user) == "tic"
 
 
 def can_create(user) -> bool:
@@ -131,6 +141,19 @@ def can_manage_config(user) -> bool:
 
 def can_manage_equipo(user) -> bool:
     return _rol(user) in (UserRole.SUPERADMIN.value, UserRole.ADMIN.value)
+
+
+def can_manage_integrations(user) -> bool:
+    """API keys y webhooks: solo Superadmin o Admin del área TI/TIC/Sistemas.
+
+    El Administrador operativo de mantenimiento no gestiona credenciales técnicas.
+    """
+    rol = _rol(user)
+    if rol == UserRole.SUPERADMIN.value:
+        return True
+    if rol == UserRole.ADMIN.value and is_systems_area(user):
+        return True
+    return False
 
 
 def is_read_only(user) -> bool:
@@ -368,6 +391,7 @@ def permission_flags(user) -> dict:
         "eliminar": can_delete(user),
         "config": can_manage_config(user),
         "equipo": can_manage_equipo(user),
+        "integraciones": can_manage_integrations(user),
         "solo_lectura": is_read_only(user),
         "solicitante": is_requester(user),
         "tecnico": is_technician(user),
