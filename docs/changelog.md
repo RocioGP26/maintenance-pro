@@ -3,6 +3,26 @@
 > Este changelog pertenece a la documentación. Los cambios de la aplicación se
 > registran por separado en [`/CHANGELOG.md`](../CHANGELOG.md).
 
+## [1.22.6] — 2026-07-23 · Acceso híbrido Docs + guía pública
+
+### Added
+- Política **público / privado** · [ACCESS.md](ACCESS.md)
+- Gate Flask `app/docs_access.py` · `DOCS_ACCESS_POLICY=hybrid|open|locked`
+- Índice `/docs/` reorganizado
+- **`/guia`** · vista maquetada de producto (MRG → HTML cliente · PDF)
+- MKT híbrido: assets + MTX-CASE públicos; capítulos privados
+- Tests `tests/test_docs_access.py`
+
+### Changed
+- **`/mrg/`** pasa a privado (fuente Markdown); cliente usa `/guia`
+- **`/mag/`** portal limpio 100 % público (sin Sprint / estados de entrega)
+- Publishing: no exponer portal MRG crudo al público
+
+### Status
+- 🌐 Público: MBB · **MAG** · MSD · `/guia` · assets MKT · Release Notes · OpenAPI
+- 🔒 Privado: MRG · MCM · MPA · MDL · MUX · MRL · MDO · Developer · MKT capítulos
+- 🔐 API keys: siempre detrás de autenticación en plataforma
+
 ## [1.22.5] — 2026-07-22 · Sprint 22.5 · Documentación y cierre
 
 ### Added

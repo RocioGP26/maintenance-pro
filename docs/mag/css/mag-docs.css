@@ -1,6 +1,74 @@
 /**
- * MAG Docs — Roustix API Guide
+ * MAG Docs — Roustix API Guide (portal público)
  */
+
+.mag-public-badge {
+  background: rgba(104, 211, 145, 0.2);
+  border: 1px solid rgba(104, 211, 145, 0.45);
+  border-radius: 999px;
+  color: #9ae6b4;
+  display: inline-block;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  margin-bottom: 1rem;
+  padding: 0.35rem 0.85rem;
+  text-transform: uppercase;
+}
+
+.mag-hero-ctas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  justify-content: center;
+  margin-top: 1.75rem;
+}
+
+.mag-cta {
+  border-radius: 10px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  padding: 0.65rem 1.15rem;
+  text-decoration: none;
+}
+
+.mag-cta--primary {
+  background: #378add;
+  color: #fff;
+}
+
+.mag-cta--primary:hover {
+  background: #4a9ae8;
+  color: #fff;
+}
+
+.mag-cta--ghost {
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  color: #fff;
+}
+
+.mag-cta--ghost:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+}
+
+.mag-hero-note {
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 0.82rem;
+  line-height: 1.45;
+  margin: 1.75rem auto 0;
+  max-width: 36rem;
+  text-align: center;
+}
+
+.mag-bullets {
+  margin: 1rem 0 0;
+  padding-left: 1.2rem;
+}
+
+.mag-bullets li {
+  margin-bottom: 0.4rem;
+}
 
 .mag-doc-code {
   color: #63b3ed;
@@ -78,8 +146,7 @@
 }
 
 .mag-chapter-nav a {
-  color: var(--bb-acento);
-  font-size: 0.88rem;
+  color: #185fa5;
   font-weight: 600;
   text-decoration: none;
 }
@@ -89,11 +156,11 @@
 }
 
 .mag-json {
-  background: #0d1117;
-  border-radius: 10px;
-  color: #e6edf3;
+  background: #1a2332;
+  border-radius: 12px;
+  color: #e2e8f0;
   font-family: ui-monospace, monospace;
-  font-size: 0.72rem;
+  font-size: 0.78rem;
   line-height: 1.55;
   margin: 1rem 0;
   overflow-x: auto;
@@ -101,27 +168,93 @@
   white-space: pre;
 }
 
-.mag-pair {
-  display: grid;
-  gap: 1.5rem;
-  grid-template-columns: 1fr 1fr;
-  margin: 1.5rem 0;
-}
-
-@media (max-width: 768px) {
-  .mag-pair {
-    grid-template-columns: 1fr;
-  }
-}
-
 .mag-mpa-note {
-  background: #ebf8ff;
-  border-left: 4px solid #3182ce;
-  border-radius: 0 8px 8px 0;
-  margin: 1.25rem 0;
+  background: #e6f1fb;
+  border-left: 4px solid #185fa5;
+  border-radius: 0 10px 10px 0;
+  margin: 1rem 0;
   padding: 0.85rem 1rem;
 }
 
 .mag-mpa-note p {
   margin: 0;
+  font-size: 0.9rem;
+}
+
+.mag-guide-article .bb-page-inner {
+  max-width: 48rem;
+}
+
+.mag-guide-body {
+  color: #444441;
+  font-size: 0.95rem;
+  line-height: 1.65;
+}
+
+.mag-guide-body h1 {
+  color: #042c53;
+  font-size: 1.75rem;
+  margin: 0 0 1rem;
+}
+
+.mag-guide-body h2 {
+  color: #042c53;
+  font-size: 1.25rem;
+  margin: 1.75rem 0 0.75rem;
+}
+
+.mag-guide-body h3 {
+  color: #185fa5;
+  font-size: 1.05rem;
+  margin: 1.25rem 0 0.5rem;
+}
+
+.mag-guide-body p {
+  margin: 0 0 0.85rem;
+}
+
+.mag-guide-body ul,
+.mag-guide-body ol {
+  margin: 0 0 1rem;
+  padding-left: 1.25rem;
+}
+
+.mag-guide-body li {
+  margin-bottom: 0.35rem;
+}
+
+.mag-guide-body blockquote.mag-quote,
+.mag-guide-body blockquote {
+  background: #e6f1fb;
+  border-left: 4px solid #185fa5;
+  border-radius: 0 10px 10px 0;
+  color: #042c53;
+  font-size: 1.05rem;
+  font-style: italic;
+  margin: 1rem 0 1.25rem;
+  padding: 0.85rem 1.1rem;
+}
+
+.mag-guide-body hr {
+  border: none;
+  border-top: 1px solid rgba(4, 44, 83, 0.12);
+  margin: 1.5rem 0;
+}
+
+.mag-guide-body pre.mag-json {
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.mag-guide-body code {
+  background: #eef4fb;
+  border-radius: 4px;
+  font-family: ui-monospace, monospace;
+  font-size: 0.86em;
+  padding: 0.1rem 0.35rem;
+}
+
+.mag-guide-body pre code {
+  background: transparent;
+  padding: 0;
 }

@@ -1,7 +1,5 @@
 # MAG-03-TNT · Multi-tenant
 
-**Código:** MAG-03-TNT · Sprint 8.3 · **Entregado**
-
 > Una plataforma. Miles de empresas. Cero mezcla de datos.
 
 Roustix fue diseñado como una plataforma SaaS **multi-tenant** desde su arquitectura. Todas las solicitudes, recursos y permisos existen dentro del contexto de un **tenant**, garantizando el **aislamiento completo** entre clientes.

@@ -126,6 +126,28 @@ def create_app(config_name: str | None = None):
             or endpoint == "storage.media"
             or endpoint.startswith("onboarding.")
             or endpoint.startswith("health.")
+            # Docs públicos (MBB / MAG / MSD / MRG / hub) + activos MKT de captación
+            or endpoint.startswith((
+                "brand_book.",
+                "openapi.",
+                "docs_hub.",
+            ))
+            or endpoint in (
+                "mkt.assets",
+                "mkt.mtx_case",
+                "mag.index",
+                "mag.index_no_slash",
+                "mag.css",
+                "mag.guide",
+                "mag.chapters",
+                "msd.index",
+                "msd.index_no_slash",
+                "msd.css",
+                "msd.guide",
+                "msd.chapters",
+                "msd.openapi_portal",
+                "msd.collections_portal",
+            )
         ):
             return None
         flash("Tu rol de solicitante solo permite reportar y consultar tus incidencias.", "warning")
@@ -345,6 +367,9 @@ def create_app(config_name: str | None = None):
     app.register_blueprint(mdo_bp)
     app.register_blueprint(openapi_bp)
     app.register_blueprint(docs_bp)
+    from app.docs_access import register_docs_access
+
+    register_docs_access(app)
     app.register_blueprint(storage_bp)
     app.register_blueprint(integrations_bp)
     app.register_blueprint(public_maintenance_bp)

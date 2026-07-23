@@ -1,8 +1,10 @@
 # MKT-01 · Identidad y mensajes de marca
 
-**Código:** MKT-01 · Sprint 12.1 · **Entregado**
+**Código:** MKT-01 · Sprint 12.1 · **Entregado** · **🔒 Acceso privado** (equipo marketing · agencias · comercial)
 
 > MCM explica **por qué comprar** Roustix. MKT define **cómo comunicarlo** en cada activo — web, pitch, email, brochure y redes.
+>
+> Esta guía **no** es material para el cliente final: produce activos públicos, pero el capítulo permanece interno. Ver [ACCESS.md](/docs/ACCESS.md#matriz-mkt-híbrida).
 
 **Toda la operación. Una sola plataforma.**
 

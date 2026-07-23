@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ chapter.num }} · {{ chapter.title }} — Roustix API</title>
+  <meta name="description" content="{{ chapter.title }} — contrato oficial de la API Roustix para integradores.">
+  <link rel="stylesheet" href="/brandbook/css/brand-book.css">
+  <link rel="stylesheet" href="{{ url_for('mag.css', filename='mag-docs.css') }}">
+</head>
+<body>
+<div class="bb-shell">
+  <nav class="bb-nav" aria-label="Roustix API Guide">
+    <div class="bb-nav-brand">
+      <p class="bb-wordmark">ROUSTIX API</p>
+      <p class="bb-sub">Guía para integradores</p>
+      <p class="bb-nav-meta">
+        <a href="/mag/" style="color:rgba(255,255,255,0.55)">Índice</a> ·
+        <a href="/msd/" style="color:rgba(255,255,255,0.55)">SDK</a> ·
+        <a href="/api/v1/openapi.yaml" style="color:rgba(255,255,255,0.55)">OpenAPI</a>
+      </p>
+    </div>
+    <div class="bb-nav-group">
+      <p class="bb-nav-label">Capítulos</p>
+      <a href="/mag/">Índice</a>
+      {% for item in chapters %}
+      <a href="{{ url_for('mag.guide', slug=item.slug) }}"{% if item.slug == chapter.slug %} class="is-active"{% endif %}>
+        {{ item.num }} · {{ item.nav }}
+      </a>
+      {% endfor %}
+    </div>
+    <div class="bb-nav-group">
+      <p class="bb-nav-label">Herramientas</p>
+      <a href="/api/v1/openapi.yaml">OpenAPI YAML</a>
+      <a href="/msd/">Portal SDK</a>
+      <a href="/guia">Guía de producto</a>
+    </div>
+  </nav>
+
+  <main class="bb-main">
+    <article class="bb-page bb-page--soft mag-guide-article">
+      <div class="bb-page-inner">
+        <span class="mag-public-badge">Documentación pública</span>
+        <p class="bb-page-num">{{ chapter.num }} · {{ chapter.title }}</p>
+        <div class="mag-guide-body">
+          {{ body_html|safe }}
+        </div>
+        <div class="mag-chapter-nav">
+          {% if prev %}
+          <a href="{{ url_for('mag.guide', slug=prev.slug) }}">← {{ prev.num }} · {{ prev.nav }}</a>
+          {% else %}
+          <a href="/mag/">← Índice</a>
+          {% endif %}
+          {% if next %}
+          <a href="{{ url_for('mag.guide', slug=next.slug) }}">{{ next.num }} · {{ next.nav }} →</a>
+          {% else %}
+          <a href="/msd/">Portal SDK →</a>
+          {% endif %}
+        </div>
+      </div>
+    </article>
+  </main>
+</div>
+</body>
+</html>

@@ -1,7 +1,5 @@
 # MAG-04-RES · Recursos REST
 
-**Código:** MAG-04-RES · Sprint 8.4 · **Entregado**
-
 > La API no expone tablas.  
 > Expone **recursos de negocio**.
 

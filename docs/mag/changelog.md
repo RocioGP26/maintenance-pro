@@ -1,5 +1,35 @@
 # MAG Changelog
 
+## [1.0.15] — 2026-07-23 · Redirect chapters → guide
+
+### Changed
+- `/mag/chapters/*.md` sin sesión **redirige** a `/mag/guide/<slug>` (no login wall ni Markdown crudo)
+- Con sesión interna sigue sirviendo el `.md` fuente
+
+---
+
+## [1.0.14] — 2026-07-23 · Capítulos maquetados (fuente .md privada)
+
+### Added
+- Ruta pública `/mag/guide/<slug>` · HTML corporativo con nav y código resaltado
+- Sanitizado: sin `app/…`, Sprint ni enlaces MPA (`app/mag_public.py`)
+
+### Changed
+- `/mag/chapters/*.md` requiere login (fuente interna)
+- Índice enlaza a `/mag/guide/…` en lugar del Markdown crudo
+
+---
+
+## [1.0.13] — 2026-07-23 · Portal público para integradores
+
+### Changed
+- Índice `/mag/` reescrito como **centro de documentación público** (sin Sprint / estados internos)
+- Nav enlaza OpenAPI · MSD · guía de producto (no MPA privado)
+- README y ACCESS: MAG **100 % público**; keys y MPA siguen protegidos
+- Capítulos sin cabecera de entrega interna en la primera línea
+
+---
+
 ## [1.0.12] — 2026-07-10 · MAG-10 Límites · MAG v1.0 completo
 
 ### Added

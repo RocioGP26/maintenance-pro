@@ -201,6 +201,25 @@ body {
 .docs-badge--frozen { background: #bee3f8; color: #2a4365; }
 .docs-badge--wip { background: #fefcbf; color: #744210; }
 .docs-badge--soon { background: #edf2f7; color: #718096; }
+.docs-badge--public { background: #c6f6d5; color: #22543d; }
+.docs-badge--private { background: #feebc8; color: #7b341e; }
+
+.docs-section-lead {
+  color: var(--bb-secundario);
+  font-size: 0.9rem;
+  margin: -0.35rem 0 1.25rem;
+  max-width: 44rem;
+}
+
+.docs-section--private {
+  background: #fff8f1;
+  border-top: 1px solid rgba(192, 86, 33, 0.15);
+}
+
+.docs-card--locked {
+  border-color: rgba(192, 86, 33, 0.28);
+  background: linear-gradient(180deg, #fff 0%, #fffaf5 100%);
+}
 
 .docs-release {
   background: linear-gradient(135deg, #042c53 0%, #185fa5 100%);

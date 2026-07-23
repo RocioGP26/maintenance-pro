@@ -1,7 +1,5 @@
 # MAG-02-AUTH · Autenticación JWT
 
-**Código:** MAG-02-AUTH · Sprint 8.2 · **Entregado**
-
 > Una identidad. Un token. Una empresa.
 
 Toda petición autenticada a Roustix se realiza mediante **JSON Web Token (JWT)**. El token identifica al usuario, la empresa (tenant) y el rol, evitando que el cliente tenga que enviar información sensible en cada solicitud.

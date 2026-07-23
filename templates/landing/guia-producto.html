@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  {% include "_favicon.html" %}
+  <title>Guía de producto — Roustix</title>
+  <meta name="description" content="{{ guia_intro }} Mantenimiento e inventario en una sola plataforma SaaS. Prueba {{ trial_dias }} días.">
+  {% from "_cdn_assets.html" import google_fonts_inter_extra_bold, bootstrap_icons_css %}
+  {{ google_fonts_inter_extra_bold() }}
+  {{ bootstrap_icons_css() }}
+  <link href="{{ url_for('static', filename='css/landing.css') }}" rel="stylesheet">
+</head>
+<body class="landing-body">
+  {% include "landing/_nav.html" %}
+
+  <main class="landing-public-page landing-guia">
+    <section class="landing-section landing-section--soft landing-guia-hero">
+      <div class="container-xl landing-public-page-head">
+        <p class="landing-eyebrow">Guía de producto</p>
+        <h1 class="landing-section-title">Cómo funciona Roustix</h1>
+        <p class="landing-section-sub mx-auto text-center">{{ guia_intro }}</p>
+        <p class="landing-guia-tagline">Toda la operación. Una sola plataforma.</p>
+        <div class="landing-hero-ctas justify-content-center landing-guia-toolbar">
+          <button type="button" class="landing-btn landing-btn-primary" onclick="window.print()">
+            <i class="bi bi-download"></i> Descargar PDF
+          </button>
+          <a href="{{ url_for('onboarding.wizard') }}" class="landing-btn landing-btn-outline">
+            <i class="bi bi-rocket-takeoff"></i> {{ cta_trial }}
+          </a>
+          <a href="{{ url_for('main.demo') }}" class="landing-btn landing-btn-ghost">
+            {{ cta_demo }}
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <section class="landing-section" id="principios">
+      <div class="container-xl">
+        <h2 class="landing-section-title">Pensado para la operación real</h2>
+        <p class="landing-section-sub mb-4">
+          Roustix es una plataforma SaaS modular: organzas activos, inventario y procesos
+          desde un solo lugar, sin instalar software en servidores propios.
+        </p>
+        <div class="landing-guia-grid">
+          {% for p in guia_principios %}
+          <article class="landing-guia-card">
+            <h3>{{ p.titulo }}</h3>
+            <p>{{ p.texto }}</p>
+          </article>
+          {% endfor %}
+        </div>
+      </div>
+    </section>
+
+    <section class="landing-section landing-section--soft" id="transformacion">
+      <div class="container-xl">
+        <h2 class="landing-section-title">Qué cambia en tu día a día</h2>
+        <div class="landing-guia-compare">
+          {% for row in guia_antes_despues %}
+          <div class="landing-guia-compare-row">
+            <div class="landing-guia-compare-before">
+              <span class="landing-guia-label">Antes</span>
+              <p>{{ row.antes }}</p>
+            </div>
+            <div class="landing-guia-compare-after">
+              <span class="landing-guia-label">Con Roustix</span>
+              <p>{{ row.despues }}</p>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </section>
+
+    <section class="landing-section" id="mantenimiento">
+      <div class="container-xl">
+        <p class="landing-eyebrow">Módulo en producción</p>
+        <h2 class="landing-section-title">{{ guia_mantenimiento.titulo }}</h2>
+        <p class="landing-section-sub mb-2">{{ guia_mantenimiento.subtitulo }}</p>
+        <p class="landing-guia-quote">«{{ guia_mantenimiento.frase }}»</p>
+
+        <div class="landing-guia-two">
+          <div>
+            <h3 class="landing-guia-h3">Qué incluye</h3>
+            <ul class="landing-guia-list">
+              {% for item in guia_mantenimiento.incluye %}
+              <li>{{ item }}</li>
+              {% endfor %}
+            </ul>
+          </div>
+          <div>
+            <h3 class="landing-guia-h3">Quién participa</h3>
+            <ul class="landing-guia-roles">
+              {% for rol, desc in guia_mantenimiento.roles %}
+              <li><strong>{{ rol }}</strong> — {{ desc }}</li>
+              {% endfor %}
+            </ul>
+            <h3 class="landing-guia-h3 mt-4">Flujo de una OT</h3>
+            <ol class="landing-guia-flow">
+              {% for paso in guia_mantenimiento.flujo %}
+              <li>{{ paso }}</li>
+              {% endfor %}
+            </ol>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="landing-section landing-section--soft" id="inventario">
+      <div class="container-xl">
+        <p class="landing-eyebrow">Módulo en producción</p>
+        <h2 class="landing-section-title">{{ guia_inventario.titulo }}</h2>
+        <p class="landing-section-sub mb-2">{{ guia_inventario.subtitulo }}</p>
+        <p class="landing-guia-quote">«{{ guia_inventario.frase }}»</p>
+
+        <div class="landing-guia-two">
+          <div>
+            <h3 class="landing-guia-h3">Qué incluye</h3>
+            <ul class="landing-guia-list">
+              {% for item in guia_inventario.incluye %}
+              <li>{{ item }}</li>
+              {% endfor %}
+            </ul>
+          </div>
+          <div>
+            <h3 class="landing-guia-h3">Quién participa</h3>
+            <ul class="landing-guia-roles">
+              {% for rol, desc in guia_inventario.roles %}
+              <li><strong>{{ rol }}</strong> — {{ desc }}</li>
+              {% endfor %}
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="landing-section" id="crecimiento">
+      <div class="container-xl">
+        <h2 class="landing-section-title">Empieza con un módulo. Crece sin cambiar de plataforma.</h2>
+        <p class="landing-section-sub mb-4">
+          La transformación comienza con lo que necesitas hoy. El crecimiento ocurre dentro de Roustix.
+        </p>
+        <div class="landing-guia-steps">
+          {% for paso in guia_crecimiento %}
+          <article class="landing-guia-step">
+            <span class="landing-guia-step-num">{{ loop.index }}</span>
+            <h3>{{ paso.etapa }}</h3>
+            <p>{{ paso.texto }}</p>
+          </article>
+          {% endfor %}
+        </div>
+      </div>
+    </section>
+
+    <section class="landing-section landing-section--soft" id="mas">
+      <div class="container-xl">
+        <h2 class="landing-section-title text-center mb-4">Sigue explorando</h2>
+        <div class="landing-recursos-links">
+          <a href="{{ url_for('main.recursos') }}" class="landing-recursos-link-card">
+            <span class="landing-feature-icon"><i class="bi bi-folder2-open"></i></span>
+            <strong>Recursos</strong>
+            <span class="small text-muted">Brochure, one pager y casos por sector.</span>
+          </a>
+          <a href="/mkt/assets/brochure-corporativo.html" target="_blank" rel="noopener" class="landing-recursos-link-card">
+            <span class="landing-feature-icon"><i class="bi bi-file-earmark-pdf"></i></span>
+            <strong>Brochure corporativo</strong>
+            <span class="small text-muted">Presentación comercial de 8 páginas.</span>
+          </a>
+          <a href="/msd/" target="_blank" rel="noopener" class="landing-recursos-link-card">
+            <span class="landing-feature-icon"><i class="bi bi-code-slash"></i></span>
+            <strong>API y SDK</strong>
+            <span class="small text-muted">Para equipos de TI que evalúan integración.</span>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <section class="landing-cta-band">
+      <div class="container-xl text-center">
+        <h2>¿Listo para recuperar el control?</h2>
+        <p>Comienza hoy. Prueba Roustix durante {{ trial_dias }} días sin compromiso.</p>
+        <div class="landing-hero-ctas justify-content-center">
+          <a href="{{ url_for('onboarding.wizard') }}" class="landing-btn landing-btn-light">
+            <i class="bi bi-rocket-takeoff"></i> {{ cta_final }}
+          </a>
+          <a href="{{ url_for('main.demo') }}" class="landing-btn landing-btn-outline landing-btn-outline-light">
+            {{ cta_demo }}
+          </a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  {% include "landing/_footer.html" %}
+</body>
+</html>

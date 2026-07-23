@@ -1,7 +1,5 @@
 # MAG-09-EX · Ejemplos y SDK
 
-**Código:** MAG-09-EX · Sprint 8.9 · **Entregado**
-
 > Una buena API se entiende. Una excelente API también se puede ejecutar.
 
 **Toda la operación. Una sola plataforma.**

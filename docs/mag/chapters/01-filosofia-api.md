@@ -1,19 +1,18 @@
 # MAG-01-PHIL · Filosofía de la API
 
-**Código:** MAG-01-PHIL · Sprint 8.1
-
 > La API de Roustix no es un acceso técnico al backend. Es la **forma oficial** de que sistemas externos operen con la plataforma.
 
 ---
 
-## 1 · MPA por dentro, MAG por fuera
+## 1 · Contrato externo vs arquitectura interna
 
-| Manual | Audiencia | Pregunta que responde |
-|--------|-----------|----------------------|
-| **MPA (05)** | Arquitectos · equipo interno | ¿Cómo está construido Roustix? |
-| **MAG (07)** | Integradores · partners · desarrolladores | ¿Cómo me conecto de forma correcta? |
+| Pieza | Audiencia | Pregunta que responde |
+|-------|-----------|----------------------|
+| **MAG** (esta guía) | Integradores · partners · desarrolladores | ¿Cómo me conecto de forma correcta? |
+| **OpenAPI / MSD** | Mismos | ¿Qué herramientas y especificación uso? |
+| Arquitectura de plataforma | Equipo Roustix | ¿Cómo está construido? *(no forma parte del contrato público)* |
 
-Uno describe la arquitectura interna; el otro el **contrato público** de integración.
+MAG define el **contrato público** de integración.
 
 ---
 
@@ -64,4 +63,4 @@ La migración a `/api/v1` es **evolutiva** — MAG define el destino; el código
 
 ---
 
-→ [MAG-02-AUTH · Autenticación](02-autenticacion-jwt.md) · [MPA-06 Integraciones](/mpa/chapters/06-integraciones.md)
+→ [MAG-02-AUTH · Autenticación](02-autenticacion-jwt.md) · [OpenAPI](/api/v1/openapi.yaml) · [MSD](/msd/)

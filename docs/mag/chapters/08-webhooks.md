@@ -1,7 +1,5 @@
 # MAG-08-HOOK · Webhooks
 
-**Código:** MAG-08-HOOK · Sprint 8.8 · **Entregado**
-
 > La mejor API responde cuando se le consulta. Una gran plataforma también sabe avisar cuando algo ocurre.
 
 **Toda la operación. Una sola plataforma.**

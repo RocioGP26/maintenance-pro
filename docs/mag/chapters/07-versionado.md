@@ -1,7 +1,5 @@
 # MAG-07-VER · Versionado
 
-**Código:** MAG-07-VER · Sprint 8.7 · **Entregado**
-
 > Una API cambia. El contrato no se rompe.
 
 **Toda la operación. Una sola plataforma.**

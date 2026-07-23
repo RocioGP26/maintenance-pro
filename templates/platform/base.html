@@ -44,6 +44,9 @@
         <a class="nav-link {% if ep in ('platform.configuracion', 'platform.configuracion_plan_guardar', 'platform.configuracion_plan_nuevo', 'platform.configuracion_reglas_guardar', 'platform.configuracion_sector_guardar', 'platform.configuracion_sector_nuevo') %}active{% endif %}" href="{{ url_for('platform.configuracion') }}">
           <i class="bi bi-gear me-2"></i> Configuración
         </a>
+        <a class="nav-link {% if ep == 'platform.documentacion' %}active{% endif %}" href="{{ url_for('platform.documentacion') }}">
+          <i class="bi bi-journal-bookmark me-2"></i> Documentación interna
+        </a>
       </nav>
       <div class="mt-auto px-3 pt-3">
         <p class="text-secondary small text-center mb-2">v{{ app_version }}</p>

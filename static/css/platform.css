@@ -1026,3 +1026,102 @@ input[type="month"].platform-select {
   max-width: 100%;
   overflow-x: auto;
 }
+
+/* Documentación interna */
+.platform-docs-note-inner {
+  align-items: flex-start;
+  display: flex;
+  gap: 0.35rem;
+  padding: 1rem 1.15rem;
+}
+
+.platform-docs-note-inner > i {
+  color: var(--platform-accent);
+  font-size: 1.15rem;
+  margin-top: 0.1rem;
+}
+
+.platform-docs-group-title {
+  color: var(--platform-muted);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  margin: 0 0 0.85rem;
+  text-transform: uppercase;
+}
+
+.platform-docs-grid {
+  display: grid;
+  gap: 0.85rem;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+}
+
+.platform-docs-card {
+  background: var(--platform-surface);
+  border: 1px solid var(--platform-border);
+  border-radius: 0.75rem;
+  color: inherit;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 1rem 1.1rem;
+  text-decoration: none;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.platform-docs-card:hover {
+  background: var(--platform-surface-2);
+  border-color: var(--platform-accent);
+  color: inherit;
+}
+
+.platform-docs-code {
+  color: var(--platform-accent);
+  font-family: ui-monospace, monospace;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.platform-docs-card-title {
+  font-size: 0.98rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.platform-docs-card-desc {
+  color: var(--platform-muted);
+  flex: 1;
+  font-size: 0.8rem;
+  line-height: 1.4;
+  margin: 0;
+}
+
+.platform-docs-card-cta {
+  color: var(--platform-accent);
+  font-size: 0.78rem;
+  font-weight: 600;
+  margin-top: 0.5rem;
+}
+
+.platform-docs-public-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.platform-docs-chip {
+  background: var(--platform-accent-soft);
+  border: 1px solid rgba(55, 138, 221, 0.35);
+  border-radius: 999px;
+  color: #c5dff7;
+  font-size: 0.78rem;
+  font-weight: 500;
+  padding: 0.35rem 0.85rem;
+  text-decoration: none;
+}
+
+.platform-docs-chip:hover {
+  background: rgba(55, 138, 221, 0.28);
+  color: #fff;
+}

@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 RECURSOS_INTRO = (
-    "Brochure, one pager, casos de transformación y documentación para evaluar Roustix. "
+    "Guía de producto, brochure, casos de transformación y documentación para evaluar Roustix. "
     "El blog público llegará en una próxima versión del sitio."
 )
 
@@ -54,6 +54,12 @@ MTX_CASES: tuple[dict[str, str], ...] = (
 
 RECURSOS_LINKS: tuple[dict[str, str], ...] = (
     {
+        "titulo": "Guía de producto",
+        "desc": "Cómo funciona Roustix — mantenimiento e inventario.",
+        "href": "/guia",
+        "icon": "bi-journal-bookmark",
+    },
+    {
         "titulo": "Brochure corporativo",
         "desc": "8 páginas · imprimible / PDF (MKT-07).",
         "href": "/mkt/assets/brochure-corporativo.html",
@@ -66,20 +72,20 @@ RECURSOS_LINKS: tuple[dict[str, str], ...] = (
         "icon": "bi-file-text",
     },
     {
-        "titulo": "Manual comercial (MCM)",
-        "desc": "Planes, sectores, demo y onboarding.",
-        "href": "/mcm/",
-        "icon": "bi-briefcase",
+        "titulo": "API y SDK",
+        "desc": "MAG · MSD · OpenAPI para integradores.",
+        "href": "/msd/",
+        "icon": "bi-code-slash",
     },
     {
-        "titulo": "Marketing (MKT)",
-        "desc": "Landing, casos y materiales comerciales.",
-        "href": "/mkt/",
+        "titulo": "Marketing (activos)",
+        "desc": "Brochure, one pager y casos MTX-CASE.",
+        "href": "/mkt/assets/brochure-corporativo.html",
         "icon": "bi-megaphone",
     },
     {
-        "titulo": "Documentación técnica",
-        "desc": "MRG, MUX y guías de producto.",
+        "titulo": "Documentación pública",
+        "desc": "Índice Roustix Docs (manuales públicos).",
         "href": "/docs/",
         "icon": "bi-journal-code",
     },

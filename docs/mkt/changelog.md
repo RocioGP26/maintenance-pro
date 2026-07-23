@@ -1,5 +1,17 @@
 # MKT Changelog
 
+## [1.0.3] — 2026-07-23 · MKT híbrido (acceso)
+
+### Changed
+- Capítulos normativos (**MKT-01…10**), índice `/mkt/` y meta → **privados** (login)
+- Públicos solo: [`assets/`](assets/) (brochure · one-pager) y [`mtx-case/`](mtx-case/)
+- Alineado a [ACCESS.md](../ACCESS.md#matriz-mkt-híbrida)
+
+### Notes
+- MKT-01 produce copy público; el capítulo no se muestra al cliente final
+
+---
+
 ## [1.0.2] — 2026-07-23 · Brochure descargable (MKT-07)
 
 ### Added

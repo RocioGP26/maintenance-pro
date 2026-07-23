@@ -1,5 +1,15 @@
 # MSD Changelog
 
+## [1.0.1] — 2026-07-23 · Portal público limpio
+
+### Changed
+- Índice `/msd/` sin etiquetas Sprint; badge **MSD v1.0.0**
+- Menú lateral: solo herramientas públicas (OpenAPI · MAG · colecciones) — sin NOMENCLATURE / strategy
+- Capítulos vía `/msd/guide/<slug>` (HTML sanitizado); `.md` crudo solo con sesión
+- URLs antiguas `/msd/chapters/*.md` redirigen a la guía HTML
+
+---
+
 ## [1.0.0] — 2026-07-10 · MSD v1.0 · Sprint 9 completo
 
 ### Added

@@ -1,7 +1,5 @@
 # MAG-10-LIM · Límites y buenas prácticas
 
-**Código:** MAG-10-LIM · Sprint 8.10 · **Entregado**
-
 > Una API rápida no es suficiente. Debe ser **estable, segura y predecible**.
 
 **Toda la operación. Una sola plataforma.**

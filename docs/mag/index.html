@@ -3,96 +3,98 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>MAG — Roustix API Guide</title>
+  <title>Roustix API — Documentación para integradores</title>
+  <meta name="description" content="Contrato oficial de la API Roustix: REST, JWT, multi-tenant, /api/v1, webhooks y OpenAPI. Documentación pública para CTOs, TI e integradores.">
   <link rel="stylesheet" href="/brandbook/css/brand-book.css">
   <link rel="stylesheet" href="css/mag-docs.css">
 </head>
 <body>
 <div class="bb-shell">
-  <nav class="bb-nav" aria-label="MAG Sprint 8">
+  <nav class="bb-nav" aria-label="Roustix API Guide">
     <div class="bb-nav-brand">
-      <p class="bb-wordmark">MAG</p>
-      <p class="bb-sub">Roustix API Guide</p>
-      <p class="bb-nav-meta"><a href="/docs/" style="color:rgba(255,255,255,0.55)">Roustix Docs</a> · <a href="/mpa/" style="color:rgba(255,255,255,0.55)">MPA</a> · <a href="/mrl/" style="color:rgba(255,255,255,0.55)">MRL</a></p>
+      <p class="bb-wordmark">ROUSTIX API</p>
+      <p class="bb-sub">Guía para integradores</p>
+      <p class="bb-nav-meta">
+        <a href="/guia" style="color:rgba(255,255,255,0.55)">Producto</a> ·
+        <a href="/msd/" style="color:rgba(255,255,255,0.55)">SDK</a> ·
+        <a href="/api/v1/openapi.yaml" style="color:rgba(255,255,255,0.55)">OpenAPI</a>
+      </p>
     </div>
     <div class="bb-nav-group">
-      <p class="bb-nav-label">Sprint 8 · API</p>
-      <a href="#indice">Índice</a>
-      <a href="#mag-01" class="is-done">01 · Filosofía</a>
-      <a href="#mag-02" class="is-done">02 · Auth JWT</a>
-      <a href="#mag-03" class="is-done">03 · Multi-tenant</a>
-      <a href="#mag-04" class="is-done">04 · Recursos</a>
-      <a href="#mag-05" class="is-done">05 · Convenciones</a>
-      <a href="#mag-06" class="is-done">06 · Errores</a>
-      <a href="#mag-07" class="is-done">07 · Versionado</a>
-      <a href="#mag-08" class="is-done">08 · Webhooks</a>
-      <a href="#mag-09" class="is-done">09 · Ejemplos y SDK</a>
-      <a href="#mag-10" class="is-done">10 · Límites</a>
+      <p class="bb-nav-label">Guía</p>
+      <a href="#inicio" class="is-active">Inicio</a>
+      <a href="/mag/guide/filosofia-api">01 · Filosofía</a>
+      <a href="/mag/guide/autenticacion-jwt">02 · Autenticación</a>
+      <a href="/mag/guide/multi-tenant">03 · Multi-tenant</a>
+      <a href="/mag/guide/recursos">04 · Recursos</a>
+      <a href="/mag/guide/convenciones">05 · Convenciones</a>
+      <a href="/mag/guide/errores">06 · Errores</a>
+      <a href="/mag/guide/versionado">07 · Versionado</a>
+      <a href="/mag/guide/webhooks">08 · Webhooks</a>
+      <a href="/mag/guide/ejemplos">09 · Ejemplos</a>
+      <a href="/mag/guide/limites">10 · Límites</a>
     </div>
     <div class="bb-nav-group">
-      <p class="bb-nav-label">Docs</p>
-      <a href="NOMENCLATURE.md">NOMENCLATURE</a>
-      <a href="strategy.md">strategy.md</a>
-      <a href="changelog.md">Changelog</a>
+      <p class="bb-nav-label">Herramientas</p>
+      <a href="/api/v1/openapi.yaml">OpenAPI YAML</a>
+      <a href="/api/v1/openapi.json">OpenAPI JSON</a>
+      <a href="/msd/">Portal SDK (MSD)</a>
+      <a href="/msd/collections">Colecciones Postman</a>
+      <a href="/guia">Guía de producto</a>
     </div>
   </nav>
 
   <main class="bb-main">
 
-    <section id="indice" class="bb-page bb-page--dark">
+    <section id="inicio" class="bb-page bb-page--dark">
       <div class="bb-page-inner bb-sprint-hero">
-        <span class="bb-mdl-badge">Sprint 8 · Mundo desarrolladores</span>
-        <h2 class="bb-h1" style="color:#fff">MPA por dentro.<br>MAG por fuera.</h2>
-        <p class="bb-lead" style="color:rgba(255,255,255,0.82);text-align:center;max-width:44rem">
-          Contrato oficial para integrar Roustix: REST, JWT, multi-tenant, <code>/api/v1</code>, webhooks y buenas prácticas.
-          <strong>No es solo una referencia de endpoints.</strong>
+        <span class="mag-public-badge">Documentación pública · Integradores</span>
+        <h1 class="bb-h1" style="color:#fff;font-size:2rem">Integra Roustix con confianza.</h1>
+        <p class="bb-lead" style="color:rgba(255,255,255,0.88);text-align:center;max-width:40rem;margin:0.75rem auto 0">
+          Contrato oficial REST: autenticación JWT, multi-tenant, recursos de negocio,
+          webhooks y OpenAPI. Evalúa la API <strong>antes de comprar</strong> — sin login.
         </p>
         <p class="bb-tagline bb-tagline--light"><span>Toda la operación.</span><span>Una sola plataforma.</span></p>
-        <table class="mag-doc-table" style="max-width:28rem;margin:1.5rem auto 0">
-          <thead><tr><th>Sprint 8</th><th>Estado</th></tr></thead>
-          <tbody>
-            <tr><td>MAG-01 – 10</td><td>✅ Entregado</td></tr>
-            <tr><td>Sprint 8</td><td>✅ MAG v1.0 completo</td></tr>
-          </tbody>
-        </table>
-        <div class="bb-page-footer" style="border:none;margin-top:2rem">
-          <span>MAG v1.0.12</span>
-          <span>Sprint 8 · MAG v1.0 completo</span>
+        <div class="mag-hero-ctas">
+          <a class="mag-cta mag-cta--primary" href="/api/v1/openapi.yaml">Abrir OpenAPI</a>
+          <a class="mag-cta mag-cta--ghost" href="/mag/guide/autenticacion-jwt">Empezar por Auth</a>
+          <a class="mag-cta mag-cta--ghost" href="/msd/">SDK y sandbox</a>
         </div>
+        <p class="mag-hero-note">
+          Las <strong>API keys</strong> y el entorno sandbox requieren cuenta en Roustix.
+          Esta guía describe el contrato; las credenciales se obtienen tras autenticarte en la plataforma.
+        </p>
       </div>
     </section>
 
-    <section id="mag-01" class="bb-page bb-page--soft">
+    <section id="filosofia" class="bb-page bb-page--soft">
       <div class="bb-page-inner">
-        <span class="mag-doc-code">MAG-01-PHIL</span>
-        <p class="bb-page-num">01 · Filosofía de la API</p>
+        <p class="bb-page-num">01 · Filosofía</p>
         <h2 class="bb-h1">La forma oficial de integrarse.</h2>
-        <div class="mag-mpa-note">
-          <p><strong>MPA (05)</strong> describe la arquitectura interna. <strong>MAG (07)</strong> define el contrato externo.</p>
-        </div>
+        <p class="bb-body">La API no es un atajo al backend: es el contrato estable para ERP, CRM, automatizaciones y partners.</p>
         <table class="mag-doc-table">
           <thead><tr><th>#</th><th>Principio</th></tr></thead>
           <tbody>
             <tr><td>1</td><td>REST predecible · JSON</td></tr>
             <tr><td>2</td><td>Tenant-first — toda operación en contexto de empresa</td></tr>
-            <tr><td>3</td><td>Segura por defecto — JWT, roles, límites</td></tr>
+            <tr><td>3</td><td>Segura por defecto — JWT, roles y límites</td></tr>
             <tr><td>4</td><td>Versionada — <code>/api/v1</code> estable</td></tr>
+            <tr><td>5</td><td>Errores claros y códigos HTTP correctos</td></tr>
+            <tr><td>6</td><td>Si no está documentado aquí, no es contrato oficial</td></tr>
           </tbody>
         </table>
         <div class="mag-chapter-nav">
-          <a href="chapters/01-filosofia-api.md">Leer completo →</a>
-          <a href="#mag-02">Auth JWT →</a>
+          <a href="/mag/guide/filosofia-api">Leer capítulo →</a>
+          <a href="/mag/guide/autenticacion-jwt">Autenticación →</a>
         </div>
-        <div class="bb-page-footer"><span>MAG v1.0</span><span>Filosofía</span></div>
       </div>
     </section>
 
-    <section id="mag-02" class="bb-page">
+    <section id="auth" class="bb-page">
       <div class="bb-page-inner">
-        <span class="mag-doc-code">MAG-02-AUTH · Entregado</span>
-        <p class="bb-page-num">02 · Autenticación JWT</p>
-        <h2 class="bb-h1" style="font-size:1.35rem">Una identidad.<br>Un token.<br>Una empresa.</h2>
-        <p class="bb-body">JWT identifica usuario, tenant, rol, plan y módulos. Sin reenviar credenciales en cada solicitud.</p>
+        <p class="bb-page-num">02 · Autenticación</p>
+        <h2 class="bb-h1" style="font-size:1.4rem">Una identidad. Un token. Una empresa.</h2>
+        <p class="bb-body">El JWT identifica usuario, tenant, rol, plan y módulos. No reenvíes contraseñas en cada solicitud.</p>
         <div class="mag-endpoint"><span class="method method--post">POST</span>/api/v1/auth/login</div>
         <div class="mag-json">{
   "token": "&lt;jwt&gt;",
@@ -100,77 +102,66 @@
   "user": { "id": 15, "nombre": "Ana García", "rol": "admin" },
   "empresa": { "id": 4, "slug": "empresa-xyz", "nombre": "Empresa XYZ" }
 }</div>
-        <p class="bb-body"><code>HS256</code> · <code>SECRET_KEY</code> · ±30 s skew · Refresh <code>POST /api/v1/auth/refresh</code> → MAG v2</p>
+        <p class="bb-body">Algoritmo <code>HS256</code> · refresco documentado en el capítulo · scopes por módulo activo.</p>
         <div class="mag-chapter-nav">
-          <a href="chapters/02-autenticacion-jwt.md">Leer completo →</a>
-          <a href="#mag-03">Multi-tenant →</a>
+          <a href="/mag/guide/autenticacion-jwt">Leer capítulo →</a>
+          <a href="/mag/guide/multi-tenant">Multi-tenant →</a>
         </div>
-        <div class="bb-page-footer"><span>MAG v1.0.2</span><span>Sprint 8.2 · Entregado</span></div>
       </div>
     </section>
 
-    <section id="mag-03" class="bb-page bb-page--soft">
+    <section id="tenant" class="bb-page bb-page--soft">
       <div class="bb-page-inner">
-        <span class="mag-doc-code">MAG-03-TNT · Entregado</span>
         <p class="bb-page-num">03 · Multi-tenant</p>
-        <h2 class="bb-h1" style="font-size:1.35rem">Una plataforma.<br>Miles de empresas.<br>Cero mezcla de datos.</h2>
-        <p class="bb-body">Tenant (Empresa) · middleware Flask · <strong>Regla de Oro</strong> · 404 anti-enumeración.</p>
-        <pre class="mag-json" style="text-align:left;font-size:0.65rem">Usuario → Tenant → Plan → Módulos → Permisos → Acción</pre>
-        <table class="mag-doc-table">
-          <thead><tr><th>Componente</th><th>Estado</th></tr></thead>
-          <tbody>
-            <tr><td>JWT + middleware</td><td>✅</td></tr>
-            <tr><td>Filtrado empresa_id</td><td>✅</td></tr>
-            <tr><td>Multi-sede</td><td>🟡</td></tr>
-          </tbody>
-        </table>
+        <h2 class="bb-h1" style="font-size:1.4rem">Una plataforma. Miles de empresas. Cero mezcla de datos.</h2>
+        <p class="bb-body">Cada token vive en el contexto de una empresa. El aislamiento es regla de negocio, no solo de infraestructura.</p>
+        <pre class="mag-json" style="text-align:left;font-size:0.78rem">Usuario → Tenant → Plan → Módulos → Permisos → Acción</pre>
+        <ul class="mag-bullets">
+          <li>Filtrado por <code>empresa_id</code> en cada recurso</li>
+          <li>Acceso cross-tenant → <code>404</code> (anti-enumeración)</li>
+          <li>Módulos y permisos según el plan del tenant</li>
+        </ul>
         <div class="mag-chapter-nav">
-          <a href="chapters/03-multi-tenant.md">Leer completo →</a>
-          <a href="#mag-04">Recursos →</a>
+          <a href="/mag/guide/multi-tenant">Leer capítulo →</a>
+          <a href="/mag/guide/recursos">Recursos →</a>
         </div>
-        <div class="bb-page-footer"><span>MAG v1.0.4</span><span>Sprint 8.3 · Entregado</span></div>
       </div>
     </section>
 
-    <section id="mag-04" class="bb-page">
+    <section id="recursos" class="bb-page">
       <div class="bb-page-inner">
-        <span class="mag-doc-code">MAG-04-RES · Entregado</span>
         <p class="bb-page-num">04 · Recursos REST</p>
-        <h2 class="bb-h1" style="font-size:1.35rem">La API no expone tablas.<br>Expone recursos de negocio.</h2>
-        <pre class="mag-json" style="text-align:left;font-size:0.62rem">/api/v1
+        <h2 class="bb-h1" style="font-size:1.4rem">La API no expone tablas. Expone recursos de negocio.</h2>
+        <pre class="mag-json" style="text-align:left;font-size:0.75rem">/api/v1
 ├── auth · me
 ├── maintenance/assets · work-orders
 ├── inventory/products · movements
-├── purchasing · sales · crm
-└── admin · platform</pre>
-        <p class="bb-body">Contrato en <strong>inglés</strong> · <code>GET</code> <code>POST</code> · <code>data</code>+<code>meta</code>+<code>links</code> · idempotencia</p>
+├── purchasing · sales · crm   (según roadmap / plan)
+└── admin</pre>
+        <p class="bb-body">Contrato en inglés · envelope <code>data</code> + <code>meta</code> + <code>links</code> · paginación e idempotencia documentadas.</p>
         <div class="mag-chapter-nav">
-          <a href="chapters/04-recursos.md">Leer completo →</a>
-          <a href="#mag-05">Convenciones →</a>
+          <a href="/mag/guide/recursos">Leer capítulo →</a>
+          <a href="/api/v1/openapi.yaml">OpenAPI →</a>
         </div>
-        <div class="bb-page-footer"><span>MAG v1.0.6</span><span>Sprint 8.4 · Entregado</span></div>
       </div>
     </section>
 
-    <section id="mag-05" class="bb-page bb-page--soft">
+    <section id="convenciones" class="bb-page bb-page--soft">
       <div class="bb-page-inner">
-        <span class="mag-doc-code">MAG-05-NAM · Entregado</span>
-        <p class="bb-page-num">05 · Convenciones de nombres</p>
-        <h2 class="bb-h1" style="font-size:1.35rem">Una API consistente<br>es una API predecible.</h2>
-        <p class="bb-body">Style guide oficial · inglés en contrato · <code>snake_case</code> · ISO 8601 · <code>UPPER_SNAKE_CASE</code> errors</p>
+        <p class="bb-page-num">05 · Convenciones</p>
+        <h2 class="bb-h1" style="font-size:1.35rem">Una API consistente es una API predecible.</h2>
+        <p class="bb-body">Style guide oficial: inglés en el contrato, <code>snake_case</code>, fechas ISO 8601, códigos de error en <code>UPPER_SNAKE_CASE</code>.</p>
         <div class="mag-chapter-nav">
-          <a href="chapters/05-convenciones-nombres.md">Leer completo →</a>
-          <a href="#mag-06">Errores →</a>
+          <a href="/mag/guide/convenciones">Leer capítulo →</a>
+          <a href="/mag/guide/errores">Errores →</a>
         </div>
-        <div class="bb-page-footer"><span>MAG v1.0.7</span><span>Sprint 8.5 · Entregado</span></div>
       </div>
     </section>
 
-    <section id="mag-06" class="bb-page">
+    <section id="errores" class="bb-page">
       <div class="bb-page-inner">
-        <span class="mag-doc-code">MAG-06-ERR · Entregado</span>
-        <p class="bb-page-num">06 · Manejo de errores</p>
-        <h2 class="bb-h1" style="font-size:1.25rem">Los errores también<br>forman parte del contrato.</h2>
+        <p class="bb-page-num">06 · Errores</p>
+        <h2 class="bb-h1" style="font-size:1.3rem">Los errores también forman parte del contrato.</h2>
         <div class="mag-json">{
   "error": {
     "code": "RESOURCE_NOT_FOUND",
@@ -178,89 +169,71 @@
     "details": {}
   }
 }</div>
-        <p class="bb-body">Catálogo oficial · cross-tenant → 404 · <code>X-Request-Id</code> · sin stack traces</p>
+        <p class="bb-body">Catálogo oficial · <code>X-Request-Id</code> · sin stack traces en producción.</p>
         <div class="mag-chapter-nav">
-          <a href="chapters/06-manejo-errores.md">Leer completo →</a>
-          <a href="#mag-07">Versionado →</a>
+          <a href="/mag/guide/errores">Leer capítulo →</a>
+          <a href="/mag/guide/versionado">Versionado →</a>
         </div>
-        <div class="bb-page-footer"><span>MAG v1.0.8</span><span>Sprint 8.6 · Entregado</span></div>
       </div>
     </section>
 
-    <section id="mag-07" class="bb-page bb-page--soft">
+    <section id="versionado" class="bb-page bb-page--soft">
       <div class="bb-page-inner">
-        <span class="mag-doc-code">MAG-07-VER · Entregado</span>
         <p class="bb-page-num">07 · Versionado</p>
-        <h2 class="bb-h1" style="font-size:1.25rem">Una API cambia.<br>El contrato no se rompe.</h2>
-        <p class="bb-body"><code>/api/v1</code> · legacy + <code>Deprecation</code>/<code>Sunset</code> · OpenAPI por versión</p>
+        <h2 class="bb-h1" style="font-size:1.3rem">Una API cambia. El contrato no se rompe.</h2>
+        <p class="bb-body">Base estable <code>/api/v1</code>. Cambios incompatibles → nueva versión. Cabeceras de deprecación cuando aplique.</p>
         <div class="mag-chapter-nav">
-          <a href="chapters/07-versionado.md">Leer completo →</a>
-          <a href="#mag-08">Webhooks →</a>
+          <a href="/mag/guide/versionado">Leer capítulo →</a>
+          <a href="/mag/guide/webhooks">Webhooks →</a>
         </div>
-        <div class="bb-page-footer"><span>MAG v1.0.9</span><span>Sprint 8.7 · Entregado</span></div>
       </div>
     </section>
 
-    <section id="mag-08" class="bb-page">
+    <section id="webhooks" class="bb-page">
       <div class="bb-page-inner">
-        <span class="mag-doc-code">MAG-08-HOOK · Entregado</span>
         <p class="bb-page-num">08 · Webhooks</p>
-        <h2 class="bb-h1" style="font-size:1.2rem">REST responde.<br>Webhooks notifican.</h2>
-        <p class="bb-body"><code>work_order.created</code> · <code>stock.low</code> · <code>X-Roustix-Signature</code> · <code>X-Event-Id</code></p>
+        <h2 class="bb-h1" style="font-size:1.25rem">REST responde. Webhooks notifican.</h2>
+        <p class="bb-body">Eventos como <code>work_order.created</code> y <code>stock.low</code>, firma <code>X-Roustix-Signature</code> e idempotencia con <code>X-Event-Id</code>.</p>
         <div class="mag-chapter-nav">
-          <a href="chapters/08-webhooks.md">Leer completo →</a>
-          <a href="#mag-09">Ejemplos →</a>
+          <a href="/mag/guide/webhooks">Leer capítulo →</a>
+          <a href="/mag/guide/ejemplos">Ejemplos →</a>
         </div>
-        <div class="bb-page-footer"><span>MAG v1.0.10</span><span>Sprint 8.8 · Entregado</span></div>
       </div>
     </section>
 
-    <section id="mag-09" class="bb-page bb-page--soft">
+    <section id="ejemplos" class="bb-page bb-page--soft">
       <div class="bb-page-inner">
-        <span class="mag-doc-code">MAG-09-EX · Entregado</span>
         <p class="bb-page-num">09 · Ejemplos y SDK</p>
-        <h2 class="bb-h1" style="font-size:1.2rem">Una buena API se entiende.<br>Una excelente API también se ejecuta.</h2>
-        <p class="bb-body">cURL · Python · JavaScript · <code>ROUSTIX_API</code> · OpenAPI → SDK · estructura alineada a MAG-04</p>
-        <div class="mag-endpoint"><span class="method">POST</span>/api/v1/auth/login</div>
+        <h2 class="bb-h1" style="font-size:1.25rem">Una buena API se entiende. Una excelente también se ejecuta.</h2>
+        <p class="bb-body">cURL, Python y JavaScript · OpenAPI → SDK · colecciones Postman en el portal MSD.</p>
+        <div class="mag-endpoint"><span class="method method--post">POST</span>/api/v1/auth/login</div>
         <div class="mag-endpoint"><span class="method">GET</span>/api/v1/maintenance/assets</div>
         <div class="mag-chapter-nav">
-          <a href="chapters/09-ejemplos.md">Leer completo →</a>
-          <a href="#mag-10">Límites →</a>
-          <a href="/msd/">MSD →</a>
+          <a href="/mag/guide/ejemplos">Leer capítulo →</a>
+          <a href="/msd/">Portal SDK →</a>
         </div>
-        <div class="bb-page-footer"><span>MAG v1.0.11</span><span>Sprint 8.9 · Entregado</span></div>
       </div>
     </section>
 
-    <section id="mag-10" class="bb-page bb-page--dark">
+    <section id="limites" class="bb-page bb-page--dark">
       <div class="bb-page-inner">
-        <span class="mag-doc-code" style="color:#90cdf4">MAG-10-LIM · Entregado</span>
         <p class="bb-page-num" style="color:rgba(255,255,255,0.7)">10 · Límites y buenas prácticas</p>
-        <h2 class="bb-h1" style="color:#fff">Una API rápida no basta.<br>Debe ser estable, segura y predecible.</h2>
-        <p class="bb-body" style="color:rgba(255,255,255,0.85);text-align:center">
-          Rate limit · timeouts · reintentos · paginación · caché · seguridad · checklist integradores
+        <h2 class="bb-h1" style="color:#fff">Estable, segura y predecible.</h2>
+        <p class="bb-body" style="color:rgba(255,255,255,0.88);text-align:center;max-width:36rem;margin:0.75rem auto">
+          Rate limit, timeouts, reintentos, paginación, caché y checklist para integradores.
         </p>
-        <div class="mag-endpoint" style="margin:1rem auto;max-width:22rem"><span class="method">429</span>RATE_LIMIT_EXCEEDED · Retry-After: 60</div>
-        <table class="mag-doc-table" style="max-width:28rem;margin:1.5rem auto 0">
-          <thead><tr><th>MAG v1.0</th><th>Estado</th></tr></thead>
-          <tbody>
-            <tr><td>MAG-01 – 10</td><td>✅ Completo</td></tr>
-            <tr><td>Sprint 8</td><td>✅ Finalizado</td></tr>
-          </tbody>
-        </table>
-        <p class="bb-lead" style="color:rgba(255,255,255,0.85);text-align:center;margin-top:1.5rem">
-          Siguiente: <strong>Sprint 9 · MSD v1.0</strong> — SDK, OpenAPI y Developer Portal.
+        <div class="mag-endpoint" style="margin:1.25rem auto;max-width:24rem">
+          <span class="method">429</span>RATE_LIMIT_EXCEEDED · Retry-After: 60
+        </div>
+        <div class="mag-hero-ctas" style="margin-top:1.5rem">
+          <a class="mag-cta mag-cta--primary" href="/mag/guide/limites">Leer capítulo</a>
+          <a class="mag-cta mag-cta--ghost" href="/msd/">Ir al SDK</a>
+          <a class="mag-cta mag-cta--ghost" href="/guia">Ver producto</a>
+        </div>
+        <p class="mag-hero-note" style="margin-top:2rem">
+          ¿Listo para llamar la API? Crea tu cuenta, activa el módulo y genera credenciales en la plataforma.
+          La arquitectura interna (MPA) no forma parte de este contrato público.
         </p>
-        <div class="mag-chapter-nav" style="justify-content:center">
-          <a href="chapters/10-limites-buenas-practicas.md">Leer completo →</a>
-          <a href="/mpa/chapters/06-integraciones.md">MPA-06 →</a>
-          <a href="/msd/">MSD Sprint 9 →</a>
-          <a href="/docs/">Roustix Docs →</a>
-        </div>
-        <div class="bb-page-footer" style="border-color:rgba(255,255,255,0.15)">
-          <span>MAG v1.0.12</span>
-          <span>Sprint 8.10 · MAG v1.0 completo</span>
-        </div>
       </div>
     </section>
 

@@ -1,0 +1,48 @@
+{% extends "platform/base.html" %}
+{% block title %}Documentación interna — Roustix Platform{% endblock %}
+
+{% block content %}
+<div class="platform-page-header">
+  <h1>Documentación interna</h1>
+  <p>Playbooks, arquitectura y manuales tácticos — solo equipo Roustix (SuperAdmin).</p>
+</div>
+
+<div class="platform-card platform-docs-note mb-4">
+  <div class="platform-docs-note-inner">
+    <i class="bi bi-shield-lock me-2"></i>
+    <div>
+      <strong>Acceso restringido</strong>
+      <p class="mb-0 text-secondary small">
+        Estos manuales no se exponen en la landing ni al tenant. La sesión de SuperAdmin
+        ya autoriza las rutas privadas (<code>docs_access</code>).
+      </p>
+    </div>
+  </div>
+</div>
+
+{% for group in doc_groups %}
+<section class="platform-docs-group mb-4">
+  <h2 class="platform-docs-group-title">{{ group.title }}</h2>
+  <div class="platform-docs-grid">
+    {% for item in group.docs %}
+    <a class="platform-docs-card" href="{{ item.href }}" target="_blank" rel="noopener">
+      <span class="platform-docs-code">{{ item.code }}</span>
+      <h3 class="platform-docs-card-title">{{ item.name }}</h3>
+      <p class="platform-docs-card-desc">{{ item.desc }}</p>
+      <span class="platform-docs-card-cta">Abrir <i class="bi bi-box-arrow-up-right"></i></span>
+    </a>
+    {% endfor %}
+  </div>
+</section>
+{% endfor %}
+
+<section class="platform-docs-group mb-2">
+  <h2 class="platform-docs-group-title">Vistas públicas (referencia)</h2>
+  <p class="text-secondary small mb-3">Contrato e integración visibles también para clientes e integradores.</p>
+  <div class="platform-docs-public-row">
+    {% for item in public_shortcuts %}
+    <a class="platform-docs-chip" href="{{ item.href }}" target="_blank" rel="noopener">{{ item.name }}</a>
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}

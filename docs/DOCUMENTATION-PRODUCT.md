@@ -55,12 +55,18 @@ Los manuales no viven aislados. Se enlazan con convenciones fijas:
 
 → Matriz y reglas: [CROSS-REFERENCES.md](CROSS-REFERENCES.md)
 
-### 5 · Sitio público (futuro)
+### 5 · Acceso híbrido y sitio público
 
-Hoy la documentación se sirve desde Flask (`/docs/`, `/brandbook/`, `/mpa/`…).  
-Cuando llegue el momento de hacerla **pública** para clientes y partners:
+Hoy Flask aplica `DOCS_ACCESS_POLICY=hybrid`:
 
-→ Plan: [publishing/README.md](publishing/README.md) (MkDocs · Docusaurus)
+| Público | Privado (login) |
+|---------|-----------------|
+| MBB · MAG · MSD · **`/guia`** · assets MKT / MTX-CASE | MCM · MPA · MDL · MUX · MRL · MDO · Developer · MKT capítulos · **MRG .md** |
+
+→ Política: [ACCESS.md](ACCESS.md)  
+→ Publishing (MkDocs · Docusaurus): [publishing/README.md](publishing/README.md)
+
+**Regla:** el sitio público futuro solo expone captación e integración. Comercial táctico y arquitectura viven en intranet.
 
 ---
 

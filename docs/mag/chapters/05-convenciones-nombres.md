@@ -1,7 +1,5 @@
 # MAG-05-NAM · Convenciones de nombres
 
-**Código:** MAG-05-NAM · Sprint 8.5 · **Entregado**
-
 > Una API consistente es una API predecible.
 
 **Toda la operación. Una sola plataforma.**

@@ -89,3 +89,105 @@
   font-weight: 600;
   padding: 0.15rem 0.45rem;
 }
+
+.msd-guide-body,
+.mag-guide-body {
+  color: #444441;
+  font-size: 0.95rem;
+  line-height: 1.65;
+}
+
+.msd-guide-body h1,
+.mag-guide-body h1 {
+  color: #042c53;
+  font-size: 1.75rem;
+  margin: 0 0 1rem;
+}
+
+.msd-guide-body h2,
+.mag-guide-body h2 {
+  color: #042c53;
+  font-size: 1.25rem;
+  margin: 1.75rem 0 0.75rem;
+}
+
+.msd-guide-body h3,
+.mag-guide-body h3 {
+  color: #185fa5;
+  font-size: 1.05rem;
+  margin: 1.25rem 0 0.5rem;
+}
+
+.msd-guide-body p,
+.mag-guide-body p {
+  margin: 0 0 0.85rem;
+}
+
+.msd-guide-body ul,
+.msd-guide-body ol,
+.mag-guide-body ul,
+.mag-guide-body ol {
+  margin: 0 0 1rem;
+  padding-left: 1.25rem;
+}
+
+.msd-guide-body li,
+.mag-guide-body li {
+  margin-bottom: 0.35rem;
+}
+
+.msd-guide-body blockquote,
+.mag-guide-body blockquote {
+  background: #f0fff4;
+  border-left: 4px solid #38a169;
+  border-radius: 0 10px 10px 0;
+  color: #276749;
+  font-size: 1.05rem;
+  font-style: italic;
+  margin: 1rem 0 1.25rem;
+  padding: 0.85rem 1.1rem;
+}
+
+.msd-guide-body hr,
+.mag-guide-body hr {
+  border: none;
+  border-top: 1px solid rgba(4, 44, 83, 0.12);
+  margin: 1.5rem 0;
+}
+
+.msd-guide-body pre.mag-json,
+.mag-guide-body pre.mag-json {
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.msd-guide-body code,
+.mag-guide-body code {
+  background: #eef4fb;
+  border-radius: 4px;
+  font-family: ui-monospace, monospace;
+  font-size: 0.86em;
+  padding: 0.1rem 0.35rem;
+}
+
+.msd-guide-body pre code,
+.mag-guide-body pre code {
+  background: transparent;
+  padding: 0;
+}
+
+.msd-guide-body table,
+.mag-guide-body table {
+  border-collapse: collapse;
+  margin: 1rem 0 1.25rem;
+  width: 100%;
+}
+
+.msd-guide-body th,
+.msd-guide-body td,
+.mag-guide-body th,
+.mag-guide-body td {
+  border: 1px solid rgba(4, 44, 83, 0.12);
+  padding: 0.5rem 0.75rem;
+  text-align: left;
+}

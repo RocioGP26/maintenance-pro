@@ -23,8 +23,11 @@
         <p class="landing-section-sub mx-auto text-center">{{ recursos_intro }}</p>
         <p class="text-center mt-3 mb-0">
           <span class="landing-hero-ctas justify-content-center">
-            <a href="/mkt/assets/brochure-corporativo.html" class="landing-btn landing-btn-primary" target="_blank" rel="noopener">
-              <i class="bi bi-download"></i> Descargar brochure
+            <a href="{{ url_for('main.guia_producto') }}" class="landing-btn landing-btn-primary">
+              <i class="bi bi-journal-bookmark"></i> Guía de producto
+            </a>
+            <a href="/mkt/assets/brochure-corporativo.html" class="landing-btn landing-btn-outline" target="_blank" rel="noopener">
+              <i class="bi bi-download"></i> Brochure
             </a>
             <a href="/mkt/assets/one-pager.html" class="landing-btn landing-btn-outline" target="_blank" rel="noopener">
               One Pager

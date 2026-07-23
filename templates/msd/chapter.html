@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ chapter.num }} · {{ chapter.title }} — Roustix Developers</title>
+  <meta name="description" content="{{ chapter.title }} — portal de desarrolladores Roustix: SDK, OpenAPI, sandbox y Quick Start.">
+  <link rel="stylesheet" href="/brandbook/css/brand-book.css">
+  <link rel="stylesheet" href="{{ url_for('msd.css', filename='msd-docs.css') }}">
+</head>
+<body>
+<div class="bb-shell">
+  <nav class="bb-nav" aria-label="Roustix Developer Portal">
+    <div class="bb-nav-brand">
+      <p class="bb-wordmark">MSD</p>
+      <p class="bb-sub">SDK & Developer Portal</p>
+      <p class="bb-nav-meta">
+        <a href="/msd/" style="color:rgba(255,255,255,0.55)">Índice</a> ·
+        <a href="/mag/" style="color:rgba(255,255,255,0.55)">API</a> ·
+        <a href="/api/v1/openapi.yaml" style="color:rgba(255,255,255,0.55)">OpenAPI</a>
+      </p>
+    </div>
+    <div class="bb-nav-group">
+      <p class="bb-nav-label">Guías</p>
+      <a href="/msd/">Índice</a>
+      {% for item in chapters %}
+      <a href="{{ url_for('msd.guide', slug=item.slug) }}"{% if item.slug == chapter.slug %} class="is-active"{% endif %}>
+        {{ item.num }} · {{ item.nav }}
+      </a>
+      {% endfor %}
+    </div>
+    <div class="bb-nav-group">
+      <p class="bb-nav-label">Herramientas</p>
+      <a href="/api/v1/openapi.yaml">OpenAPI YAML</a>
+      <a href="/msd/collections">Colecciones</a>
+      <a href="/mag/">Contrato API (MAG)</a>
+      <a href="/guia">Guía de producto</a>
+    </div>
+  </nav>
+
+  <main class="bb-main">
+    <article class="bb-page bb-page--soft msd-guide-article">
+      <div class="bb-page-inner">
+        <span class="msd-doc-code">Documentación pública · v1.0.0</span>
+        <p class="bb-page-num">{{ chapter.num }} · {{ chapter.title }}</p>
+        <div class="msd-guide-body mag-guide-body">
+          {{ body_html|safe }}
+        </div>
+        <div class="msd-chapter-nav">
+          {% if prev %}
+          <a href="{{ url_for('msd.guide', slug=prev.slug) }}">← {{ prev.num }} · {{ prev.nav }}</a>
+          {% else %}
+          <a href="/msd/">← Índice</a>
+          {% endif %}
+          {% if next %}
+          <a href="{{ url_for('msd.guide', slug=next.slug) }}">{{ next.num }} · {{ next.nav }} →</a>
+          {% else %}
+          <a href="/mag/">Contrato API →</a>
+          {% endif %}
+        </div>
+      </div>
+    </article>
+  </main>
+</div>
+</body>
+</html>

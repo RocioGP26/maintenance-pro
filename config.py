@@ -101,6 +101,11 @@ class Config:
     # Migraciones legacy ensure_* (transición a Flask-Migrate)
     RUN_LEGACY_SCHEMA_MIGRATIONS = _env_flag("RUN_LEGACY_SCHEMA_MIGRATIONS", False)
 
+    # Suite documental: hybrid | open | locked (ver app/docs_access.py · docs/ACCESS.md)
+    DOCS_ACCESS_POLICY = (
+        os.environ.get("DOCS_ACCESS_POLICY", "hybrid").strip().lower() or "hybrid"
+    )
+
     # Neon / PostgreSQL
     NEON_PROJECT_ID = os.environ.get("NEON_PROJECT_ID", "").strip()
     NEON_API_KEY = os.environ.get("NEON_API_KEY", "").strip()
@@ -176,6 +181,8 @@ class TestingConfig(Config):
     RUN_STARTUP_TASKS = False
     RUN_LEGACY_SCHEMA_MIGRATIONS = False
     MAIL_SUPPRESS_SEND = True
+    # Tests unitarios no simulan login de docs salvo test_docs_access
+    DOCS_ACCESS_POLICY = os.environ.get("DOCS_ACCESS_POLICY", "open").strip().lower() or "open"
 
 
 config_by_name: dict[str, type[Config]] = {

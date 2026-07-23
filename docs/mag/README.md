@@ -1,24 +1,37 @@
 # MAG · Roustix API Guide
 
 **Código:** MAG · Suite docs **07**  
-**Versión:** v1.0.12 · Sprint 8 · **MAG v1.0 completo**  
+**Versión:** v1.0.12  
+**Acceso:** 🌐 **100 % público** — contrato de integración para CTOs, TI e integradores  
 **Frase:** Toda la operación. Una sola plataforma.
 
 > La forma **oficial** de interactuar con Roustix desde el exterior — no solo una lista de endpoints.
 
-## Ver manual
+## Ver documentación
 
 ```powershell
 python run.py
 ```
 
-→ http://127.0.0.1:5000/mag/
+→ http://127.0.0.1:5000/mag/ · portal público  
+→ http://127.0.0.1:5000/api/v1/openapi.yaml · especificación  
+→ http://127.0.0.1:5000/msd/ · SDK, sandbox y colecciones
+
+## Qué es público vs qué requiere login
+
+| Público (sin login) | Protegido |
+|---------------------|-----------|
+| Índice `/mag/` · guía HTML `/mag/guide/*` · OpenAPI | Fuente `.md` en `/mag/chapters/` |
+| Portal MSD (herramientas) | API keys / credenciales de integración |
+| | Arquitectura interna (**MPA**) · llamadas reales |
+
+Ejemplo: el flujo JWT y los códigos HTTP viven en [`/mag/guide/autenticacion-jwt`](/mag/guide/autenticacion-jwt). El archivo `chapters/02-autenticacion-jwt.md` es solo para el equipo.
 
 ## Objetivo
 
 Documentar cómo integradores, partners y desarrolladores se conectan a Roustix: filosofía, JWT, multi-tenant, recursos, errores, versionado, webhooks y buenas prácticas.
 
-**MPA** describe la arquitectura interna; **MAG** describe el contrato externo.
+**MPA** (privado) describe la arquitectura interna; **MAG** (público) describe el contrato externo.
 
 ## Capítulos
 

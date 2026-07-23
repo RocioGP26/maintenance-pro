@@ -252,7 +252,7 @@ def _validar_technician_id_tenant(tech_id: Optional[int], label: str = "técnico
 @bp.before_request
 def _require_login():
     ep = request.endpoint or ""
-    if ep.startswith("onboarding.") or ep in ("main.login", "main.index", "main.faq", "main.demo", "main.contacto", "main.recursos"):
+    if ep.startswith("onboarding.") or ep in ("main.login", "main.index", "main.faq", "main.demo", "main.contacto", "main.recursos", "main.guia_producto"):
         return
     if not current_user.is_authenticated:
         return redirect(url_for("main.login", next=request.url))
@@ -264,7 +264,7 @@ def _require_login():
 def _enforce_role_permissions():
     """Aplica permisos por rol en rutas de escritura y formularios."""
     ep = request.endpoint or ""
-    if ep.startswith("onboarding.") or ep in ("main.login", "main.index", "main.faq", "main.demo", "main.contacto", "main.recursos"):
+    if ep.startswith("onboarding.") or ep in ("main.login", "main.index", "main.faq", "main.demo", "main.contacto", "main.recursos", "main.guia_producto"):
         return
     if not current_user.is_authenticated:
         return
@@ -1698,6 +1698,30 @@ def contacto():
             return redirect(url_for("main.contacto", sent=1))
 
     return render_template("landing/contacto.html", **ctx)
+
+
+@bp.route("/guia")
+def guia_producto():
+    """Guía funcional pública — MRG en vista cliente (sin ruido interno)."""
+    from app.landing_service import public_page_context
+    from app.public_guia import (
+        GUIA_ANTES_DESPUES,
+        GUIA_CRECIMIENTO,
+        GUIA_INVENTARIO,
+        GUIA_INTRO,
+        GUIA_MANTENIMIENTO,
+        GUIA_PRINCIPIOS,
+    )
+
+    ctx = public_page_context()
+    ctx["now_year"] = date.today().year
+    ctx["guia_intro"] = GUIA_INTRO
+    ctx["guia_principios"] = GUIA_PRINCIPIOS
+    ctx["guia_antes_despues"] = GUIA_ANTES_DESPUES
+    ctx["guia_mantenimiento"] = GUIA_MANTENIMIENTO
+    ctx["guia_inventario"] = GUIA_INVENTARIO
+    ctx["guia_crecimiento"] = GUIA_CRECIMIENTO
+    return render_template("landing/guia-producto.html", **ctx)
 
 
 @bp.route("/recursos")

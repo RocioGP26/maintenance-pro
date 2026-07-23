@@ -1,7 +1,5 @@
 # MAG-06-ERR · Manejo de errores
 
-**Código:** MAG-06-ERR · Sprint 8.6 · **Entregado**
-
 > Los errores también forman parte del contrato.
 
 **Toda la operación. Una sola plataforma.**

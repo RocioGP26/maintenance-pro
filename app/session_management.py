@@ -21,6 +21,7 @@ PUBLIC_ENDPOINTS = {
     "main.demo",
     "main.contacto",
     "main.recursos",
+    "main.guia_producto",
     "onboarding.wizard",
     "onboarding.verify_email",
     "static",

@@ -1,19 +1,42 @@
 # Publicación · Sitio de documentación
 
-**Suite docs · Publicación futura**
+> **🔒 Documento interno (DevOps / equipo).** No publicar en el sitio comercial.
+> Acceso: login · excluido del build público (junto a MCM · MPA · Developer · MDL · MUX).
 
-Hoy Roustix sirve documentación desde la app Flask:
+**Suite docs · Estrategia híbrida (público / privado)**
 
-| Ruta | Contenido |
-|------|-----------|
-| `/docs/` | Índice maestro |
-| `/brandbook/` | MBB |
-| `/mdl/` | MDL |
-| `/mux/` | MUX |
-| `/mcm/` | MCM |
-| `/mpa/` | MPA |
+Hoy Roustix sirve la documentación desde Flask con control de acceso:
 
-Esto es suficiente para **equipo interno** y desarrollo. Cuando la documentación deba ser **pública** (clientes, partners, inversionistas), conviene un sitio estático dedicado.
+| Zona | Contenido | Acceso |
+|------|-----------|--------|
+| **Público** | MBB · MAG · MSD · Release Notes · OpenAPI · MKT assets · **`/guia`** | Sin login |
+| **Privado** | MCM · MPA · MDL · MUX · MRL · MDO · Developer · MKT capítulos · **`/mrg/`** (fuente) | Login |
+| **Hub** | `/docs/` índice | Visible; paths filtrados |
+
+**Arquitectura de contenido de producto:**
+
+```
+docs/mrg/*.md     →  fuente interna (equipo)
+        ↓
+   /guia (HTML)   →  vista limpia para cliente · PDF
+```
+
+No publiques el portal `/mrg/` crudo al cliente: contiene Sprint, ALIGN y gaps.
+
+→ Matriz completa: [ACCESS.md](../ACCESS.md) · código: `app/docs_access.py`
+
+Esto cubre **equipo interno**, **prospectos** e **integradores** en la misma app. Cuando convenga un sitio estático dedicado, la misma matriz se replica en MkDocs/Docusaurus.
+
+---
+
+## Resumen práctico
+
+| Destino | Qué publicar |
+|---------|--------------|
+| **Sitio público** | MBB · MAG · MSD · `/guia` · brochure / one-pager / MTX-CASE · Release Notes |
+| **Portal interno / intranet** | MCM · MPA · MDL · MUX · MRL · MDO · Developer · MKT capítulos · **MRG Markdown** |
+
+No mezclar playbooks comerciales ni arquitectura interna en el sitio público.
 
 ---
 
@@ -23,53 +46,70 @@ Esto es suficiente para **equipo interno** y desarrollo. Cuando la documentació
 |-------------|------------|--------------|
 | **MkDocs** | Simple · Markdown nativo · Material theme · rápido de montar | ✅ Buen fit inicial — ya tenemos `.md` |
 | **Docusaurus** | React · versioning · blog · i18n | ✅ Si crece comunidad o docs multidioma |
-| **Flask actual** | Cero infra extra · catálogos HTML ricos | ✅ Mantener para previews internos |
+| **Flask actual** | Cero infra extra · gate híbrido · catálogos HTML | ✅ Mantener para hub + preview internos |
 
 **Recomendación por fases:**
 
-1. **Ahora:** Flask + índice maestro + VERSIONS + cross-refs
-2. **Público v1:** MkDocs Material desde `docs/` + export de catálogos HTML como referencia
-3. **Escala:** Docusaurus si versioning público, búsqueda avanzada o portal partners
+1. **Ahora:** Flask + `DOCS_ACCESS_POLICY=hybrid` + índice maestro
+2. **Público v1:** MkDocs Material **solo** con nav pública (MBB · MKT · MAG · MSD · MRG)
+3. **Intranet:** mismo repo, build filtrado o SSO delante de los manuales privados
+4. **Escala:** Docusaurus si versioning público, búsqueda avanzada o portal partners
 
 ---
 
-## Requisitos previos al sitio público
+## Requisitos previos al sitio público estático
 
+- [x] Política de acceso documentada ([ACCESS.md](../ACCESS.md))
 - [ ] [VERSIONS.md](../VERSIONS.md) estable por 2+ releases
 - [ ] Todos los manuales core con changelog
 - [ ] [CROSS-REFERENCES.md](../CROSS-REFERENCES.md) aplicado
-- [ ] MPA v1.0 congelado
-- [ ] Política de versionado comunicada ([VERSIONING.md](../VERSIONING.md))
 - [ ] Dominio definido (ej. `docs.roustix.com`)
+- [ ] Build que **excluya** MCM · MPA · Developer · MDL · MUX del artefacto público
 
 ---
 
-## Estructura MkDocs (borrador)
+## Estructura MkDocs (borrador · solo público)
 
 ```yaml
-# mkdocs.yml (futuro)
+# mkdocs.yml (futuro — sitio público)
 site_name: Roustix Documentation
 nav:
   - Inicio: README.md
   - Brand Book: brandbook/README.md
-  - MDL: mdl/README.md
-  - MUX: mux/README.md
-  - MCM: mcm/README.md
-  - MPA: mpa/README.md
-  - Versiones: VERSIONS.md
-  - Changelog: changelog.md
+  - Marketing assets: mkt/assets/
+  - Casos: mkt/mtx-case/
+  - Producto (MRG): mrg/README.md
+  - API (MAG): mag/README.md
+  - SDK (MSD): msd/README.md
+  - Release Notes: release-notes/README.md
 ```
 
-Los catálogos HTML interactivos pueden enlazarse como «Vista visual» desde cada sección.
+**No incluir en el build público:** `mcm/`, `mpa/`, `mdl/`, `mux/`, `mrl/`, `mdo/`, `developer/`, `mkt/chapters/`, `mkt/index.html`.
 
 ---
 
-## No hacer aún
+## Variable de entorno (Flask)
 
-- No duplicar contenido en wiki externa
-- No publicar docs sin versión congelada
-- No mezclar docs internas (Developer) con portal público sin filtro
+```bash
+# Producción / desarrollo (recomendado)
+DOCS_ACCESS_POLICY=hybrid
+
+# Solo debugging local
+DOCS_ACCESS_POLICY=open
+
+# Paranoia: todo detrás de login
+DOCS_ACCESS_POLICY=locked
+```
 
 ---
 
-→ [DOCUMENTATION-PRODUCT.md](../DOCUMENTATION-PRODUCT.md) · [Índice maestro](../README.md)
+## No hacer
+
+- No publicar MCM (playbooks / objeciones) en el sitio público
+- No exponer MPA ni Developer Docs sin autenticación
+- No duplicar contenido en wiki externa sin filtro de acceso
+- No mezclar docs internas con el portal público «por comodidad»
+
+---
+
+→ [ACCESS.md](../ACCESS.md) · [DOCUMENTATION-PRODUCT.md](../DOCUMENTATION-PRODUCT.md) · [Índice maestro](../index.html)

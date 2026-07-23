@@ -568,3 +568,106 @@ def configuracion_sector_nuevo():
         db.session.rollback()
         flash(str(e), "danger")
     return redirect(url_for("platform.configuracion", tab="sectores"))
+
+
+# Catálogo de documentación interna (suite privada · acceso SuperAdmin)
+_INTERNAL_DOC_GROUPS = (
+    {
+        "title": "Comercial y marketing",
+        "docs": (
+            {
+                "code": "MCM",
+                "name": "Manual Comercial",
+                "href": "/mcm/",
+                "desc": "Playbooks, objeciones y secreto comercial",
+            },
+            {
+                "code": "MKT",
+                "name": "Marketing (portal)",
+                "href": "/mkt/",
+                "desc": "Biblia de mensajes, guiones y estilo",
+            },
+        ),
+    },
+    {
+        "title": "Producto y diseño",
+        "docs": (
+            {
+                "code": "MDL",
+                "name": "Design Language",
+                "href": "/mdl/",
+                "desc": "Tokens UI y sistema visual interno",
+            },
+            {
+                "code": "MUX",
+                "name": "UX / Producto",
+                "href": "/mux/",
+                "desc": "Flujos UX y criterios de diseño",
+            },
+            {
+                "code": "MRL",
+                "name": "Report Language",
+                "href": "/mrl/",
+                "desc": "Lenguaje de reportes e informes",
+            },
+            {
+                "code": "MRG",
+                "name": "Reference Guide (fuente)",
+                "href": "/mrg/",
+                "desc": "Markdown interno · ALIGN · gaps",
+            },
+        ),
+    },
+    {
+        "title": "Ingeniería y operaciones",
+        "docs": (
+            {
+                "code": "MPA",
+                "name": "Arquitectura",
+                "href": "/mpa/",
+                "desc": "Infra, tenancy, seguridad y despliegue",
+            },
+            {
+                "code": "DEV",
+                "name": "Developer Docs",
+                "href": "/docs/developer/README.md",
+                "desc": "Handbook, MADR y runbooks",
+            },
+            {
+                "code": "MDO",
+                "name": "Ops del portal doc",
+                "href": "/mdo/",
+                "desc": "Operación de la suite documental",
+            },
+            {
+                "code": "PUB",
+                "name": "Publishing",
+                "href": "/docs/publishing/README.md",
+                "desc": "Blueprint MkDocs / Docusaurus · DevOps",
+            },
+            {
+                "code": "ACCESS",
+                "name": "Política de acceso",
+                "href": "/docs/ACCESS.md",
+                "desc": "Matriz oficial público / privado",
+            },
+        ),
+    },
+)
+
+
+@platform_bp.route("/documentacion")
+@platform_login_required
+def documentacion():
+    """Hub de documentación interna dentro del SuperAdmin Panel."""
+    return render_template(
+        "platform/documentacion.html",
+        doc_groups=_INTERNAL_DOC_GROUPS,
+        public_shortcuts=(
+            {"name": "MAG · API Guide", "href": "/mag/"},
+            {"name": "MSD · Developer Portal", "href": "/msd/"},
+            {"name": "Guía de producto", "href": "/guia"},
+            {"name": "OpenAPI", "href": "/api/v1/openapi.yaml"},
+            {"name": "Índice Docs", "href": "/docs/"},
+        ),
+    )
