@@ -145,6 +145,8 @@ El equipo Roustix consulta la suite privada desde:
 
 Ahí están centralizados MCM · MPA · MDL · MUX · MRL · MDO · MRG · MKT · Developer · Publishing · ACCESS.
 
+**Login de plataforma:** ruta **no enlazada** en la web pública (`/platform/login`). El equipo la usa por marcador o URL directa; no aparece en footer ni menús de la landing.
+
 ---
 
 ## Publishing (privado · DevOps)
