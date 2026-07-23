@@ -10,7 +10,7 @@
 
 **Diseño:** [MDL](/mdl/) · [MUX](/mux/)
 
-**Assets futuros:** `docs/mkt/assets/` — PDF brochure · one pager · fichas
+**Assets:** [`docs/mkt/assets/`](../assets/README.md) — brochure corporativo · one pager (HTML → PDF)
 
 ---
 
@@ -298,16 +298,18 @@ Versión basada en [MKT-04](04-presentacion-comercial.md) — slides 1 · 2 · 3
 
 ## 8 · Recursos descargables
 
-Disponibles desde la web (roadmap integración MKT-05):
+Disponibles en [`/mkt/assets/`](../assets/README.md) y enlazados desde `/recursos`:
 
-| Documento | Público |
-|-----------|---------|
-| Brochure | Prospectos |
-| One Pager | Ejecutivos |
-| Fichas de módulos | Comercial |
-| Casos MTX-CASE | Ventas |
-| Guía de planes | Clientes |
-| Demo PDF | Partners |
+| Documento | Público | Archivo |
+|-----------|---------|---------|
+| **Brochure corporativo** | Prospectos | [brochure-corporativo.html](../assets/brochure-corporativo.html) |
+| **One Pager** | Ejecutivos | [one-pager.html](../assets/one-pager.html) |
+| Fichas de módulos | Comercial | 📋 Roadmap v2 |
+| Casos MTX-CASE | Ventas | [mtx-case/](../mtx-case/README.md) |
+| Guía de planes | Clientes | MCM-04 |
+| Demo PDF | Partners | 📋 Roadmap |
+
+**Cómo obtener el PDF:** abrir el HTML → **Descargar / Imprimir PDF** → Guardar como PDF (A4 · gráficos de fondo).
 
 ---
 
@@ -402,11 +404,12 @@ Cuando el material mantiene mensaje claro, diseño consistente y CTA sencillo, s
 |---------|--------|
 | Brochure corporativo (guía) | ✅ Definido |
 | One Pager (guía) | ✅ Definido |
+| Brochure HTML imprimible | ✅ [`assets/brochure-corporativo.html`](../assets/brochure-corporativo.html) |
+| One Pager HTML imprimible | ✅ [`assets/one-pager.html`](../assets/one-pager.html) |
+| Enlace en `/recursos` | ✅ |
 | Fichas de módulos | 🟡 En preparación |
 | Fichas por sector | 🟡 En preparación |
 | Kit para eventos | 📋 Roadmap v4 |
-| Material descargable web | 📋 Integración MKT-05 |
-| PDF en `assets/` | 📋 Export pendiente |
 
 ---
 
@@ -418,7 +421,7 @@ Cuando el material mantiene mensaje claro, diseño consistente y CTA sencillo, s
 - [x] Material para eventos documentado
 - [x] Guías de diseño alineadas con MDL
 - [x] Integración con MCM y MKT completada
-- [ ] PDFs exportados en `docs/mkt/assets/` *(roadmap v1)*
+- [x] HTML descargable (brochure + one pager) en `docs/mkt/assets/` · PDF vía impresión del navegador
 
 ---
 

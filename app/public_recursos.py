@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 RECURSOS_INTRO = (
-    "Casos de transformación, guías comerciales y contenido para evaluar Roustix. "
+    "Brochure, one pager, casos de transformación y documentación para evaluar Roustix. "
     "El blog público llegará en una próxima versión del sitio."
 )
 
@@ -53,6 +53,18 @@ MTX_CASES: tuple[dict[str, str], ...] = (
 )
 
 RECURSOS_LINKS: tuple[dict[str, str], ...] = (
+    {
+        "titulo": "Brochure corporativo",
+        "desc": "8 páginas · imprimible / PDF (MKT-07).",
+        "href": "/mkt/assets/brochure-corporativo.html",
+        "icon": "bi-file-earmark-pdf",
+    },
+    {
+        "titulo": "One Pager",
+        "desc": "Resumen ejecutivo de una página.",
+        "href": "/mkt/assets/one-pager.html",
+        "icon": "bi-file-text",
+    },
     {
         "titulo": "Manual comercial (MCM)",
         "desc": "Planes, sectores, demo y onboarding.",

@@ -1,5 +1,19 @@
 # MKT Changelog
 
+## [1.0.2] — 2026-07-23 · Brochure descargable (MKT-07)
+
+### Added
+- **Brochure corporativo** 8 páginas · [`assets/brochure-corporativo.html`](assets/brochure-corporativo.html)
+- **One Pager** · [`assets/one-pager.html`](assets/one-pager.html)
+- Estilos compartidos · [`assets/brochure.css`](assets/brochure.css)
+- Enlaces de descarga en `/recursos`
+
+### Notes
+- Contenido alineado MCM-01 · MCM-03 · MCM-04 · MCM-05 · MKT-01 · MKT-07
+- PDF: imprimir desde el navegador (A4 · gráficos de fondo)
+
+---
+
 ## [1.0.1] — 2026-07-10 · Sprint 14 · Sitio público alineado (ALIGN-PUB)
 
 ### Changed

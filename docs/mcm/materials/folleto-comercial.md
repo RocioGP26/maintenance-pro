@@ -6,6 +6,10 @@
 Documento de una página para reuniones, PDF e impresión.
 Complementa el [MCM](README.md) — no lo sustituye.
 
+**Versión visual descargable (MKT-07):**
+- [Brochure corporativo (8 pág.)](/mkt/assets/brochure-corporativo.html)
+- [One Pager](/mkt/assets/one-pager.html)
+
 ---
 
 ## Toda la operación. Una sola plataforma.

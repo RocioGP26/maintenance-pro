@@ -73,7 +73,7 @@ Frase corta · repetible · sin jerga técnica. Úsala tal cual en:
 | **App Store** | Subtítulo · descripción corta |
 | **LinkedIn** | Bio empresa · posts · anuncios |
 
-→ Material extendido: [materials/folleto-comercial.md](../materials/folleto-comercial.md)
+→ Material extendido: [materials/folleto-comercial.md](../materials/folleto-comercial.md) · Brochure descargable: [/mkt/assets/brochure-corporativo.html](/mkt/assets/brochure-corporativo.html)
 
 ---
 
