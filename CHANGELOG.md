@@ -12,6 +12,12 @@ La suite documental mantiene un ciclo independiente en
 
 - Espacio reservado para cambios aún no publicados.
 
+## [1.0.11] - 2026-07-23
+
+### Changed
+
+- docs hibrido publico/privado, brochure MKT y hub Documentacion interna en SuperAdmin.
+
 ## [1.0.10] - 2026-07-23
 
 ### Changed
@@ -214,7 +220,7 @@ La suite documental mantiene un ciclo independiente en
 
 - Este release formaliza el versionado; no modifica funcionalidades de negocio.
 
-[Unreleased]: https://github.com/RocioGP26/maintenance-pro/compare/v1.0.10...HEAD
+[Unreleased]: https://github.com/RocioGP26/maintenance-pro/compare/v1.0.11...HEAD
 [1.0.0]: https://github.com/RocioGP26/maintenance-pro/releases/tag/v1.0.0
 [1.0.1]: https://github.com/RocioGP26/maintenance-pro/compare/v1.0.0...v1.0.1
 [1.0.2]: https://github.com/RocioGP26/maintenance-pro/compare/v1.0.1...v1.0.2
@@ -226,3 +232,4 @@ La suite documental mantiene un ciclo independiente en
 [1.0.8]: https://github.com/RocioGP26/maintenance-pro/compare/v1.0.7...v1.0.8
 [1.0.9]: https://github.com/RocioGP26/maintenance-pro/compare/v1.0.8...v1.0.9
 [1.0.10]: https://github.com/RocioGP26/maintenance-pro/compare/v1.0.9...v1.0.10
+[1.0.11]: https://github.com/RocioGP26/maintenance-pro/compare/v1.0.10...v1.0.11

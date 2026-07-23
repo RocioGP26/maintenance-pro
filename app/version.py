@@ -10,7 +10,7 @@ import os
 import re
 
 
-__version__ = "1.0.10"
+__version__ = "1.0.11"
 
 _SEMVER_RE = re.compile(
     r"^(0|[1-9]\d*)\."
