@@ -222,6 +222,15 @@ def _empresa_dos_lineas(empresa) -> tuple[str, str]:
     return empresa_nombre, ""
 
 
+def _fecha_edicion(d: date | None = None) -> str:
+    d = d or date.today()
+    meses = (
+        "Ene", "Feb", "Mar", "Abr", "May", "Jun",
+        "Jul", "Ago", "Sep", "Oct", "Nov", "Dic",
+    )
+    return f"{d.day:02d}/{meses[d.month - 1]}/{d.year}"
+
+
 def _build_header(cronograma: CronogramaActivo, empresa, styles):
     """Encabezado plano (una sola Table + SPAN/GRID), mismo ancho que la matriz."""
     machine = cronograma.machine
@@ -234,21 +243,23 @@ def _build_header(cronograma: CronogramaActivo, empresa, styles):
     if linea2:
         empresa_html += f"<br/>{_txt(linea2.upper())}"
 
-    edicion = date.today().strftime("%d/%b/%Y")
+    edicion = _fecha_edicion()
+    # Código documental: 62-MT-{código máquina} {año}
+    codigo_doc = ""
+    if (machine.codigo or "").strip():
+        codigo_doc = f"62-MT-{machine.codigo.strip()} {cronograma.anio}"
+
     page_w = _content_width()
 
-    # 7 columnas: logo | empresa | cód.maq | nombre | aprobó | rótulo ctl | valor ctl
+    # 6 columnas · control derecho en 4 filas apiladas (Código / valor / Edición / fecha)
     w_logo = page_w * 0.11
     w_emp = page_w * 0.15
     w_cod = page_w * 0.16
-    w_nom = page_w * 0.28
+    w_nom = page_w * 0.30
     w_apr = page_w * 0.14
-    w_ctl_rest = page_w - (w_logo + w_emp + w_cod + w_nom + w_apr)
-    w_ctl_lbl = w_ctl_rest * 0.42
-    w_ctl_val = w_ctl_rest - w_ctl_lbl
-    col_w = [w_logo, w_emp, w_cod, w_nom, w_apr, w_ctl_lbl, w_ctl_val]
+    w_ctl = page_w - (w_logo + w_emp + w_cod + w_nom + w_apr)
+    col_w = [w_logo, w_emp, w_cod, w_nom, w_apr, w_ctl]
 
-    # 3 filas · 4 campos de control: Código | (vacío) / Edición | fecha
     data = [
         [
             logo,
@@ -257,10 +268,17 @@ def _build_header(cronograma: CronogramaActivo, empresa, styles):
                 "<b>CRONOGRAMA DE MANTENIMIENTO PREVENTIVO<br/>MÁQUINAS Y/O EQUIPOS</b>",
                 styles["title"],
             ),
-            "",  # span con título
+            "",
             _rich("<b>Aprobó:</b><br/>Jefe de Mantenimiento", styles["meta_c"]),
             _rich("<b>Código</b>", styles["meta_c"]),
-            _rich(" ", styles["meta_c"]),  # valor Código en blanco
+        ],
+        [
+            "",
+            "",
+            "",
+            "",
+            "",
+            _rich(_txt(codigo_doc) if codigo_doc else " ", styles["meta_c"]),
         ],
         [
             "",
@@ -268,8 +286,7 @@ def _build_header(cronograma: CronogramaActivo, empresa, styles):
             _rich("<b>Código Máquina/Equipo</b>", styles["meta_c"]),
             _rich("<b>Nombre Máquina o Equipo</b>", styles["meta_c"]),
             "",
-            "",  # span con Código
-            "",  # span con valor Código
+            _rich("<b>Edición</b>", styles["meta_c"]),
         ],
         [
             "",
@@ -277,12 +294,11 @@ def _build_header(cronograma: CronogramaActivo, empresa, styles):
             _rich(_txt(machine.codigo or ""), styles["meta_c"]),
             _rich(_txt(machine.nombre or ""), styles["meta_c"]),
             "",
-            _rich("<b>Edición</b>", styles["meta_c"]),
             _rich(_txt(edicion), styles["meta_c"]),
         ],
     ]
 
-    head = Table(data, colWidths=col_w, rowHeights=[10 * mm, 7 * mm, 8 * mm])
+    head = Table(data, colWidths=col_w, rowHeights=[7 * mm, 7 * mm, 6.5 * mm, 7 * mm])
     head.setStyle(
         TableStyle(
             [
@@ -294,18 +310,12 @@ def _build_header(cronograma: CronogramaActivo, empresa, styles):
                 ("RIGHTPADDING", (0, 0), (-1, -1), 2),
                 ("TOPPADDING", (0, 0), (-1, -1), 1),
                 ("BOTTOMPADDING", (0, 0), (-1, -1), 1),
-                # Logo y empresa a lo alto
-                ("SPAN", (0, 0), (0, 2)),
-                ("SPAN", (1, 0), (1, 2)),
-                # Título sobre código+nombre
-                ("SPAN", (2, 0), (3, 0)),
-                # Aprobó a lo alto
-                ("SPAN", (4, 0), (4, 2)),
-                # Código / valor (filas 0-1) · Edición / fecha (fila 2)
-                ("SPAN", (5, 0), (5, 1)),
-                ("SPAN", (6, 0), (6, 1)),
-                ("BACKGROUND", (2, 1), (3, 1), colors.HexColor("#f1f5f9")),
-                ("BACKGROUND", (5, 0), (5, 1), colors.HexColor("#f1f5f9")),
+                ("SPAN", (0, 0), (0, 3)),
+                ("SPAN", (1, 0), (1, 3)),
+                ("SPAN", (2, 0), (3, 1)),
+                ("SPAN", (4, 0), (4, 3)),
+                ("BACKGROUND", (2, 2), (3, 2), colors.HexColor("#f1f5f9")),
+                ("BACKGROUND", (5, 0), (5, 0), colors.HexColor("#f1f5f9")),
                 ("BACKGROUND", (5, 2), (5, 2), colors.HexColor("#f1f5f9")),
             ]
         )
