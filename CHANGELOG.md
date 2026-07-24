@@ -12,6 +12,12 @@ La suite documental mantiene un ciclo independiente en
 
 - Espacio reservado para cambios aún no publicados.
 
+## [1.0.13] - 2026-07-23
+
+### Changed
+
+- Alerta de activos sin preventivo, OT del año omitiendo fechas pasadas, repuestos solo en correctivos y ajustes de UI/PDF del cronograma.
+
 ## [1.0.12] - 2026-07-23
 
 ### Added
@@ -228,7 +234,7 @@ La suite documental mantiene un ciclo independiente en
 
 - Este release formaliza el versionado; no modifica funcionalidades de negocio.
 
-[Unreleased]: https://github.com/RocioGP26/maintenance-pro/compare/v1.0.12...HEAD
+[Unreleased]: https://github.com/RocioGP26/maintenance-pro/compare/v1.0.13...HEAD
 [1.0.0]: https://github.com/RocioGP26/maintenance-pro/releases/tag/v1.0.0
 [1.0.1]: https://github.com/RocioGP26/maintenance-pro/compare/v1.0.0...v1.0.1
 [1.0.2]: https://github.com/RocioGP26/maintenance-pro/compare/v1.0.1...v1.0.2
@@ -242,3 +248,4 @@ La suite documental mantiene un ciclo independiente en
 [1.0.10]: https://github.com/RocioGP26/maintenance-pro/compare/v1.0.9...v1.0.10
 [1.0.11]: https://github.com/RocioGP26/maintenance-pro/compare/v1.0.10...v1.0.11
 [1.0.12]: https://github.com/RocioGP26/maintenance-pro/compare/v1.0.11...v1.0.12
+[1.0.13]: https://github.com/RocioGP26/maintenance-pro/compare/v1.0.12...v1.0.13
