@@ -179,53 +179,70 @@ def _resumen_alertas_mantenimiento(hoy: date) -> dict[str, Any]:
         empresa_id=eid, user_id=current_user.id, read_at=None
     ).count() if eid else 0
 
+    sin_preventivo = 0
+    if not is_technician(current_user):
+        from app.maintenance.cronograma_preventivo import query_machines_sin_plan_preventivo
+
+        sin_preventivo = query_machines_sin_plan_preventivo(eid).count()
+
     technician_view = is_technician(current_user)
-    return _empacar_alertas(
-        modulo="mantenimiento",
-        titulo="Mis alertas" if technician_view else "Alertas críticas",
-        items=[
-            {
-                "label": "Mis OT vencidas" if technician_view else "Vencimientos",
-                "count": vencimientos,
-                "url": url_for("main.ordenes_list", alerta="vencimientos"),
-                "tone": "danger",
-            },
-            {
-                "label": "Mis OT programadas hoy" if technician_view else "Programados hoy",
-                "count": programados_hoy,
-                "url": url_for("main.ordenes_list", alerta="programados_hoy"),
-                "tone": "info",
-                "pad": True,
-            },
-            {
-                "label": "Mis OT en proceso" if technician_view else "En proceso",
-                "count": en_proceso,
-                "url": url_for("main.ordenes_list", alerta="en_proceso"),
-                "tone": "warn",
-            },
-            {
-                "label": "OT pendientes de cierre",
-                "count": pendientes_cierre,
-                "url": url_for("main.ordenes_list", alerta="pendientes_cierre"),
-                "tone": "warn",
-            } if not technician_view else {
-                "label": "Novedades de bitácora",
-                "count": log_pending,
-                "url": url_for("maintenance_execution.context_log_notifications"),
-                "tone": "info",
-            },
-            {
-                "label": "Mis incidencias pendientes" if technician_view else "Tickets pendientes",
-                "count": tickets_pendientes,
-                "url": url_for("main.incidencias_list", estado="pendiente"),
-                "tone": "danger",
-            },
-            *([{
-                "label": "Novedades de bitácora",
-                "count": log_pending,
-                "url": url_for("maintenance_execution.context_log_notifications"),
-                "tone": "info",
-            }] if not technician_view else []),
+    items: list[dict[str, Any]] = [
+        {
+            "label": "Mis OT vencidas" if technician_view else "Vencimientos",
+            "count": vencimientos,
+            "url": url_for("main.ordenes_list", alerta="vencimientos"),
+            "tone": "danger",
+        },
+        {
+            "label": "Mis OT programadas hoy" if technician_view else "Programados hoy",
+            "count": programados_hoy,
+            "url": url_for("main.ordenes_list", alerta="programados_hoy"),
+            "tone": "info",
+            "pad": True,
+        },
+        {
+            "label": "Mis OT en proceso" if technician_view else "En proceso",
+            "count": en_proceso,
+            "url": url_for("main.ordenes_list", alerta="en_proceso"),
+            "tone": "warn",
+        },
+        {
+            "label": "OT pendientes de cierre",
+            "count": pendientes_cierre,
+            "url": url_for("main.ordenes_list", alerta="pendientes_cierre"),
+            "tone": "warn",
+        } if not technician_view else {
+            "label": "Novedades de bitácora",
+            "count": log_pending,
+            "url": url_for("maintenance_execution.context_log_notifications"),
+            "tone": "info",
+        },
+        {
+            "label": "Mis incidencias pendientes" if technician_view else "Tickets pendientes",
+            "count": tickets_pendientes,
+            "url": url_for("main.incidencias_list", estado="pendiente"),
+            "tone": "danger",
+        },
+    ]
+    if not technician_view:
+        items.extend(
+            [
+                {
+                    "label": "Novedades de bitácora",
+                    "count": log_pending,
+                    "url": url_for("maintenance_execution.context_log_notifications"),
+                    "tone": "info",
+                },
+                {
+                    "label": "Sin preventivo programado",
+                    "count": sin_preventivo,
+                    "url": url_for("main.activos_cronogramas_index", alerta="sin_preventivo"),
+                    "tone": "warn",
+                },
+            ]
+        )
+    items.extend(
+        [
             {
                 "label": "Mis activos en riesgo" if technician_view else "Activos en riesgo",
                 "count": asset_attention,
@@ -238,7 +255,12 @@ def _resumen_alertas_mantenimiento(hoy: date) -> dict[str, Any]:
                 "url": url_for("maintenance_automation.notifications"),
                 "tone": "warn",
             },
-        ],
+        ]
+    )
+    return _empacar_alertas(
+        modulo="mantenimiento",
+        titulo="Mis alertas" if technician_view else "Alertas críticas",
+        items=items,
     )
 
 

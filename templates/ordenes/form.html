@@ -384,7 +384,7 @@
               </div>
             </div>
 
-            <div class="col-12">
+            <div class="col-12 {% if not order or order.tipo != 'correctivo' %}d-none{% endif %}" id="seccionRepuestosInstalados">
               <h6 class="fw-semibold mb-2"><i class="bi bi-box-seam me-1"></i> Repuestos instalados</h6>
               <div class="table-responsive border rounded">
                 <table class="table table-sm align-middle mb-0">
@@ -1280,6 +1280,7 @@
   if (freqUni) freqUni.addEventListener('change', actualizarFrecuenciaResumen);
 
   var seccionRep = document.getElementById('seccionRepuestos');
+  var seccionRepInstalados = document.getElementById('seccionRepuestosInstalados');
   var usaRep = document.getElementById('usa_repuestos');
   var panelRep = document.getElementById('panelRepuestos');
   var repuestosTbody = document.getElementById('repuestosTbody');
@@ -1298,6 +1299,7 @@
     actualizarSeccionPreventivo();
     var esCorrectivo = selectTipo && selectTipo.value === 'correctivo';
     if (seccionRep) seccionRep.classList.toggle('d-none', !esCorrectivo);
+    if (seccionRepInstalados) seccionRepInstalados.classList.toggle('d-none', !esCorrectivo);
     if (!esCorrectivo && usaRep) {
       usaRep.checked = false;
       togglePanelRep();

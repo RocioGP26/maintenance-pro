@@ -115,10 +115,12 @@ def _styles():
         "title": ParagraphStyle(
             "cr_title",
             fontName="Helvetica-Bold",
-            fontSize=9,
+            fontSize=8.5,
             alignment=TA_CENTER,
             leading=11,
             textColor=colors.black,
+            spaceBefore=0,
+            spaceAfter=0,
         ),
         "company": ParagraphStyle(
             "cr_company",
@@ -251,25 +253,29 @@ def _build_header(cronograma: CronogramaActivo, empresa, styles):
 
     page_w = _content_width()
 
-    # 6 columnas · control derecho en 4 filas apiladas (Código / valor / Edición / fecha)
+    # 6 columnas · control derecho en 4 filas (Código / valor / Edición / fecha)
     w_logo = page_w * 0.11
     w_emp = page_w * 0.15
     w_cod = page_w * 0.16
-    w_nom = page_w * 0.30
+    w_nom = page_w * 0.28
     w_apr = page_w * 0.14
     w_ctl = page_w - (w_logo + w_emp + w_cod + w_nom + w_apr)
     col_w = [w_logo, w_emp, w_cod, w_nom, w_apr, w_ctl]
 
+    title = _rich(
+        "<b>CRONOGRAMA DE MANTENIMIENTO PREVENTIVO<br/>MÁQUINAS Y/O EQUIPOS</b>",
+        styles["title"],
+    )
+
+    # Filas 0–1: logo · empresa · título (ancho hasta Aprobó) · Código/valor
+    # Filas 2–3: código/nombre máquina · Aprobó · Edición/fecha
     data = [
         [
             logo,
             _rich(empresa_html, styles["company"]),
-            _rich(
-                "<b>CRONOGRAMA DE MANTENIMIENTO PREVENTIVO<br/>MÁQUINAS Y/O EQUIPOS</b>",
-                styles["title"],
-            ),
+            title,
             "",
-            _rich("<b>Aprobó:</b><br/>Jefe de Mantenimiento", styles["meta_c"]),
+            "",
             _rich("<b>Código</b>", styles["meta_c"]),
         ],
         [
@@ -285,7 +291,7 @@ def _build_header(cronograma: CronogramaActivo, empresa, styles):
             "",
             _rich("<b>Código Máquina/Equipo</b>", styles["meta_c"]),
             _rich("<b>Nombre Máquina o Equipo</b>", styles["meta_c"]),
-            "",
+            _rich("<b>Aprobó:</b><br/>Jefe de Mantenimiento", styles["meta_c"]),
             _rich("<b>Edición</b>", styles["meta_c"]),
         ],
         [
@@ -298,7 +304,7 @@ def _build_header(cronograma: CronogramaActivo, empresa, styles):
         ],
     ]
 
-    head = Table(data, colWidths=col_w, rowHeights=[7 * mm, 7 * mm, 6.5 * mm, 7 * mm])
+    head = Table(data, colWidths=col_w, rowHeights=[8 * mm, 8 * mm, 6.5 * mm, 8 * mm])
     head.setStyle(
         TableStyle(
             [
@@ -308,12 +314,12 @@ def _build_header(cronograma: CronogramaActivo, empresa, styles):
                 ("ALIGN", (0, 0), (-1, -1), "CENTER"),
                 ("LEFTPADDING", (0, 0), (-1, -1), 2),
                 ("RIGHTPADDING", (0, 0), (-1, -1), 2),
-                ("TOPPADDING", (0, 0), (-1, -1), 1),
-                ("BOTTOMPADDING", (0, 0), (-1, -1), 1),
-                ("SPAN", (0, 0), (0, 3)),
-                ("SPAN", (1, 0), (1, 3)),
-                ("SPAN", (2, 0), (3, 1)),
-                ("SPAN", (4, 0), (4, 3)),
+                ("TOPPADDING", (0, 0), (-1, -1), 1.5),
+                ("BOTTOMPADDING", (0, 0), (-1, -1), 1.5),
+                ("SPAN", (0, 0), (0, 3)),  # logo
+                ("SPAN", (1, 0), (1, 3)),  # empresa
+                ("SPAN", (2, 0), (4, 1)),  # título (2 líneas) hasta col. Aprobó
+                ("SPAN", (4, 2), (4, 3)),  # Aprobó solo bajo el título
                 ("BACKGROUND", (2, 2), (3, 2), colors.HexColor("#f1f5f9")),
                 ("BACKGROUND", (5, 0), (5, 0), colors.HexColor("#f1f5f9")),
                 ("BACKGROUND", (5, 2), (5, 2), colors.HexColor("#f1f5f9")),
@@ -330,9 +336,9 @@ def _build_matrix(cronograma: CronogramaActivo, styles):
         _rich("<b>N°</b>", styles["th"]),
         _rich("<b>INSTRUCCIONES</b>", styles["th"]),
         _rich("<b>FREC.</b>", styles["th"]),
-        _rich("<b></b>", styles["th"]),
+        _rich("<b>MES</b>", styles["th"]),
     ]
-    row_sem = ["", "", "", ""]
+    row_sem = ["", "", "", _rich("<b>SEM.</b>", styles["th"])]
     for mes in MESES_ES:
         row_meses.append(_rich(f"<b>{mes}</b>", styles["th"]))
         row_meses.extend(["", "", ""])
@@ -352,11 +358,10 @@ def _build_matrix(cronograma: CronogramaActivo, styles):
         ("RIGHTPADDING", (0, 0), (-1, -1), 1),
         ("TOPPADDING", (0, 0), (-1, -1), 1.5),
         ("BOTTOMPADDING", (0, 0), (-1, -1), 1.5),
-        # Spans encabezado
+        # Spans encabezado (N°, Instrucciones, Frec. atraviesan MES/SEM.)
         ("SPAN", (0, 0), (0, 1)),
         ("SPAN", (1, 0), (1, 1)),
         ("SPAN", (2, 0), (2, 1)),
-        ("SPAN", (3, 0), (3, 1)),
     ]
     for i in range(12):
         c0 = 4 + i * 4
@@ -539,9 +544,9 @@ def _build_cronograma_flowables(cronograma: CronogramaActivo, empresa):
     parts.append(Spacer(1, 3 * mm))
     parts.append(_build_convenciones(styles))
     parts.append(Spacer(1, 2.5 * mm))
-    parts.append(_build_observaciones(cronograma, styles))
-    parts.append(Spacer(1, 2.5 * mm))
     parts.append(_build_cumplimiento(cronograma, styles))
+    parts.append(Spacer(1, 2.5 * mm))
+    parts.append(_build_observaciones(cronograma, styles))
     return [KeepTogether(parts)] if len(cronograma.filas) <= 3 else parts
 
 

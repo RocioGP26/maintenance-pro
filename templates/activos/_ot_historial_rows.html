@@ -96,7 +96,9 @@
                 <th>Trabajo realizado</th>
                 <th>Paro</th>
                 <th>Recibido por</th>
+                {% if orden.tipo == 'correctivo' %}
                 <th>Repuestos instalados</th>
+                {% endif %}
                 <th class="text-end">Herramientas</th>
               </tr>
             </thead>
@@ -121,6 +123,7 @@
                   </span>
                 </td>
                 <td>{{ jornada.recibido_por or '—' }}</td>
+                {% if orden.tipo == 'correctivo' %}
                 <td>
                   {% for linea in avance.repuestos %}
                   <div>{{ linea.spare_part.nombre if linea.spare_part else 'Repuesto' }} × {{ linea.cantidad }}</div>
@@ -128,6 +131,7 @@
                   <span class="text-muted">—</span>
                   {% endfor %}
                 </td>
+                {% endif %}
                 <td class="text-end">{{ formato_moneda(jornada.costo_herramientas_total, empresa_actual.moneda) }}</td>
               </tr>
               {% endfor %}

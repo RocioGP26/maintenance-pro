@@ -36,8 +36,9 @@
       {% set dash_url = url_for('inv_comercial.dashboard_inventario') if mod_inv and (not mod_mant or perm.vendedor) else url_for('main.dashboard') %}
       {% set es_submenu_equipos = ep in ['main.activos_list', 'main.activos_new', 'main.activos_edit'] %}
       {% set es_submenu_tipos = ep.startswith('main.activos_tipo') %}
+        {% set es_submenu_cronogramas = ep in ['main.activos_cronogramas_index', 'main.activos_cronograma', 'main.activos_cronograma_pdf', 'main.activos_cronogramas_pdf_all'] %}
         {% set es_submenu_asset_health = ep.startswith('asset_health.') %}
-        {% set menu_activos_abierto = es_submenu_equipos or es_submenu_tipos or es_submenu_asset_health %}
+        {% set menu_activos_abierto = es_submenu_equipos or es_submenu_tipos or es_submenu_cronogramas or es_submenu_asset_health %}
       <nav class="nav flex-column flex-grow-1 py-2">
         {% if perm.solicitante %}
         <p class="sidebar-module-label px-3 small text-uppercase text-white-50 mb-1 mt-2">Solicitante</p>
@@ -83,6 +84,9 @@
                data-sidebar-group="activos" data-sidebar-in-section="{{ '1' if menu_activos_abierto else '0' }}">
             <a class="nav-link nav-link-sub {% if es_submenu_equipos %}active{% endif %}" href="{{ url_for('main.activos_list') }}">
               <i class="bi bi-cpu me-2"></i> Listado de activos
+            </a>
+            <a class="nav-link nav-link-sub {% if es_submenu_cronogramas %}active{% endif %}" href="{{ url_for('main.activos_cronogramas_index') }}">
+              <i class="bi bi-calendar3 me-2"></i> Cronogramas
             </a>
             <a class="nav-link nav-link-sub {% if es_submenu_tipos %}active{% endif %}" href="{{ url_for('main.activos_tipo_list') }}">
               <i class="bi bi-tags me-2"></i> Tipos de activo

@@ -6,9 +6,6 @@
 <span class="activos-header-count badge rounded-pill text-bg-light border" id="activosHeaderCount">{{ activos_kpis.total }} activos</span>
 {% if not perm.tecnico %}<a href="{{ url_for('main.activos_export') }}" class="btn btn-outline-secondary btn-sm">
   <i class="bi bi-file-earmark-spreadsheet"></i> Exportar Excel
-</a>
-<a href="{{ url_for('main.activos_cronogramas_index') }}" class="btn btn-outline-secondary btn-sm">
-  <i class="bi bi-calendar3"></i> Cronogramas
 </a>{% endif %}
 {% if perm.crear %}
 <a href="{{ url_for('main.activos_new') }}" class="btn btn-outline-primary btn-sm">

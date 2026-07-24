@@ -64,15 +64,17 @@
 <div class="table-responsive cronograma-wrap mb-4">
   <table class="table table-sm table-bordered cronograma-table align-middle mb-0">
     <thead>
-      <tr>
+      <tr class="cronograma-head-mes">
         <th rowspan="2" class="text-center">N°</th>
         <th rowspan="2">Instrucciones (actividad OT)</th>
         <th rowspan="2" class="text-center">F</th>
+        <th class="text-center cronograma-corner">MES</th>
         {% for mes in meses %}
         <th colspan="4" class="text-center">{{ mes }}</th>
         {% endfor %}
       </tr>
-      <tr>
+      <tr class="cronograma-head-sem">
+        <th class="text-center cronograma-corner">SEM.</th>
         {% for mes in meses %}
           {% for s in range(1, 5) %}
           <th class="text-center cronograma-sem">{{ s }}</th>
@@ -86,6 +88,7 @@
         <td class="text-center" rowspan="2"><strong>{{ fila.numero }}</strong></td>
         <td rowspan="2" class="cronograma-act">{{ fila.actividad }}</td>
         <td class="text-center" rowspan="2"><span class="badge text-bg-light border">{{ fila.frecuencia_codigo }}</span></td>
+        <td class="text-center cronograma-pe"><strong>PROG</strong></td>
         {% for m in range(1, 13) %}
           {% for s in range(1, 5) %}
           <td class="text-center cronograma-cell">{% if fila.celdas[m][s].prog %}<strong>{{ fila.celdas[m][s].prog }}</strong>{% endif %}</td>
@@ -93,6 +96,7 @@
         {% endfor %}
       </tr>
       <tr class="cronograma-ejec">
+        <td class="text-center cronograma-pe"><strong>EJEC</strong></td>
         {% for m in range(1, 13) %}
           {% for s in range(1, 5) %}
           <td class="text-center cronograma-cell cronograma-cell--ejec">{% if fila.celdas[m][s].ejec %}<span class="text-success fw-semibold">{{ fila.celdas[m][s].ejec }}</span>{% endif %}</td>
@@ -104,76 +108,71 @@
   </table>
 </div>
 
-<div class="row g-3 mb-4">
-  <div class="col-lg-7">
-    <div class="card border-0 shadow-sm h-100">
-      <div class="card-header bg-white"><strong>Seguimiento al cumplimiento · {{ anio }}</strong></div>
-      <div class="card-body table-responsive">
-        <table class="table table-sm mb-0">
-          <thead>
-            <tr>
-              <th></th>
-              <th class="text-center">Total</th>
-              {% for mes in meses %}
-              <th class="text-center">{{ mes }}</th>
-              {% endfor %}
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>Programado</td>
-              <td class="text-center">{{ cronograma.cumplimiento.prog_total }}</td>
-              {% for m in range(1, 13) %}
-              <td class="text-center">{{ cronograma.cumplimiento.por_mes[m].prog }}</td>
-              {% endfor %}
-            </tr>
-            <tr>
-              <td>Ejecutado</td>
-              <td class="text-center">{{ cronograma.cumplimiento.ejec_total }}</td>
-              {% for m in range(1, 13) %}
-              <td class="text-center">{{ cronograma.cumplimiento.por_mes[m].ejec }}</td>
-              {% endfor %}
-            </tr>
-            <tr>
-              <td>% cumplimiento</td>
-              <td class="text-center fw-semibold">
-                {% if cronograma.cumplimiento.pct_total is not none %}{{ cronograma.cumplimiento.pct_total }}%{% else %}—{% endif %}
-              </td>
-              {% for m in range(1, 13) %}
-              <td class="text-center">
-                {% if cronograma.cumplimiento.por_mes[m].pct is not none %}{{ cronograma.cumplimiento.por_mes[m].pct }}%{% else %}—{% endif %}
-              </td>
-              {% endfor %}
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </div>
-  <div class="col-lg-5">
-    <div class="card border-0 shadow-sm h-100">
-      <div class="card-header bg-white"><strong>Observaciones</strong></div>
-      <div class="card-body">
-        {% if cronograma.observaciones %}
-        <ul class="small mb-0 ps-3">
-          {% for o in cronograma.observaciones %}
-          <li class="mb-2">
-            <strong>{% if o.fecha %}{{ o.fecha.strftime('%d/%m/%Y') }}{% else %}—{% endif %}</strong>
-            ({{ o.numero }}): {{ o.texto }}
-          </li>
+<div class="card border-0 shadow-sm mb-3">
+  <div class="card-header bg-white"><strong>Seguimiento al cumplimiento · {{ anio }}</strong></div>
+  <div class="card-body table-responsive">
+    <table class="table table-sm mb-0">
+      <thead>
+        <tr>
+          <th></th>
+          <th class="text-center">Total</th>
+          {% for mes in meses %}
+          <th class="text-center">{{ mes }}</th>
           {% endfor %}
-        </ul>
-        {% else %}
-        <p class="text-muted small mb-0">Sin OT preventivas completadas en {{ anio }}.</p>
-        {% endif %}
-        <hr>
-        <p class="small text-muted mb-0">
-          <strong>Convenciones:</strong>
-          I Inspección · L Lubricación · A Ajuste · LZ Limpieza · MG General · R Revisión · C Calibración ·
-          F: S Semanal · M Mensual · BI · TR · SE · AN · ok = realizado.
-        </p>
-      </div>
-    </div>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Programado</td>
+          <td class="text-center">{{ cronograma.cumplimiento.prog_total }}</td>
+          {% for m in range(1, 13) %}
+          <td class="text-center">{{ cronograma.cumplimiento.por_mes[m].prog }}</td>
+          {% endfor %}
+        </tr>
+        <tr>
+          <td>Ejecutado</td>
+          <td class="text-center">{{ cronograma.cumplimiento.ejec_total }}</td>
+          {% for m in range(1, 13) %}
+          <td class="text-center">{{ cronograma.cumplimiento.por_mes[m].ejec }}</td>
+          {% endfor %}
+        </tr>
+        <tr>
+          <td>% cumplimiento</td>
+          <td class="text-center fw-semibold">
+            {% if cronograma.cumplimiento.pct_total is not none %}{{ cronograma.cumplimiento.pct_total }}%{% else %}—{% endif %}
+          </td>
+          {% for m in range(1, 13) %}
+          <td class="text-center">
+            {% if cronograma.cumplimiento.por_mes[m].pct is not none %}{{ cronograma.cumplimiento.por_mes[m].pct }}%{% else %}—{% endif %}
+          </td>
+          {% endfor %}
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="card border-0 shadow-sm mb-4">
+  <div class="card-header bg-white"><strong>Observaciones</strong></div>
+  <div class="card-body">
+    {% if cronograma.observaciones %}
+    <ul class="small mb-0 ps-3">
+      {% for o in cronograma.observaciones %}
+      <li class="mb-2">
+        <strong>{% if o.fecha %}{{ o.fecha.strftime('%d/%m/%Y') }}{% else %}—{% endif %}</strong>
+        ({{ o.numero }}): {{ o.texto }}
+      </li>
+      {% endfor %}
+    </ul>
+    {% else %}
+    <p class="text-muted small mb-0">Sin OT preventivas completadas en {{ anio }}.</p>
+    {% endif %}
+    <hr>
+    <p class="small text-muted mb-0">
+      <strong>Convenciones:</strong>
+      I Inspección · L Lubricación · A Ajuste · LZ Limpieza · MG General · R Revisión · C Calibración ·
+      F: S Semanal · M Mensual · BI · TR · SE · AN · ok = realizado.
+    </p>
   </div>
 </div>
 {% endif %}
@@ -182,9 +181,24 @@
 {% block head_extra %}
 <style>
 .cronograma-wrap { max-height: 70vh; overflow: auto; border: 1px solid #e5e7eb; border-radius: .5rem; }
-.cronograma-table { font-size: .72rem; min-width: 1100px; }
-.cronograma-table thead th { background: #042c53; color: #fff; position: sticky; top: 0; z-index: 2; }
+.cronograma-table { font-size: .72rem; min-width: 1180px; }
+.cronograma-table thead th {
+  background: #042c53;
+  color: #fff;
+  position: sticky;
+  z-index: 2;
+}
+.cronograma-head-mes th { top: 0; }
+.cronograma-head-sem th { top: 1.75rem; }
+.cronograma-corner { min-width: 2.6rem; letter-spacing: .02em; }
 .cronograma-sem { min-width: 1.4rem; padding: .15rem !important; }
+.cronograma-pe {
+  min-width: 2.6rem;
+  font-size: .65rem;
+  letter-spacing: .02em;
+  background: #fff7ed;
+}
+.cronograma-ejec .cronograma-pe { background: #ecfdf5; }
 .cronograma-act { min-width: 14rem; max-width: 22rem; }
 .cronograma-cell { min-width: 1.35rem; padding: .15rem !important; }
 .cronograma-ejec td { background: #f0fff4; }

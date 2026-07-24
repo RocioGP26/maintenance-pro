@@ -2565,9 +2565,16 @@ def activos_cronogramas_index():
     """Listado de cronogramas preventivos + PDF masivo."""
     from datetime import date as date_cls
 
+    from app.maintenance.cronograma_preventivo import query_machines_sin_plan_preventivo
+
     anio = request.args.get("anio", type=int) or date_cls.today().year
+    alerta = (request.args.get("alerta") or "").strip().lower()
+    if alerta == "sin_preventivo":
+        q = query_machines_sin_plan_preventivo(getattr(current_user, "empresa_id", None))
+    else:
+        q = _filter_empresa(Machine.query, Machine)
     machines = (
-        _scope_machines_current_user(_filter_empresa(Machine.query, Machine))
+        _scope_machines_current_user(q)
         .order_by(Machine.codigo)
         .all()
     )
@@ -2575,6 +2582,7 @@ def activos_cronogramas_index():
         "activos/cronogramas_index.html",
         machines=machines,
         anio=anio,
+        alerta=alerta,
     )
 
 

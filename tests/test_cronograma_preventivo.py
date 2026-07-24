@@ -8,6 +8,7 @@ from datetime import date, datetime
 from app import create_app, db
 from app.maintenance.cronograma_preventivo import (
     construir_cronograma,
+    query_machines_sin_plan_preventivo,
     semana_del_mes,
     templates_for_sector,
 )
@@ -120,6 +121,56 @@ class TestCronogramaPreventivo(unittest.TestCase):
         self.assertEqual(crono.cumplimiento["prog_total"], 2)
         self.assertEqual(crono.cumplimiento["ejec_total"], 1)
         self.assertTrue(crono.observaciones)
+
+    def test_fechas_bimensual_omite_meses_pasados(self) -> None:
+        from app.preventive_maintenance import fechas_preventivas_anio
+
+        # Cadencia anclada al 1-ene: ene, mar, may, jul, sep, nov
+        todas = fechas_preventivas_anio(date(2026, 1, 1), 2, "meses", 2026)
+        self.assertEqual(
+            [d.month for d in todas],
+            [1, 3, 5, 7, 9, 11],
+        )
+        # A mitad de año (23-jul) solo quedan sep y nov
+        pendientes = fechas_preventivas_anio(
+            date(2026, 1, 1), 2, "meses", 2026, desde=date(2026, 7, 23)
+        )
+        self.assertEqual([d.month for d in pendientes], [9, 11])
+        self.assertTrue(all(d >= date(2026, 7, 23) for d in pendientes))
+
+    def test_query_machines_sin_plan_preventivo(self) -> None:
+        sin_plan = Machine(
+            empresa_id=self.emp.id,
+            machine_type_id=self.mt.id,
+            codigo="TP-069",
+            nombre="SIN PLAN",
+            requiere_mantenimiento=True,
+        )
+        sin_req = Machine(
+            empresa_id=self.emp.id,
+            machine_type_id=self.mt.id,
+            codigo="TP-070",
+            nombre="NO REQUIERE",
+            requiere_mantenimiento=False,
+        )
+        db.session.add_all([sin_plan, sin_req])
+        get_or_create_plan(
+            machine_id=self.machine.id,
+            empresa_id=self.emp.id,
+            actividad="Lubricación",
+            frecuencia_valor=1,
+            frecuencia_unidad="meses",
+            tipo_codigo="L",
+        )
+        db.session.commit()
+
+        ids = {
+            m.id
+            for m in query_machines_sin_plan_preventivo(self.emp.id).all()
+        }
+        self.assertIn(sin_plan.id, ids)
+        self.assertNotIn(self.machine.id, ids)
+        self.assertNotIn(sin_req.id, ids)
 
 
 if __name__ == "__main__":

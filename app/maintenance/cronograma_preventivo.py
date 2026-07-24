@@ -255,6 +255,23 @@ def templates_for_sector(sector: str | None) -> tuple[tuple[str, str, str], ...]
     return SECTOR_PREVENTIVE_TEMPLATES.get(key) or _DEFAULT_TEMPLATES
 
 
+def query_machines_sin_plan_preventivo(empresa_id: int | None = None):
+    """Activos que requieren mantenimiento y no tienen plan preventivo activo."""
+    from sqlalchemy import exists
+
+    tiene_plan_activo = exists().where(
+        PreventiveMaintenancePlan.machine_id == Machine.id,
+        PreventiveMaintenancePlan.activo.is_(True),
+    )
+    q = Machine.query.filter(
+        Machine.requiere_mantenimiento.is_(True),
+        ~tiene_plan_activo,
+    )
+    if empresa_id is not None:
+        q = q.filter(Machine.empresa_id == empresa_id)
+    return q
+
+
 def aplicar_plantillas_sector(
     machine: Machine,
     *,
@@ -286,7 +303,11 @@ def generar_ot_cronograma_anio(
     fecha_inicio: date | None = None,
     technician_id: int | None = None,
 ) -> tuple[int, list[str]]:
-    """Genera OT preventivas del año para todos los planes activos del activo."""
+    """Genera OT preventivas del año para todos los planes activos del activo.
+
+    Conserva la cadencia del plan (ancla 1-ene) y omite fechas ya vencidas
+    cuando el año generado es el año en curso.
+    """
     inicio = fecha_inicio or date(anio, 1, 1)
     if inicio.year != anio:
         inicio = date(anio, 1, 1)
@@ -311,6 +332,8 @@ def generar_ot_cronograma_anio(
             ubicacion=machine.ubicacion or "",
             area=machine.area or "",
             omitir_validacion_actividad_abierta=True,
+            anio=anio,
+            omitir_fechas_pasadas=True,
         )
         if err and not ordenes:
             # Si ya existen OT del año, no es error bloqueante

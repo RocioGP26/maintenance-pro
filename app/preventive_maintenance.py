@@ -194,9 +194,18 @@ def _add_frecuencia(fecha: date, valor: int, unidad: str) -> date:
 
 
 def fechas_preventivas_anio(
-    fecha_inicio: date, valor: int, unidad: str, anio: Optional[int] = None
+    fecha_inicio: date,
+    valor: int,
+    unidad: str,
+    anio: Optional[int] = None,
+    *,
+    desde: Optional[date] = None,
 ) -> List[date]:
-    """Fechas programadas desde el ancla hasta fin de año según la frecuencia."""
+    """Fechas programadas desde el ancla hasta fin de año según la frecuencia.
+
+    ``desde`` (opcional) descarta fechas anteriores — p. ej. al generar OT a
+    mitad de año solo se programan meses/semanas pendientes.
+    """
     anio = anio or date.today().year
     fin_anio = date(anio, 12, 31)
     actual = fecha_inicio
@@ -212,7 +221,8 @@ def fechas_preventivas_anio(
 
     fechas: List[date] = []
     while actual.year == anio and actual <= fin_anio and limite > 0:
-        fechas.append(actual)
+        if desde is None or actual >= desde:
+            fechas.append(actual)
         siguiente = _add_frecuencia(actual, valor, unidad)
         if siguiente <= actual:
             break
@@ -256,10 +266,13 @@ def crear_programacion_preventiva_anio(
     recibido_por: str = "",
     empresa_tercerizada: str = "",
     omitir_validacion_actividad_abierta: bool = False,
+    anio: Optional[int] = None,
+    omitir_fechas_pasadas: bool = True,
 ) -> Tuple[List[WorkOrder], Optional[str]]:
     """
-    Crea las OT preventivas del año en curso según la frecuencia indicada.
+    Crea las OT preventivas del año según la frecuencia indicada.
     Omite fechas que ya tengan OT en el mismo plan.
+    Por defecto no crea OT con fecha programada anterior a hoy (año en curso).
     """
     actividad = (titulo or "").strip()
     if not actividad:
@@ -277,11 +290,28 @@ def crear_programacion_preventiva_anio(
         unidad = "meses"
     valor = max(1, int(frecuencia_valor or 1))
 
-    anio = date.today().year
-    fechas = fechas_preventivas_anio(fecha_inicio, valor, unidad, anio)
-    if not fechas:
+    anio_obj = anio or date.today().year
+    hoy = date.today()
+    desde: Optional[date] = None
+    if omitir_fechas_pasadas and anio_obj == hoy.year:
+        desde = hoy
+    elif omitir_fechas_pasadas and anio_obj < hoy.year:
         return [], (
-            f"No hay fechas de mantenimiento en {anio} con la primera fecha indicada "
+            f"No se generan OT para {anio_obj}: el año ya concluyó. "
+            "Selecciona el año en curso o uno futuro."
+        )
+
+    fechas = fechas_preventivas_anio(
+        fecha_inicio, valor, unidad, anio_obj, desde=desde
+    )
+    if not fechas:
+        if desde and anio_obj == hoy.year:
+            return [], (
+                f"No quedan mantenimientos pendientes en {anio_obj} "
+                f"a partir de hoy ({hoy.strftime('%d/%m/%Y')}) con la frecuencia indicada."
+            )
+        return [], (
+            f"No hay fechas de mantenimiento en {anio_obj} con la primera fecha indicada "
             f"({fecha_inicio.strftime('%d/%m/%Y')})."
         )
 
@@ -323,7 +353,7 @@ def crear_programacion_preventiva_anio(
 
     if not ordenes:
         return [], (
-            f"Ya existen OT preventivas para todas las fechas de {anio} "
+            f"Ya existen OT preventivas para todas las fechas pendientes de {anio_obj} "
             f"con esta actividad en el equipo."
         )
     return ordenes, None

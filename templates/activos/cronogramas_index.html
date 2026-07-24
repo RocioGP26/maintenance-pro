@@ -4,6 +4,7 @@
 
 {% block header_toolbar %}
 <form class="d-flex gap-2 align-items-center me-2" method="get">
+  {% if alerta %}<input type="hidden" name="alerta" value="{{ alerta }}">{% endif %}
   <label class="small text-muted mb-0" for="anio">Año</label>
   <input type="number" class="form-control form-control-sm" style="width:6rem" id="anio" name="anio"
          value="{{ anio }}" min="2020" max="2100">
@@ -22,6 +23,19 @@
   Cronograma anual de mantenimiento <strong>preventivo</strong> por activo (matriz ENE–DIC · semanas 1–4).
   PROG se llena con las OT programadas; EJEC al completar o cerrar la OT.
 </p>
+
+{% if alerta == 'sin_preventivo' %}
+<div class="alert alert-warning d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+  <div>
+    <strong>Sin preventivo programado:</strong>
+    activos que requieren mantenimiento y aún no tienen un plan preventivo activo.
+    Abre el cronograma del activo para aplicar la plantilla del sector.
+  </div>
+  <a href="{{ url_for('main.activos_cronogramas_index', anio=anio) }}" class="btn btn-sm btn-outline-secondary">
+    Ver todos
+  </a>
+</div>
+{% endif %}
 
 <div class="card border-0 shadow-sm">
   <div class="table-responsive">
@@ -50,7 +64,15 @@
           </td>
         </tr>
         {% else %}
-        <tr><td colspan="4" class="text-center text-muted py-4">No hay activos registrados.</td></tr>
+        <tr>
+          <td colspan="4" class="text-center text-muted py-4">
+            {% if alerta == 'sin_preventivo' %}
+            No hay activos pendientes de programar preventivo.
+            {% else %}
+            No hay activos registrados.
+            {% endif %}
+          </td>
+        </tr>
         {% endfor %}
       </tbody>
     </table>
