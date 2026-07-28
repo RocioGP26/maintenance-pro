@@ -46,6 +46,25 @@ def backup_db():
     click.echo(f"Backup guardado en: {path}")
 
 
+@click.command("backup-storage")
+@click.option(
+    "--manifest",
+    default="storage.manifest.json",
+    show_default=True,
+    type=click.Path(dir_okay=False, path_type=str),
+)
+def backup_storage_command(manifest: str):
+    """Replica S3 al bucket de recuperación y genera su manifiesto."""
+    from app.storage_backup import backup_s3_storage
+
+    stats = backup_s3_storage(manifest)
+    click.echo(
+        "Backup S3 completado: "
+        f"{stats['copied']} copiados, {stats['skipped']} sin cambios, "
+        f"{stats['object_count']} totales."
+    )
+
+
 @click.command("verify-backup")
 @click.argument("path", type=click.Path(exists=True, dir_okay=False, path_type=str))
 def verify_backup_command(path: str):
@@ -130,6 +149,7 @@ def webhooks_prune(empresa_id: int | None):
 def register_cli(app) -> None:
     app.cli.add_command(maintenance)
     app.cli.add_command(backup_db)
+    app.cli.add_command(backup_storage_command)
     app.cli.add_command(verify_backup_command)
     app.cli.add_command(restore_db_command)
     app.cli.add_command(migrate_storage_command)
