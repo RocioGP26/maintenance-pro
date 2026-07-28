@@ -5,32 +5,188 @@ on:
     branches: [main, develop]
   push:
     branches: [develop]
+  workflow_dispatch:
 
 permissions:
   contents: read
 
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
-  tests:
+  sqlite:
+    name: Unit · SQLite
     runs-on: ubuntu-latest
+    timeout-minutes: 12
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
       - name: Configurar Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
           cache: pip
-
       - name: Instalar dependencias
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-
       - name: Validar sintaxis
         run: python -m compileall -q app scripts tests
-
       - name: Ejecutar pruebas
         env:
           FLASK_CONFIG: testing
         run: python -m unittest discover -s tests -q
+
+  postgresql:
+    name: Integration · PostgreSQL 18
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    services:
+      postgres:
+        image: postgres:18
+        env:
+          POSTGRES_DB: roustix_ci
+          POSTGRES_USER: roustix_ci
+          POSTGRES_PASSWORD: roustix_ci_password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U roustix_ci -d roustix_ci"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+    env:
+      FLASK_CONFIG: testing
+      TEST_DATABASE_URL: postgresql+psycopg://roustix_ci:roustix_ci_password@127.0.0.1:5432/roustix_ci
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Instalar dependencias
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      - name: Aplicar migraciones desde cero
+        run: flask --app run:app db upgrade
+      - name: Verificar una sola cabeza Alembic
+        shell: bash
+        run: |
+          set -euo pipefail
+          HEADS=$(flask --app run:app db heads | grep -c '(head)')
+          test "$HEADS" = "1"
+          flask --app run:app db current
+      - name: Ejecutar suite completa sobre PostgreSQL
+        run: python -m unittest discover -s tests -q
+
+  e2e:
+    name: E2E · Gunicorn + PostgreSQL
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    services:
+      postgres:
+        image: postgres:18
+        env:
+          POSTGRES_DB: roustix_e2e
+          POSTGRES_USER: roustix_e2e
+          POSTGRES_PASSWORD: roustix_e2e_password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U roustix_e2e -d roustix_e2e"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+    env:
+      FLASK_CONFIG: testing
+      TEST_DATABASE_URL: postgresql+psycopg://roustix_e2e:roustix_e2e_password@127.0.0.1:5432/roustix_e2e
+      E2E_BASE_URL: http://127.0.0.1:8000
+      PLATFORM_MFA_REQUIRED: "true"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Instalar dependencias
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      - name: Generar credenciales efímeras
+        shell: bash
+        run: |
+          set -euo pipefail
+          e2e_password="$(python -c 'import secrets; print(secrets.token_urlsafe(32))')"
+          platform_key="$(python -c 'import secrets; print(secrets.token_urlsafe(48))')"
+          platform_totp="$(python -c 'import pyotp; print(pyotp.random_base32())')"
+          echo "::add-mask::$e2e_password"
+          echo "::add-mask::$platform_key"
+          echo "::add-mask::$platform_totp"
+          echo "E2E_USER_PASSWORD=$e2e_password" >> "$GITHUB_ENV"
+          echo "PLATFORM_ADMIN_KEY=$platform_key" >> "$GITHUB_ENV"
+          echo "PLATFORM_ADMIN_TOTP_SECRET=$platform_totp" >> "$GITHUB_ENV"
+      - name: Preparar PostgreSQL y semilla efímera
+        run: |
+          flask --app run:app db upgrade
+          python -m scripts.ci_seed_e2e
+      - name: Iniciar Roustix con Gunicorn
+        shell: bash
+        run: |
+          set -euo pipefail
+          gunicorn --bind 127.0.0.1:8000 --workers 1 --timeout 60 --access-logfile - run:app > gunicorn-e2e.log 2>&1 &
+          echo $! > gunicorn-e2e.pid
+          for attempt in {1..30}; do
+            if curl --fail --silent http://127.0.0.1:8000/ > /dev/null; then
+              exit 0
+            fi
+            sleep 1
+          done
+          cat gunicorn-e2e.log
+          exit 1
+      - name: Ejecutar flujos HTTP críticos
+        run: python -m scripts.e2e_smoke
+      - name: Conservar log si falla
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: roustix-e2e-log-${{ github.run_id }}
+          path: gunicorn-e2e.log
+          if-no-files-found: error
+          retention-days: 14
+
+  security:
+    name: Security gates
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Checkout con historial
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Instalar analizadores
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install -r requirements-ci.txt
+      - name: Auditar dependencias Python
+        run: pip-audit -r requirements.txt --strict
+      - name: Analizar código Python
+        run: bandit -q -r app scripts -x tests -lll
+      - name: Buscar secretos versionados
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Revisar cambios de dependencias
+        if: github.event_name == 'pull_request'
+        uses: actions/dependency-review-action@v4
