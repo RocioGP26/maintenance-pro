@@ -10,6 +10,12 @@ La suite documental mantiene un ciclo independiente en
 
 ### Added
 
+- Espacio reservado para cambios aún no publicados.
+
+## [1.0.15] - 2026-07-28
+
+### Added
+
 - Sprint 23.1: réplica incremental del almacenamiento S3 a un bucket de
   recuperación independiente, manifiestos auditables y comando
   `flask backup-storage`.
@@ -26,6 +32,10 @@ La suite documental mantiene un ciclo independiente en
   paquete `app` dentro de GitHub Actions.
 - El workflow de respaldo instala las dependencias fijadas en `requirements.txt`
   antes de cargar los módulos de Roustix.
+
+### Notes
+
+- feat: backup y recuperacion de produccion (Sprint 23.1) (#12).
 
 ## [1.0.14] - 2026-07-27
 
@@ -255,7 +265,7 @@ La suite documental mantiene un ciclo independiente en
 
 - Este release formaliza el versionado; no modifica funcionalidades de negocio.
 
-[Unreleased]: https://github.com/RocioGP26/maintenance-pro/compare/v1.0.14...HEAD
+[Unreleased]: https://github.com/RocioGP26/maintenance-pro/compare/v1.0.15...HEAD
 [1.0.0]: https://github.com/RocioGP26/maintenance-pro/releases/tag/v1.0.0
 [1.0.1]: https://github.com/RocioGP26/maintenance-pro/compare/v1.0.0...v1.0.1
 [1.0.2]: https://github.com/RocioGP26/maintenance-pro/compare/v1.0.1...v1.0.2
@@ -271,3 +281,4 @@ La suite documental mantiene un ciclo independiente en
 [1.0.12]: https://github.com/RocioGP26/maintenance-pro/compare/v1.0.11...v1.0.12
 [1.0.13]: https://github.com/RocioGP26/maintenance-pro/compare/v1.0.12...v1.0.13
 [1.0.14]: https://github.com/RocioGP26/maintenance-pro/compare/v1.0.13...v1.0.14
+[1.0.15]: https://github.com/RocioGP26/maintenance-pro/compare/v1.0.14...v1.0.15
