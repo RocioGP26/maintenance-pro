@@ -6,7 +6,7 @@
 
 | Producto | Versión actual | Fuente canónica | Changelog | Tag Git |
 |---|---:|---|---|---|
-| **Aplicación Flask** | **v1.0.16** | [`app/version.py`](../app/version.py) | [`CHANGELOG.md`](../CHANGELOG.md) | `v1.0.14` |
+| **Aplicación Flask** | **v1.0.17** | [`app/version.py`](../app/version.py) | [`CHANGELOG.md`](../CHANGELOG.md) | `v1.0.14` |
 | **Suite documental** | **v1.22.5** | Este archivo | [changelog.md](changelog.md) | `docs-vX.Y` |
 
 La aplicación y la documentación son productos versionados de forma

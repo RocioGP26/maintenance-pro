@@ -10,6 +10,12 @@ La suite documental mantiene un ciclo independiente en
 
 ### Added
 
+- Espacio reservado para cambios aún no publicados.
+
+## [1.0.17] - 2026-07-28
+
+### Added
+
 - Sprint 23.3: CI paralelo sobre SQLite y PostgreSQL 18, incluyendo migraciones
   desde una base vacía y validación de una sola cabeza Alembic.
 - Smoke E2E HTTP contra Gunicorn para landing, login tenant, sesión administrada,
@@ -28,6 +34,10 @@ La suite documental mantiene un ciclo independiente en
   conexiones PostgreSQL durante la suite.
 - La semilla E2E crea una suscripción activa y GitHub Actions enmascara todas
   las credenciales efímeras antes de exportarlas.
+
+### Notes
+
+- feat: CI PostgreSQL, E2E y gates de seguridad (Sprint 23.3) (#14).
 
 ## [1.0.16] - 2026-07-28
 
@@ -304,7 +314,7 @@ La suite documental mantiene un ciclo independiente en
 
 - Este release formaliza el versionado; no modifica funcionalidades de negocio.
 
-[Unreleased]: https://github.com/RocioGP26/maintenance-pro/compare/v1.0.16...HEAD
+[Unreleased]: https://github.com/RocioGP26/maintenance-pro/compare/v1.0.17...HEAD
 [1.0.0]: https://github.com/RocioGP26/maintenance-pro/releases/tag/v1.0.0
 [1.0.1]: https://github.com/RocioGP26/maintenance-pro/compare/v1.0.0...v1.0.1
 [1.0.2]: https://github.com/RocioGP26/maintenance-pro/compare/v1.0.1...v1.0.2
@@ -322,3 +332,4 @@ La suite documental mantiene un ciclo independiente en
 [1.0.14]: https://github.com/RocioGP26/maintenance-pro/compare/v1.0.13...v1.0.14
 [1.0.15]: https://github.com/RocioGP26/maintenance-pro/compare/v1.0.14...v1.0.15
 [1.0.16]: https://github.com/RocioGP26/maintenance-pro/compare/v1.0.15...v1.0.16
+[1.0.17]: https://github.com/RocioGP26/maintenance-pro/compare/v1.0.16...v1.0.17
