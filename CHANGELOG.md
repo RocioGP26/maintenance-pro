@@ -12,6 +12,12 @@ La suite documental mantiene un ciclo independiente en
 
 - Espacio reservado para cambios aún no publicados.
 
+## [1.0.14] - 2026-07-27
+
+### Changed
+
+- Docs publicos solo en /docs/, recuperar contrasena por correo y manual de usuario /manual.
+
 ## [1.0.13] - 2026-07-23
 
 ### Changed
@@ -234,7 +240,7 @@ La suite documental mantiene un ciclo independiente en
 
 - Este release formaliza el versionado; no modifica funcionalidades de negocio.
 
-[Unreleased]: https://github.com/RocioGP26/maintenance-pro/compare/v1.0.13...HEAD
+[Unreleased]: https://github.com/RocioGP26/maintenance-pro/compare/v1.0.14...HEAD
 [1.0.0]: https://github.com/RocioGP26/maintenance-pro/releases/tag/v1.0.0
 [1.0.1]: https://github.com/RocioGP26/maintenance-pro/compare/v1.0.0...v1.0.1
 [1.0.2]: https://github.com/RocioGP26/maintenance-pro/compare/v1.0.1...v1.0.2
@@ -249,3 +255,4 @@ La suite documental mantiene un ciclo independiente en
 [1.0.11]: https://github.com/RocioGP26/maintenance-pro/compare/v1.0.10...v1.0.11
 [1.0.12]: https://github.com/RocioGP26/maintenance-pro/compare/v1.0.11...v1.0.12
 [1.0.13]: https://github.com/RocioGP26/maintenance-pro/compare/v1.0.12...v1.0.13
+[1.0.14]: https://github.com/RocioGP26/maintenance-pro/compare/v1.0.13...v1.0.14
