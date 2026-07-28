@@ -56,8 +56,8 @@ jobs:
           python-version: "3.13"
           cache: pip
 
-      - name: Instalar dependencias de almacenamiento
-        run: pip install boto3==1.35.99 python-dotenv==1.0.1
+      - name: Instalar dependencias de Roustix
+        run: pip install -r requirements.txt
 
       - name: Validar configuración obligatoria
         shell: bash

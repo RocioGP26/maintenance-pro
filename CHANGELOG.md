@@ -24,6 +24,8 @@ La suite documental mantiene un ciclo independiente en
   `pg_session_jwt` que pertenece a Neon, manteniendo intacto el dump original.
 - El respaldo S3 se ejecuta como módulo Python para resolver correctamente el
   paquete `app` dentro de GitHub Actions.
+- El workflow de respaldo instala las dependencias fijadas en `requirements.txt`
+  antes de cargar los módulos de Roustix.
 
 ## [1.0.14] - 2026-07-27
 
