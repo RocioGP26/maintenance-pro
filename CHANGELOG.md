@@ -8,9 +8,9 @@ La suite documental mantiene un ciclo independiente en
 
 ## [Unreleased]
 
-### Added
+### Fixed
 
-- Espacio reservado para cambios aún no publicados.
+- Ignorar `data/object_storage/` en Git (archivos locales de informes y adjuntos).
 
 ## [1.0.15] - 2026-07-28
 
