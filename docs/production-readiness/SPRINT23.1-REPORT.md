@@ -8,6 +8,8 @@
 - Workflow diario con cliente oficial PostgreSQL 18.
 - Dump custom e inspección mediante `pg_restore --list`.
 - Restauración automática en PostgreSQL 18 aislado.
+- Restauración portátil compatible con dumps de Neon, sin retirar del respaldo
+  original la extensión de infraestructura `pg_session_jwt`.
 - Verificación de Alembic y tablas críticas.
 - Réplica incremental e inmutable de objetos S3 sin propagar eliminaciones.
 - Verificación por ETag y tamaño de objetos.
@@ -26,19 +28,9 @@
 
 ## Pendiente operativo
 
-GitHub Actions solo tiene configurados `DATABASE_URL` y `SECRET_KEY`. Antes de
-ejecutar el nuevo workflow deben configurarse:
-
-- `STORAGE_BUCKET`
-- `STORAGE_ENDPOINT_URL`
-- `STORAGE_REGION`
-- `STORAGE_ACCESS_KEY_ID`
-- `STORAGE_SECRET_ACCESS_KEY`
-- `STORAGE_BACKUP_BUCKET`
-- `STORAGE_BACKUP_ENDPOINT_URL`
-- `STORAGE_BACKUP_REGION`
-- `STORAGE_BACKUP_ACCESS_KEY_ID`
-- `STORAGE_BACKUP_SECRET_ACCESS_KEY`
+GitHub Actions tiene configurados los secretos requeridos. El bucket operativo
+y el bucket de recuperación ya fueron separados. Se debe completar una
+ejecución remota exitosa que valide la restauración y la réplica entre ambos.
 
 ## Definition of Done
 

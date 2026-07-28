@@ -20,6 +20,8 @@ La suite documental mantiene un ciclo independiente en
 
 - El workflow `Backup Neon` usa herramientas PostgreSQL 18 y conserva dump,
   índice y manifiesto S3 tanto en el bucket de recuperación como en GitHub.
+- La restauración temporal omite únicamente la extensión de infraestructura
+  `pg_session_jwt` que pertenece a Neon, manteniendo intacto el dump original.
 
 ## [1.0.14] - 2026-07-27
 

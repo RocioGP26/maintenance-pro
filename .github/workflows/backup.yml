@@ -98,12 +98,22 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          # Neon incorpora extensiones de infraestructura que no están
+          # disponibles en la imagen oficial de PostgreSQL. El dump original
+          # permanece completo; solo se omiten en esta restauración portátil.
+          PLATFORM_EXTENSION_PATTERN='(EXTENSION - pg_session_jwt|COMMENT - EXTENSION pg_session_jwt)([[:space:]]|$)'
+          EXCLUDED_ENTRIES=$(grep -Ec "$PLATFORM_EXTENSION_PATTERN" database.manifest || true)
+          grep -Ev "$PLATFORM_EXTENSION_PATTERN" database.manifest > database.restore.list
+          test -s database.restore.list
+          echo "Entradas de infraestructura Neon omitidas en la prueba: $EXCLUDED_ENTRIES"
+
           docker run --rm --network host \
             -v "$PWD:/backup" \
             -e PGPASSWORD=restore_password \
             postgres:18 \
             pg_restore --exit-on-error --no-owner --no-acl \
               -h 127.0.0.1 -p 5432 -U restore_user -d roustix_restore \
+              --use-list=/backup/database.restore.list \
               /backup/database.dump
 
           TABLES=$(docker run --rm --network host -e PGPASSWORD=restore_password postgres:18 \
@@ -130,6 +140,7 @@ jobs:
           path: |
             database.dump
             database.manifest
+            database.restore.list
             storage.manifest.json
           if-no-files-found: error
           retention-days: 30

@@ -48,10 +48,17 @@ El workflow `.github/workflows/backup.yml` realiza:
 
 1. dump remoto con `postgres:18`;
 2. inspección con `pg_restore --list`;
-3. restauración en PostgreSQL 18 temporal;
-4. consultas de integridad sobre Alembic y tablas críticas;
-5. réplica incremental de S3;
-6. publicación de los manifiestos y el dump como artefacto protegido.
+3. creación de una lista de restauración portátil que omite únicamente
+   extensiones de infraestructura de Neon no disponibles en PostgreSQL oficial;
+4. restauración en PostgreSQL 18 temporal, conservando intacto el dump original;
+5. consultas de integridad sobre Alembic y tablas críticas;
+6. réplica incremental de S3;
+7. publicación de los manifiestos y el dump como artefacto protegido.
+
+Actualmente la única exclusión portátil permitida es `pg_session_jwt`. Roustix
+no depende de esa extensión: Neon la administra como parte de su plataforma. La
+exclusión no modifica `database.dump`, de modo que una recuperación sobre Neon
+conserva toda la definición original.
 
 ## Simulacro manual
 
