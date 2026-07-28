@@ -181,6 +181,15 @@ class TestingConfig(Config):
     # Tests unitarios no simulan login de docs salvo test_docs_access
     DOCS_ACCESS_POLICY = os.environ.get("DOCS_ACCESS_POLICY", "open").strip().lower() or "open"
 
+    @staticmethod
+    def init_app(app) -> None:
+        """Permite ejecutar la misma suite contra PostgreSQL sin afectar el local."""
+        test_database_url = os.environ.get("TEST_DATABASE_URL", "").strip()
+        if not test_database_url:
+            return
+        app.config["SQLALCHEMY_DATABASE_URI"] = normalize_database_url(test_database_url)
+        app.config["SQLALCHEMY_ENGINE_OPTIONS"] = engine_options_for(test_database_url)
+
 
 config_by_name: dict[str, type[Config]] = {
     "development": DevelopmentConfig,

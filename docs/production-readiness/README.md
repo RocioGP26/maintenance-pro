@@ -11,7 +11,7 @@ clientes reales, sin incorporar funcionalidades nuevas de negocio.
 | --- | --- | --- |
 | 23.1 | Backup y recuperación comprobable | Implementado · validación remota aprobada |
 | 23.2 | Hardening de identidad y plataforma | Implementado · validación local aprobada |
-| 23.3 | CI PostgreSQL, seguridad y pruebas E2E | Pendiente |
+| 23.3 | CI PostgreSQL, seguridad y pruebas E2E | Implementado · validación local aprobada |
 | 23.4 | Observabilidad, workers y operación | Pendiente |
 | 23.5 | Dominio, correo, UAT y salida controlada | Pendiente |
 

@@ -10,7 +10,17 @@ La suite documental mantiene un ciclo independiente en
 
 ### Added
 
-- Espacio reservado para cambios aún no publicados.
+- Sprint 23.3: CI paralelo sobre SQLite y PostgreSQL 18, incluyendo migraciones
+  desde una base vacía y validación de una sola cabeza Alembic.
+- Smoke E2E HTTP contra Gunicorn para landing, login tenant, sesión administrada,
+  logout y MFA de plataforma.
+- Gates de seguridad con pip-audit, Bandit, Gitleaks y Dependency Review.
+
+### Changed
+
+- Testing admite una base PostgreSQL aislada mediante `TEST_DATABASE_URL`.
+- Flask, python-dotenv y PyJWT se actualizaron a versiones sin las
+  vulnerabilidades detectadas por pip-audit.
 
 ## [1.0.16] - 2026-07-28
 
