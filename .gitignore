@@ -25,6 +25,8 @@ backups/
 static/uploads/
 # Legacy: BDs por tenant (arquitectura antigua; ya no se usa)
 data/tenants/
+# Almacenamiento local de archivos (informes, adjuntos, etc.)
+data/object_storage/
 
 # IDE
 .idea/

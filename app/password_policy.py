@@ -4,10 +4,11 @@ from __future__ import annotations
 
 import re
 
-MIN_PASSWORD_LENGTH = 10
+MIN_PASSWORD_LENGTH = 12
+MAX_PASSWORD_LENGTH = 128
 
 PASSWORD_REQUIREMENTS_TEXT = (
-    f"Mínimo {MIN_PASSWORD_LENGTH} caracteres, con al menos una letra y un número."
+    f"Entre {MIN_PASSWORD_LENGTH} y {MAX_PASSWORD_LENGTH} caracteres, con al menos una letra y un número."
 )
 
 
@@ -17,6 +18,8 @@ def validar_password(password: str) -> str | None:
         return "La contraseña es obligatoria."
     if len(password) < MIN_PASSWORD_LENGTH:
         return f"La contraseña debe tener al menos {MIN_PASSWORD_LENGTH} caracteres."
+    if len(password) > MAX_PASSWORD_LENGTH:
+        return f"La contraseña no puede superar {MAX_PASSWORD_LENGTH} caracteres."
     if not re.search(r"[A-Za-z]", password):
         return "La contraseña debe incluir al menos una letra."
     if not re.search(r"\d", password):

@@ -12,6 +12,7 @@ from app.platform_service import estado_ciclo_empresa
 
 ACTIVITY_LABELS = {
     "login": "Inicio de sesión",
+    "login_failed": "Inicio de sesión fallido",
     "logout": "Cierre de sesión",
     "session_expired": "Sesión expirada",
     "session_revoked": "Sesión revocada",
@@ -30,8 +31,7 @@ ACTIVITY_LABELS = {
 
 
 def _client_ip() -> str:
-    forwarded = (request.headers.get("X-Forwarded-For") or "").split(",")[0].strip()
-    return forwarded or (request.remote_addr or "")
+    return request.remote_addr or ""
 
 
 def registrar_actividad_tenant(

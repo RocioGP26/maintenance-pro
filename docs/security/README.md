@@ -36,3 +36,13 @@ mantenerse cookies `Secure`, `HttpOnly` y `SameSite=Lax`, ya configuradas en
 `ProductionConfig`.
 
 Ver también [reporte de Sprint 18](SPRINT18-REPORT.md).
+
+## Hardening de plataforma y API
+
+Sprint 23.2 añade MFA TOTP obligatorio para el panel privilegiado en producción,
+timeouts propios de 15 minutos por inactividad y 120 minutos absolutos, además
+de JWT revocables que revalidan la identidad y el tenant en cada petición.
+
+Ver [charter](../production-readiness/SPRINT23.2-CHARTER.md),
+[auditoría](../production-readiness/SPRINT23.2-AUDIT.md) y
+[reporte de cierre](../production-readiness/SPRINT23.2-REPORT.md).

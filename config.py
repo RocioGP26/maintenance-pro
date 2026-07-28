@@ -93,6 +93,15 @@ class Config:
     EMAIL_VERIFICATION_RESEND_SECONDS = _env_int("EMAIL_VERIFICATION_RESEND_SECONDS", 60)
     PASSWORD_RESET_TTL_MINUTES = _env_int("PASSWORD_RESET_TTL_MINUTES", 60)
 
+    # Acceso privilegiado de plataforma.
+    PLATFORM_ADMIN_KEY = os.environ.get("PLATFORM_ADMIN_KEY", "").strip()
+    PLATFORM_ADMIN_TOTP_SECRET = os.environ.get("PLATFORM_ADMIN_TOTP_SECRET", "").strip()
+    PLATFORM_MFA_REQUIRED = _env_flag("PLATFORM_MFA_REQUIRED", False)
+    PLATFORM_SESSION_IDLE_MINUTES = _env_int("PLATFORM_SESSION_IDLE_MINUTES", 15)
+    PLATFORM_SESSION_ABSOLUTE_MINUTES = _env_int("PLATFORM_SESSION_ABSOLUTE_MINUTES", 120)
+    PLATFORM_MFA_PENDING_MINUTES = _env_int("PLATFORM_MFA_PENDING_MINUTES", 5)
+    JWT_EXPIRES_MINUTES = _env_int("JWT_EXPIRES_MINUTES", 480)
+
     # Logging estructurado
     LOG_LEVEL = os.environ.get("LOG_LEVEL", "INFO").upper()
     LOG_JSON = _env_flag("LOG_JSON", False)
@@ -145,6 +154,7 @@ class DevelopmentConfig(Config):
 
 class ProductionConfig(Config):
     DEBUG = False
+    PLATFORM_MFA_REQUIRED = _env_flag("PLATFORM_MFA_REQUIRED", True)
     SESSION_COOKIE_SECURE = True
     REMEMBER_COOKIE_SECURE = True
     LOG_JSON = True
@@ -154,23 +164,9 @@ class ProductionConfig(Config):
 
     @staticmethod
     def init_app(app) -> None:
-        if not app.config.get("SECRET_KEY"):
-            raise RuntimeError(
-                "SECRET_KEY debe estar definida en producción (FLASK_ENV=production)."
-            )
-        if not os.environ.get("DATABASE_URL", "").strip():
-            import logging
+        from app.security_hardening import enforce_production_configuration
 
-            logging.getLogger(__name__).warning(
-                "DATABASE_URL no está configurada: se usa SQLite local. "
-                "En producción conecta Neon/PostgreSQL para persistencia."
-            )
-        if app.config.get("STORAGE_BACKEND") != "s3":
-            import logging
-
-            logging.getLogger(__name__).warning(
-                "STORAGE_BACKEND no es s3: los archivos de clientes no son persistentes."
-            )
+        enforce_production_configuration(app)
 
 
 class TestingConfig(Config):

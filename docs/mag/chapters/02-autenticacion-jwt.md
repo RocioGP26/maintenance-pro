@@ -58,7 +58,7 @@ Content-Type: application/json
 ```json
 {
   "token": "<jwt>",
-  "expires_in": 86400,
+  "expires_in": 28800,
   "user": {
     "id": 15,
     "nombre": "Ana García",
@@ -75,7 +75,7 @@ Content-Type: application/json
 | Campo | Descripción |
 |-------|-------------|
 | `token` | JWT firmado (ver §4) |
-| `expires_in` | Segundos hasta expiración (86400 = 24 h) |
+| `expires_in` | Segundos hasta expiración (28800 = 8 h por defecto) |
 | `user` | Identidad y rol del usuario |
 | `empresa` | Tenant activo tras login |
 
@@ -104,7 +104,7 @@ en Sprint 22.1 conforme al [contrato Sprint 22](../../api/permissions-plans.md).
 |-----------|-------|
 | **Algoritmo** | HS256 |
 | **Firma** | `SECRET_KEY` de la aplicación |
-| **Expiración** | 24 h |
+| **Expiración** | 8 h por defecto · configurable |
 | **Clock skew** | ±30 s recomendado |
 
 Implementación: `app/tenancy/jwt_auth.py` · `jwt.encode` / `jwt.decode` con `algorithms=["HS256"]`.
@@ -123,7 +123,10 @@ El token contiene únicamente la información necesaria para identificar el **co
 | `rol` | Rol principal | Sí |
 | `plan` | Plan contratado (`start`, `grow`, `scale`, …) | Sí* |
 | `modules` | Módulos activos del tenant | Sí* |
+| `auth_version` | Versión revocable de identidad | Sí |
+| `jti` | Identificador único del token | Sí |
 | `iat` | Fecha de emisión (Unix timestamp) | Sí |
+| `nbf` | Inicio de validez | Sí |
 | `exp` | Fecha de expiración (Unix timestamp) | Sí |
 
 \* Documentado en MAG v1 · implementación en curso.
@@ -145,6 +148,10 @@ El token contiene únicamente la información necesaria para identificar el **co
 
 El servidor **nunca** confía en `empresa_id` enviado en query o body si contradice el token.
 
+En cada petición, Roustix revalida `auth_version`, usuario activo, empresa, slug
+y rol contra PostgreSQL. Cambiar contraseña, bloquear o mover al usuario revoca
+inmediatamente los JWT emitidos anteriormente.
+
 ### Claims reservados
 
 Roustix reserva los siguientes claims para futuras versiones. **No deben ser usados por integradores:**
@@ -165,7 +172,7 @@ Esto evita romper el contrato cuando se añadan capacidades sin bump de versión
 
 | Token | Duración | Estado |
 |-------|----------|--------|
-| **Access Token** | 24 horas | ✅ Operativo |
+| **Access Token** | 8 horas por defecto | ✅ Operativo y revocable |
 | **Refresh Token** | 7–30 días (por definir) | 📋 MAG v2.0 |
 
 ### Refresh (contrato reservado)

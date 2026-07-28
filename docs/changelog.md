@@ -3,6 +3,18 @@
 > Este changelog pertenece a la documentación. Los cambios de la aplicación se
 > registran por separado en [`/CHANGELOG.md`](../CHANGELOG.md).
 
+## [1.23.1] — 2026-07-28 · Sprint 23.2 · Hardening de identidad y plataforma
+
+### Added
+
+- Charter, auditoría y reporte de cierre del hardening.
+- Contrato de despliegue seguro para Render, Cloudflare R2, correo y panel privilegiado.
+- Documentación JWT actualizada con revocación y revalidación viva de identidad.
+
+### Status
+
+- Sprint 23.2 implementado y validado localmente.
+- La promoción a `main` exige comprobar las variables productivas documentadas.
 ## [1.23.0] — 2026-07-28 · Sprint 23 · Production Readiness
 
 ### Added
@@ -14,8 +26,8 @@
 
 ### Status
 
-- Sprint 23.1 implementado y probado localmente; ejecución remota pendiente de
-  configurar los secretos S3 de GitHub Actions.
+- Sprint 23.1 implementado y validado remotamente con restauración PostgreSQL 18,
+  réplica real de objetos Cloudflare R2 y evidencia auditable en GitHub Actions.
 
 ## [1.22.7] — 2026-07-27 · Manual de usuario Maintenance
 

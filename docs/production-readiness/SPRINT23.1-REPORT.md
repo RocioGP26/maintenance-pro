@@ -1,7 +1,7 @@
 # Sprint 23.1 · Reporte de implementación
 
 **Fecha:** 2026-07-28  
-**Estado:** implementación local completa · validación remota pendiente
+**Estado:** implementación completa · validación remota aprobada
 
 ## Implementado
 
@@ -26,11 +26,16 @@
 - YAML del workflow: parseado correctamente.
 - `git diff --check`: OK.
 
-## Pendiente operativo
+## Verificación remota
 
-GitHub Actions tiene configurados los secretos requeridos. El bucket operativo
-y el bucket de recuperación ya fueron separados. Se debe completar una
-ejecución remota exitosa que valide la restauración y la réplica entre ambos.
+- Ejecución manual aprobada sobre `main`: GitHub Actions `30389728697`.
+- Revisión desplegada: `7aeb9ce` (`v1.0.15`).
+- Restauración PostgreSQL 18: OK.
+- Revisión Alembic restaurada: `pr7s2t84u06w_password_resets`.
+- Objetos operativos detectados: 2 (35.815 bytes).
+- Objetos copiados al bucket de recuperación: 2.
+- Archivos de recuperación adicionales: dump e índice PostgreSQL.
+- Artefacto auditable: `roustix-backup-30389728697`.
 
 ## Definition of Done
 
@@ -40,5 +45,5 @@ ejecución remota exitosa que valide la restauración y la réplica entre ambos.
 - [x] Réplica incremental a otro bucket.
 - [x] Manifiesto de objetos y hashes de artefactos.
 - [x] Pruebas y runbook.
-- [ ] Ejecución remota exitosa con credenciales reales.
+- [x] Ejecución remota exitosa con credenciales reales.
 - [ ] Simulacro manual documentado por un responsable.

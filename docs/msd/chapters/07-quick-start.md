@@ -111,7 +111,7 @@ Content-Type: application/json
 ```json
 {
   "token": "<jwt>",
-  "expires_in": 86400
+  "expires_in": 28800
 }
 ```
 

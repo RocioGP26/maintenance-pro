@@ -15,14 +15,19 @@ PLATFORM_AUDIT_LABELS = {
     "reset_password": "Contraseña restablecida",
     "block_user": "Usuario bloqueado",
     "unblock_user": "Usuario desbloqueado",
+    "platform_login": "Acceso a plataforma",
+    "platform_login_failed": "Acceso de plataforma fallido",
+    "platform_mfa_failed": "MFA de plataforma fallido",
+    "platform_mfa_expired": "MFA de plataforma expirado",
+    "platform_session_expired": "Sesión de plataforma expirada",
+    "platform_logout": "Cierre de sesión de plataforma",
 }
 
 DEFAULT_ACTOR = "Soporte Roustix (Plataforma)"
 
 
 def _client_ip() -> str:
-    forwarded = (request.headers.get("X-Forwarded-For") or "").split(",")[0].strip()
-    return forwarded or (request.remote_addr or "")
+    return request.remote_addr or ""
 
 
 def actor_plataforma() -> str:

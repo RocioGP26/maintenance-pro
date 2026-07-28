@@ -2,12 +2,14 @@
 
 from __future__ import annotations
 
-import os
+import hmac
+import time
 from datetime import date
 from functools import wraps
 
 from flask import (
     Blueprint,
+    current_app,
     flash,
     redirect,
     render_template,
@@ -15,7 +17,7 @@ from flask import (
     session,
     url_for,
 )
-from flask_login import login_user
+from flask_login import current_user, login_user, logout_user
 
 from app import db, limiter
 from app.url_utils import is_safe_redirect
@@ -67,12 +69,83 @@ from app.platform_users_service import (
     kpis_usuarios_platform,
     listar_usuarios_platform,
 )
-from app.platform_mfa import totp_habilitado, verificar_totp
+from app.platform_mfa import totp_habilitado, totp_requerido, verificar_totp
 from app.tenant_activity import ACTIVITY_LABELS, registrar_actividad_tenant, ultima_actividad_empresa
 
 platform_bp = Blueprint("platform", __name__, url_prefix="/platform")
 
 MFA_PENDING_KEY = "platform_mfa_pending"
+MFA_PENDING_AT_KEY = "platform_mfa_pending_at"
+PLATFORM_STARTED_AT_KEY = "platform_started_at"
+PLATFORM_LAST_ACTIVITY_KEY = "platform_last_activity_at"
+
+
+def _now_epoch() -> int:
+    return int(time.time())
+
+
+def _clear_platform_state() -> None:
+    impersonating = bool(session.get("platform_impersonating"))
+    for key in (
+        "platform_admin",
+        "platform_actor",
+        "platform_impersonating",
+        MFA_PENDING_KEY,
+        MFA_PENDING_AT_KEY,
+        PLATFORM_STARTED_AT_KEY,
+        PLATFORM_LAST_ACTIVITY_KEY,
+    ):
+        session.pop(key, None)
+    if impersonating and current_user.is_authenticated:
+        logout_user()
+
+
+def _audit_platform_security(action: str, detail: str) -> None:
+    registrar_auditoria_plataforma(
+        action,
+        detalle=detail,
+        visible_cliente=False,
+    )
+    db.session.commit()
+
+
+def _complete_platform_login() -> None:
+    now = _now_epoch()
+    session.pop(MFA_PENDING_KEY, None)
+    session.pop(MFA_PENDING_AT_KEY, None)
+    session["platform_admin"] = True
+    session["platform_actor"] = "Soporte Roustix (Plataforma)"
+    session[PLATFORM_STARTED_AT_KEY] = now
+    session[PLATFORM_LAST_ACTIVITY_KEY] = now
+    session.permanent = False
+    _audit_platform_security("platform_login", "Acceso privilegiado completado")
+
+
+def _platform_expiration_reason() -> str | None:
+    try:
+        started = int(session.get(PLATFORM_STARTED_AT_KEY) or 0)
+        last_activity = int(session.get(PLATFORM_LAST_ACTIVITY_KEY) or 0)
+    except (TypeError, ValueError):
+        return "invalid_session"
+    if not started or not last_activity:
+        return "invalid_session"
+    now = _now_epoch()
+    idle_seconds = max(1, int(current_app.config.get("PLATFORM_SESSION_IDLE_MINUTES", 15))) * 60
+    absolute_seconds = max(1, int(current_app.config.get("PLATFORM_SESSION_ABSOLUTE_MINUTES", 120))) * 60
+    if now - started >= absolute_seconds:
+        return "absolute_timeout"
+    if now - last_activity >= idle_seconds:
+        return "idle_timeout"
+    return None
+
+
+def _mfa_pending_expired() -> bool:
+    try:
+        created_at = int(session.get(MFA_PENDING_AT_KEY) or 0)
+    except (TypeError, ValueError):
+        return True
+    ttl = max(1, int(current_app.config.get("PLATFORM_MFA_PENDING_MINUTES", 5))) * 60
+    return not created_at or _now_epoch() - created_at >= ttl
 
 
 def _iniciar_impersonacion_usuario(user: User) -> None:
@@ -96,13 +169,20 @@ def _iniciar_impersonacion_usuario(user: User) -> None:
 
 
 def _clave_plataforma_configurada() -> str:
-    return os.environ.get("PLATFORM_ADMIN_KEY", "").strip()
+    return str(current_app.config.get("PLATFORM_ADMIN_KEY") or "").strip()
 
 
 def platform_login_required(view):
     @wraps(view)
     def wrapped(*args, **kwargs):
         if session.get("platform_admin"):
+            reason = _platform_expiration_reason()
+            if reason:
+                _audit_platform_security("platform_session_expired", reason)
+                _clear_platform_state()
+                flash("La sesión de plataforma expiró por seguridad.", "warning")
+                return redirect(url_for("platform.login", expired=reason, next=request.path))
+            session[PLATFORM_LAST_ACTIVITY_KEY] = _now_epoch()
             return view(*args, **kwargs)
         if session.get(MFA_PENDING_KEY) and totp_habilitado():
             return redirect(url_for("platform.login", next=request.path))
@@ -119,26 +199,47 @@ def _redirect_tras_login_plataforma():
 
 
 @platform_bp.route("/login", methods=["GET", "POST"])
-@limiter.limit("5 per 15 minutes", methods=["POST"])
+@limiter.limit("10 per 15 minutes", methods=["POST"])
 def login():
     clave = _clave_plataforma_configurada()
     if not clave:
         return render_template("platform/login.html", sin_clave=True), 503
+    if totp_requerido() and not totp_habilitado():
+        return render_template(
+            "platform/login.html",
+            sin_clave=False,
+            config_error=(
+                "PLATFORM_ADMIN_TOTP_SECRET debe estar configurada para habilitar "
+                "la superadministración en producción."
+            ),
+        ), 503
+
+    if session.get("platform_admin"):
+        reason = _platform_expiration_reason()
+        if reason is None:
+            return redirect(url_for("platform.empresas"))
+        _audit_platform_security("platform_session_expired", reason)
+        _clear_platform_state()
+        flash("La sesión de plataforma expiró por seguridad.", "warning")
+
     if request.args.get("cancel") == "1":
         session.pop(MFA_PENDING_KEY, None)
+        session.pop(MFA_PENDING_AT_KEY, None)
         flash("Verificación cancelada.", "info")
         return redirect(url_for("platform.login"))
+
     if request.method == "POST":
         if request.form.get("action") == "totp":
-            if not session.get(MFA_PENDING_KEY):
+            if not session.get(MFA_PENDING_KEY) or _mfa_pending_expired():
+                session.pop(MFA_PENDING_KEY, None)
+                session.pop(MFA_PENDING_AT_KEY, None)
+                _audit_platform_security("platform_mfa_expired", "Desafío TOTP expirado")
                 flash("La verificación expiró. Vuelve a ingresar la clave de plataforma.", "warning")
                 return redirect(url_for("platform.login"))
             if verificar_totp(request.form.get("totp", "")):
-                session.pop(MFA_PENDING_KEY, None)
-                session["platform_admin"] = True
-                session["platform_actor"] = "Soporte Roustix (Plataforma)"
-                session.permanent = True
+                _complete_platform_login()
                 return _redirect_tras_login_plataforma()
+            _audit_platform_security("platform_mfa_failed", "Código TOTP inválido")
             flash("Código de autenticación incorrecto.", "danger")
             return render_template(
                 "platform/login.html",
@@ -148,30 +249,33 @@ def login():
             )
 
         ingresada = (request.form.get("clave") or "").strip()
-        if ingresada and ingresada == clave:
+        if ingresada and hmac.compare_digest(ingresada, clave):
             if totp_habilitado():
                 session[MFA_PENDING_KEY] = True
-                session.permanent = True
+                session[MFA_PENDING_AT_KEY] = _now_epoch()
+                session.permanent = False
                 return render_template(
                     "platform/login.html",
                     sin_clave=False,
                     mfa_step=True,
                     totp_habilitado=True,
                 )
-            session["platform_admin"] = True
-            session["platform_actor"] = "Soporte Roustix (Plataforma)"
-            session.permanent = True
+            _complete_platform_login()
             return _redirect_tras_login_plataforma()
+        _audit_platform_security("platform_login_failed", "Clave privilegiada inválida")
         flash("Clave de plataforma incorrecta.", "danger")
-    if session.get("platform_admin"):
-        return redirect(url_for("platform.empresas"))
+
     if session.get(MFA_PENDING_KEY) and totp_habilitado():
-        return render_template(
-            "platform/login.html",
-            sin_clave=False,
-            mfa_step=True,
-            totp_habilitado=True,
-        )
+        if _mfa_pending_expired():
+            session.pop(MFA_PENDING_KEY, None)
+            session.pop(MFA_PENDING_AT_KEY, None)
+        else:
+            return render_template(
+                "platform/login.html",
+                sin_clave=False,
+                mfa_step=True,
+                totp_habilitado=True,
+            )
     return render_template(
         "platform/login.html",
         sin_clave=False,
@@ -182,13 +286,11 @@ def login():
 
 @platform_bp.route("/logout", methods=["POST"])
 def logout():
-    session.pop("platform_admin", None)
-    session.pop(MFA_PENDING_KEY, None)
-    session.pop("platform_impersonating", None)
-    session.pop("platform_actor", None)
+    if session.get("platform_admin"):
+        _audit_platform_security("platform_logout", "Cierre voluntario de plataforma")
+    _clear_platform_state()
     flash("Sesión de plataforma cerrada.", "info")
     return redirect(url_for("platform.login"))
-
 
 @platform_bp.route("/")
 @platform_login_required
