@@ -14,8 +14,8 @@
 
 ### Status
 
-- Sprint 23.1 implementado y probado localmente; ejecución remota pendiente de
-  configurar los secretos S3 de GitHub Actions.
+- Sprint 23.1 implementado y validado remotamente con restauración PostgreSQL 18,
+  réplica real de objetos Cloudflare R2 y evidencia auditable en GitHub Actions.
 
 ## [1.22.7] — 2026-07-27 · Manual de usuario Maintenance
 

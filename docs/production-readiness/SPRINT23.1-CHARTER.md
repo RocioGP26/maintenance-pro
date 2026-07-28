@@ -40,4 +40,4 @@ recuperarse juntos después de una pérdida o corrupción del entorno productivo
 - [x] Se genera y conserva un manifiesto de los objetos.
 - [x] Existen pruebas unitarias para réplica, omisión y configuración insegura.
 - [x] Existe un runbook ejecutable de recuperación.
-- [ ] Se obtiene al menos una ejecución remota exitosa.
+- [x] Se obtiene al menos una ejecución remota exitosa.
