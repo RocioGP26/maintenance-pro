@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Roustix Docs — Documentación pública</title>
+  <link rel="stylesheet" href="{{ url_for('docs_hub.css', filename='docs-hub.css') }}">
+</head>
+<body>
+<div class="docs-shell">
+  <nav class="docs-nav" aria-label="Roustix Docs">
+    <div class="docs-nav-brand">
+      <p class="wordmark">ROUSTIX DOCS</p>
+      <p class="sub">Documentación pública · v1.22.5</p>
+    </div>
+    <p class="docs-nav-label">Índice</p>
+    <a href="#indice" class="is-active">Inicio</a>
+    <a href="#publico">Manuales</a>
+    <a href="#governance">Producto doc</a>
+    <p class="docs-nav-label">Público</p>
+    <a href="/brandbook/">01 · Brand Book</a>
+    <a href="/guia">Guía de producto</a>
+    <a href="/mkt/assets/brochure-corporativo.html">12 · Brochure MKT</a>
+    <a href="/mkt/mtx-case/README.md">12 · MTX-CASE</a>
+    <a href="/mag/">07 · MAG</a>
+    <a href="/msd/">08 · MSD</a>
+    <a href="{{ url_for('docs_hub.docs_file', filename='release-notes/README.md') }}">10 · Release Notes</a>
+    <p class="docs-nav-label">Meta</p>
+    <a href="{{ url_for('docs_hub.docs_file', filename='README.md') }}">README.md</a>
+    <a href="{{ url_for('docs_hub.docs_file', filename='NOMENCLATURE.md') }}">NOMENCLATURE</a>
+    <a href="{{ url_for('docs_hub.docs_file', filename='VERSIONS.md') }}">VERSIONS</a>
+    <a href="{{ url_for('docs_hub.docs_file', filename='changelog.md') }}">Changelog</a>
+  </nav>
+
+  <main class="docs-main">
+    <section class="docs-release" id="release">
+      <h2>Documentación pública · v1.22.5</h2>
+      <p><strong>Cliente, partners e integradores</strong> — guía de producto, API, SDK y marca. Sin login.</p>
+      <div class="docs-release-grid">
+        <div class="docs-release-item"><strong>🌐 Marca</strong><span>Brand Book · Brochure · MTX-CASE</span></div>
+        <div class="docs-release-item"><strong>📖 Producto</strong><span><a href="/guia" style="color:#90cdf4">/guia →</a></span></div>
+        <div class="docs-release-item"><strong>🔌 Integración</strong><span>MAG · MSD · OpenAPI</span></div>
+        <div class="docs-release-item"><strong>📰 Versiones</strong><span>Release Notes</span></div>
+      </div>
+      <p class="docs-release-foot"><a href="/guia">Guía de producto →</a></p>
+    </section>
+
+    <header class="docs-hero" id="indice">
+      <h1>Documentación pública.<br>Lista para evaluar e integrar.</h1>
+      <p class="lead">Guía de producto, API (MAG), SDK (MSD) y recursos de marca — abiertos para prospectos, clientes e integradores.</p>
+      <p class="tagline">Toda la operación. Una sola plataforma.</p>
+      <pre class="docs-tree" aria-label="Árbol de documentación pública">ROUSTIX DOCS · PÚBLICO
+│
+├── 01 Brand Book (MBB)
+├── 12 MKT assets · MTX-CASE
+├── 07 MAG · 08 MSD
+├── /guia (producto)
+└── 10 Release Notes</pre>
+    </header>
+
+    <section class="docs-section" id="publico">
+      <h2>🌐 Público · Cliente, partners e integradores</h2>
+      <p class="docs-section-lead">Manuales que ayudan a <strong>evaluar el producto</strong>, <strong>integrar</strong> o <strong>posicionar la marca</strong>. Sin login.</p>
+      <div class="docs-grid">
+
+        <a class="docs-card" href="/brandbook/">
+          <span class="docs-card-num">01</span>
+          <h3>Brand Book</h3>
+          <span class="code">MBB</span>
+          <p>Marca, identidad visual, voz y pilares.</p>
+          <div class="docs-card-foot">
+            <span class="docs-badge docs-badge--public">Público</span>
+            <span>/brandbook/</span>
+          </div>
+        </a>
+
+        <a class="docs-card" href="/mkt/assets/brochure-corporativo.html">
+          <span class="docs-card-num">12</span>
+          <h3>MKT · Activos públicos</h3>
+          <span class="code">Brochure · One Pager · MTX-CASE</span>
+          <p>Material de captación y casos de uso.</p>
+          <div class="docs-card-foot">
+            <span class="docs-badge docs-badge--public">Público</span>
+            <span>/mkt/assets/ · /mkt/mtx-case/</span>
+          </div>
+        </a>
+
+        <a class="docs-card" href="/mag/">
+          <span class="docs-card-num">07</span>
+          <h3>MAG</h3>
+          <span class="code">API Guide</span>
+          <p>JWT · multi-tenant · /api/v1 · errores · webhooks.</p>
+          <div class="docs-card-foot">
+            <span class="docs-badge docs-badge--public">Público</span>
+            <span>/mag/</span>
+          </div>
+        </a>
+
+        <a class="docs-card" href="/msd/">
+          <span class="docs-card-num">08</span>
+          <h3>MSD</h3>
+          <span class="code">SDK &amp; Developer Portal</span>
+          <p>OpenAPI · SDK · CLI · Sandbox · colecciones Postman.</p>
+          <div class="docs-card-foot">
+            <span class="docs-badge docs-badge--public">Público</span>
+            <span>/msd/</span>
+          </div>
+        </a>
+
+        <a class="docs-card" href="/guia">
+          <span class="docs-card-num">11</span>
+          <h3>Guía de producto</h3>
+          <span class="code">Vista cliente</span>
+          <p>Cómo funciona Roustix — mantenimiento e inventario en lenguaje de negocio.</p>
+          <div class="docs-card-foot">
+            <span class="docs-badge docs-badge--public">Público</span>
+            <span>/guia</span>
+          </div>
+        </a>
+
+        <a class="docs-card" href="{{ url_for('docs_hub.docs_file', filename='release-notes/README.md') }}">
+          <span class="docs-card-num">10</span>
+          <h3>Release Notes</h3>
+          <span class="code">Versiones</span>
+          <p>Historial de docs y producto para clientes.</p>
+          <div class="docs-card-foot">
+            <span class="docs-badge docs-badge--public">Público</span>
+            <span>docs/release-notes/</span>
+          </div>
+        </a>
+
+      </div>
+    </section>
+
+    <section class="docs-section" id="governance" style="background:#fff;border-top:1px solid var(--bb-borde)">
+      <h2>Producto documental</h2>
+      <div class="docs-grid">
+        <a class="docs-card" href="{{ url_for('docs_hub.docs_file', filename='DOCUMENTATION-PRODUCT.md') }}">
+          <span class="docs-card-num">📌</span>
+          <h3>Producto doc</h3>
+          <span class="code">Arquitectura de contenido</span>
+          <p>Cómo se organiza la suite documental Roustix.</p>
+        </a>
+        <a class="docs-card" href="{{ url_for('docs_hub.docs_file', filename='VERSIONS.md') }}">
+          <span class="docs-card-num">📌</span>
+          <h3>VERSIONS</h3>
+          <span class="code">Registro oficial</span>
+          <p>Versiones semver de cada manual y de la suite.</p>
+        </a>
+        <a class="docs-card" href="{{ url_for('docs_hub.docs_file', filename='changelog.md') }}">
+          <span class="docs-card-num">📌</span>
+          <h3>CHANGELOG</h3>
+          <span class="code">Suite</span>
+          <p>Control de cambios del producto documental.</p>
+        </a>
+        <a class="docs-card" href="{{ url_for('docs_hub.docs_file', filename='CROSS-REFERENCES.md') }}">
+          <span class="docs-card-num">📌</span>
+          <h3>Cross-refs</h3>
+          <span class="code">Mapa de enlaces</span>
+          <p>Relaciones entre manuales de la suite.</p>
+        </a>
+      </div>
+    </section>
+
+    <section class="docs-section" id="pilares" style="background:var(--bb-fondo);border-top:1px solid var(--bb-borde)">
+      <h2>Resumen práctico</h2>
+      <div class="docs-pillars">
+        <div class="docs-pillar">
+          <h4>Marca y captación</h4>
+          <p>MBB · Brochure · MTX-CASE</p>
+        </div>
+        <div class="docs-pillar" style="border-left-color:#2b6cb0">
+          <h4>Producto</h4>
+          <p>/guia · Release Notes</p>
+        </div>
+        <div class="docs-pillar" style="border-left-color:#2b6cb0">
+          <h4>Integradores</h4>
+          <p>MAG + MSD + OpenAPI</p>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+</body>
+</html>

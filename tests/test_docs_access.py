@@ -193,6 +193,31 @@ class TestDocsAccessHybridHttp(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         response.close()
 
+    def test_hub_index_public_only(self) -> None:
+        client = self.app.test_client()
+        response = client.get("/docs/")
+        self.assertEqual(response.status_code, 200)
+        body = response.get_data(as_text=True)
+        self.assertIn("Documentación pública", body)
+        self.assertNotIn("Privado", body)
+        self.assertNotIn("docs-card--gated", body)
+        self.assertNotIn('href="/mcm/"', body)
+        self.assertNotIn('href="/mpa/"', body)
+        self.assertNotIn('href="/mdl/"', body)
+        self.assertNotIn('href="/mux/"', body)
+        self.assertNotIn('href="/mrl/"', body)
+        self.assertNotIn('href="/mrg/"', body)
+        self.assertNotIn('href="/mdo/"', body)
+        self.assertNotIn('href="/mkt/"', body)
+        self.assertNotIn("Commercial Manual", body)
+        self.assertNotIn("Platform Architecture", body)
+        self.assertNotIn("Developer Docs", body)
+        self.assertIn('href="/brandbook/"', body)
+        self.assertIn('href="/mag/"', body)
+        self.assertIn('href="/msd/"', body)
+        self.assertIn('href="/guia"', body)
+        response.close()
+
     def test_platform_documentacion_requires_superadmin(self) -> None:
         client = self.app.test_client()
         anon = client.get("/platform/documentacion")
@@ -206,9 +231,20 @@ class TestDocsAccessHybridHttp(unittest.TestCase):
         self.assertEqual(ok.status_code, 200)
         body = ok.get_data(as_text=True)
         self.assertIn("Documentación interna", body)
-        self.assertIn("/mcm/", body)
-        self.assertIn("/mpa/", body)
-        self.assertIn("/docs/ACCESS.md", body)
+        for href in (
+            "/mcm/",
+            "/mkt/",
+            "/mdl/",
+            "/mux/",
+            "/mrl/",
+            "/mrg/",
+            "/mpa/",
+            "/mdo/",
+            "/docs/developer/README.md",
+            "/docs/publishing/README.md",
+            "/docs/ACCESS.md",
+        ):
+            self.assertIn(href, body, msg=href)
         ok.close()
 
         # Con sesión SuperAdmin, docs privadas abren

@@ -31,7 +31,16 @@ La suite documental usa una estrategia **híbrida**: lo que ayuda a evaluar, int
 | — | **Publishing** | `/docs/publishing/` | 🔒 Privado | Blueprint despliegue · DevOps · checklists |
 | — | **ACCESS** | `/docs/ACCESS.md` | 🔒 Privado | Matriz de gobierno · este documento |
 
-**Hub** `/docs/`: índice siempre visible en modo `hybrid`. Archivos bajo el hub se filtran por path (ver `app/docs_access.py`).
+**Hub** `/docs/`: índice **solo público** (MBB · MAG · MSD · /guia · assets MKT · Release Notes · meta). Archivos bajo el hub se filtran por path (ver `app/docs_access.py`).
+
+### Índice público vs hub SuperAdmin
+
+| Vista | Audiencia | Contenido |
+|-------|-----------|-----------|
+| `/docs/` | Público | Solo manuales y meta abiertos (`templates/docs/index.html`) |
+| `/platform/documentacion` | SuperAdmin | MCM · MKT · MDL · MUX · MRL · MRG · MPA · Developer · MDO · Publishing · ACCESS |
+
+Los manuales privados **no aparecen** en `/docs/`. El equipo los abre desde el panel de plataforma.
 
 ---
 
@@ -166,7 +175,7 @@ Resumen operativo (sin el plan técnico):
 |-------|-----------|
 | Gate Flask | `app/docs_access.py` |
 | Config | `config.DOCS_ACCESS_POLICY` |
-| Índice visual | `docs/index.html` |
+| Índice visual | `templates/docs/index.html` (solo público) · hub interno `/platform/documentacion` |
 | Hub SuperAdmin | `/platform/documentacion` |
 
 ---

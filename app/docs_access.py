@@ -106,12 +106,24 @@ def docs_access_policy() -> str:
     return "hybrid"
 
 
-def _has_docs_credentials() -> bool:
+def has_docs_credentials() -> bool:
+    """True si hay sesión de tenant (Flask-Login) o SuperAdmin de plataforma."""
     if getattr(current_user, "is_authenticated", False):
         return True
     if session.get("platform_admin"):
         return True
     return False
+
+
+def _has_docs_credentials() -> bool:
+    return has_docs_credentials()
+
+
+def can_view_private_docs() -> bool:
+    """Privado visible en UI/contenido: sesión o política `open`."""
+    if docs_access_policy() == "open":
+        return True
+    return has_docs_credentials()
 
 
 def is_mkt_path_public(rel_path: str | None = None, *, endpoint: str | None = None) -> bool:

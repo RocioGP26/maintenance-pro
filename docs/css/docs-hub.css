@@ -221,6 +221,36 @@ body {
   background: linear-gradient(180deg, #fff 0%, #fffaf5 100%);
 }
 
+.docs-card--gated {
+  cursor: default;
+  opacity: 0.92;
+  pointer-events: none;
+}
+
+.docs-card--gated .docs-card-login {
+  pointer-events: auto;
+  color: var(--bb-acento);
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.docs-card--gated .docs-card-login:hover {
+  text-decoration: underline;
+}
+
+.docs-nav-gated {
+  color: rgba(255, 255, 255, 0.4);
+  display: block;
+  font-size: 0.82rem;
+  padding: 0.28rem 0;
+}
+
+.docs-nav-login {
+  color: #63b3ed !important;
+  font-weight: 600;
+}
+
 .docs-release {
   background: linear-gradient(135deg, #042c53 0%, #185fa5 100%);
   border-radius: 12px;

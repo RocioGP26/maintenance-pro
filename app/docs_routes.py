@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from flask import Blueprint, abort, redirect, send_from_directory, url_for
+from flask import Blueprint, abort, redirect, render_template, send_from_directory, url_for
 
 docs_bp = Blueprint("docs_hub", __name__, url_prefix="/docs")
 
@@ -13,7 +13,8 @@ _ROOT = Path(__file__).resolve().parent.parent / "docs"
 
 @docs_bp.route("/")
 def index():
-    return send_from_directory(_ROOT, "index.html")
+    """Índice público: solo manuales abiertos. Lo interno vive en /platform/documentacion."""
+    return render_template("docs/index.html")
 
 
 @docs_bp.route("/css/<path:filename>")
