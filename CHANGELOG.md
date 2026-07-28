@@ -10,6 +10,12 @@ La suite documental mantiene un ciclo independiente en
 
 ### Added
 
+- Espacio reservado para cambios aún no publicados.
+
+## [1.0.16] - 2026-07-28
+
+### Added
+
 - Sprint 23.2: configuración productiva fail-fast, MFA TOTP obligatorio para la
   superadministración, sesiones privilegiadas cortas y auditoría de accesos.
 - JWT revocables con validación viva de usuario, tenant, rol y `auth_version`.
@@ -23,6 +29,10 @@ La suite documental mantiene un ciclo independiente en
 
 ### Fixed
 - Ignorar `data/object_storage/` en Git (archivos locales de informes y adjuntos).
+
+### Notes
+
+- feat: hardening de identidad y plataforma (Sprint 23.2) (#13).
 
 ## [1.0.15] - 2026-07-28
 
@@ -277,7 +287,7 @@ La suite documental mantiene un ciclo independiente en
 
 - Este release formaliza el versionado; no modifica funcionalidades de negocio.
 
-[Unreleased]: https://github.com/RocioGP26/maintenance-pro/compare/v1.0.15...HEAD
+[Unreleased]: https://github.com/RocioGP26/maintenance-pro/compare/v1.0.16...HEAD
 [1.0.0]: https://github.com/RocioGP26/maintenance-pro/releases/tag/v1.0.0
 [1.0.1]: https://github.com/RocioGP26/maintenance-pro/compare/v1.0.0...v1.0.1
 [1.0.2]: https://github.com/RocioGP26/maintenance-pro/compare/v1.0.1...v1.0.2
@@ -294,3 +304,4 @@ La suite documental mantiene un ciclo independiente en
 [1.0.13]: https://github.com/RocioGP26/maintenance-pro/compare/v1.0.12...v1.0.13
 [1.0.14]: https://github.com/RocioGP26/maintenance-pro/compare/v1.0.13...v1.0.14
 [1.0.15]: https://github.com/RocioGP26/maintenance-pro/compare/v1.0.14...v1.0.15
+[1.0.16]: https://github.com/RocioGP26/maintenance-pro/compare/v1.0.15...v1.0.16
