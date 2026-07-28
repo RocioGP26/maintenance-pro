@@ -36,6 +36,15 @@ def _body(response) -> str:
     return response.read().decode("utf-8", errors="replace")
 
 
+def _assert_path(response, expected: str, context: str) -> None:
+    actual = urlparse(response.geturl()).path
+    if actual != expected:
+        raise AssertionError(
+            f"{context}: se esperaba la ruta {expected!r}, pero se obtuvo {actual!r} "
+            f"({response.geturl()})"
+        )
+
+
 def run() -> None:
     user_password = os.environ.get("E2E_USER_PASSWORD", "")
     platform_key = os.environ.get("PLATFORM_ADMIN_KEY", "")
@@ -66,7 +75,7 @@ def run() -> None:
         },
     )
     dashboard_html = _body(dashboard)
-    assert urlparse(dashboard.geturl()).path == "/dashboard"
+    _assert_path(dashboard, "/dashboard", "Login tenant")
     assert dashboard.status == 200
     assert "Sesión iniciada correctamente" in dashboard_html
 
@@ -75,14 +84,14 @@ def run() -> None:
     assert '"authenticated":true' in _body(session_state).replace(" ", "")
 
     logout = _request(tenant, "/logout", data={})
-    assert urlparse(logout.geturl()).path == "/"
+    _assert_path(logout, "/", "Logout tenant")
     protected = _request(tenant, "/dashboard")
-    assert urlparse(protected.geturl()).path == "/login"
+    _assert_path(protected, "/login", "Ruta protegida sin sesión")
 
     platform = _opener()
     challenge = _request(platform, "/platform/login", data={"clave": platform_key})
     challenge_html = _body(challenge)
-    assert urlparse(challenge.geturl()).path == "/platform/login"
+    _assert_path(challenge, "/platform/login", "Desafío MFA de plataforma")
     assert "Código de 6 dígitos" in challenge_html
 
     privileged = _request(
@@ -90,7 +99,7 @@ def run() -> None:
         "/platform/login",
         data={"action": "totp", "totp": pyotp.TOTP(totp_secret).now()},
     )
-    assert urlparse(privileged.geturl()).path == "/platform/empresas"
+    _assert_path(privileged, "/platform/empresas", "Login MFA de plataforma")
     assert privileged.status == 200
     assert "Empresas" in _body(privileged)
 

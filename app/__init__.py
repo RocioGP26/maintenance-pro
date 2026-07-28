@@ -50,14 +50,18 @@ def create_app(config_name: str | None = None):
 
     if (app.config.get("SQLALCHEMY_DATABASE_URI") or "").startswith("sqlite:"):
         from sqlalchemy import event
-        from sqlalchemy.engine import Engine
 
-        @event.listens_for(Engine, "connect")
         def _sqlite_pragmas(dbapi_connection, _connection_record):
             cursor = dbapi_connection.cursor()
             cursor.execute("PRAGMA journal_mode=WAL")
             cursor.execute("PRAGMA busy_timeout=30000")
             cursor.close()
+
+        # Vincula los PRAGMA únicamente al engine SQLite de esta aplicación.
+        # Un listener global sobre Engine sobrevivía entre create_app() y terminaba
+        # intentando ejecutar PRAGMA sobre PostgreSQL durante la suite de CI.
+        with app.app_context():
+            event.listen(db.engine, "connect", _sqlite_pragmas)
 
     @app.teardown_appcontext
     def _finalize_db_session(exc):

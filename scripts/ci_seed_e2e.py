@@ -3,10 +3,17 @@
 from __future__ import annotations
 
 import os
-from datetime import UTC, datetime
+from datetime import UTC, date, datetime
 
 from app import create_app, db
-from app.models import Empresa, User, UserRole
+from app.models import (
+    Empresa,
+    PlanSuscripcion,
+    PlanTipo,
+    SuscripcionEstado,
+    User,
+    UserRole,
+)
 
 
 def seed() -> tuple[int, int]:
@@ -35,6 +42,26 @@ def seed() -> tuple[int, int]:
         else:
             empresa.email_verified_at = empresa.email_verified_at or datetime.now(UTC).replace(tzinfo=None)
             empresa.suspendida = False
+
+        suscripcion = PlanSuscripcion.query.filter_by(
+            empresa_id=empresa.id,
+            activo=True,
+        ).first()
+        if suscripcion is None:
+            suscripcion = PlanSuscripcion(
+                empresa_id=empresa.id,
+                plan=PlanTipo.PROFESIONAL.value,
+                fecha_inicio=date.today(),
+                fecha_fin=None,
+                activo=True,
+                estado_ciclo=SuscripcionEstado.ACTIVA.value,
+            )
+            db.session.add(suscripcion)
+        else:
+            suscripcion.plan = PlanTipo.PROFESIONAL.value
+            suscripcion.fecha_fin = None
+            suscripcion.activo = True
+            suscripcion.estado_ciclo = SuscripcionEstado.ACTIVA.value
 
         user = User.query.filter_by(empresa_id=empresa.id, username="ci_admin").first()
         if user is None:

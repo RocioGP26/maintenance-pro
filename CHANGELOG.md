@@ -22,6 +22,13 @@ La suite documental mantiene un ciclo independiente en
 - Flask, python-dotenv y PyJWT se actualizaron a versiones sin las
   vulnerabilidades detectadas por pip-audit.
 
+### Fixed
+
+- Los PRAGMA de SQLite ya no se registran globalmente ni se ejecutan sobre
+  conexiones PostgreSQL durante la suite.
+- La semilla E2E crea una suscripción activa y GitHub Actions enmascara todas
+  las credenciales efímeras antes de exportarlas.
+
 ## [1.0.16] - 2026-07-28
 
 ### Added

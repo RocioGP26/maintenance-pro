@@ -121,9 +121,16 @@ jobs:
       - name: Generar credenciales efímeras
         shell: bash
         run: |
-          echo "E2E_USER_PASSWORD=$(python -c 'import secrets; print(secrets.token_urlsafe(32))')" >> "$GITHUB_ENV"
-          echo "PLATFORM_ADMIN_KEY=$(python -c 'import secrets; print(secrets.token_urlsafe(48))')" >> "$GITHUB_ENV"
-          echo "PLATFORM_ADMIN_TOTP_SECRET=$(python -c 'import pyotp; print(pyotp.random_base32())')" >> "$GITHUB_ENV"
+          set -euo pipefail
+          e2e_password="$(python -c 'import secrets; print(secrets.token_urlsafe(32))')"
+          platform_key="$(python -c 'import secrets; print(secrets.token_urlsafe(48))')"
+          platform_totp="$(python -c 'import pyotp; print(pyotp.random_base32())')"
+          echo "::add-mask::$e2e_password"
+          echo "::add-mask::$platform_key"
+          echo "::add-mask::$platform_totp"
+          echo "E2E_USER_PASSWORD=$e2e_password" >> "$GITHUB_ENV"
+          echo "PLATFORM_ADMIN_KEY=$platform_key" >> "$GITHUB_ENV"
+          echo "PLATFORM_ADMIN_TOTP_SECRET=$platform_totp" >> "$GITHUB_ENV"
       - name: Preparar PostgreSQL y semilla efímera
         run: |
           flask --app run:app db upgrade
@@ -132,7 +139,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          gunicorn --bind 127.0.0.1:8000 --workers 1 --timeout 60 run:app > gunicorn-e2e.log 2>&1 &
+          gunicorn --bind 127.0.0.1:8000 --workers 1 --timeout 60 --access-logfile - run:app > gunicorn-e2e.log 2>&1 &
           echo $! > gunicorn-e2e.pid
           for attempt in {1..30}; do
             if curl --fail --silent http://127.0.0.1:8000/ > /dev/null; then
