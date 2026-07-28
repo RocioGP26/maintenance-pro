@@ -128,7 +128,7 @@ jobs:
 
       - name: Replicar almacenamiento S3
         run: >-
-          python scripts/backup_storage.py
+          python -m scripts.backup_storage
           --manifest storage.manifest.json
           --recovery-file database.dump
           --recovery-file database.manifest

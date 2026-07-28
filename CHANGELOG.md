@@ -22,6 +22,8 @@ La suite documental mantiene un ciclo independiente en
   índice y manifiesto S3 tanto en el bucket de recuperación como en GitHub.
 - La restauración temporal omite únicamente la extensión de infraestructura
   `pg_session_jwt` que pertenece a Neon, manteniendo intacto el dump original.
+- El respaldo S3 se ejecuta como módulo Python para resolver correctamente el
+  paquete `app` dentro de GitHub Actions.
 
 ## [1.0.14] - 2026-07-27
 
