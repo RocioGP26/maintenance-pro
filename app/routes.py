@@ -347,6 +347,7 @@ def login():
         password = request.form.get("password", "")
         remember_requested = bool(request.form.get("remember"))
         from app.user_service import buscar_usuario_login, mensaje_login_ambiguo
+        from app.password_policy import MAX_PASSWORD_LENGTH
 
         user = buscar_usuario_login(username, empresa_slug=empresa_slug or None)
         if user is None and username.strip():
@@ -354,7 +355,11 @@ def login():
             if candidatos > 1:
                 flash(mensaje_login_ambiguo(username), "danger")
                 return render_template("login.html")
-        if user is not None and user.check_password(password):
+        if (
+            user is not None
+            and len(password) <= MAX_PASSWORD_LENGTH
+            and user.check_password(password)
+        ):
             if user.bloqueado or not user.activo:
                 flash("Usuario o contraseña incorrectos.", "danger")
             else:
@@ -404,6 +409,17 @@ def login():
                 if nxt and _is_safe_url(nxt):
                     return redirect(nxt)
                 return redirect(url_for("main.dashboard"))
+        if user is not None and user.empresa_id:
+            from app.tenant_activity import registrar_actividad_tenant
+
+            registrar_actividad_tenant(
+                user.empresa_id,
+                "login_failed",
+                user_id=user.id,
+                username=user.username,
+                detalle="Credenciales web rechazadas",
+            )
+            db.session.commit()
         flash("Usuario o contraseña incorrectos.", "danger")
     return render_template("login.html")
 

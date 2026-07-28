@@ -35,8 +35,7 @@ def _utcnow() -> datetime:
 
 
 def _client_ip() -> str:
-    forwarded = (request.headers.get("X-Forwarded-For") or "").split(",")[0].strip()
-    return (forwarded or request.remote_addr or "")[:45]
+    return (request.remote_addr or "")[:45]
 
 
 def policy_for(user: User) -> dict[str, int | bool]:

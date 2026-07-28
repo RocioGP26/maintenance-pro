@@ -53,6 +53,39 @@ def _reset_tenant_context() -> None:
     g.api_scopes = ()
 
 
+def _bearer_error(code: str, message: str):
+    if request.path.startswith("/api/v1"):
+        from app.public_api.contract import api_error
+
+        return api_error(code, message, 401)
+    return jsonify({"error": message, "codigo": code}), 401
+
+
+def _live_jwt_user(payload: dict):
+    from app import db
+    from app.models import User
+    from app.permissions import normalize_rol
+
+    try:
+        user_id = int(payload.get("sub"))
+        empresa_id = int(payload.get("empresa_id"))
+        auth_version = int(payload.get("auth_version"))
+    except (TypeError, ValueError):
+        return None
+    user = db.session.get(User, user_id)
+    if user is None or not user.is_active or not user.empresa_id or user.empresa is None:
+        return None
+    if int(user.auth_version or 1) != auth_version:
+        return None
+    if int(user.empresa_id) != empresa_id:
+        return None
+    if str(payload.get("empresa_slug") or "") != str(user.empresa.slug or ""):
+        return None
+    if normalize_rol(payload.get("rol")) != normalize_rol(user.rol):
+        return None
+    return user
+
+
 def _load_from_session_user() -> None:
     if not current_user.is_authenticated:
         return
@@ -251,11 +284,17 @@ def register_tenancy_middleware(app: Flask) -> None:
                     return api_error("INVALID_TOKEN", "Token inválido.", 401)
                 return jsonify({"error": "Token inválido"}), 401
 
-            g.user_id = payload.get("sub")
+            user = _live_jwt_user(payload)
+            if user is None:
+                return _bearer_error(
+                    "TOKEN_REVOKED",
+                    "Token revocado o identidad desactualizada.",
+                )
+            g.user_id = user.id
             g.auth_type = "jwt"
-            g.empresa_id = payload.get("empresa_id")
-            g.empresa_slug = payload.get("empresa_slug")
-            g.user_rol = payload.get("rol")
+            g.empresa_id = user.empresa_id
+            g.empresa_slug = user.empresa.slug
+            g.user_rol = user.rol
             _sync_ordenes_vencidas()
             bloqueo = _verificar_bloqueo_tenant(endpoint)
             if bloqueo is not None:

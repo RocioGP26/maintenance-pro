@@ -5,6 +5,7 @@ from __future__ import annotations
 import os
 
 import pyotp
+from flask import current_app, has_app_context
 
 
 def totp_habilitado() -> bool:
@@ -12,7 +13,17 @@ def totp_habilitado() -> bool:
 
 
 def _totp_secret() -> str:
+    if has_app_context():
+        return str(current_app.config.get("PLATFORM_ADMIN_TOTP_SECRET") or "").strip()
     return os.environ.get("PLATFORM_ADMIN_TOTP_SECRET", "").strip()
+
+
+def totp_requerido() -> bool:
+    if has_app_context():
+        return bool(current_app.config.get("PLATFORM_MFA_REQUIRED", False))
+    return os.environ.get("PLATFORM_MFA_REQUIRED", "false").strip().lower() in {
+        "1", "true", "yes"
+    }
 
 
 def verificar_totp(code: str) -> bool:

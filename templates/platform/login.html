@@ -18,6 +18,10 @@
       <pre class="mb-0 mt-2 small bg-dark text-light p-2 rounded">PLATFORM_ADMIN_KEY=tu-clave-secreta</pre>
       Reinicia el servidor después de guardar el archivo.
     </div>
+    {% elif config_error %}
+    <div class="alert alert-danger small">
+      <i class="bi bi-shield-exclamation me-1"></i>{{ config_error }}
+    </div>
     {% elif mfa_step %}
     <p class="text-secondary small mb-3">Clave verificada. Introduce el código de tu aplicación de autenticación.</p>
     <form method="post">

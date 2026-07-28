@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import time
 import unittest
 
 from app import create_app
@@ -240,6 +241,8 @@ class TestDocsAccessHybridHttp(unittest.TestCase):
         with client.session_transaction() as sess:
             sess["platform_admin"] = True
             sess["platform_actor"] = "test-platform"
+            sess["platform_started_at"] = int(time.time())
+            sess["platform_last_activity_at"] = int(time.time())
         ok = client.get("/platform/documentacion")
         self.assertEqual(ok.status_code, 200)
         body = ok.get_data(as_text=True)

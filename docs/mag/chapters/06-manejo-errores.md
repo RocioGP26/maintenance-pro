@@ -87,6 +87,7 @@ Todos los códigos siguen [MAG-05](05-convenciones-nombres.md): **`UPPER_SNAKE_C
 |--------|-------------|
 | `INVALID_TOKEN` | 401 |
 | `TOKEN_EXPIRED` | 401 |
+| `TOKEN_REVOKED` | 401 |
 | `LOGIN_FAILED` | 401 |
 | `USER_DISABLED` | 403 |
 | `SESSION_EXPIRED` | 401 |

@@ -8,8 +8,20 @@ La suite documental mantiene un ciclo independiente en
 
 ## [Unreleased]
 
-### Fixed
+### Added
 
+- Sprint 23.2: configuración productiva fail-fast, MFA TOTP obligatorio para la
+  superadministración, sesiones privilegiadas cortas y auditoría de accesos.
+- JWT revocables con validación viva de usuario, tenant, rol y `auth_version`.
+- Allowlist de hosts, confianza explícita en el proxy y pruebas focalizadas de
+  hardening de identidad y plataforma.
+
+### Changed
+
+- Las contraseñas nuevas deben tener entre 12 y 128 caracteres.
+- La vigencia predeterminada de los JWT pasa de 24 a 8 horas.
+
+### Fixed
 - Ignorar `data/object_storage/` en Git (archivos locales de informes y adjuntos).
 
 ## [1.0.15] - 2026-07-28

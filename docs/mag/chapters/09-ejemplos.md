@@ -82,7 +82,7 @@ curl -X POST \
 ```json
 {
   "token": "eyJhbGc...",
-  "expires_in": 86400,
+  "expires_in": 28800,
   "user": {
     "id": 15,
     "nombre": "Admin",

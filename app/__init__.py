@@ -33,8 +33,13 @@ def create_app(config_name: str | None = None):
         config_name = resolve_config_name()
     config_class = config_by_name.get(config_name, config_by_name["default"])
     app.config.from_object(config_class)
+    app.config["ROUSTIX_ENV"] = config_name
     if hasattr(config_class, "init_app"):
         config_class.init_app(app)
+
+    from app.security_hardening import register_runtime_hardening
+
+    register_runtime_hardening(app, production=config_name == "production")
 
     from app.logging_config import setup_logging
 
@@ -66,6 +71,7 @@ def create_app(config_name: str | None = None):
             db.session.rollback()
             raise
 
+    login_manager.session_protection = "strong" if config_name == "production" else "basic"
     login_manager.init_app(app)
     csrf.init_app(app)
     limiter.init_app(app)
@@ -76,13 +82,24 @@ def create_app(config_name: str | None = None):
 
     @app.after_request
     def _security_headers(response):
+        from flask import request
+
         response.headers["X-Frame-Options"] = "SAMEORIGIN"
         response.headers["X-Content-Type-Options"] = "nosniff"
+        response.headers["X-Permitted-Cross-Domain-Policies"] = "none"
         response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
-        if _is_production_env():
+        response.headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=()"
+        if config_name == "production":
             response.headers["Strict-Transport-Security"] = (
                 "max-age=31536000; includeSubDomains"
             )
+        endpoint = request.endpoint or ""
+        if endpoint in {
+            "main.login",
+            "main.recuperar_contrasena",
+            "main.restablecer_contrasena",
+        } or endpoint.startswith("platform."):
+            response.headers["Cache-Control"] = "no-store"
         response.headers["Content-Security-Policy"] = (
             "default-src 'self'; "
             "script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; "

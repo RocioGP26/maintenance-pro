@@ -24,13 +24,12 @@ from app.public_api.contract import (
 from app.models import Empresa, Machine, User, WorkOrder
 from app.modules import MODULO_MANTENIMIENTO, modulos_activos_de, modulos_mag_de
 from app.permissions import normalize_rol
+from app.password_policy import MAX_PASSWORD_LENGTH
 from app.tenancy.decorators import rol_required, tenant_required
 from app.tenancy.jwt_auth import generar_token
 from app.tenancy.queries import query_tenant, verificar_pertenencia
 
 tenancy_api_bp = Blueprint("tenancy_api", __name__)
-
-JWT_EXPIRES_SECONDS = 86400
 
 _ASSET_STATUS_MAG = {
     "operativo": "operational",
@@ -146,7 +145,19 @@ def _login_impl():
         if User.query.filter_by(username=username.strip().lower()).count() > 1:
             return jsonify({"error": mensaje_login_ambiguo(username)}), 400
         return jsonify({"error": "Credenciales inválidas"}), 401
-    if not user.check_password(password) or not user.is_active:
+    if len(password) > MAX_PASSWORD_LENGTH or not user.check_password(password) or not user.is_active:
+        if user.empresa_id:
+            from app import db
+            from app.tenant_activity import registrar_actividad_tenant
+
+            registrar_actividad_tenant(
+                user.empresa_id,
+                "login_failed",
+                user_id=user.id,
+                username=user.username,
+                detalle="Credenciales API rechazadas",
+            )
+            db.session.commit()
         return jsonify({"error": "Credenciales inválidas"}), 401
     if not user.empresa_id or not user.empresa:
         return jsonify({"error": "Usuario sin empresa asignada"}), 403
@@ -160,17 +171,20 @@ def _login_impl():
     if not user.empresa.slug:
         return jsonify({"error": "Empresa sin slug configurado"}), 503
 
+    expires_minutes = max(5, int(current_app.config.get("JWT_EXPIRES_MINUTES", 480)))
     token = generar_token(
         user_id=user.id,
         empresa_id=user.empresa_id,
         empresa_slug=user.empresa.slug,
         rol=normalize_rol(user.rol),
         secret=current_app.config["SECRET_KEY"],
+        auth_version=user.auth_version,
+        expires_minutes=expires_minutes,
     )
     return jsonify(
         {
             "token": token,
-            "expires_in": JWT_EXPIRES_SECONDS,
+            "expires_in": expires_minutes * 60,
             "empresa_id": user.empresa_id,
             "empresa_slug": user.empresa.slug,
             "rol": normalize_rol(user.rol),
