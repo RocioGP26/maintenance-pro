@@ -58,19 +58,22 @@ Programación sugerida: `0 3 * * *` (diario 03:00 UTC).
 
 ### GitHub Actions (backup diario)
 
-El workflow `.github/workflows/backup.yml` ejecuta un `pg_dump` en formato custom
-cada día a las 03:00 UTC, verifica su índice con `pg_restore --list` y conserva
-`backup.dump` junto con su manifiesto durante 30 días.
+El workflow `.github/workflows/backup.yml` utiliza el cliente oficial PostgreSQL
+18 y ejecuta un `pg_dump` custom cada día a las 03:00 UTC. El dump se restaura
+en una base PostgreSQL 18 temporal y se verifican Alembic y las tablas críticas
+antes de publicar el artefacto.
 
-Los archivos de clientes se respaldan por separado; consulte
-`docs/production-storage.md`. Una prueba de recuperación válida incluye base de
-datos y almacenamiento de objetos.
+En la misma ejecución los objetos del bucket operativo se replican
+incrementalmente con claves inmutables a un bucket de recuperación distinto. El artefacto conserva el
+dump, su índice y el manifiesto S3 durante 30 días. Consulte el runbook canónico
+en `docs/production-readiness/backup-restore-runbook.md`.
 
 Configuración en GitHub:
 
 1. Repositorio → **Settings** → **Secrets and variables** → **Actions**
-2. Añadir secret `DATABASE_URL` con la URI de Neon (`postgresql://...?sslmode=require`)
-3. Opcional: ejecutar manualmente desde **Actions** → **Backup Neon** → **Run workflow**
+2. Añadir `DATABASE_URL` y las credenciales S3 indicadas en el runbook.
+3. Configurar un bucket de recuperación diferente al bucket operativo.
+4. Ejecutar manualmente desde **Actions** → **Backup Neon** → **Run workflow**.
 
 ## 3. Restaurar desde un dump
 
@@ -84,10 +87,10 @@ psql $DATABASE_URL -f backups/neon_YYYYMMDD_HHMMSS.sql
 
 ## 4. Migraciones con Flask-Migrate
 
-En cada despliegue, el `Procfile` ejecuta automáticamente:
+En cada despliegue, `scripts/migrate_deploy.py` ejecuta automáticamente:
 
 ```
-flask db upgrade
+python scripts/migrate_deploy.py
 ```
 
 Para desarrollo local:

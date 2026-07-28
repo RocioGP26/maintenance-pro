@@ -3,6 +3,20 @@
 > Este changelog pertenece a la documentación. Los cambios de la aplicación se
 > registran por separado en [`/CHANGELOG.md`](../CHANGELOG.md).
 
+## [1.23.0] — 2026-07-28 · Sprint 23 · Production Readiness
+
+### Added
+
+- Charter general de Production Readiness y bloques 23.1–23.5.
+- Charter de backup y recuperación comprobable.
+- Runbook operativo para restaurar PostgreSQL y almacenamiento S3 como una sola
+  unidad de recuperación.
+
+### Status
+
+- Sprint 23.1 implementado y probado localmente; ejecución remota pendiente de
+  configurar los secretos S3 de GitHub Actions.
+
 ## [1.22.7] — 2026-07-27 · Manual de usuario Maintenance
 
 ### Added

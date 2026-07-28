@@ -10,7 +10,22 @@ La suite documental mantiene un ciclo independiente en
 
 ### Added
 
-- Espacio reservado para cambios aún no publicados.
+- Sprint 23.1: réplica incremental del almacenamiento S3 a un bucket de
+  recuperación independiente, manifiestos auditables y comando
+  `flask backup-storage`.
+- Restauración automática del dump diario en PostgreSQL 18 antes de aceptar y
+  publicar el respaldo.
+
+### Changed
+
+- El workflow `Backup Neon` usa herramientas PostgreSQL 18 y conserva dump,
+  índice y manifiesto S3 tanto en el bucket de recuperación como en GitHub.
+- La restauración temporal omite únicamente la extensión de infraestructura
+  `pg_session_jwt` que pertenece a Neon, manteniendo intacto el dump original.
+- El respaldo S3 se ejecuta como módulo Python para resolver correctamente el
+  paquete `app` dentro de GitHub Actions.
+- El workflow de respaldo instala las dependencias fijadas en `requirements.txt`
+  antes de cargar los módulos de Roustix.
 
 ## [1.0.14] - 2026-07-27
 

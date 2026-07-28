@@ -5,29 +5,152 @@ on:
     - cron: "0 3 * * *"
   workflow_dispatch:
 
+permissions:
+  contents: read
+
+concurrency:
+  group: production-backup
+  cancel-in-progress: false
+
 jobs:
   backup:
     runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    services:
+      restore-postgres:
+        image: postgres:18
+        env:
+          POSTGRES_DB: roustix_restore
+          POSTGRES_USER: restore_user
+          POSTGRES_PASSWORD: restore_password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U restore_user -d roustix_restore"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      STORAGE_BUCKET: ${{ secrets.STORAGE_BUCKET || vars.STORAGE_BUCKET }}
+      STORAGE_ENDPOINT_URL: ${{ secrets.STORAGE_ENDPOINT_URL || vars.STORAGE_ENDPOINT_URL }}
+      STORAGE_REGION: ${{ secrets.STORAGE_REGION || vars.STORAGE_REGION || 'auto' }}
+      STORAGE_ACCESS_KEY_ID: ${{ secrets.STORAGE_ACCESS_KEY_ID }}
+      STORAGE_SECRET_ACCESS_KEY: ${{ secrets.STORAGE_SECRET_ACCESS_KEY }}
+      STORAGE_BACKUP_BUCKET: ${{ secrets.STORAGE_BACKUP_BUCKET || vars.STORAGE_BACKUP_BUCKET }}
+      STORAGE_BACKUP_PREFIX: ${{ vars.STORAGE_BACKUP_PREFIX || 'roustix' }}
+      STORAGE_BACKUP_ENDPOINT_URL: ${{ secrets.STORAGE_BACKUP_ENDPOINT_URL || vars.STORAGE_BACKUP_ENDPOINT_URL }}
+      STORAGE_BACKUP_REGION: ${{ secrets.STORAGE_BACKUP_REGION || vars.STORAGE_BACKUP_REGION || 'auto' }}
+      STORAGE_BACKUP_ACCESS_KEY_ID: ${{ secrets.STORAGE_BACKUP_ACCESS_KEY_ID }}
+      STORAGE_BACKUP_SECRET_ACCESS_KEY: ${{ secrets.STORAGE_BACKUP_SECRET_ACCESS_KEY }}
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      - name: Install PostgreSQL
-        run: sudo apt-get update && sudo apt-get install -y postgresql-client
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
 
-      - name: Backup
+      - name: Instalar dependencias de Roustix
+        run: pip install -r requirements.txt
+
+      - name: Validar configuración obligatoria
+        shell: bash
         run: |
-          URL="${DATABASE_URL//+psycopg/}"
-          pg_dump --format=custom --no-owner --no-acl --file=backup.dump "$URL"
-          pg_restore --list backup.dump > backup.manifest
-        env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          set -euo pipefail
+          required=(
+            DATABASE_URL STORAGE_BUCKET STORAGE_ACCESS_KEY_ID STORAGE_SECRET_ACCESS_KEY
+            STORAGE_BACKUP_BUCKET STORAGE_BACKUP_ACCESS_KEY_ID STORAGE_BACKUP_SECRET_ACCESS_KEY
+          )
+          for key in "${required[@]}"; do
+            if [ -z "${!key:-}" ]; then
+              echo "::error::$key no está configurada para el backup de producción."
+              exit 1
+            fi
+          done
+          if [ "$STORAGE_BUCKET" = "$STORAGE_BACKUP_BUCKET" ] && \
+             [ "${STORAGE_ENDPOINT_URL:-}" = "${STORAGE_BACKUP_ENDPOINT_URL:-}" ]; then
+            echo "::error::El bucket de recuperación debe ser diferente al operativo."
+            exit 1
+          fi
 
-      - name: Upload Backup
+      - name: Crear dump con PostgreSQL 18
+        shell: bash
+        run: |
+          set -euo pipefail
+          URL="${DATABASE_URL//+psycopg/}"
+          docker run --rm --network host \
+            -v "$PWD:/backup" \
+            -e DATABASE_URL="$URL" \
+            postgres:18 \
+            sh -c 'pg_dump --format=custom --no-owner --no-acl --file=/backup/database.dump "$DATABASE_URL"'
+          docker run --rm -v "$PWD:/backup" postgres:18 \
+            pg_restore --list /backup/database.dump > database.manifest
+          test -s database.dump
+          test -s database.manifest
+
+      - name: Restaurar y verificar el dump
+        shell: bash
+        run: |
+          set -euo pipefail
+          # Neon incorpora extensiones de infraestructura que no están
+          # disponibles en la imagen oficial de PostgreSQL. El dump original
+          # permanece completo; solo se omiten en esta restauración portátil.
+          PLATFORM_EXTENSION_PATTERN='(EXTENSION - pg_session_jwt|COMMENT - EXTENSION pg_session_jwt)([[:space:]]|$)'
+          EXCLUDED_ENTRIES=$(grep -Ec "$PLATFORM_EXTENSION_PATTERN" database.manifest || true)
+          grep -Ev "$PLATFORM_EXTENSION_PATTERN" database.manifest > database.restore.list
+          test -s database.restore.list
+          echo "Entradas de infraestructura Neon omitidas en la prueba: $EXCLUDED_ENTRIES"
+
+          docker run --rm --network host \
+            -v "$PWD:/backup" \
+            -e PGPASSWORD=restore_password \
+            postgres:18 \
+            pg_restore --exit-on-error --no-owner --no-acl \
+              -h 127.0.0.1 -p 5432 -U restore_user -d roustix_restore \
+              --use-list=/backup/database.restore.list \
+              /backup/database.dump
+
+          TABLES=$(docker run --rm --network host -e PGPASSWORD=restore_password postgres:18 \
+            psql -h 127.0.0.1 -p 5432 -U restore_user -d roustix_restore -Atc \
+            "SELECT count(*) FROM information_schema.tables WHERE table_schema='public' AND table_name IN ('alembic_version','empresas','users','machines','work_orders');")
+          REVISION=$(docker run --rm --network host -e PGPASSWORD=restore_password postgres:18 \
+            psql -h 127.0.0.1 -p 5432 -U restore_user -d roustix_restore -Atc \
+            "SELECT version_num FROM alembic_version LIMIT 1;")
+          test "$TABLES" = "5"
+          test -n "$REVISION"
+          echo "Restauración verificada en revisión Alembic: $REVISION"
+
+      - name: Replicar almacenamiento S3
+        run: >-
+          python -m scripts.backup_storage
+          --manifest storage.manifest.json
+          --recovery-file database.dump
+          --recovery-file database.manifest
+
+      - name: Publicar evidencia del backup
         uses: actions/upload-artifact@v4
         with:
-          name: roustix-backup
+          name: roustix-backup-${{ github.run_id }}
           path: |
-            backup.dump
-            backup.manifest
+            database.dump
+            database.manifest
+            database.restore.list
+            storage.manifest.json
+          if-no-files-found: error
           retention-days: 30
+
+      - name: Resumen
+        shell: bash
+        run: |
+          {
+            echo "## Backup de producción verificado"
+            echo "- PostgreSQL: dump y restauración real completados con cliente 18"
+            echo "- Almacenamiento: réplica incremental y manifiesto completados"
+            echo "- Artefacto: roustix-backup-${GITHUB_RUN_ID}"
+          } >> "$GITHUB_STEP_SUMMARY"
