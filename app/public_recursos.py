@@ -54,6 +54,12 @@ MTX_CASES: tuple[dict[str, str], ...] = (
 
 RECURSOS_LINKS: tuple[dict[str, str], ...] = (
     {
+        "titulo": "Manual de usuario",
+        "desc": "Paso a paso: activos, OT, preventivos, incidencias y reportes.",
+        "href": "/manual",
+        "icon": "bi-journal-text",
+    },
+    {
         "titulo": "Guía de producto",
         "desc": "Cómo funciona Roustix — mantenimiento e inventario.",
         "href": "/guia",

@@ -3,6 +3,16 @@
 > Este changelog pertenece a la documentación. Los cambios de la aplicación se
 > registran por separado en [`/CHANGELOG.md`](../CHANGELOG.md).
 
+## [1.22.7] — 2026-07-27 · Manual de usuario Maintenance
+
+### Added
+- **Manual de usuario** · [`docs/manual-usuario/`](manual-usuario/README.md) (10 capítulos paso a paso)
+- Vista pública **`/manual`** · `app/public_manual.py` · `templates/landing/manual-usuario.html`
+- Enlace en menú lateral de la app, nav landing, `/recursos`, `/guia` y hub `/docs/`
+
+### Status
+- 🌐 Público: MBB · MAG · MSD · `/guia` · `/manual` · assets MKT · Release Notes · OpenAPI
+
 ## [1.22.6] — 2026-07-23 · Acceso híbrido Docs + guía pública
 
 ### Added

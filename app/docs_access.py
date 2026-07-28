@@ -1,7 +1,7 @@
 """Acceso híbrido a la suite documental Roustix Docs.
 
 Política (MDO / Publishing):
-  Público  → marca e integración (MBB, OpenAPI) + MAG/MSD HTML (/guide) + activos MKT + /guia
+  Público  → marca e integración (MBB, OpenAPI) + MAG/MSD HTML (/guide) + activos MKT + /guia + /manual
   Privado  → MAG/MSD .md fuente, MRG .md, MCM, Biblia MKT, arquitectura, diseño e ingeniería
 
 Configuración:

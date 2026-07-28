@@ -249,10 +249,24 @@ def _validar_technician_id_tenant(tech_id: Optional[int], label: str = "técnico
     return None
 
 
+_AUTH_PUBLIC_ENDPOINTS = (
+    "main.login",
+    "main.index",
+    "main.faq",
+    "main.demo",
+    "main.contacto",
+    "main.recursos",
+    "main.guia_producto",
+    "main.manual_usuario",
+    "main.recuperar_contrasena",
+    "main.restablecer_contrasena",
+)
+
+
 @bp.before_request
 def _require_login():
     ep = request.endpoint or ""
-    if ep.startswith("onboarding.") or ep in ("main.login", "main.index", "main.faq", "main.demo", "main.contacto", "main.recursos", "main.guia_producto"):
+    if ep.startswith("onboarding.") or ep in _AUTH_PUBLIC_ENDPOINTS:
         return
     if not current_user.is_authenticated:
         return redirect(url_for("main.login", next=request.url))
@@ -264,7 +278,7 @@ def _require_login():
 def _enforce_role_permissions():
     """Aplica permisos por rol en rutas de escritura y formularios."""
     ep = request.endpoint or ""
-    if ep.startswith("onboarding.") or ep in ("main.login", "main.index", "main.faq", "main.demo", "main.contacto", "main.recursos", "main.guia_producto"):
+    if ep.startswith("onboarding.") or ep in _AUTH_PUBLIC_ENDPOINTS:
         return
     if not current_user.is_authenticated:
         return
@@ -392,6 +406,79 @@ def login():
                 return redirect(url_for("main.dashboard"))
         flash("Usuario o contraseña incorrectos.", "danger")
     return render_template("login.html")
+
+
+@bp.route("/recuperar-contrasena", methods=["GET", "POST"])
+@limiter.limit("5 per 15 minutes", methods=["POST"])
+def recuperar_contrasena():
+    """Solicitud self-service de restablecimiento por correo corporativo."""
+    if current_user.is_authenticated:
+        return redirect(url_for("main.dashboard"))
+    email = ""
+    empresa_slug = ""
+    if request.method == "POST":
+        from app.password_reset_service import request_password_reset
+
+        email = request.form.get("email", "").strip()
+        empresa_slug = request.form.get("empresa_slug", "").strip()
+        message = request_password_reset(email, empresa_slug=empresa_slug or None)
+        if message.startswith("Ingresa un correo"):
+            flash(message, "danger")
+            return render_template(
+                "password_reset/request.html",
+                email=email,
+                empresa_slug=empresa_slug,
+            )
+        flash(message, "success")
+        return redirect(url_for("main.login"))
+    return render_template("password_reset/request.html", email=email, empresa_slug=empresa_slug)
+
+
+@bp.route("/restablecer-contrasena/<token>", methods=["GET", "POST"])
+@limiter.limit("10 per 15 minutes", methods=["POST"])
+def restablecer_contrasena(token: str):
+    """Consume el enlace del correo y define una nueva contraseña."""
+    from app.password_policy import PASSWORD_REQUIREMENTS_TEXT
+    from app.password_reset_service import consume_password_reset, get_valid_reset
+
+    if current_user.is_authenticated:
+        return redirect(url_for("main.dashboard"))
+
+    reset = get_valid_reset(token)
+    if request.method == "POST":
+        if reset is None:
+            flash("El enlace no es válido o ya expiró. Solicita uno nuevo.", "danger")
+            return redirect(url_for("main.recuperar_contrasena"))
+        password = request.form.get("password", "")
+        confirm = request.form.get("password_confirm", "")
+        if password != confirm:
+            flash("Las contraseñas no coinciden.", "danger")
+            return render_template(
+                "password_reset/reset.html",
+                token=token,
+                reset=reset,
+                password_requirements=PASSWORD_REQUIREMENTS_TEXT,
+            )
+        error = consume_password_reset(token, password)
+        if error:
+            flash(error, "danger")
+            return render_template(
+                "password_reset/reset.html",
+                token=token,
+                reset=get_valid_reset(token),
+                password_requirements=PASSWORD_REQUIREMENTS_TEXT,
+            )
+        flash("Contraseña actualizada. Ya puedes ingresar con tu nueva clave.", "success")
+        return redirect(url_for("main.login"))
+
+    if reset is None:
+        flash("El enlace no es válido o ya expiró. Solicita uno nuevo.", "warning")
+    return render_template(
+        "password_reset/reset.html",
+        token=token,
+        reset=reset,
+        password_requirements=PASSWORD_REQUIREMENTS_TEXT,
+    )
 
 
 @bp.route("/logout", methods=["POST"])
@@ -1722,6 +1809,42 @@ def guia_producto():
     ctx["guia_inventario"] = GUIA_INVENTARIO
     ctx["guia_crecimiento"] = GUIA_CRECIMIENTO
     return render_template("landing/guia-producto.html", **ctx)
+
+
+@bp.route("/manual")
+def manual_usuario():
+    """Manual de usuario público — Roustix Maintenance (paso a paso)."""
+    from app.landing_service import public_page_context
+    from app.public_manual import (
+        MANUAL_ACCESO,
+        MANUAL_CREAR_OT,
+        MANUAL_EJECUTAR_OT,
+        MANUAL_ESTADOS_ACTIVO,
+        MANUAL_ESTADOS_OT,
+        MANUAL_FAQ,
+        MANUAL_INCIDENCIA,
+        MANUAL_INICIO_BLOQUES,
+        MANUAL_INTRO,
+        MANUAL_ROLES,
+        MANUAL_RUTAS,
+        MANUAL_TOC,
+    )
+
+    ctx = public_page_context()
+    ctx["now_year"] = date.today().year
+    ctx["manual_intro"] = MANUAL_INTRO
+    ctx["manual_toc"] = MANUAL_TOC
+    ctx["manual_acceso"] = MANUAL_ACCESO
+    ctx["manual_roles"] = MANUAL_ROLES
+    ctx["manual_estados_activo"] = MANUAL_ESTADOS_ACTIVO
+    ctx["manual_estados_ot"] = MANUAL_ESTADOS_OT
+    ctx["manual_crear_ot"] = MANUAL_CREAR_OT
+    ctx["manual_ejecutar_ot"] = MANUAL_EJECUTAR_OT
+    ctx["manual_incidencia"] = MANUAL_INCIDENCIA
+    ctx["manual_inicio_bloques"] = MANUAL_INICIO_BLOQUES
+    ctx["manual_faq"] = MANUAL_FAQ
+    ctx["manual_rutas"] = MANUAL_RUTAS
+    return render_template("landing/manual-usuario.html", **ctx)
 
 
 @bp.route("/recursos")

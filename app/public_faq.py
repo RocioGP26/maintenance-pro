@@ -155,6 +155,20 @@ FAQ_SECTIONS: tuple[dict, ...] = (
         ),
     },
     {
+        "id": "acceso",
+        "title": "Acceso y cuenta",
+        "entries": (
+            {
+                "q": "¿Olvidaste tu contraseña?",
+                "a": (
+                    "Haz clic en Ingresar. En la pantalla de inicio de sesión, elige "
+                    "«¿Olvidaste tu contraseña?», ingresa tu correo corporativo y "
+                    "recibirás un enlace seguro para restablecerla."
+                ),
+            },
+        ),
+    },
+    {
         "id": "diferenciacion",
         "title": "Competencia y diferenciación",
         "entries": (

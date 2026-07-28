@@ -7,7 +7,9 @@
 > MPA describe cómo está construido Roustix. MAG explica cómo integrar la API. **MRG explica cómo funciona el producto** — en lenguaje de negocio, no de código.
 
 **🔒 Acceso:** portal `/mrg/` y Markdown = **interno** (login).  
-**🌐 Vista cliente:** [`/guia`](/guia) — HTML maquetado sin Sprint/ALIGN/gaps. Ver [ACCESS.md](../ACCESS.md#vista-pública-de-producto-mrg--guia).
+**🌐 Vista cliente:** [`/guia`](/guia) — HTML maquetado sin Sprint/ALIGN/gaps.  
+**📘 Manual de usuario:** [`/manual`](/manual) — paso a paso operativo · fuente [`manual-usuario/`](../manual-usuario/README.md).  
+Ver [ACCESS.md](../ACCESS.md#vista-pública-de-producto-mrg--guia).
 
 ## Ver manual (equipo)
 

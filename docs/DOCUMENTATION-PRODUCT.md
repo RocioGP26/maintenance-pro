@@ -61,7 +61,7 @@ Hoy Flask aplica `DOCS_ACCESS_POLICY=hybrid`:
 
 | Público | Privado (login) |
 |---------|-----------------|
-| MBB · MAG · MSD · **`/guia`** · assets MKT / MTX-CASE | MCM · MPA · MDL · MUX · MRL · MDO · Developer · MKT capítulos · **MRG .md** |
+| MBB · MAG · MSD · **`/guia`** · **`/manual`** · assets MKT / MTX-CASE | MCM · MPA · MDL · MUX · MRL · MDO · Developer · MKT capítulos · **MRG .md** |
 
 → Política: [ACCESS.md](ACCESS.md)  
 → Publishing (MkDocs · Docusaurus): [publishing/README.md](publishing/README.md)

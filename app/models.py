@@ -189,6 +189,12 @@ class Empresa(db.Model):
         lazy="dynamic",
         cascade="all, delete-orphan",
     )
+    password_resets = db.relationship(
+        "PasswordReset",
+        back_populates="empresa",
+        lazy="dynamic",
+        cascade="all, delete-orphan",
+    )
 
     @property
     def email_verificado(self) -> bool:
@@ -724,6 +730,38 @@ class EmailVerification(db.Model):
     user = db.relationship(
         "User",
         backref=db.backref("verificaciones_email", lazy="dynamic", cascade="all, delete-orphan"),
+    )
+
+
+class PasswordReset(db.Model):
+    """Solicitud de restablecimiento; el token crudo nunca se persiste."""
+
+    __tablename__ = "password_resets"
+
+    id = db.Column(db.Integer, primary_key=True)
+    empresa_id = db.Column(
+        db.Integer,
+        db.ForeignKey("empresas.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    user_id = db.Column(
+        db.Integer,
+        db.ForeignKey("users.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    email = db.Column(db.String(120), nullable=False, index=True)
+    token_hash = db.Column(db.String(64), nullable=False, unique=True, index=True)
+    expires_at = db.Column(db.DateTime, nullable=False, index=True)
+    sent_at = db.Column(db.DateTime, nullable=True)
+    used_at = db.Column(db.DateTime, nullable=True, index=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+
+    empresa = db.relationship("Empresa", back_populates="password_resets")
+    user = db.relationship(
+        "User",
+        backref=db.backref("password_resets", lazy="dynamic", cascade="all, delete-orphan"),
     )
 
 

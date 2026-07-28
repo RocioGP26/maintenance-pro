@@ -17,7 +17,7 @@ Capítulo completo de correos transaccionales. Todos comparten shell `mtx-email`
 |----|-----------|---------|
 | MTX-EML-001 | Shell base | — |
 | MTX-EML-010 | Bienvenida | Registro completado |
-| MTX-EML-011 | Recuperar contraseña | Reset request |
+| MTX-EML-011 | Recuperar contraseña | Reset request · `templates/emails/password_reset.*` · `/recuperar-contrasena` |
 | MTX-EML-012 | Nueva OT | OT asignada a técnico |
 | MTX-EML-013 | Trial | Inicio periodo prueba |
 | MTX-EML-014 | Factura | Emisión factura |

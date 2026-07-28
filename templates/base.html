@@ -322,6 +322,10 @@
       </nav>
       <div class="mt-auto sidebar-footer-actions">
         <div class="text-center text-white-50 small py-1" title="Versión de Roustix">v{{ app_version }}</div>
+        <a href="{{ url_for('main.manual_usuario') }}" target="_blank" rel="noopener"
+           class="nav-link text-white-50 small py-1 px-3">
+          <i class="bi bi-journal-text me-2"></i> Manual de usuario
+        </a>
         {% if mod_mant and perm.reportar_incidencia and not perm.solicitante and not perm.vendedor and not perm.tecnico %}
         <a href="{{ url_for('main.incidencia') }}" class="btn btn-report-incident w-100 rounded-0 d-flex align-items-center justify-content-center gap-2">
           <i class="bi bi-exclamation-triangle-fill"></i> Reportar Incidencia

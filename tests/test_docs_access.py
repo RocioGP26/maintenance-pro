@@ -74,6 +74,7 @@ class TestDocsAccessHybridHttp(unittest.TestCase):
             "/mag/",
             "/msd/",
             "/guia",
+            "/manual",
             "/api/v1/openapi.yaml",
             "/mkt/assets/brochure-corporativo.html",
             "/mkt/mtx-case/README.md",
@@ -94,6 +95,17 @@ class TestDocsAccessHybridHttp(unittest.TestCase):
         self.assertNotIn("Sprint 10", body)
         self.assertNotIn("ALIGN", body)
         public.close()
+
+    def test_manual_usuario_public(self) -> None:
+        client = self.app.test_client()
+        response = client.get("/manual")
+        self.assertEqual(response.status_code, 200)
+        body = response.get_data(as_text=True)
+        self.assertIn("Roustix Maintenance", body)
+        self.assertIn("Órdenes de trabajo", body)
+        self.assertNotIn("Sprint 10", body)
+        self.assertNotIn("ALIGN", body)
+        response.close()
 
     def test_mag_portal_public_and_clean(self) -> None:
         client = self.app.test_client()
@@ -216,6 +228,7 @@ class TestDocsAccessHybridHttp(unittest.TestCase):
         self.assertIn('href="/mag/"', body)
         self.assertIn('href="/msd/"', body)
         self.assertIn('href="/guia"', body)
+        self.assertIn('href="/manual"', body)
         response.close()
 
     def test_platform_documentacion_requires_superadmin(self) -> None:

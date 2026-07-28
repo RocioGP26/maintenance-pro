@@ -19,6 +19,7 @@ La suite documental usa una estrategia **híbrida**: lo que ayuda a evaluar, int
 | 08 | **MSD** SDK Portal | `/msd/` · `/msd/guide/*` | 🌐 Híbrido | HTML público; strategy / NOMENCLATURE / `.md` privados |
 | 11 | **MRG** Reference | `/mrg/` | 🔒 Privado | Fuente Markdown interna (ALIGN, gaps) |
 | — | **Guía de producto** | `/guia` | 🌐 Público | Vista maquetada cliente (desde MRG) |
+| — | **Manual de usuario** | `/manual` | 🌐 Público | Paso a paso Maintenance (fuente `docs/manual-usuario/`) |
 | 10 | Release Notes | `/docs/release-notes/` | 🌐 Público | Historial para clientes |
 | — | OpenAPI | `/api/v1/openapi.*` | 🌐 Público | Contrato para integradores |
 | 02 | **MDL** | `/mdl/` | 🔒 Privado | Tokens UI internos |
@@ -67,10 +68,14 @@ MKT **no** es un portal público completo. Produce activos públicos, pero la gu
 |------|-----------|-----------|
 | **Fuente interna** | `docs/mrg/**/*.md` · portal `/mrg/` | Implementadores · soporte · QA · producto |
 | **Vista cliente** | `/guia` | Prospectos · clientes · leads |
+| **Manual de usuario** | `/manual` | Clientes · operadores · soporte |
 
 La guía pública **no** incluye códigos Sprint, matrices ALIGN, gaps ni enlaces a auditorías. Habla de capacidades y valor. El Markdown sigue siendo la fuente de verdad para el equipo.
 
-→ Template: `templates/landing/guia-producto.html` · contenido: `app/public_guia.py`
+El **manual de usuario** es la guía operativa paso a paso (login, OT, incidencias, etc.). Fuente: `docs/manual-usuario/` · vista: `/manual`.
+
+→ Template: `templates/landing/guia-producto.html` · contenido: `app/public_guia.py`  
+→ Manual: `templates/landing/manual-usuario.html` · contenido: `app/public_manual.py`
 
 ---
 
@@ -164,7 +169,7 @@ Ahí están centralizados MCM · MPA · MDL · MUX · MRL · MDO · MRG · MKT �
 
 Resumen operativo (sin el plan técnico):
 
-1. **Sitio público:** MBB · MAG · MSD · Release Notes · activos MKT · `/guia`
+1. **Sitio público:** MBB · MAG · MSD · Release Notes · activos MKT · `/guia` · `/manual`
 2. **Intranet:** MCM · MPA · MDL · MUX · MRL · MDO · Developer · MRG Markdown · MKT capítulos · **Publishing**
 
 ---

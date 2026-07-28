@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  {% include "_favicon.html" %}
+  <title>Restablecer contraseña — {{ app_name }}</title>
+  {% from "_cdn_assets.html" import google_fonts_inter, bootstrap_css, bootstrap_icons_css %}
+  {{ google_fonts_inter() }}
+  {{ bootstrap_css() }}
+  {{ bootstrap_icons_css() }}
+  <link href="{{ url_for('static', filename='css/app.css') }}" rel="stylesheet">
+</head>
+<body class="login-page">
+  <div class="card login-card">
+    <div class="card-body p-4 p-md-5">
+      <div class="text-center mb-4">
+        <i class="bi bi-shield-lock text-primary fs-1" aria-hidden="true"></i>
+        <h1 class="h4 mt-2">Nueva contraseña</h1>
+        {% if reset %}
+        <p class="text-muted small mb-0">
+          Cuenta <strong>{{ reset.user.username }}</strong>
+          {% if reset.empresa %}· {{ reset.empresa.razon_social }}{% endif %}
+        </p>
+        {% endif %}
+      </div>
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% for cat, msg in messages %}
+          <div class="alert alert-{{ cat }} py-2 small" role="alert">{{ msg }}</div>
+        {% endfor %}
+      {% endwith %}
+      {% if reset %}
+      <form method="post" action="{{ url_for('main.restablecer_contrasena', token=token) }}">
+        {% include "_csrf.html" %}
+        <div class="mb-3">
+          <label class="form-label" for="password">Nueva contraseña</label>
+          <input type="password" class="form-control form-control-lg" id="password" name="password"
+                 required autocomplete="new-password" autofocus minlength="10">
+          <div class="form-text">{{ password_requirements }}</div>
+        </div>
+        <div class="mb-4">
+          <label class="form-label" for="password_confirm">Confirmar contraseña</label>
+          <input type="password" class="form-control form-control-lg" id="password_confirm"
+                 name="password_confirm" required autocomplete="new-password" minlength="10">
+        </div>
+        <button type="submit" class="btn btn-primary btn-lg w-100">Guardar contraseña</button>
+      </form>
+      {% else %}
+      <p class="text-center small mb-0">
+        <a class="btn btn-outline-primary" href="{{ url_for('main.recuperar_contrasena') }}">
+          Solicitar un enlace nuevo
+        </a>
+      </p>
+      {% endif %}
+      <p class="text-center small text-muted mt-4 mb-0">
+        <a href="{{ url_for('main.login') }}">Volver a Ingresar</a>
+      </p>
+    </div>
+  </div>
+</body>
+</html>

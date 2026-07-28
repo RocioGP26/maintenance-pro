@@ -22,6 +22,8 @@ PUBLIC_ENDPOINTS = {
     "main.contacto",
     "main.recursos",
     "main.guia_producto",
+    "main.recuperar_contrasena",
+    "main.restablecer_contrasena",
     "onboarding.wizard",
     "onboarding.verify_email",
     "static",

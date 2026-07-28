@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  {% include "_favicon.html" %}
+  <title>Manual de usuario — Roustix Maintenance</title>
+  <meta name="description" content="{{ manual_intro }}">
+  {% from "_cdn_assets.html" import google_fonts_inter_extra_bold, bootstrap_icons_css %}
+  {{ google_fonts_inter_extra_bold() }}
+  {{ bootstrap_icons_css() }}
+  <link href="{{ url_for('static', filename='css/landing.css') }}" rel="stylesheet">
+</head>
+<body class="landing-body">
+  {% include "landing/_nav.html" %}
+
+  <main class="landing-public-page landing-guia landing-manual">
+    <section class="landing-section landing-section--soft landing-guia-hero">
+      <div class="container-xl landing-public-page-head">
+        <p class="landing-eyebrow">Manual de usuario · v1.0</p>
+        <h1 class="landing-section-title">Roustix Maintenance</h1>
+        <p class="landing-section-sub mx-auto text-center">{{ manual_intro }}</p>
+        <p class="landing-guia-tagline">Toda la operación. Una sola plataforma.</p>
+        <div class="landing-hero-ctas justify-content-center landing-guia-toolbar">
+          <button type="button" class="landing-btn landing-btn-primary" onclick="window.print()">
+            <i class="bi bi-download"></i> Descargar PDF
+          </button>
+          <a href="{{ url_for('main.login') }}" class="landing-btn landing-btn-outline">
+            <i class="bi bi-box-arrow-in-right"></i> Ir al sistema
+          </a>
+          <a href="{{ url_for('main.guia_producto') }}" class="landing-btn landing-btn-ghost">
+            Guía de producto
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <div class="container-xl landing-manual-layout">
+      <nav class="landing-manual-toc" aria-label="Contenido del manual">
+        <p class="landing-manual-toc-title">Contenido</p>
+        <ol>
+          {% for item in manual_toc %}
+          <li><a href="#{{ item.id }}">{{ item.titulo }}</a></li>
+          {% endfor %}
+        </ol>
+      </nav>
+
+      <div class="landing-manual-body">
+        <section class="landing-manual-section" id="acceso">
+          <h2>1. Acceso y primeros pasos</h2>
+          <h3>Iniciar sesión</h3>
+          <ol class="landing-guia-list">
+            {% for paso in manual_acceso.pasos_login %}
+            <li>{{ paso }}</li>
+            {% endfor %}
+          </ol>
+          <h3>Recuperar contraseña</h3>
+          <ol class="landing-guia-list">
+            {% for paso in manual_acceso.recuperar %}
+            <li>{{ paso }}</li>
+            {% endfor %}
+          </ol>
+          <h3>Checklist de arranque (administrador)</h3>
+          <ul class="landing-guia-list">
+            {% for item in manual_acceso.checklist_admin %}
+            <li>{{ item }}</li>
+            {% endfor %}
+          </ul>
+        </section>
+
+        <section class="landing-manual-section" id="roles">
+          <h2>2. Roles y menú</h2>
+          <p>El menú se adapta a tu rol, área y módulos activos. Lo no autorizado no aparece.</p>
+          <ul class="landing-guia-roles">
+            {% for rol, desc in manual_roles %}
+            <li><strong>{{ rol }}</strong> — {{ desc }}</li>
+            {% endfor %}
+          </ul>
+          <p class="mt-3"><strong>Importante:</strong> <em>Repuestos técnicos</em> son piezas de mantenimiento.
+            <em>Inventario comercial</em> es el módulo de compra/venta (si está contratado).</p>
+        </section>
+
+        <section class="landing-manual-section" id="activos">
+          <h2>3. Activos</h2>
+          <p>Menú: <strong>Mantenimiento → Activos → Listado</strong> (<code>/activos</code>).</p>
+          <ol class="landing-guia-list">
+            <li>Crea primero los <strong>tipos de activo</strong>.</li>
+            <li>Registra el activo: nombre, tipo, ubicación, criticidad y estado.</li>
+            <li>Completa campos del sector o personalizados si aplica.</li>
+            <li>Desde la ficha consulta historial, ficha técnica y cronogramas.</li>
+          </ol>
+          <h3>Estados del activo</h3>
+          <ul class="landing-guia-roles">
+            {% for estado, desc in manual_estados_activo %}
+            <li><strong>{{ estado }}</strong> — {{ desc }}</li>
+            {% endfor %}
+          </ul>
+        </section>
+
+        <section class="landing-manual-section" id="ordenes">
+          <h2>4. Órdenes de trabajo</h2>
+          <p>Menú: <strong>Mantenimiento → Órdenes → Listado</strong> (<code>/ordenes</code>).
+            Tipos: preventivo, correctivo y emergencia. Ejecución interna o externa.</p>
+          <h3>Estados de la OT</h3>
+          <ul class="landing-guia-roles">
+            {% for estado, desc in manual_estados_ot %}
+            <li><strong>{{ estado }}</strong> — {{ desc }}</li>
+            {% endfor %}
+          </ul>
+          <h3>Crear una OT</h3>
+          <ol class="landing-guia-list">
+            {% for paso in manual_crear_ot %}
+            <li>{{ paso }}</li>
+            {% endfor %}
+          </ol>
+          <h3>Ejecutar y cerrar</h3>
+          <ol class="landing-guia-list">
+            {% for paso in manual_ejecutar_ot %}
+            <li>{{ paso }}</li>
+            {% endfor %}
+          </ol>
+          <p>Costo total OT = mano de obra + repuestos + herramientas + servicio externo.</p>
+        </section>
+
+        <section class="landing-manual-section" id="preventivo">
+          <h2>5. Preventivo y calendario</h2>
+          <ol class="landing-guia-list">
+            <li>Define planes o cronogramas en el activo (prioridad: criticidad alta y crítica).</li>
+            <li>Genera OT desde el cronograma, la planeación mensual o las automatizaciones.</li>
+            <li>Sigue la carga en <strong>Calendario</strong> (<code>/calendario</code>) y en Inicio → Preventivos de hoy.</li>
+            <li>Mide cumplimiento en Análisis → Mantenimiento.</li>
+          </ol>
+        </section>
+
+        <section class="landing-manual-section" id="incidencias">
+          <h2>6. Incidencias</h2>
+          <ol class="landing-guia-list">
+            {% for paso in manual_incidencia %}
+            <li>{{ paso }}</li>
+            {% endfor %}
+          </ol>
+        </section>
+
+        <section class="landing-manual-section" id="repuestos">
+          <h2>7. Repuestos técnicos</h2>
+          <p>Menú: <strong>Mantenimiento → Repuestos técnicos</strong> (<code>/inventario</code>).</p>
+          <ol class="landing-guia-list">
+            <li>Alta del ítem: código, descripción, unidad, costo unitario y stock mínimo.</li>
+            <li>Registra entradas de stock.</li>
+            <li>Al consumir en una OT se descuenta inventario y se carga el costo a la orden.</li>
+            <li>Atiende las alertas de mínimo desde Inicio.</li>
+          </ol>
+        </section>
+
+        <section class="landing-manual-section" id="analisis">
+          <h2>8. Inicio y reportes</h2>
+          <p><strong>Inicio</strong> responde «¿qué requiere mi atención hoy?». No sustituye el análisis histórico.</p>
+          <ul class="landing-guia-roles">
+            {% for bloque, desc in manual_inicio_bloques %}
+            <li><strong>{{ bloque }}</strong> — {{ desc }}</li>
+            {% endfor %}
+          </ul>
+          <p class="mt-3">Indicadores (MTBF, MTTR, cumplimiento, costos):
+            <strong>Inteligencia → Análisis → Mantenimiento</strong> y <strong>Análisis de costos</strong>.</p>
+        </section>
+
+        <section class="landing-manual-section" id="admin">
+          <h2>9. Administración</h2>
+          <ul class="landing-guia-list">
+            <li><strong>Usuarios y roles</strong> (<code>/equipo</code>): alta, rol, área y tarifa hora.</li>
+            <li><strong>Configuración de empresa</strong>: datos fiscales, moneda, zona horaria y módulos.</li>
+            <li><strong>Campos personalizados</strong>: atributos extra por sector.</li>
+            <li><strong>Seguridad</strong>: sesiones y políticas de acceso.</li>
+            <li><strong>API</strong>: solo Superadmin o Admin de área TI/TIC/Sistemas.</li>
+          </ul>
+        </section>
+
+        <section class="landing-manual-section" id="faq">
+          <h2>10. Preguntas frecuentes</h2>
+          {% for pregunta, respuesta in manual_faq %}
+          <article class="landing-manual-faq">
+            <h3>{{ pregunta }}</h3>
+            <p>{{ respuesta }}</p>
+          </article>
+          {% endfor %}
+
+          <h3 class="mt-4">Mapa rápido de rutas</h3>
+          <div class="landing-manual-routes">
+            {% for nombre, ruta in manual_rutas %}
+            <div><span>{{ nombre }}</span><code>{{ ruta }}</code></div>
+            {% endfor %}
+          </div>
+        </section>
+      </div>
+    </div>
+
+    <section class="landing-cta-band">
+      <div class="container-xl text-center">
+        <h2>¿Listo para operar?</h2>
+        <p>Entra a Roustix o revisa la guía de producto si aún estás evaluando la plataforma.</p>
+        <div class="landing-hero-ctas justify-content-center">
+          <a href="{{ url_for('main.login') }}" class="landing-btn landing-btn-light">
+            <i class="bi bi-box-arrow-in-right"></i> Iniciar sesión
+          </a>
+          <a href="{{ url_for('main.guia_producto') }}" class="landing-btn landing-btn-outline landing-btn-outline-light">
+            Guía de producto
+          </a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  {% include "landing/_footer.html" %}
+</body>
+</html>
