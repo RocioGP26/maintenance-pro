@@ -15,7 +15,7 @@ login_manager.login_view = "main.login"
 login_manager.login_message = "Inicia sesión para acceder a esta página."
 login_manager.login_message_category = "warning"
 csrf = CSRFProtect()
-limiter = Limiter(key_func=get_remote_address, default_limits=[], storage_uri="memory://")
+limiter = Limiter(key_func=get_remote_address, default_limits=[])
 
 
 def _is_production_env() -> bool:
@@ -36,6 +36,11 @@ def create_app(config_name: str | None = None):
     app.config["ROUSTIX_ENV"] = config_name
     if hasattr(config_class, "init_app"):
         config_class.init_app(app)
+    # Se deriva en cada factory para que tests, workers y entornos inyectados no
+    # conserven el URI calculado al importar config.py.
+    app.config["RATELIMIT_STORAGE_URI"] = (
+        (app.config.get("REDIS_URL") or "").strip() or "memory://"
+    )
 
     from app.security_hardening import register_runtime_hardening
 
@@ -44,6 +49,10 @@ def create_app(config_name: str | None = None):
     from app.logging_config import setup_logging
 
     setup_logging(app)
+
+    from app.observability import register_observability
+
+    register_observability(app)
 
     db.init_app(app)
     migrate.init_app(app, db)

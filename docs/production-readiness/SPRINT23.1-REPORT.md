@@ -36,6 +36,8 @@
 - Objetos copiados al bucket de recuperación: 2.
 - Archivos de recuperación adicionales: dump e índice PostgreSQL.
 - Artefacto auditable: `roustix-backup-30389728697`.
+- Segunda ejecución operativa aprobada: GitHub Actions `30406614706`.
+- Creación y restauración del dump, réplica S3 y publicación de evidencia: OK.
 
 ## Definition of Done
 

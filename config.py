@@ -62,6 +62,13 @@ def _env_int(name: str, default: int) -> int:
         return default
 
 
+def _env_float(name: str, default: float) -> float:
+    try:
+        return float(os.environ.get(name, str(default)).strip())
+    except (TypeError, ValueError):
+        return default
+
+
 class Config:
     """Valores compartidos entre entornos."""
 
@@ -105,6 +112,27 @@ class Config:
     # Logging estructurado
     LOG_LEVEL = os.environ.get("LOG_LEVEL", "INFO").upper()
     LOG_JSON = _env_flag("LOG_JSON", False)
+    SENTRY_DSN = os.environ.get("SENTRY_DSN", "").strip()
+    SENTRY_TRACES_SAMPLE_RATE = _env_float("SENTRY_TRACES_SAMPLE_RATE", 0.1)
+    METRICS_TOKEN = os.environ.get("METRICS_TOKEN", "").strip()
+    OPS_ALERT_COOLDOWN_SECONDS = _env_int("OPS_ALERT_COOLDOWN_SECONDS", 300)
+    OPS_ALERT_EMAIL = os.environ.get("OPS_ALERT_EMAIL", "").strip()
+    DB_HEALTH_DEGRADED_MS = _env_int("DB_HEALTH_DEGRADED_MS", 750)
+
+    # Redis/Render Key Value: límites compartidos, locks y heartbeat de workers.
+    REDIS_URL = os.environ.get("REDIS_URL", "").strip()
+    RATELIMIT_STORAGE_URI = REDIS_URL or "memory://"
+    RATELIMIT_HEADERS_ENABLED = True
+    DISTRIBUTED_RATE_LIMITS_REQUIRED = _env_flag("DISTRIBUTED_RATE_LIMITS_REQUIRED", False)
+    REDIS_HEALTH_DEGRADED_MS = _env_int("REDIS_HEALTH_DEGRADED_MS", 250)
+    WORKER_HEARTBEAT_REQUIRED = _env_flag("WORKER_HEARTBEAT_REQUIRED", False)
+    WORKER_HEARTBEAT_MAX_AGE_SECONDS = _env_int("WORKER_HEARTBEAT_MAX_AGE_SECONDS", 90)
+    WORKER_POLL_SECONDS = _env_float("WORKER_POLL_SECONDS", 2.0)
+    WORKER_WEBHOOK_BATCH_SIZE = _env_int("WORKER_WEBHOOK_BATCH_SIZE", 50)
+    WORKER_MAINTENANCE_ENABLED = _env_flag("WORKER_MAINTENANCE_ENABLED", False)
+    WORKER_MAINTENANCE_INTERVAL_SECONDS = _env_int(
+        "WORKER_MAINTENANCE_INTERVAL_SECONDS", 3600
+    )
 
     # Arranque: tareas pesadas desactivadas por defecto en producción
     RUN_STARTUP_TASKS = _env_flag("RUN_STARTUP_TASKS", False)
@@ -158,6 +186,7 @@ class ProductionConfig(Config):
     SESSION_COOKIE_SECURE = True
     REMEMBER_COOKIE_SECURE = True
     LOG_JSON = True
+    DISTRIBUTED_RATE_LIMITS_REQUIRED = True
     SQLALCHEMY_DATABASE_URI = normalize_database_url(
         os.environ.get("DATABASE_URL", _default_sqlite_uri())
     )
@@ -167,6 +196,23 @@ class ProductionConfig(Config):
         from app.security_hardening import enforce_production_configuration
 
         enforce_production_configuration(app)
+
+
+class WorkerConfig(Config):
+    """Proceso sin HTTP: PostgreSQL, Redis, webhooks y tareas periódicas."""
+
+    DEBUG = False
+    LOG_JSON = True
+    DISTRIBUTED_RATE_LIMITS_REQUIRED = True
+    SQLALCHEMY_DATABASE_URI = normalize_database_url(
+        os.environ.get("DATABASE_URL", _default_sqlite_uri())
+    )
+
+    @staticmethod
+    def init_app(app) -> None:
+        from app.security_hardening import enforce_worker_configuration
+
+        enforce_worker_configuration(app)
 
 
 class TestingConfig(Config):
@@ -194,6 +240,7 @@ class TestingConfig(Config):
 config_by_name: dict[str, type[Config]] = {
     "development": DevelopmentConfig,
     "production": ProductionConfig,
+    "worker": WorkerConfig,
     "testing": TestingConfig,
     "default": DevelopmentConfig,
 }

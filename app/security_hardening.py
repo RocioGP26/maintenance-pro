@@ -70,6 +70,12 @@ def production_configuration_errors(config: Mapping) -> list[str]:
             errors.append(
                 "PLATFORM_ADMIN_TOTP_SECRET válido es obligatorio cuando el panel de plataforma está habilitado."
             )
+    if bool(config.get("DISTRIBUTED_RATE_LIMITS_REQUIRED")):
+        redis_url = _value(config, "REDIS_URL").lower()
+        if not redis_url.startswith(("redis://", "rediss://")):
+            errors.append(
+                "REDIS_URL debe usar Redis/Render Key Value para rate limiting distribuido."
+            )
     return errors
 
 
@@ -78,6 +84,22 @@ def enforce_production_configuration(app) -> None:
     if errors:
         detail = "\n- ".join(errors)
         raise RuntimeError(f"Configuración productiva insegura:\n- {detail}")
+
+
+def enforce_worker_configuration(app) -> None:
+    """Evita iniciar un worker sin sus dependencias de coordinación."""
+    errors: list[str] = []
+    if _weak_secret(_value(app.config, "SECRET_KEY")):
+        errors.append("SECRET_KEY debe ser aleatoria y contener al menos 32 caracteres.")
+    database_url = _value(app.config, "SQLALCHEMY_DATABASE_URI").lower()
+    if not database_url.startswith(("postgresql://", "postgresql+psycopg://")):
+        errors.append("DATABASE_URL debe usar PostgreSQL para el worker.")
+    redis_url = _value(app.config, "REDIS_URL").lower()
+    if not redis_url.startswith(("redis://", "rediss://")):
+        errors.append("REDIS_URL debe usar Redis/Render Key Value para el worker.")
+    if errors:
+        detail = "\n- ".join(errors)
+        raise RuntimeError(f"Configuración insegura del worker:\n- {detail}")
 
 
 def _allowed_hosts() -> frozenset[str]:

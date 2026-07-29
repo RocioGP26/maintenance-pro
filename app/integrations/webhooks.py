@@ -365,20 +365,42 @@ def _schedule_retry(delivery: WebhookDelivery, *, error_code: str, http_status: 
     )
 
 
+def _alert_delivery(delivery: WebhookDelivery) -> None:
+    from app.observability import emit_operational_alert
+
+    severity = "warning" if delivery.status == "retry_scheduled" else "error"
+    emit_operational_alert(
+        "webhooks",
+        "retry_scheduled" if delivery.status == "retry_scheduled" else "delivery_failed",
+        "Webhook delivery did not complete successfully",
+        severity=severity,
+        context={
+            "empresa_id": delivery.empresa_id,
+            "endpoint_id": delivery.endpoint_id,
+            "delivery_id": delivery.id,
+            "status_code": delivery.http_status,
+        },
+        dedupe_key=f"webhooks:{delivery.endpoint_id}:{delivery.error_code}",
+    )
+
+
 def deliver_once(delivery: WebhookDelivery) -> WebhookDelivery:
     endpoint = delivery.endpoint
     event = delivery.event
     if endpoint is None or event is None:
         delivery.status = "failed"
         delivery.error_code = "missing_relations"
+        _alert_delivery(delivery)
         return delivery
     if delivery.empresa_id != endpoint.empresa_id or delivery.empresa_id != event.empresa_id:
         delivery.status = "failed"
         delivery.error_code = "tenant_mismatch"
+        _alert_delivery(delivery)
         return delivery
     if not endpoint.active:
         delivery.status = "failed"
         delivery.error_code = "endpoint_inactive"
+        _alert_delivery(delivery)
         return delivery
 
     raw_body = (event.payload_json or "").encode("utf-8")
@@ -400,6 +422,7 @@ def deliver_once(delivery: WebhookDelivery) -> WebhookDelivery:
         delivery.status = "failed"
         delivery.error_code = "ssrf_blocked"
         _note_failure(endpoint)
+        _alert_delivery(delivery)
         return delivery
 
     started = time.perf_counter()
@@ -450,6 +473,8 @@ def deliver_once(delivery: WebhookDelivery) -> WebhookDelivery:
 
     delivery.lease_expires_at = None
     delivery.updated_at = datetime.utcnow()
+    if delivery.status in {"failed", "retry_scheduled"}:
+        _alert_delivery(delivery)
     db.session.flush()
     return delivery
 
@@ -472,30 +497,53 @@ def recover_stale_leases(*, now: datetime | None = None) -> int:
 def process_pending_deliveries(*, limit: int = 50) -> dict:
     now = datetime.utcnow()
     recovered = recover_stale_leases(now=now)
-    due = (
+    query = (
         WebhookDelivery.query.filter(
             WebhookDelivery.status == "pending",
             WebhookDelivery.next_attempt_at <= now,
         )
         .order_by(WebhookDelivery.next_attempt_at.asc(), WebhookDelivery.id.asc())
         .limit(limit)
-        .all()
     )
+    # PostgreSQL permite que varios workers reclamen lotes sin procesar la
+    # misma entrega. SQLite ignora FOR UPDATE y se conserva solo para tests.
+    if db.session.get_bind().dialect.name != "sqlite":
+        query = query.with_for_update(skip_locked=True)
+    due = query.all()
     stats = {"recovered": recovered, "claimed": 0, "delivered": 0, "failed": 0, "retry": 0}
     for delivery in due:
         delivery.status = "processing"
         delivery.lease_expires_at = now + timedelta(seconds=LEASE_SECONDS)
         stats["claimed"] += 1
-    db.session.flush()
-    for delivery in due:
-        deliver_once(delivery)
+    claimed_ids = [delivery.id for delivery in due]
+    db.session.commit()
+
+    for delivery_id in claimed_ids:
+        delivery = db.session.get(WebhookDelivery, delivery_id)
+        if delivery is None or delivery.status != "processing":
+            continue
+        try:
+            deliver_once(delivery)
+            db.session.commit()
+        except Exception as exc:
+            db.session.rollback()
+            from app.observability import emit_operational_alert
+
+            emit_operational_alert(
+                "worker",
+                "webhook_unhandled_error",
+                "Webhook worker hit an unexpected delivery error",
+                exc=exc,
+                context={"delivery_id": delivery_id},
+                dedupe_key=f"worker:webhook:{type(exc).__name__}",
+            )
+            continue
         if delivery.status == "delivered":
             stats["delivered"] += 1
         elif delivery.status == "failed":
             stats["failed"] += 1
         else:
             stats["retry"] += 1
-    db.session.commit()
     return stats
 
 

@@ -58,4 +58,12 @@ def send_templated_email(
             smtp.login(username, password)
             smtp.send_message(message)
     except (OSError, smtplib.SMTPException) as exc:
+        from app.observability import emit_operational_alert
+
+        emit_operational_alert(
+            "smtp",
+            "delivery_failed",
+            "Transactional email delivery failed",
+            exc=exc,
+        )
         raise EmailDeliveryError("No fue posible entregar el correo mediante SMTP.") from exc

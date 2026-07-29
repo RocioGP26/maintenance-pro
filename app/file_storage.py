@@ -20,6 +20,18 @@ STORAGE_SCHEME = "storage://"
 storage_bp = Blueprint("storage", __name__, url_prefix="/media")
 
 
+def _alert_storage_failure(operation: str, exc: Exception) -> None:
+    from app.observability import emit_operational_alert
+
+    emit_operational_alert(
+        "storage",
+        f"{operation}_failed",
+        f"Object storage operation failed: {operation}",
+        exc=exc,
+        dedupe_key=f"storage:{operation}",
+    )
+
+
 def _backend() -> str:
     return (current_app.config.get("STORAGE_BACKEND") or "local").strip().lower()
 
@@ -98,9 +110,13 @@ def save_bytes(key: str, content: bytes, *, content_type: str = "application/oct
         target.parent.mkdir(parents=True, exist_ok=True)
         target.write_bytes(content)
     elif _backend() == "s3":
-        _s3_client().put_object(
-            Bucket=_bucket(), Key=safe, Body=content, ContentType=content_type
-        )
+        try:
+            _s3_client().put_object(
+                Bucket=_bucket(), Key=safe, Body=content, ContentType=content_type
+            )
+        except Exception as exc:
+            _alert_storage_failure("write", exc)
+            raise
     else:
         raise RuntimeError(f"Backend de almacenamiento no soportado: {_backend()}")
     return safe
@@ -118,6 +134,7 @@ def read_bytes(key: str) -> bytes:
             code = str(response.get("Error", {}).get("Code", ""))
             if code in {"404", "NoSuchKey", "NotFound"}:
                 raise FileNotFoundError(safe) from exc
+            _alert_storage_failure("read", exc)
             raise
     raise RuntimeError(f"Backend de almacenamiento no soportado: {_backend()}")
 
@@ -128,7 +145,11 @@ def delete(key: str) -> None:
         _local_path(safe).unlink(missing_ok=True)
         return
     if _backend() == "s3":
-        _s3_client().delete_object(Bucket=_bucket(), Key=safe)
+        try:
+            _s3_client().delete_object(Bucket=_bucket(), Key=safe)
+        except Exception as exc:
+            _alert_storage_failure("delete", exc)
+            raise
         return
     raise RuntimeError(f"Backend de almacenamiento no soportado: {_backend()}")
 
@@ -146,6 +167,7 @@ def exists(key: str) -> bool:
             code = str(response.get("Error", {}).get("Code", ""))
             if code in {"404", "NoSuchKey", "NotFound"}:
                 return False
+            _alert_storage_failure("head", exc)
             raise
     raise RuntimeError(f"Backend de almacenamiento no soportado: {_backend()}")
 
@@ -162,11 +184,15 @@ def size_for_prefix(prefix: str) -> int:
             return 0
         return sum(path.stat().st_size for path in root.rglob("*") if path.is_file())
     if _backend() == "s3":
-        total = 0
-        paginator = _s3_client().get_paginator("list_objects_v2")
-        for page in paginator.paginate(Bucket=_bucket(), Prefix=safe_prefix):
-            total += sum(int(item.get("Size", 0)) for item in page.get("Contents", []))
-        return total
+        try:
+            total = 0
+            paginator = _s3_client().get_paginator("list_objects_v2")
+            for page in paginator.paginate(Bucket=_bucket(), Prefix=safe_prefix):
+                total += sum(int(item.get("Size", 0)) for item in page.get("Contents", []))
+            return total
+        except Exception as exc:
+            _alert_storage_failure("list", exc)
+            raise
     raise RuntimeError(f"Backend de almacenamiento no soportado: {_backend()}")
 
 

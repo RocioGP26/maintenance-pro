@@ -1,11 +1,10 @@
-# Sprint 23.3 · Reporte de cierre local
+# Sprint 23.3 · Reporte de cierre
 
 ## Resultado
 
 Roustix dispone de un pipeline de entrega con cuatro gates independientes:
 SQLite, PostgreSQL 18, E2E sobre Gunicorn y seguridad. La implementación y la
-regresión local quedaron aprobadas; la evidencia remota se completa al publicar
-la rama y ejecutar GitHub Actions.
+regresión local y la ejecución remota quedaron aprobadas.
 
 ## Entregables
 
@@ -42,12 +41,16 @@ paquetes. Se actualizaron a las versiones corregidas indicadas por el auditor:
 - Alembic: una cabeza, `pr7s2t84u06w_password_resets`.
 - `git diff --check`: aprobado.
 
-## Validación pendiente
+## Evidencia remota
 
-Docker Desktop no estaba activo en el equipo local, por lo que la ejecución real
-de PostgreSQL 18 y Gunicorn queda delegada al runner reproducible de GitHub
-Actions. El Sprint queda listo para commit y push; se considera cerrado
-remotamente cuando los cuatro jobs estén verdes.
+- Ejecución CI aprobada: GitHub Actions `30405490818`.
+- Revisión validada: `9e988f9ce10b417aaf0873ae7b6054079562df66`.
+- `Security gates`: OK.
+- `Unit · SQLite`: OK.
+- `Integration · PostgreSQL 18`: migraciones, cabeza Alembic y suite completa, OK.
+- `E2E · Gunicorn + PostgreSQL`: identidad tenant, sesión y MFA de plataforma, OK.
+- Merge de cierre: PR #14, `9b218a174336d4bf16c70966455d46cef54ec552`.
+- Release desplegada posteriormente: `v1.0.18`.
 
 ## Continuidad
 

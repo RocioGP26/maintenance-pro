@@ -44,4 +44,4 @@ versionados antes de llegar a `main`.
 - [x] Existen gates de dependencias, análisis estático y secretos.
 - [x] Las credenciales E2E son efímeras.
 - [x] Las dependencias vulnerables detectadas durante el sprint fueron corregidas.
-- [ ] El workflow remoto completo queda verde en GitHub Actions.
+- [x] El workflow remoto completo queda verde en GitHub Actions (`30405490818`).

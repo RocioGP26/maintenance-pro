@@ -45,6 +45,12 @@ jobs:
       STORAGE_BACKUP_REGION: ${{ secrets.STORAGE_BACKUP_REGION || vars.STORAGE_BACKUP_REGION || 'auto' }}
       STORAGE_BACKUP_ACCESS_KEY_ID: ${{ secrets.STORAGE_BACKUP_ACCESS_KEY_ID }}
       STORAGE_BACKUP_SECRET_ACCESS_KEY: ${{ secrets.STORAGE_BACKUP_SECRET_ACCESS_KEY }}
+      OPS_ALERT_EMAIL: ${{ secrets.OPS_ALERT_EMAIL }}
+      MAIL_SERVER: ${{ secrets.MAIL_SERVER }}
+      MAIL_PORT: ${{ vars.MAIL_PORT || '587' }}
+      MAIL_USERNAME: ${{ secrets.MAIL_USERNAME }}
+      MAIL_PASSWORD: ${{ secrets.MAIL_PASSWORD }}
+      MAIL_DEFAULT_SENDER: ${{ secrets.MAIL_DEFAULT_SENDER }}
 
     steps:
       - name: Checkout
@@ -154,3 +160,44 @@ jobs:
             echo "- Almacenamiento: réplica incremental y manifiesto completados"
             echo "- Artefacto: roustix-backup-${GITHUB_RUN_ID}"
           } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Alertar al soporte si falla el backup
+        if: failure()
+        continue-on-error: true
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import os
+          import smtplib
+          import ssl
+          from email.message import EmailMessage
+
+          required = (
+              "OPS_ALERT_EMAIL", "MAIL_SERVER", "MAIL_USERNAME",
+              "MAIL_PASSWORD", "MAIL_DEFAULT_SENDER",
+          )
+          missing = [name for name in required if not os.environ.get(name)]
+          if missing:
+              print("::warning::No se envió la alerta del backup: faltan secretos SMTP.")
+              raise SystemExit(0)
+
+          repository = os.environ.get("GITHUB_REPOSITORY", "")
+          run_id = os.environ.get("GITHUB_RUN_ID", "")
+          message = EmailMessage()
+          message["Subject"] = "[Roustix][P1] Falló el backup de producción"
+          message["From"] = os.environ["MAIL_DEFAULT_SENDER"]
+          message["To"] = os.environ["OPS_ALERT_EMAIL"]
+          message.set_content(
+              "Falló el workflow de backup de producción.\n\n"
+              f"Repositorio: {repository}\nEjecución: {run_id}\n"
+              f"Detalle: https://github.com/{repository}/actions/runs/{run_id}\n"
+          )
+          with smtplib.SMTP(
+              os.environ["MAIL_SERVER"], int(os.environ.get("MAIL_PORT", "587")), timeout=15
+          ) as smtp:
+              smtp.ehlo()
+              smtp.starttls(context=ssl.create_default_context())
+              smtp.ehlo()
+              smtp.login(os.environ["MAIL_USERNAME"], os.environ["MAIL_PASSWORD"])
+              smtp.send_message(message)
+          PY

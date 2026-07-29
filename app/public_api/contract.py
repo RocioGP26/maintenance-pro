@@ -90,6 +90,8 @@ def register_public_api_contract(app) -> None:
     def _assign_public_request_id():
         if not request.path.startswith("/api/v1"):
             return None
+        if getattr(g, "request_id", None):
+            return None
         supplied = (request.headers.get("X-Request-Id") or "").strip()
         g.request_id = supplied if _REQUEST_ID_RE.fullmatch(supplied) else f"req_{secrets.token_hex(12)}"
         return None

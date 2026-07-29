@@ -38,6 +38,8 @@ class TestProductionConfiguration(unittest.TestCase):
             "PLATFORM_ADMIN_KEY": "platform-key-0123456789-ABCDEFGHIJKLMNOPQRSTUVWXYZ",
             "PLATFORM_MFA_REQUIRED": True,
             "PLATFORM_ADMIN_TOTP_SECRET": pyotp.random_base32(),
+            "DISTRIBUTED_RATE_LIMITS_REQUIRED": True,
+            "REDIS_URL": "redis://roustix-keyvalue:6379/0",
         }
 
     def test_valid_production_configuration_has_no_errors(self):
@@ -58,6 +60,12 @@ class TestProductionConfiguration(unittest.TestCase):
         self.assertIn("STORAGE_BACKEND", errors)
         self.assertIn("HTTPS", errors)
         self.assertIn("PLATFORM_ADMIN_TOTP_SECRET", errors)
+
+    def test_production_rejects_in_memory_rate_limiting(self):
+        config = self._valid_config()
+        config["REDIS_URL"] = ""
+        errors = " ".join(production_configuration_errors(config))
+        self.assertIn("REDIS_URL", errors)
 
     def test_password_policy_has_safe_length_bounds(self):
         self.assertIn("12", validar_password("Abcdef12345") or "")
