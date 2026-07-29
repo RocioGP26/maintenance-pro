@@ -4862,7 +4862,10 @@ def ordenes_edit(id):
                         flash(err_rep, "danger")
                     else:
                         db.session.commit()
-                        flash("Orden actualizada.", "success")
+                        flash(
+                            f"Orden # {wo.numero or f'OT-{wo.id}'} actualizada.",
+                            "success",
+                        )
                         return redirect(url_for("main.ordenes_list"))
         else:
             wo.preventive_plan_id = None
@@ -4881,7 +4884,10 @@ def ordenes_edit(id):
                     flash(err_rep, "danger")
                 else:
                     db.session.commit()
-                    flash("Orden actualizada.", "success")
+                    flash(
+                        f"Orden # {wo.numero or f'OT-{wo.id}'} actualizada.",
+                        "success",
+                    )
                     return redirect(url_for("main.ordenes_list"))
     return render_template(
         "ordenes/form.html",
