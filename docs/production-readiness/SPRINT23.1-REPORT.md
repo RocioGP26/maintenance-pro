@@ -48,4 +48,5 @@
 - [x] Manifiesto de objetos y hashes de artefactos.
 - [x] Pruebas y runbook.
 - [x] Ejecución remota exitosa con credenciales reales.
-- [ ] Simulacro manual documentado por un responsable.
+- [x] Runbook con RTO/RPO, procedimiento e integridad ([`backup-restore-runbook.md`](backup-restore-runbook.md)).
+- [ ] Simulacro manual firmado por un responsable ([`backup-recovery-drill.md`](backup-recovery-drill.md)).

@@ -65,8 +65,11 @@ antes de publicar el artefacto.
 
 En la misma ejecución los objetos del bucket operativo se replican
 incrementalmente con claves inmutables a un bucket de recuperación distinto. El artefacto conserva el
-dump, su índice y el manifiesto S3 durante 30 días. Consulte el runbook canónico
-en `docs/production-readiness/backup-restore-runbook.md`.
+dump, su índice y el manifiesto S3 durante 30 días.
+
+**Recuperación (Fase 1):** RTO/RPO, procedimiento e integridad en
+[`docs/production-readiness/backup-restore-runbook.md`](production-readiness/backup-restore-runbook.md).
+Simulacro: [`backup-recovery-drill.md`](production-readiness/backup-recovery-drill.md).
 
 Configuración en GitHub:
 

@@ -20,6 +20,8 @@ clientes reales, sin incorporar funcionalidades nuevas de negocio.
 - `SPRINT23.4-CHARTER.md`: alcance, secuencia y criterios de cierre.
 - `SPRINT23.4-REPORT.md`: avance verificable de observabilidad y alertas.
 - `SPRINT23.4-WORKERS-RUNBOOK.md`: despliegue y recuperación de Redis/worker.
+- `backup-restore-runbook.md`: **recuperación de backups** (RTO/RPO, procedimiento, integridad).
+- `backup-recovery-drill.md`: plantilla de simulacro trimestral.
 
 ## Regla de salida
 

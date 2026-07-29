@@ -108,11 +108,15 @@ validar. Después, borrar residuales del disco/efímero. El metering con
 
 ## Recuperación
 
+Documento canónico: [`docs/production-readiness/backup-restore-runbook.md`](production-readiness/backup-restore-runbook.md)
+(RTO/RPO, procedimiento, integridad). Plantilla de simulacro:
+[`backup-recovery-drill.md`](production-readiness/backup-recovery-drill.md).
+
 1. Activar versionado, Object Lock o la alternativa de protección del proveedor.
-2. Replicar el bucket a una cuenta o ubicación independiente.
-3. Conservar las credenciales de recuperación fuera de Render.
-4. Trimestralmente, restaurar una muestra en un bucket temporal y comprobar
-   checksum, visualización y descarga desde Roustix.
+2. Replicar el bucket a una cuenta o ubicación independiente (`STORAGE_BACKUP_*`).
+3. Conservar las credenciales de recuperación fuera de Render (GitHub Secrets).
+4. Trimestralmente, completar un simulacro en `backup-recovery-drill.md`
+   (BD + muestra de archivos + smoke).
 
 La copia de PostgreSQL y la copia del bucket forman un único respaldo lógico:
 restaurar solamente la base deja referencias a objetos inexistentes.
