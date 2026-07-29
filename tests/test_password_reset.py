@@ -99,7 +99,7 @@ class TestPasswordReset(unittest.TestCase):
             },
         )
         self.assertIn(done.status_code, (302, 303))
-        self.assertTrue(urlparse(done.location).path.endswith("/login"))
+        self.assertIn("/login", urlparse(done.location).path)
 
         db.session.refresh(self.user)
         self.assertTrue(self.user.check_password("Clave-Nueva-456!"))
@@ -107,6 +107,17 @@ class TestPasswordReset(unittest.TestCase):
         self.assertEqual(self.user.auth_version, 2)
         self.assertIsNotNone(PasswordReset.query.one().used_at)
         self.assertIsNone(get_valid_reset(raw))
+
+        # Tras el reset, el login debe aceptar correo o username.
+        login_email = self.client.post(
+            "/login",
+            data={
+                "username": "ops@example.com",
+                "empresa_slug": "empresa-demo",
+                "password": "Clave-Nueva-456!",
+            },
+        )
+        self.assertIn(login_email.status_code, (302, 303))
 
     def test_expired_token_rejected(self):
         request_password_reset("ops@example.com")

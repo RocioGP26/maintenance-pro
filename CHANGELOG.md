@@ -12,6 +12,12 @@ La suite documental mantiene un ciclo independiente en
 
 - Espacio reservado para cambios aún no publicados.
 
+## [1.0.25] - 2026-07-29
+
+### Fixed
+
+- Login acepta correo corporativo además del username tras restablecer contraseña; formulario de reset alineado a mínimo 12 caracteres.
+
 ## [1.0.24] - 2026-07-29
 
 ### Added
@@ -375,7 +381,7 @@ La suite documental mantiene un ciclo independiente en
 
 - Este release formaliza el versionado; no modifica funcionalidades de negocio.
 
-[Unreleased]: https://github.com/RocioGP26/maintenance-pro/compare/v1.0.24...HEAD
+[Unreleased]: https://github.com/RocioGP26/maintenance-pro/compare/v1.0.25...HEAD
 [1.0.0]: https://github.com/RocioGP26/maintenance-pro/releases/tag/v1.0.0
 [1.0.1]: https://github.com/RocioGP26/maintenance-pro/compare/v1.0.0...v1.0.1
 [1.0.2]: https://github.com/RocioGP26/maintenance-pro/compare/v1.0.1...v1.0.2
@@ -401,3 +407,4 @@ La suite documental mantiene un ciclo independiente en
 [1.0.22]: https://github.com/RocioGP26/maintenance-pro/compare/v1.0.21...v1.0.22
 [1.0.23]: https://github.com/RocioGP26/maintenance-pro/compare/v1.0.22...v1.0.23
 [1.0.24]: https://github.com/RocioGP26/maintenance-pro/compare/v1.0.23...v1.0.24
+[1.0.25]: https://github.com/RocioGP26/maintenance-pro/compare/v1.0.24...v1.0.25

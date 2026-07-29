@@ -35,13 +35,13 @@
         <div class="mb-3">
           <label class="form-label" for="password">Nueva contraseña</label>
           <input type="password" class="form-control form-control-lg" id="password" name="password"
-                 required autocomplete="new-password" autofocus minlength="10">
+                 required autocomplete="new-password" autofocus minlength="12" maxlength="128">
           <div class="form-text">{{ password_requirements }}</div>
         </div>
         <div class="mb-4">
           <label class="form-label" for="password_confirm">Confirmar contraseña</label>
           <input type="password" class="form-control form-control-lg" id="password_confirm"
-                 name="password_confirm" required autocomplete="new-password" minlength="10">
+                 name="password_confirm" required autocomplete="new-password" minlength="12" maxlength="128">
         </div>
         <button type="submit" class="btn btn-primary btn-lg w-100">Guardar contraseña</button>
       </form>

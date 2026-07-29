@@ -126,7 +126,10 @@ def get_valid_reset(raw_token: str) -> PasswordReset | None:
     item = PasswordReset.query.filter_by(token_hash=token_hash).first()
     if item is None or item.used_at is not None:
         return None
-    if item.expires_at <= _now():
+    expires = item.expires_at
+    if expires is not None and getattr(expires, "tzinfo", None) is not None:
+        expires = expires.replace(tzinfo=None)
+    if expires is None or expires <= _now():
         return None
     user = item.user
     if user is None or not user.activo or user.bloqueado:

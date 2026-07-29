@@ -351,7 +351,13 @@ def login():
 
         user = buscar_usuario_login(username, empresa_slug=empresa_slug or None)
         if user is None and username.strip():
-            candidatos = User.query.filter_by(username=username.strip().lower()).count()
+            look = username.strip().lower()
+            if "@" in look:
+                from sqlalchemy import func
+
+                candidatos = User.query.filter(func.lower(User.email) == look).count()
+            else:
+                candidatos = User.query.filter_by(username=look).count()
             if candidatos > 1:
                 flash(mensaje_login_ambiguo(username), "danger")
                 return render_template("login.html")
@@ -484,8 +490,18 @@ def restablecer_contrasena(token: str):
                 reset=get_valid_reset(token),
                 password_requirements=PASSWORD_REQUIREMENTS_TEXT,
             )
-        flash("Contraseña actualizada. Ya puedes ingresar con tu nueva clave.", "success")
-        return redirect(url_for("main.login"))
+        username = reset.user.username if reset.user else ""
+        empresa_slug = ""
+        if reset.user and reset.user.empresa and reset.user.empresa.slug:
+            empresa_slug = reset.user.empresa.slug
+        flash(
+            f"Contraseña actualizada para «{username}». "
+            "Ingresa con tu usuario o correo corporativo y la nueva clave.",
+            "success",
+        )
+        return redirect(
+            url_for("main.login", usuario=username, empresa_slug=empresa_slug or None)
+        )
 
     if reset is None:
         flash("El enlace no es válido o ya expiró. Solicita uno nuevo.", "warning")

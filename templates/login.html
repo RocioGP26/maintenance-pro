@@ -38,13 +38,16 @@
         <input type="hidden" name="next" value="{{ request.args.get('next') }}">
         {% endif %}
         <div class="mb-3">
-          <label class="form-label" for="username">Usuario</label>
-          <input type="text" class="form-control form-control-lg" id="username" name="username" required autocomplete="username" autofocus>
+          <label class="form-label" for="username">Usuario o correo</label>
+          <input type="text" class="form-control form-control-lg" id="username" name="username" required
+                 autocomplete="username" autofocus
+                 value="{{ request.args.get('usuario', '') }}">
         </div>
         <div class="mb-3">
           <label class="form-label" for="empresa_slug">Código de empresa</label>
           <input type="text" class="form-control" id="empresa_slug" name="empresa_slug"
-                 autocomplete="organization" placeholder="ej: el-surtidor">
+                 autocomplete="organization" placeholder="ej: el-surtidor"
+                 value="{{ request.args.get('empresa_slug', '') }}">
           <div class="form-text">Opcional si tu usuario es único. Obligatorio si varias empresas usan el mismo nombre de usuario (p. ej. «admin»).</div>
         </div>
         <div class="mb-3">

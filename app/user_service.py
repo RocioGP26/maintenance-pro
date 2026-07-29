@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from sqlalchemy import func
+
 from app.models import Empresa, User
 
 
@@ -29,13 +31,20 @@ def username_disponible(
     return q.first() is None
 
 
+def _usuarios_por_email(email: str, *, empresa_id: int | None = None) -> list[User]:
+    q = User.query.filter(func.lower(User.email) == email.lower())
+    if empresa_id is not None:
+        q = q.filter(User.empresa_id == int(empresa_id))
+    return q.all()
+
+
 def buscar_usuario_login(
     username: str,
     *,
     empresa_slug: str | None = None,
 ) -> User | None:
     """
-    Localiza usuario por username.
+    Localiza usuario por username o correo corporativo.
     Con empresa_slug acota al tenant; sin slug, solo si hay un único candidato.
     """
     u = normalizar_username(username)
@@ -43,11 +52,20 @@ def buscar_usuario_login(
         return None
 
     slug = (empresa_slug or "").strip().lower()
-    if slug:
-        empresa = Empresa.query.filter_by(slug=slug).first()
-        if not empresa:
-            return None
-        return User.query.filter_by(username=u, empresa_id=empresa.id).first()
+    empresa = Empresa.query.filter_by(slug=slug).first() if slug else None
+    if slug and empresa is None:
+        return None
+
+    empresa_id = empresa.id if empresa else None
+
+    if "@" in u:
+        candidatos = _usuarios_por_email(u, empresa_id=empresa_id)
+        if len(candidatos) == 1:
+            return candidatos[0]
+        return None
+
+    if empresa_id is not None:
+        return User.query.filter_by(username=u, empresa_id=empresa_id).first()
 
     candidatos = User.query.filter_by(username=u).all()
     if len(candidatos) == 1:
@@ -56,7 +74,13 @@ def buscar_usuario_login(
 
 
 def mensaje_login_ambiguo(username: str) -> str:
+    ident = normalizar_username(username)
+    if "@" in ident:
+        return (
+            f"El correo «{ident}» está asociado a varias empresas. "
+            "Indica el código de tu empresa en el campo correspondiente."
+        )
     return (
-        f"El usuario «{normalizar_username(username)}» existe en varias empresas. "
+        f"El usuario «{ident}» existe en varias empresas. "
         "Indica el código de tu empresa en el campo correspondiente."
     )
