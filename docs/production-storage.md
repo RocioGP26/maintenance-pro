@@ -53,7 +53,15 @@ flask --app run:app migrate-storage --inventory-only
 
 Si `legacy_total = 0`, no hay refs `uploads/` ni evidencias fuera de `empresas/`.
 
-### 2. Simulación (disco + conteos)
+### 2. Listar pendientes (local vs R2)
+
+```powershell
+flask --app run:app migrate-storage --list
+```
+
+Cada línea indica `local` / `no-local` y `remote` / `no-remote`.
+
+### 3. Simulación (disco + R2)
 
 ```powershell
 flask --app run:app migrate-storage
@@ -70,6 +78,16 @@ flask --app run:app migrate-storage --apply
 
 Copia al backend configurado y reescribe referencias a `storage://...` (o keys
 `empresas/...` en evidencias/bitácora). Es idempotente: se puede repetir.
+
+Si el archivo **ya no está** en el disco del contenedor (Render efímero) pero
+**sí existe en R2**, `--apply` reescribe la BD igual (`from_remote`).
+
+Refs sin local ni remoto: listar con `--list` y, si son irrecuperables:
+
+```powershell
+flask --app run:app migrate-storage --clear-broken
+flask --app run:app migrate-storage --clear-broken --apply
+```
 
 ### 4. Validar en producción
 

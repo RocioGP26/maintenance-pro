@@ -12,6 +12,12 @@ La suite documental mantiene un ciclo independiente en
 
 - Espacio reservado para cambios aún no publicados.
 
+## [1.0.24] - 2026-07-29
+
+### Added
+
+- `migrate-storage --list` / `--clear-broken`: diagnostica refs sin disco local; reescribe BD si el objeto ya está en R2 (`from_remote`).
+
 ## [1.0.23] - 2026-07-29
 
 ### Added
@@ -369,7 +375,7 @@ La suite documental mantiene un ciclo independiente en
 
 - Este release formaliza el versionado; no modifica funcionalidades de negocio.
 
-[Unreleased]: https://github.com/RocioGP26/maintenance-pro/compare/v1.0.23...HEAD
+[Unreleased]: https://github.com/RocioGP26/maintenance-pro/compare/v1.0.24...HEAD
 [1.0.0]: https://github.com/RocioGP26/maintenance-pro/releases/tag/v1.0.0
 [1.0.1]: https://github.com/RocioGP26/maintenance-pro/compare/v1.0.0...v1.0.1
 [1.0.2]: https://github.com/RocioGP26/maintenance-pro/compare/v1.0.1...v1.0.2
@@ -394,3 +400,4 @@ La suite documental mantiene un ciclo independiente en
 [1.0.21]: https://github.com/RocioGP26/maintenance-pro/compare/v1.0.20...v1.0.21
 [1.0.22]: https://github.com/RocioGP26/maintenance-pro/compare/v1.0.21...v1.0.22
 [1.0.23]: https://github.com/RocioGP26/maintenance-pro/compare/v1.0.22...v1.0.23
+[1.0.24]: https://github.com/RocioGP26/maintenance-pro/compare/v1.0.23...v1.0.24

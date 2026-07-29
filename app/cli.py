@@ -98,13 +98,28 @@ def restore_db_command(path: str, target: str, yes: bool):
 @click.command("migrate-storage")
 @click.option("--apply", is_flag=True, help="Copia los archivos y actualiza sus referencias.")
 @click.option("--inventory-only", is_flag=True, help="Solo cuenta referencias legacy en BD.")
+@click.option("--list", "list_pending", is_flag=True, help="Lista refs legacy con local/remote.")
+@click.option(
+    "--clear-broken",
+    is_flag=True,
+    help="Limpia refs legacy sin archivo local ni objeto en R2 (usar con --apply).",
+)
 @with_appcontext
-def migrate_storage_command(apply: bool, inventory_only: bool):
+def migrate_storage_command(apply: bool, inventory_only: bool, list_pending: bool, clear_broken: bool):
     """Inventaría o migra archivos históricos al backend configurado."""
-    from app.storage_migration import inventory_legacy_refs, migrate_legacy_storage
+    from app.storage_migration import (
+        clear_broken_legacy_refs,
+        inventory_legacy_refs,
+        list_legacy_pending,
+        migrate_legacy_storage,
+    )
 
+    modes = sum(bool(x) for x in (inventory_only, list_pending, clear_broken))
+    if modes > 1:
+        raise click.ClickException("Usa solo uno de: --inventory-only, --list, --clear-broken.")
     if inventory_only and apply:
         raise click.ClickException("Usa --inventory-only o --apply, no ambos.")
+
     if inventory_only:
         inv = inventory_legacy_refs()
         click.echo(f"Inventario de referencias: {inv}")
@@ -113,8 +128,31 @@ def migrate_storage_command(apply: bool, inventory_only: bool):
         else:
             click.echo(
                 f"Pendientes: {inv['legacy_total']} refs. "
-                "Ejecuta `migrate-storage` (simulación) y luego `--apply`."
+                "Ejecuta `migrate-storage --list` y luego simulación / `--apply`."
             )
+        return
+
+    if list_pending:
+        rows = list_legacy_pending()
+        if not rows:
+            click.echo("OK: no hay referencias legacy pendientes.")
+            return
+        for row in rows:
+            flags = []
+            flags.append("local" if row["local"] else "no-local")
+            flags.append("remote" if row["remote"] else "no-remote")
+            click.echo(
+                f"{row['kind']}#{row['id']}  {row['legacy']}  →  {row['key'] or '—'}  [{', '.join(flags)}]"
+            )
+        click.echo(f"Total: {len(rows)}. Si remote=sí, `--apply` reescribe la BD sin disco local.")
+        return
+
+    if clear_broken:
+        result = clear_broken_legacy_refs(apply=apply)
+        mode = "APLICADA" if apply else "SIMULACIÓN"
+        click.echo(f"Limpieza de refs rotas ({mode}): {result}")
+        if not apply:
+            click.echo("Ejecuta con `--clear-broken --apply` para vaciar esas refs en BD.")
         return
 
     stats = migrate_legacy_storage(apply=apply)
@@ -123,11 +161,16 @@ def migrate_storage_command(apply: bool, inventory_only: bool):
     click.echo(f"Migración de almacenamiento ({mode}): {stats}")
     click.echo(f"Inventario post-paso: {inv}")
     if not apply:
-        click.echo("Ejecuta nuevamente con --apply después de revisar missing=0 (ideal).")
+        click.echo("Ejecuta nuevamente con --apply después de revisar. missing>0 → --list.")
     elif inv.get("legacy_total", 0) == 0:
         click.echo(
             "Cutover BD completo. Conserva static/uploads hasta validar medios; "
-            "luego bórralos y deja STORAGE_BACKEND=s3 (metering ya no suma legacy)."
+            "luego bórralos (metering S3 ya no suma legacy)."
+        )
+    elif stats.get("missing", 0):
+        click.echo(
+            "Quedan refs sin archivo local ni objeto remoto. "
+            "Revisa con `--list` o límpialas con `--clear-broken --apply`."
         )
 
 

@@ -93,10 +93,21 @@ class TestStorageMigration(unittest.TestCase):
         self.assertTrue(self.machine.foto_url.startswith("storage://"))
         key = tenant_key(self.empresa.id, "logo.png")
         self.assertEqual(self.empresa.logo, reference(key))
-        # Objeto en backend local
         self.assertTrue((self.object_root / key).is_file())
         inv = inventory_legacy_refs()
         self.assertEqual(inv["legacy_total"], 0)
+
+    def test_apply_rewrites_when_remote_exists_without_local(self):
+        from app.file_storage import save_bytes
+
+        # Simula cutover: objeto ya en R2/local backend, disco static vacío, BD legacy.
+        key_logo = f"empresas/{self.empresa.id}/logo.png"
+        save_bytes(key_logo, b"ya-en-r2", content_type="image/png", enforce_quota=False)
+        (self.static / self.empresa.logo.lstrip("/")).unlink(missing_ok=True)
+        stats = migrate_legacy_storage(apply=True)
+        self.assertGreaterEqual(stats["from_remote"], 1)
+        db.session.refresh(self.empresa)
+        self.assertTrue(self.empresa.logo.startswith("storage://"))
 
 
 class TestLegacyMeteringFlag(unittest.TestCase):
