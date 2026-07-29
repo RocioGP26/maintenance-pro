@@ -360,9 +360,10 @@ def empresas():
 @platform_bp.route("/infraestructura")
 @platform_login_required
 def infraestructura():
+    probe = request.args.get("probe_smtp", "1") != "0"
     return render_template(
         "platform/infraestructura.html",
-        infra=infra_snapshot(),
+        infra=infra_snapshot(probe_smtp=probe),
     )
 
 

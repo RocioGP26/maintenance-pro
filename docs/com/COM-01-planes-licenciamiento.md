@@ -65,7 +65,7 @@ No reducir cupos v1.3.2; solo ampliar y comunicar como beneficio.
 | Medición por tenant | ✅ SuperAdmin (barra uso / cuota) |
 | Alerta ≥ 80% | ✅ Panel plataforma · oferta +2 GB |
 | Alerta en portal cliente | ✅ Banner admin (≥80%) + barra en Configuración empresa · mismo umbral · CTA +2 GB |
-| Monitor BD + R2 | ✅ `/platform/infraestructura` |
+| Monitor BD + R2 + servicios | ✅ `/platform/infraestructura` |
 
 ---
 

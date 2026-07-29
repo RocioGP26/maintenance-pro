@@ -4,13 +4,14 @@
 <div class="platform-page-head">
   <div>
     <h1 class="platform-page-title">Infraestructura</h1>
-    <p class="platform-page-sub mb-0">Monitor interno del piloto · anticipar ampliación de recursos</p>
+    <p class="platform-page-sub mb-0">Monitor operativo · administrar Roustix sin saltar entre consolas externas</p>
   </div>
 </div>
 
 <p class="text-secondary small mb-4">{{ infra.notes }}</p>
 
-<div class="platform-detail-grid">
+<h2 class="platform-section-title">Capacidad</h2>
+<div class="platform-detail-grid mb-4">
   {% for key in ('database', 'files') %}
   {% set block = infra[key] %}
   <div class="platform-detail-card">
@@ -37,8 +38,26 @@
   {% endfor %}
 </div>
 
-<div class="platform-detail-card mt-4">
-  <h3>Almacenamiento por plan (COM-01 v1.3.2)</h3>
+<h2 class="platform-section-title">Servicios</h2>
+<div class="platform-detail-grid mb-4">
+  {% for svc in infra.services %}
+  <div class="platform-detail-card platform-status-card platform-status-card--{{ svc.status }}">
+    <div class="d-flex justify-content-between align-items-start gap-2 mb-2">
+      <h3 class="mb-0">{{ svc.label }}</h3>
+      <span class="platform-status-pill platform-status-pill--{{ svc.status }}">{{ svc.status_label }}</span>
+    </div>
+    <p class="small text-secondary mb-0">{{ svc.detail }}</p>
+    {% if svc.key == 'health' and svc.endpoint %}
+    <p class="small mt-2 mb-0">
+      <a class="platform-link" href="{{ svc.endpoint }}" target="_blank" rel="noopener">Abrir {{ svc.endpoint }}</a>
+    </p>
+    {% endif %}
+  </div>
+  {% endfor %}
+</div>
+
+<div class="platform-detail-card">
+  <h3>Almacenamiento por plan (COM-01)</h3>
   <ul class="mb-0 small">
     <li><span class="notranslate" translate="no">Start</span>: 1 GB incluido</li>
     <li><span class="notranslate" translate="no">Business</span>: 5 GB incluidos</li>

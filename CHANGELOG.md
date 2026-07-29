@@ -12,6 +12,12 @@ La suite documental mantiene un ciclo independiente en
 
 - Espacio reservado para cambios aún no publicados.
 
+## [1.0.27] - 2026-07-29
+
+### Added
+
+- Panel SuperAdmin de infraestructura: SMTP, backups, workers y health check junto a PostgreSQL / R2.
+
 ## [1.0.26] - 2026-07-29
 
 ### Added
@@ -387,7 +393,8 @@ La suite documental mantiene un ciclo independiente en
 
 - Este release formaliza el versionado; no modifica funcionalidades de negocio.
 
-[Unreleased]: https://github.com/RocioGP26/maintenance-pro/compare/v1.0.26...HEAD
+[Unreleased]: https://github.com/RocioGP26/maintenance-pro/compare/v1.0.27...HEAD
+[1.0.27]: https://github.com/RocioGP26/maintenance-pro/compare/v1.0.26...v1.0.27
 [1.0.26]: https://github.com/RocioGP26/maintenance-pro/compare/v1.0.25...v1.0.26
 [1.0.0]: https://github.com/RocioGP26/maintenance-pro/releases/tag/v1.0.0
 [1.0.1]: https://github.com/RocioGP26/maintenance-pro/compare/v1.0.0...v1.0.1

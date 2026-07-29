@@ -8,7 +8,7 @@
 - Roadmap v2: 2 / 10 / 50 GB cuando haya ingresos estables
 
 ### Added
-- Monitor SuperAdmin `/platform/infraestructura` (BD + archivos)
+- Monitor SuperAdmin `/platform/infraestructura` (BD, R2, SMTP, backups, workers, health)
 - Barra de uso storage por tenant vs cuota del plan (alerta ≥ 80% → +2 GB)
 - Alerta y upsell **+2 GB** en portal cliente (admins · banner global + Configuración empresa)
 

@@ -242,8 +242,10 @@ def files_storage_total_bytes() -> int:
     return total
 
 
-def infra_snapshot() -> dict[str, Any]:
-    """Monitor interno SuperAdmin: BD + archivos (R2/local)."""
+def infra_snapshot(*, probe_smtp: bool = True) -> dict[str, Any]:
+    """Monitor interno SuperAdmin: BD, R2 y servicios operativos."""
+    from app.infra_status import service_statuses
+
     db_bytes = database_size_bytes()
     db_quota = INFRA_DB_QUOTA_MB * 1024 * 1024
     files_bytes = files_storage_total_bytes()
@@ -256,7 +258,7 @@ def infra_snapshot() -> dict[str, Any]:
     files_pct = min(100, int(round(files_bytes / files_quota * 100))) if files_quota else None
     return {
         "database": {
-            "label": "Base de datos",
+            "label": "PostgreSQL",
             "used_bytes": db_bytes,
             "used_label": _format_storage(db_bytes) if db_bytes is not None else "No disponible",
             "quota_label": f"{INFRA_DB_QUOTA_MB} MB",
@@ -264,13 +266,14 @@ def infra_snapshot() -> dict[str, Any]:
             "warn": db_pct is not None and db_pct >= STORAGE_WARN_PCT,
         },
         "files": {
-            "label": "Archivos (R2 / storage)",
+            "label": "Cloudflare R2",
             "used_bytes": files_bytes,
             "used_label": _format_storage(files_bytes),
             "quota_label": f"{INFRA_FILES_QUOTA_GB} GB",
             "pct": files_pct,
             "warn": files_pct is not None and files_pct >= STORAGE_WARN_PCT,
         },
+        "services": service_statuses(probe_smtp=probe_smtp),
         "notes": (
             "Cupos de referencia del piloto (Render Starter ~256 MB BD · "
             "Cloudflare R2 free ~10 GB). Ajustar cuando se amplíe infraestructura."
