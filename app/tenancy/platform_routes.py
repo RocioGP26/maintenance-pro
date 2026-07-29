@@ -38,6 +38,7 @@ from app.platform_service import (
     admin_empresa,
     empresa_a_fila,
     estado_choices_platform,
+    infra_snapshot,
     kpis_platform,
     listar_empresas_platform,
     plan_choices_platform,
@@ -353,6 +354,15 @@ def empresas():
         planes=plan_choices_platform(),
         estados=estado_choices_platform(),
         estado_meta=ESTADO_META,
+    )
+
+
+@platform_bp.route("/infraestructura")
+@platform_login_required
+def infraestructura():
+    return render_template(
+        "platform/infraestructura.html",
+        infra=infra_snapshot(),
     )
 
 

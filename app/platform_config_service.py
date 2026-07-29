@@ -26,7 +26,8 @@ REGLAS_DEFAULT: dict[str, str] = {
     "dias_alerta_mora": "3",
 }
 
-# Oferta comercial COM-01 v1.3.1 · Start · Business · Enterprise (Scale oculto / legacy).
+# Oferta comercial COM-01 v1.3.2 · Start · Business · Enterprise (Scale oculto / legacy).
+# Almacenamiento año 1 (piloto): 1 GB / 5 GB / 20 GB — alineado a R2 free tier ~10 GB.
 PLANES_SEED: list[dict[str, Any]] = [
     {
         "clave": PlanTipo.BASICO.value,
@@ -37,7 +38,7 @@ PLANES_SEED: list[dict[str, Any]] = [
         "precio_anual": 10_000_000,
         "max_usuarios": 20,
         "max_activos": None,  # Ilimitados
-        "storage_mb": 2048,
+        "storage_mb": 1024,
         "soporte": "Email",
         "visible_registro": True,
         "destacado": False,
@@ -45,7 +46,7 @@ PLANES_SEED: list[dict[str, Any]] = [
         "caracteristicas": [
             {"text": "20 usuarios · 1 sede", "included": True},
             {"text": "1 módulo principal a elegir", "included": True},
-            {"text": "2 GB de almacenamiento", "included": True},
+            {"text": "1 GB de almacenamiento", "included": True},
             {"text": "Soporte por email", "included": True},
         ],
     },
@@ -58,7 +59,7 @@ PLANES_SEED: list[dict[str, Any]] = [
         "precio_anual": 15_000_000,
         "max_usuarios": 50,
         "max_activos": None,  # Ilimitados
-        "storage_mb": 10240,
+        "storage_mb": 5120,
         "soporte": "Chat",
         "visible_registro": True,
         "destacado": True,
@@ -66,7 +67,7 @@ PLANES_SEED: list[dict[str, Any]] = [
         "caracteristicas": [
             {"text": "50 usuarios · 3 sedes", "included": True},
             {"text": "Hasta 2 módulos principales", "included": True},
-            {"text": "10 GB de almacenamiento", "included": True},
+            {"text": "5 GB de almacenamiento", "included": True},
             {"text": "Soporte por chat", "included": True},
         ],
     },
@@ -98,7 +99,7 @@ PLANES_SEED: list[dict[str, Any]] = [
         "precio_anual": 25_000_000,
         "max_usuarios": None,  # Personalizado
         "max_activos": None,  # Ilimitados
-        "storage_mb": 51200,
+        "storage_mb": 20480,
         "soporte": "Dedicado",
         "visible_registro": True,
         "destacado": False,
@@ -106,7 +107,7 @@ PLANES_SEED: list[dict[str, Any]] = [
         "caracteristicas": [
             {"text": "Usuarios y sedes personalizados", "included": True},
             {"text": "Todos los módulos disponibles", "included": True},
-            {"text": "50 GB + ampliable · soporte dedicado", "included": True},
+            {"text": "20 GB ampliables · soporte dedicado", "included": True},
             {"text": "API · SLA · puesta en marcha asistida", "included": True},
         ],
     },
@@ -154,7 +155,7 @@ def ensure_platform_config() -> None:
 
 
 def sincronizar_catalogo_planes_mcm() -> None:
-    """Alinea catálogo con COM-01 v1.3.1 (Start · Business · Enterprise)."""
+    """Alinea catálogo con COM-01 v1.3.2 (Start · Business · Enterprise · storage año 1)."""
     for data in PLANES_SEED:
         plan = CatalogoPlan.query.filter_by(clave=data["clave"]).first()
         if not plan:

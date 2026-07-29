@@ -146,7 +146,7 @@
         {% if plan and plan_meta %}
         <p class="fw-semibold mb-1">{{ plan_meta.label }}</p>
         <p class="small text-muted mb-2">{{ plan_meta.descripcion }}</p>
-        <ul class="list-unstyled small mb-0">
+        <ul class="list-unstyled small mb-3">
           <li><strong>Inicio:</strong> {{ plan.fecha_inicio.strftime('%d/%m/%Y') }}</li>
           {% if plan.fecha_fin %}
           <li><strong>Vence:</strong> {{ plan.fecha_fin.strftime('%d/%m/%Y') }}</li>
@@ -154,6 +154,34 @@
           <li><strong>Vence:</strong> Sin fecha límite</li>
           {% endif %}
         </ul>
+        {% if storage_uso %}
+        <div class="border-top pt-3">
+          <p class="small text-muted text-uppercase fw-semibold mb-1">Almacenamiento</p>
+          <p class="small mb-1">
+            <strong>{{ storage_uso.used_label }}</strong>
+            <span class="text-muted"> / {{ storage_uso.quota_label }}</span>
+            {% if storage_uso.pct is not none %}
+            <span class="ms-1 {% if storage_uso.warn %}text-warning{% else %}text-muted{% endif %}">{{ storage_uso.pct }}%</span>
+            {% endif %}
+          </p>
+          {% if storage_uso.pct is not none %}
+          <div class="progress mb-2" style="height: 6px;" role="progressbar" aria-valuenow="{{ storage_uso.pct }}" aria-valuemin="0" aria-valuemax="100">
+            <div class="progress-bar {% if storage_uso.pct >= 90 %}bg-danger{% elif storage_uso.warn %}bg-warning{% else %}bg-primary{% endif %}"
+                 style="width: {{ storage_uso.pct }}%;"></div>
+          </div>
+          {% endif %}
+          {% if storage_uso.warn %}
+          <p class="small text-warning mb-2">
+            Estás próximo al límite de almacenamiento. ¿Deseas ampliar tu capacidad?
+            <strong>{{ storage_uso.addon_label }} por {{ storage_uso.addon_price_label }}</strong>.
+          </p>
+          <a class="btn btn-sm btn-outline-dark"
+             href="mailto:contacto@roustix.com?subject={{ ('Solicitud add-on ' ~ storage_uso.addon_label ~ ' (' ~ storage_uso.addon_sku ~ ')')|urlencode }}">
+            Solicitar {{ storage_uso.addon_label }}
+          </a>
+          {% endif %}
+        </div>
+        {% endif %}
         {% else %}
         <p class="text-muted small mb-0">Sin plan activo registrado.</p>
         {% endif %}

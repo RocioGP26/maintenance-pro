@@ -1,0 +1,49 @@
+{% extends "platform/base.html" %}
+{% block title %}Infraestructura — Roustix Platform{% endblock %}
+{% block content %}
+<div class="platform-page-head">
+  <div>
+    <h1 class="platform-page-title">Infraestructura</h1>
+    <p class="platform-page-sub mb-0">Monitor interno del piloto · anticipar ampliación de recursos</p>
+  </div>
+</div>
+
+<p class="text-secondary small mb-4">{{ infra.notes }}</p>
+
+<div class="platform-detail-grid">
+  {% for key in ('database', 'files') %}
+  {% set block = infra[key] %}
+  <div class="platform-detail-card">
+    <h3>{{ block.label }}</h3>
+    <p class="mb-1">
+      <strong>{{ block.used_label }}</strong>
+      <span class="text-secondary"> / {{ block.quota_label }}</span>
+      {% if block.pct is not none %}
+      <span class="ms-1 {% if block.warn %}text-warning{% else %}text-secondary{% endif %}">{{ block.pct }}%</span>
+      {% endif %}
+    </p>
+    {% if block.pct is not none %}
+    <div class="platform-usage-bar mb-2">
+      <div class="platform-usage-fill{% if block.pct >= 90 %} platform-usage-fill--danger{% elif block.warn %} platform-usage-fill--warn{% endif %}"
+           style="width: {{ block.pct }}%;"></div>
+    </div>
+    {% endif %}
+    {% if block.warn %}
+    <p class="small text-warning mb-0">
+      <i class="bi bi-exclamation-triangle"></i> Próximo al límite de referencia del piloto.
+    </p>
+    {% endif %}
+  </div>
+  {% endfor %}
+</div>
+
+<div class="platform-detail-card mt-4">
+  <h3>Almacenamiento por plan (COM-01 v1.3.2)</h3>
+  <ul class="mb-0 small">
+    <li><span class="notranslate" translate="no">Start</span>: 1 GB incluido</li>
+    <li><span class="notranslate" translate="no">Business</span>: 5 GB incluidos</li>
+    <li><span class="notranslate" translate="no">Enterprise</span>: 20 GB ampliables</li>
+    <li>Add-on sugerido: +2 GB · $100.000 / mes (COM-02)</li>
+  </ul>
+</div>
+{% endblock %}

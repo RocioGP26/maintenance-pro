@@ -12,6 +12,20 @@ La suite documental mantiene un ciclo independiente en
 
 - Espacio reservado para cambios aún no publicados.
 
+## [1.0.21] - 2026-07-29
+
+### Added
+
+- Monitor SuperAdmin `/platform/infraestructura` (BD + archivos R2).
+- Barras de uso de almacenamiento por tenant vs cuota del plan (alerta ≥ 80%).
+- Alerta y upsell **+2 GB · $100.000/mes** en portal cliente (admins).
+- Tests de umbral storage / add-on `ADD-STG-2G`.
+
+### Changed
+
+- Storage año 1: Start **1 GB** · Business **5 GB** · Enterprise **20 GB** (COM v1.3.2).
+- Documentación COM alineada al monitor y al upsell en portal.
+
 ## [1.0.20] - 2026-07-29
 
 ### Added
@@ -340,7 +354,7 @@ La suite documental mantiene un ciclo independiente en
 
 - Este release formaliza el versionado; no modifica funcionalidades de negocio.
 
-[Unreleased]: https://github.com/RocioGP26/maintenance-pro/compare/v1.0.19...HEAD
+[Unreleased]: https://github.com/RocioGP26/maintenance-pro/compare/v1.0.21...HEAD
 [1.0.0]: https://github.com/RocioGP26/maintenance-pro/releases/tag/v1.0.0
 [1.0.1]: https://github.com/RocioGP26/maintenance-pro/compare/v1.0.0...v1.0.1
 [1.0.2]: https://github.com/RocioGP26/maintenance-pro/compare/v1.0.1...v1.0.2
@@ -361,3 +375,5 @@ La suite documental mantiene un ciclo independiente en
 [1.0.17]: https://github.com/RocioGP26/maintenance-pro/compare/v1.0.16...v1.0.17
 [1.0.18]: https://github.com/RocioGP26/maintenance-pro/compare/v1.0.17...v1.0.18
 [1.0.19]: https://github.com/RocioGP26/maintenance-pro/compare/v1.0.18...v1.0.19
+[1.0.20]: https://github.com/RocioGP26/maintenance-pro/compare/v1.0.19...v1.0.20
+[1.0.21]: https://github.com/RocioGP26/maintenance-pro/compare/v1.0.20...v1.0.21

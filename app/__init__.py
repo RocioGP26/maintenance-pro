@@ -316,6 +316,24 @@ def create_app(config_name: str | None = None):
             from app.session_management import policy_for
 
             session_security = policy_for(current_user)
+        # Alerta storage ≥80%: solo admins con config (evita listar R2 en cada request de operadores).
+        storage_uso = None
+        if empresa_actual is not None and perm.get("config"):
+            from flask import g
+
+            cache = getattr(g, "_storage_uso_cache", None)
+            if cache is None:
+                cache = {}
+                g._storage_uso_cache = cache
+            eid = int(empresa_actual.id)
+            if eid not in cache:
+                try:
+                    from app.platform_service import storage_uso_tenant
+
+                    cache[eid] = storage_uso_tenant(empresa_actual)
+                except Exception:
+                    cache[eid] = None
+            storage_uso = cache[eid]
         return {
             "app_name": APP_NAME,
             "app_version": app.config["APP_VERSION"],
@@ -339,6 +357,7 @@ def create_app(config_name: str | None = None):
             "monedas_activas": monedas_act,
             "multimoneda": multimoneda,
             "session_security": session_security,
+            "storage_uso": storage_uso,
         }
 
     from app import models  # noqa: F401

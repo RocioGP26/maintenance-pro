@@ -1,6 +1,21 @@
 # COM Changelog
 
+## [1.3.2] — 2026-07-29 · Storage conservador año 1
+
+### Changed
+- Almacenamiento incluido: Start **1 GB** · Business **5 GB** · Enterprise **20 GB** ampliables
+- Justificación: capa free R2 (~10 GB) · upsell antes de pagar infra
+- Roadmap v2: 2 / 10 / 50 GB cuando haya ingresos estables
+
+### Added
+- Monitor SuperAdmin `/platform/infraestructura` (BD + archivos)
+- Barra de uso storage por tenant vs cuota del plan (alerta ≥ 80% → +2 GB)
+- Alerta y upsell **+2 GB** en portal cliente (admins · banner global + Configuración empresa)
+
+---
+
 ## [1.3.1] — 2026-07-29 · Business + Enterprise sin precio público
+
 
 ### Changed
 - Nombre medio: **Business** (clave técnica `grow`)

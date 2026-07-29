@@ -38,7 +38,7 @@
         <a class="nav-link disabled opacity-50" href="#" tabindex="-1" aria-disabled="true">
           <i class="bi bi-graph-up me-2"></i> Métricas SaaS
         </a>
-        <a class="nav-link disabled opacity-50" href="#" tabindex="-1" aria-disabled="true">
+        <a class="nav-link {% if ep == 'platform.infraestructura' %}active{% endif %}" href="{{ url_for('platform.infraestructura') }}">
           <i class="bi bi-hdd-network me-2"></i> Infraestructura
         </a>
         <a class="nav-link {% if ep in ('platform.configuracion', 'platform.configuracion_plan_guardar', 'platform.configuracion_plan_nuevo', 'platform.configuracion_reglas_guardar', 'platform.configuracion_sector_guardar', 'platform.configuracion_sector_nuevo') %}active{% endif %}" href="{{ url_for('platform.configuracion') }}">

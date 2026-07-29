@@ -15,7 +15,7 @@ Start  →  Business  →  Enterprise
 | **Sedes** | 1 | 3 | Personalizadas |
 | **Módulos** | 1 principal a elegir | Hasta 2 principales | Todos disponibles |
 | **Activos** | Ilimitados | Ilimitados | Ilimitados |
-| **Almacenamiento** | 2 GB | 10 GB | 50 GB + ampliable |
+| **Almacenamiento** | 1 GB | 5 GB | 20 GB ampliables |
 | **Soporte** | Email | Chat | Dedicado |
 
 **Landing:** Start y Business muestran precio. Enterprise: «Contactar para conocer el precio».

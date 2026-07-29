@@ -90,7 +90,25 @@
 
     <h3>Almacenamiento</h3>
 
-    <p>{{ fila.storage_label }}</p>
+    <p class="mb-1">
+      <strong>{{ fila.storage_label }}</strong>
+      <span class="text-secondary"> / {{ fila.storage_quota_label }}</span>
+      {% if fila.storage_pct is not none %}
+      <span class="ms-1 {% if fila.storage_warn %}text-warning{% else %}text-secondary{% endif %}">{{ fila.storage_pct }}%</span>
+      {% endif %}
+    </p>
+    {% if fila.storage_pct is not none %}
+    <div class="platform-usage-bar mb-2">
+      <div class="platform-usage-fill{% if fila.storage_pct >= 90 %} platform-usage-fill--danger{% elif fila.storage_warn %} platform-usage-fill--warn{% endif %}"
+           style="width: {{ fila.storage_pct }}%;"></div>
+    </div>
+    {% endif %}
+    {% if fila.storage_warn %}
+    <p class="small text-warning mb-0">
+      ⚠ Próximo al límite de almacenamiento.
+      Oferta sugerida: +2 GB · $100.000 / mes (COM-02).
+    </p>
+    {% endif %}
 
   </div>
 

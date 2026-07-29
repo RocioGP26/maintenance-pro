@@ -3,15 +3,14 @@
 | Campo | Valor |
 |-------|-------|
 | **Código** | COM-01 |
-| **Versión** | **1.3.1** |
-| **Estado** | ✅ Estrategia comercial vigente |
-| **Vigencia** | 2026-07-29 · piloto (COM-03) |
+| **Versión** | **1.3.2** |
+| **Estado** | ✅ Estrategia comercial vigente · piloto |
+| **Vigencia** | 2026-07-29 |
 | **Moneda** | COP |
-| **Fuente** | `PLANES_SEED` · narrativa [MCM-04](../mcm/chapters/04-planes-saas.md) |
+| **Fuente** | `PLANES_SEED` · [MCM-04](../mcm/chapters/04-planes-saas.md) |
 
-> **Política v1.3.1:** Start · **Business** · Enterprise.  
-> Start y Business publican precio. **Enterprise no muestra precio** en landing.  
-> Cambios futuros → v1.4+ + [changelog.md](changelog.md).
+> Start / Business publican precio. Enterprise: contactar.  
+> **Almacenamiento año 1 (conservador):** 1 GB · 5 GB · 20 GB ampliables.
 
 ---
 
@@ -19,74 +18,81 @@
 
 | Característica | Start | Business | Enterprise |
 |----------------|------:|---------:|------------|
-| **Precio mensual** | **$1.000.000** | **$1.500.000** | Desde $2.500.000 *(interno · no publicar)* |
+| **Precio mensual** | **$1.000.000** | **$1.500.000** | Desde $2.500.000 *(interno)* |
 | **Usuarios** | 20 | 50 | Personalizado |
 | **Sedes** | 1 | 3 | Personalizadas |
 | **Módulos** | 1 principal a elegir | Hasta 2 principales | Todos disponibles |
 | **Activos** | Ilimitados | Ilimitados | Ilimitados |
-| **Almacenamiento** | 2 GB | 10 GB | 50 GB + ampliable |
+| **Almacenamiento** | **1 GB** | **5 GB** | **20 GB ampliables** |
 | **Soporte** | Email | Chat | Dedicado |
 
 ```
 Start  →  Business  →  Enterprise
 ```
 
-| Plan | Clave técnica | Objetivo |
-|------|---------------|----------|
-| **Start** | `basico` | Entrada al ecosistema Roustix |
-| **Business** | `grow` | Integrar más procesos y acompañar el crecimiento |
-| **Enterprise** | `enterprise` | Adaptar Roustix a la operación específica |
-| **Trial** | `trial` | 15 días · $0 |
+### Por qué estos cupos de storage (año 1)
 
-**Scale** (`profesional`): fuera de oferta · oculto.
+Infraestructura piloto: Cloudflare R2 free ≈ **10 GB**.
 
----
+| Escenario | Consumo teórico incluido |
+|-----------|--------------------------|
+| 3 clientes piloto Start | 3 × 1 GB = 3 GB |
+| 5 clientes Start | 5 GB |
+| 2 clientes Business | 2 × 5 GB = 10 GB |
 
-## 2 · Precios y publicación
+Se asume costo de storage adicional cuando ya hay clientes de pago. Es más fácil **aumentar** cupos en 6–12 meses que reducir beneficios.
 
-| Plan | Mensual | Anual (×10) | Landing |
-|------|--------:|------------:|---------|
-| Start | 1.000.000 | 10.000.000 | ✅ $1.000.000 COP / mes |
-| Business | 1.500.000 | 15.000.000 | ✅ $1.500.000 COP / mes |
-| Enterprise | 2.500.000 *(piso interno)* | 25.000.000 | ❌ «Contactar para conocer el precio» |
+Complemento comercial: **+2 GB · $100.000/mes** ([COM-02](COM-02-servicios-adicionales.md)).
 
 ---
 
-## 3 · Todos los planes incluyen
+## 2 · Roadmap · Versión 2 de storage *(ingresos estables)*
 
-1. Plataforma SaaS en la nube  
-2. Actualizaciones automáticas  
-3. Copias de seguridad automáticas  
-4. Acceso seguro mediante HTTPS  
-5. Gestión de usuarios y roles  
-6. Auditoría de acciones  
-7. Base de datos dedicada por empresa  
-8. Acceso desde computador, tablet y móvil  
-9. Soporte según el plan contratado  
+| Plan | Storage v2 (anunciar como mejora) |
+|------|-----------------------------------|
+| Start | 2 GB |
+| Business | 10 GB |
+| Enterprise | 50 GB |
+
+No reducir cupos v1.3.2; solo ampliar y comunicar como beneficio.
 
 ---
 
-## 4 · Licenciamiento
+## 3 · Uso dinámico (producto)
 
-| Aspecto | Definición |
-|---------|------------|
-| Modelo | SaaS suscripción (mensual / anual) |
-| Trial | 15 días · post-trial → Start |
-| Facturación Etapa 1 | Manual / plataforma |
-| Exceso de límites | Upgrade · [COM-02](COM-02-servicios-adicionales.md) · Enterprise |
+| Capacidad | Estado |
+|-----------|--------|
+| Medición por tenant | ✅ SuperAdmin (barra uso / cuota) |
+| Alerta ≥ 80% | ✅ Panel plataforma · oferta +2 GB |
+| Alerta en portal cliente | ✅ Banner admin (≥80%) + barra en Configuración empresa · mismo umbral · CTA +2 GB |
+| Monitor BD + R2 | ✅ `/platform/infraestructura` |
 
 ---
 
-## 5 · Control de cambios
+## 4 · Precios y publicación
+
+| Plan | Mensual | Landing |
+|------|--------:|---------|
+| Start | 1.000.000 | ✅ Visible |
+| Business | 1.500.000 | ✅ Visible |
+| Enterprise | 2.500.000 *(piso)* | ❌ Contactar |
+
+---
+
+## 5 · Todos los planes incluyen
+
+Plataforma SaaS · actualizaciones · backups · HTTPS · roles · auditoría · BD por empresa · multi-dispositivo · soporte según plan.
+
+---
+
+## 6 · Control de cambios
 
 | Versión | Fecha | Cambio |
 |---------|-------|--------|
-| **1.3.1** | 2026-07-29 | Grow → **Business** · Enterprise sin precio en landing |
-| **1.3.0** | 2026-07-29 | Precios 1M / 1.5M / desde 2.5M · activos ilimitados |
-| **1.2.0** | 2026-07-29 | Business (supersedido luego por 1.3) |
-| **1.1.0** | 2026-07-29 | Tres planes · límites iniciales |
-| **1.0.0** | 2026-07-29 | Empaquetado inicial |
+| **1.3.2** | 2026-07-29 | Storage año 1: 1 / 5 / 20 GB · roadmap v2 · monitor infra |
+| **1.3.1** | 2026-07-29 | Business · Enterprise sin precio público |
+| **1.3.0** | 2026-07-29 | Precios 1M / 1.5M / desde 2.5M |
 
 ---
 
-*COM-01 · Roustix Commercial Packaging · v1.3.1 · 2026*
+*COM-01 · v1.3.2 · 2026*

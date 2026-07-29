@@ -114,6 +114,125 @@ def _format_storage(bytes_val: int) -> str:
     return f"{bytes_val / (1024 * 1024 * 1024):.2f} GB"
 
 
+# Cupos de infraestructura de referencia (piloto · Render Starter + R2 free).
+INFRA_DB_QUOTA_MB = 256
+INFRA_FILES_QUOTA_GB = 10
+STORAGE_WARN_PCT = 80
+
+
+def _storage_uso_pct(used_bytes: int, quota_mb: Optional[int]) -> Optional[int]:
+    if quota_mb is None or quota_mb <= 0:
+        return None
+    quota_bytes = int(quota_mb) * 1024 * 1024
+    if quota_bytes <= 0:
+        return None
+    return min(100, int(round(used_bytes / quota_bytes * 100)))
+
+
+def storage_uso_tenant(empresa: Empresa | None) -> Optional[dict[str, Any]]:
+    """Uso de archivos del tenant vs cupo del plan (portal cliente y plataforma).
+
+    Retorna None si no hay empresa o cuota. `warn` es True al ≥ STORAGE_WARN_PCT (80%).
+    """
+    if empresa is None or not getattr(empresa, "id", None):
+        return None
+    plan = empresa.plan_activo
+    plan_key = plan.plan if plan else PlanTipo.TRIAL.value
+    meta = plan_meta(plan_key)
+    quota_mb = meta.get("storage_mb")
+    if quota_mb is None or int(quota_mb) <= 0:
+        return None
+    used = storage_bytes_empresa(int(empresa.id))
+    pct = _storage_uso_pct(used, int(quota_mb))
+    return {
+        "used_bytes": used,
+        "used_label": _format_storage(used),
+        "quota_mb": int(quota_mb),
+        "quota_label": _format_storage(int(quota_mb) * 1024 * 1024),
+        "pct": pct,
+        "warn": pct is not None and pct >= STORAGE_WARN_PCT,
+        "addon_label": "+2 GB",
+        "addon_price_label": "$100.000 / mes",
+        "addon_sku": "ADD-STG-2G",
+    }
+
+
+def database_size_bytes() -> Optional[int]:
+    """Tamaño aproximado de la BD activa (PostgreSQL o SQLite)."""
+    from flask import current_app
+    from sqlalchemy import text
+
+    uri = (current_app.config.get("SQLALCHEMY_DATABASE_URI") or "").strip()
+    try:
+        if uri.startswith("sqlite"):
+            path = uri.split("sqlite:///")[-1]
+            if path and os.path.isfile(path):
+                return os.path.getsize(path)
+            return None
+        if "postgresql" in uri or "postgres" in uri:
+            row = db.session.execute(text("SELECT pg_database_size(current_database())")).scalar()
+            return int(row) if row is not None else None
+    except Exception:
+        return None
+    return None
+
+
+def files_storage_total_bytes() -> int:
+    """Consumo agregado de archivos (prefijo empresas/ + uploads legacy)."""
+    from app.file_storage import size_for_prefix
+
+    total = 0
+    try:
+        total += size_for_prefix("empresas")
+    except Exception:
+        pass
+    root = _uploads_root()
+    if os.path.isdir(root):
+        for raiz, _dirs, archivos in os.walk(root):
+            for nombre in archivos:
+                try:
+                    total += os.path.getsize(os.path.join(raiz, nombre))
+                except OSError:
+                    pass
+    return total
+
+
+def infra_snapshot() -> dict[str, Any]:
+    """Monitor interno SuperAdmin: BD + archivos (R2/local)."""
+    db_bytes = database_size_bytes()
+    db_quota = INFRA_DB_QUOTA_MB * 1024 * 1024
+    files_bytes = files_storage_total_bytes()
+    files_quota = INFRA_FILES_QUOTA_GB * 1024 * 1024 * 1024
+    db_pct = (
+        min(100, int(round(db_bytes / db_quota * 100)))
+        if db_bytes is not None and db_quota
+        else None
+    )
+    files_pct = min(100, int(round(files_bytes / files_quota * 100))) if files_quota else None
+    return {
+        "database": {
+            "label": "Base de datos",
+            "used_bytes": db_bytes,
+            "used_label": _format_storage(db_bytes) if db_bytes is not None else "No disponible",
+            "quota_label": f"{INFRA_DB_QUOTA_MB} MB",
+            "pct": db_pct,
+            "warn": db_pct is not None and db_pct >= STORAGE_WARN_PCT,
+        },
+        "files": {
+            "label": "Archivos (R2 / storage)",
+            "used_bytes": files_bytes,
+            "used_label": _format_storage(files_bytes),
+            "quota_label": f"{INFRA_FILES_QUOTA_GB} GB",
+            "pct": files_pct,
+            "warn": files_pct is not None and files_pct >= STORAGE_WARN_PCT,
+        },
+        "notes": (
+            "Cupos de referencia del piloto (Render Starter ~256 MB BD · "
+            "Cloudflare R2 free ~10 GB). Ajustar cuando se amplíe infraestructura."
+        ),
+    }
+
+
 def activos_por_empresa() -> dict[int, int]:
     rows = (
         db.session.query(Machine.empresa_id, func.count(Machine.id))
@@ -162,6 +281,10 @@ class EmpresaRow:
     uso_pct: Optional[int]
     storage_bytes: int
     storage_label: str
+    storage_quota_mb: Optional[int]
+    storage_quota_label: str
+    storage_pct: Optional[int]
+    storage_warn: bool
     usuarios: int
     admin_nombre: str
     admin_email: str
@@ -189,6 +312,8 @@ def empresa_a_fila(
     meta = plan_meta(plan_key)
     activos = activos_map.get(empresa.id, 0)
     storage = storage_bytes_empresa(empresa.id)
+    quota_mb = meta.get("storage_mb")
+    storage_pct = _storage_uso_pct(storage, quota_mb)
     adm = admin_empresa(empresa)
     from app.platform_billing import mrr_empresa
 
@@ -204,6 +329,12 @@ def empresa_a_fila(
         uso_pct=_uso_pct(activos, meta["max_activos"]),
         storage_bytes=storage,
         storage_label=_format_storage(storage),
+        storage_quota_mb=quota_mb,
+        storage_quota_label=(
+            _format_storage(int(quota_mb) * 1024 * 1024) if quota_mb else "—"
+        ),
+        storage_pct=storage_pct,
+        storage_warn=storage_pct is not None and storage_pct >= STORAGE_WARN_PCT,
         usuarios=usuarios_map.get(empresa.id, 0),
         admin_nombre=(adm.nombre_visible or adm.username) if adm else "—",
         admin_email=(adm.email or "") if adm else "",

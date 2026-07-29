@@ -119,7 +119,13 @@
             </div>
           </td>
           <td>
-            <span class="platform-usage-label">{{ f.storage_label }}</span>
+            <span class="platform-usage-label">{{ f.storage_label }}{% if f.storage_quota_mb %} / {{ f.storage_quota_label }}{% endif %}</span>
+            {% if f.storage_pct is not none %}
+            <div class="platform-usage-bar mt-1">
+              <div class="platform-usage-fill{% if f.storage_pct >= 90 %} platform-usage-fill--danger{% elif f.storage_warn %} platform-usage-fill--warn{% endif %}"
+                   style="width: {{ f.storage_pct }}%;"></div>
+            </div>
+            {% endif %}
           </td>
           <td class="text-end">
             <a href="{{ url_for('platform.empresa_detail', id=e.id) }}" class="platform-link">Ver</a>
