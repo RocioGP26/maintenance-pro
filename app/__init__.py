@@ -281,6 +281,18 @@ def create_app(config_name: str | None = None):
     def jinja_formato_fecha_local(dt, fmt="%d/%m/%Y %H:%M"):
         return _formato_fecha_hora(dt, fmt, desde_utc=False)
 
+    from app.brand_protect import protect_brands, wrap_notranslate
+
+    @app.template_filter("notranslate")
+    def jinja_notranslate(text):
+        """Envuelve un nombre comercial: {{ 'Roustix'|notranslate }}."""
+        return wrap_notranslate(text)
+
+    @app.template_filter("protect_brands")
+    def jinja_protect_brands(text):
+        """Marca términos comerciales en un párrafo: {{ texto|protect_brands }}."""
+        return protect_brands(text)
+
     @app.context_processor
     def inject_globals():
         from flask import request

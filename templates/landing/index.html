@@ -4,8 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   {% include "_favicon.html" %}
-  <title>Roustix | Plataforma SaaS para controlar la operación empresarial</title>
-  <meta name="description" content="Roustix ayuda a empresas en crecimiento a organizar, controlar y hacer crecer su operación mediante una plataforma SaaS modular para mantenimiento e inventario. Prueba gratis {{ trial_dias }} días.">
+  <title>{{ app_name }} | Plataforma SaaS para controlar la operación empresarial</title>
+  <meta name="description" content="{{ app_name }} ayuda a empresas en crecimiento a organizar, controlar y hacer crecer su operación mediante una plataforma SaaS modular para mantenimiento e inventario. Prueba gratis {{ trial_dias }} días.">
   {% from "_cdn_assets.html" import google_fonts_inter_extra_bold, bootstrap_icons_css %}
   {{ google_fonts_inter_extra_bold() }}
   {{ bootstrap_icons_css() }}
@@ -23,7 +23,7 @@
           </span>
           <h1>Organiza, controla y haz crecer tu operación desde un solo lugar.</h1>
           <p class="landing-lead">
-            {{ app_name }} es una plataforma SaaS modular para empresas que ya crecieron más allá de Excel.
+            {{ app_name|notranslate }} es una plataforma SaaS modular para empresas que ya crecieron más allá de Excel.
             Mantenimiento, inventario — o ambos — con un solo inicio de sesión.
           </p>
           <div class="landing-hero-ctas">
@@ -34,7 +34,7 @@
               {{ cta_demo }}
             </a>
           </div>
-          <p class="landing-hero-note">Comienza hoy. Prueba Roustix durante {{ trial_dias }} días sin compromiso.</p>
+          <p class="landing-hero-note">{{ ("Comienza hoy. Prueba Roustix durante " ~ trial_dias ~ " días sin compromiso.")|protect_brands }}</p>
         </div>
 
         <div class="landing-hero-mockups" aria-hidden="true">
@@ -43,7 +43,7 @@
             <div class="landing-mockup-window">
               <div class="landing-mockup-bar">
                 <span></span><span></span><span></span>
-                <span class="landing-mockup-module"><i class="bi {{ mockup.icon }}"></i> {{ mockup.modulo }}</span>
+                <span class="landing-mockup-module notranslate" translate="no"><i class="bi {{ mockup.icon }}"></i> {{ mockup.modulo }}</span>
                 <span class="landing-mockup-title">{{ mockup.empresa }}</span>
               </div>
               <div class="landing-mockup-body">
@@ -113,7 +113,7 @@
               <span class="landing-feature-icon"><i class="bi {{ m.icon }}"></i></span>
               <div>
                 <span class="landing-badge {{ m.badge_class }}">{{ m.badge }}</span>
-                <h3>{{ m.label }}</h3>
+                <h3 class="notranslate" translate="no">{{ m.label }}</h3>
               </div>
             </div>
             <p class="landing-module-desc">{{ m.descripcion }}</p>
@@ -129,7 +129,7 @@
           <p class="landing-eyebrow text-center mb-2">Próximamente</p>
           <div class="landing-sectors justify-content-center">
             {% for m in modulos_roadmap %}
-            <span class="landing-sector-pill landing-sector-pill--roadmap">
+            <span class="landing-sector-pill landing-sector-pill--roadmap notranslate" translate="no">
               <i class="bi {{ m.icon }}"></i> {{ m.label }}
             </span>
             {% endfor %}
@@ -143,7 +143,7 @@
         <p class="landing-eyebrow">Beneficios</p>
         <h2 class="landing-section-title">Resultados, no solo funciones</h2>
         <p class="landing-section-sub">
-          {{ app_name }} centraliza la operación para que decidas a tiempo.
+          {{ app_name|notranslate }} centraliza la operación para que decidas a tiempo.
         </p>
         <div class="landing-features-grid">
           {% for f in features %}
@@ -162,8 +162,7 @@
         <p class="landing-eyebrow text-center">Sectores</p>
         <h2 class="landing-section-title text-center">El sector adapta el discurso, no el producto</h2>
         <p class="landing-section-sub text-center mx-auto">
-          Roustix no es un software vertical. Es una plataforma modular cuyo lenguaje
-          se ajusta a tu operación — industria, comercio, agro, talleres o distribución.
+          {{ "Roustix no es un software vertical. Es una plataforma modular cuyo lenguaje se ajusta a tu operación — industria, comercio, agro, talleres o distribución."|protect_brands }}
         </p>
         <div class="landing-sectors-grid">
           {% for s in sectores %}
@@ -185,11 +184,11 @@
 
     <section id="precios" class="landing-section">
       <div class="container-xl">
-        <p class="landing-eyebrow">Planes</p>
+        <p class="landing-eyebrow notranslate" translate="no">Planes</p>
         <h2 class="landing-section-title">Crece con tu operación</h2>
         <p class="landing-section-sub text-center mx-auto">
-          Start → Grow → Scale → Enterprise. Misma plataforma en cada etapa.
-          Prueba {{ trial_dias }} días sin tarjeta.
+          Elige el plan que mejor se adapte a tu empresa y amplíalo a medida que tu operación crezca.
+          Comienza con una prueba gratuita de {{ trial_dias }} días.
         </p>
         <div class="landing-pricing-grid">
           {% for plan in planes %}
@@ -197,22 +196,33 @@
             {% if plan.destacado %}
             <span class="landing-price-badge">Recomendado</span>
             {% endif %}
-            <h3>{{ plan.short_label }}</h3>
+            <h3 class="notranslate" translate="no">{{ plan.short_label }}</h3>
             <div class="landing-price-amount">
               {{ plan.precio_label }}
+              {% if plan.precio_periodo %}<small>{{ plan.precio_periodo }}</small>{% endif %}
             </div>
             <ul class="landing-price-features">
               {% for line in plan.features %}
               <li><i class="bi bi-check2"></i> {{ line }}</li>
               {% endfor %}
             </ul>
-            <a href="{{ url_for('main.demo') if plan.key == 'enterprise' else url_for('onboarding.wizard') }}"
+            <a href="{{ url_for(plan.cta_url_name|default('onboarding.wizard')) }}"
                class="landing-btn {% if plan.destacado %}landing-btn-primary{% else %}landing-btn-outline{% endif %} w-100">
               {{ plan.cta }}
             </a>
           </article>
           {% endfor %}
         </div>
+        {% if planes_incluyen %}
+        <div class="landing-plans-included mt-5">
+          <h3 class="landing-plans-included-title text-center notranslate" translate="no">Todos los planes incluyen</h3>
+          <ul class="landing-plans-included-list">
+            {% for item in planes_incluyen %}
+            <li><i class="bi bi-check2-circle" aria-hidden="true"></i> {{ item }}</li>
+            {% endfor %}
+          </ul>
+        </div>
+        {% endif %}
       </div>
     </section>
 
@@ -230,7 +240,7 @@
     <section id="contacto" class="landing-cta-band">
       <div class="container-xl text-center">
         <h2>Recupera el control de tu operación.</h2>
-        <p>Comienza hoy. Prueba Roustix durante {{ trial_dias }} días sin compromiso.</p>
+        <p>{{ ("Comienza hoy. Prueba Roustix durante " ~ trial_dias ~ " días sin compromiso.")|protect_brands }}</p>
         <div class="landing-hero-ctas justify-content-center">
           <a href="{{ url_for('onboarding.wizard') }}" class="landing-btn landing-btn-light">
             <i class="bi bi-rocket-takeoff"></i> {{ cta_final }}

@@ -1,0 +1,8 @@
+{# Macros · protección de marcas (translate=no / notranslate) · piloto Roustix #}
+{% macro nt(text) -%}
+<span class="notranslate" translate="no">{{ text }}</span>
+{%- endmacro %}
+
+{% macro nt_attr() -%}
+class="notranslate" translate="no"
+{%- endmacro %}

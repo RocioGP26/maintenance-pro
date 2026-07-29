@@ -19,6 +19,18 @@ Formato: `MCM-{NN}-{SLUG}` · Sprint 11 · **v1.0.0**
 
 ---
 
+## Empaquetado comercial · serie COM *(complemento)*
+
+Precios y piloto no se versionan solo dentro del MCM. Ver [docs/com/](../com/README.md).
+
+| Código | Documento |
+|--------|-----------|
+| **COM-01** | [Planes y Licenciamiento](../com/COM-01-planes-licenciamiento.md) |
+| **COM-02** | [Servicios Adicionales](../com/COM-02-servicios-adicionales.md) |
+| **COM-03** | [Programa Piloto y Fundadores](../com/COM-03-programa-piloto-fundadores.md) |
+
+---
+
 ## Appendix
 
 | Contenido | Archivo |

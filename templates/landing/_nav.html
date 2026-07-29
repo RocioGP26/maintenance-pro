@@ -1,6 +1,6 @@
 <header class="landing-nav-wrap">
   <nav class="landing-nav container-xl" aria-label="Navegación principal">
-    <a href="{{ url_for('main.index') }}" class="landing-brand">
+    <a href="{{ url_for('main.index') }}" class="landing-brand notranslate" translate="no">
       <span class="landing-brand-logo-panel">
         <img src="{{ url_for('static', filename=app_logo_path) }}" alt="{{ app_name }}" class="landing-brand-logo">
       </span>
@@ -8,7 +8,7 @@
     <div class="landing-nav-links d-none d-md-flex">
       <a href="{{ url_for('main.index') }}#modulos">Producto</a>
       <a href="{{ url_for('main.index') }}#sectores">Soluciones</a>
-      <a href="{{ url_for('main.index') }}#precios">Planes</a>
+      <a href="{{ url_for('main.index') }}#precios" class="notranslate" translate="no">Planes</a>
       <a href="{{ url_for('main.guia_producto') }}">Guía</a>
       <a href="{{ url_for('main.manual_usuario') }}">Manual</a>
       <a href="/mag/" target="_blank" rel="noopener">API</a>

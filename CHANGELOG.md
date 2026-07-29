@@ -12,6 +12,20 @@ La suite documental mantiene un ciclo independiente en
 
 - Espacio reservado para cambios aún no publicados.
 
+## [1.0.20] - 2026-07-29
+
+### Added
+
+- Empaquetado comercial **COM** v1.3.1 (planes, add-ons, piloto/fundadores).
+- Protección de marcas `translate="no"` / `notranslate` en landing (evita Start/Planes → «Aviones»).
+- Roadmap i18n documentado (`docs/mkt/i18n-roadmap.md`).
+
+### Changed
+
+- Oferta SaaS: **Start** ($1.000.000) · **Business** ($1.500.000) · **Enterprise** (precio a contactar).
+- Landing: precios Start/Business públicos, sección «Todos los planes incluyen», copy de tarjetas y CTA Enterprise «Hablar con un asesor».
+- Catálogo `PLANES_SEED` alineado a COM-01 (activos ilimitados, módulos principales).
+
 ## [1.0.19] - 2026-07-28
 
 ### Changed

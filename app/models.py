@@ -33,26 +33,27 @@ PLAN_CATALOG = {
     PlanTipo.BASICO.value: {
         "label": "Plan Start",
         "short_label": "Start",
-        "descripcion": "Digitaliza tu operación en menos de una semana",
-        "max_activos": 100,
+        "descripcion": "Entrada al ecosistema Roustix",
+        "max_activos": None,
         "dias": None,
-        "precio_mensual": 490_000,
+        "precio_mensual": 1_000_000,
     },
     PlanTipo.PROFESIONAL.value: {
-        "label": "Plan Scale",
+        # Legacy Scale — fuera de oferta COM-01 v1.3.
+        "label": "Plan Scale (legacy)",
         "short_label": "Scale",
-        "descripcion": "Control multisede y mayor volumen",
-        "max_activos": 1000,
+        "descripcion": "Legacy — ofertar Business o Enterprise",
+        "max_activos": None,
         "dias": None,
-        "precio_mensual": 1_290_000,
+        "precio_mensual": 580_000,
     },
     PlanTipo.ENTERPRISE.value: {
         "label": "Plan Enterprise",
         "short_label": "Enterprise",
-        "descripcion": "Activos ilimitados",
+        "descripcion": "Usuarios y sedes personalizados",
         "max_activos": None,
         "dias": None,
-        "precio_mensual": 3_490_000,
+        "precio_mensual": 2_500_000,
     },
 }
 

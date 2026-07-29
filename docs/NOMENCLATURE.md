@@ -12,6 +12,7 @@ Versiones: [VERSIONS.md](VERSIONS.md) · Cross-refs: [CROSS-REFERENCES.md](CROSS
 | **03** | **MUX** | Roustix User Experience Guide | `docs/mux/` | `/mux/` |
 | **04** | **MCM** | Roustix Commercial Manual | `docs/mcm/` | `/mcm/` |
 | **12** | **MKT** | Sales Enablement & Marketing Assets | `docs/mkt/` | `/mkt/` |
+| **14** | **COM** | Commercial Packaging (planes · add-ons · piloto) | `docs/com/` | — |
 | **13** | **MDO** | Roustix Documentation Operations | `docs/mdo/` | `/mdo/` |
 | **05** | **MPA** | Roustix Platform Architecture | `docs/mpa/` | `/mpa/` |
 | **06** | **MRL** | Roustix Report Language | `docs/mrl/` | — |
@@ -21,7 +22,8 @@ Versiones: [VERSIONS.md](VERSIONS.md) · Cross-refs: [CROSS-REFERENCES.md](CROSS
 | **09** | **—** | Developer Docs | `docs/developer/` | — |
 | **10** | **—** | Release Notes | `docs/release-notes/` | — |
 
-**Patrón:** siglas **M** + nombre corto → proyecto independiente (MBB, MDL, MUX, MCM, MPA, MRL, MAG, MKT).
+**Patrón:** siglas **M** + nombre corto → proyecto independiente (MBB, MDL, MUX, MCM, MPA, MRL, MAG, MKT).  
+**Excepción:** **COM** = empaquetado comercial contractual (precios · licenciamiento · piloto); complementa MCM.
 
 ## Subproyectos Developer (09)
 

@@ -143,10 +143,11 @@ Ver [chapters/03-sectores-mercados.md](chapters/03-sectores-mercados.md) · deta
 
 | Plan | Perfil ideal | Resultado esperado |
 |------|--------------|-------------------|
-| **Start** | Reemplaza Excel | Digitalizado en &lt; 1 semana |
-| **Grow** | Ya digitalizó una parte | Unificar módulos en una plataforma |
-| **Scale** | Varias sedes | Control multisede centralizado |
-| **Enterprise** | Procesos complejos | Plataforma central de operación |
+| **Start** | Comienza a digitalizar | $1.000.000 / mes · 20 usuarios · 1 módulo |
+| **Business** | Empresas en crecimiento | $1.500.000 / mes · 50 usuarios · 2 módulos |
+| **Enterprise** | Operaciones complejas | Personalizado · precio a contactar |
+
+> Oferta: [COM-01 v1.3.1](../com/COM-01-planes-licenciamiento.md) · activos ilimitados en todos los planes.
 
 **Qué no cambia:** misma plataforma, MUX, MDL y arquitectura — solo cambia la capacidad de acompañar el crecimiento.
 

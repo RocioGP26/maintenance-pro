@@ -31,7 +31,7 @@ python run.py
 | 12.9 | **MKT-09** | [Contenidos y redes sociales](chapters/09-social-contenidos.md) | ✅ |
 | 12.10 | **MKT-10** | [Guía de estilo y gobernanza](chapters/10-guia-estilo-comercial.md) | ✅ |
 
-Códigos: [NOMENCLATURE.md](NOMENCLATURE.md)
+Códigos: [NOMENCLATURE.md](NOMENCLATURE.md) · i18n: [i18n-roadmap.md](i18n-roadmap.md)
 
 ## Entregables Sprint 12
 

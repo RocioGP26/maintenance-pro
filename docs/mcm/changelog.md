@@ -1,5 +1,33 @@
 # MCM Changelog
 
+## [1.0.4] — 2026-07-29 · Matriz comercial COM-01 v1.3
+
+### Changed
+- **MCM-04** · precios 1M / 1.5M / desde 2.5M · Grow · activos ilimitados
+
+---
+
+## [1.0.3] — 2026-07-29 · Grow → Business · precios públicos
+
+### Changed
+- **MCM-04** · plan **Business** · precios Start/Business en narrativa · Enterprise contactar
+
+---
+
+## [1.0.2] — 2026-07-29 · MCM-04 alineado a COM-01 v1.1
+
+### Changed
+- **MCM-04-PLANS** · tres planes · capacidad COM-01 · «Todos los planes incluyen»
+
+---
+
+## [1.0.1] — 2026-07-29 · Enlace a empaquetado COM
+
+### Changed
+- Referencia a serie **COM**
+
+---
+
 ## [1.0.0] — 2026-07-10 · Sprint 11 Finalizado · Commercial Manual
 
 ### Added

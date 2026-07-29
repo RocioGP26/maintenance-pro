@@ -11,8 +11,8 @@ from typing import Any
 from app.models import Empresa, PlanSuscripcion, PlanTipo
 
 
-# Matriz comercial inicial (Trial / Start / Grow / Scale / Enterprise).
-# Claves estables; los nombres comerciales pueden cambiar sin tocar el código.
+# Matriz técnica (Trial / Start / Grow / Enterprise + legacy Scale).
+# Oferta comercial COM-01 v1.3.1: Start · Business · Enterprise.
 ENTITLEMENT_MATRIX: dict[str, dict[str, Any]] = {
     PlanTipo.TRIAL.value: {
         "public_api.enabled": True,
@@ -36,7 +36,7 @@ ENTITLEMENT_MATRIX: dict[str, dict[str, Any]] = {
         "webhooks.manual_retry": True,
         "webhooks.auto_disable_after": 15,
     },
-    "grow": {
+    "grow": {  # Plan Business (clave técnica grow)
         "public_api.enabled": True,
         "public_api.requests_per_minute": 90,
         "public_api.credentials_max": 5,
@@ -47,7 +47,7 @@ ENTITLEMENT_MATRIX: dict[str, dict[str, Any]] = {
         "webhooks.manual_retry": True,
         "webhooks.auto_disable_after": 15,
     },
-    PlanTipo.PROFESIONAL.value: {  # Scale
+    PlanTipo.PROFESIONAL.value: {  # Scale legacy (oculto en oferta COM-01 v1.1)
         "public_api.enabled": True,
         "public_api.requests_per_minute": 120,
         "public_api.credentials_max": 10,

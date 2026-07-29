@@ -18,7 +18,7 @@
     <section class="landing-section landing-section--soft landing-guia-hero">
       <div class="container-xl landing-public-page-head">
         <p class="landing-eyebrow">Manual de usuario · v1.0</p>
-        <h1 class="landing-section-title">Roustix Maintenance</h1>
+        <h1 class="landing-section-title notranslate" translate="no">Roustix Maintenance</h1>
         <p class="landing-section-sub mx-auto text-center">{{ manual_intro }}</p>
         <p class="landing-guia-tagline">Toda la operación. Una sola plataforma.</p>
         <div class="landing-hero-ctas justify-content-center landing-guia-toolbar">
@@ -197,7 +197,7 @@
     <section class="landing-cta-band">
       <div class="container-xl text-center">
         <h2>¿Listo para operar?</h2>
-        <p>Entra a Roustix o revisa la guía de producto si aún estás evaluando la plataforma.</p>
+        <p>{{ "Entra a Roustix o revisa la guía de producto si aún estás evaluando la plataforma."|protect_brands }}</p>
         <div class="landing-hero-ctas justify-content-center">
           <a href="{{ url_for('main.login') }}" class="landing-btn landing-btn-light">
             <i class="bi bi-box-arrow-in-right"></i> Iniciar sesión

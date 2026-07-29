@@ -206,6 +206,7 @@ CLIENTE → CASO DE ÉXITO → REFERIDO → NUEVO CLIENTE
 | ☐ | Folleto y pilar de crecimiento en outbound |
 | ☐ | KPIs GTM con baseline tras 90 días |
 | ☐ | Primer MTX-CASE nivel B/C al cerrar cliente piloto |
+| ☐ | **COM-01 / COM-02 / COM-03 v1.0** publicados y precios congelados |
 
 ---
 

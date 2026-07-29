@@ -54,11 +54,24 @@ python run.py
 
 Códigos: [NOMENCLATURE.md](NOMENCLATURE.md) · Estrategia: [strategy.md](strategy.md)
 
+## Empaquetado comercial (COM) · v1.1
+
+Precios, licenciamiento y piloto — **Start · Business · Enterprise**:
+
+| Código | Documento |
+|--------|-----------|
+| **COM-01** | [Planes y Licenciamiento](../com/COM-01-planes-licenciamiento.md) |
+| **COM-02** | [Servicios Adicionales](../com/COM-02-servicios-adicionales.md) |
+| **COM-03** | [Programa Piloto y Fundadores](../com/COM-03-programa-piloto-fundadores.md) |
+
+Índice: [docs/com/README.md](../com/README.md)
+
 ## Relación con la suite
 
 | Doc | Rol |
 |-----|-----|
 | **MRG** | Cómo funciona el producto |
 | **MCM** | Cómo vender y posicionar |
+| **COM** | Qué se cobra · licenciamiento · piloto (versionado) |
 | **MPA** | Arquitectura |
 | **MAG / MSD** | API e integradores |

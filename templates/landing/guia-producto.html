@@ -18,7 +18,7 @@
     <section class="landing-section landing-section--soft landing-guia-hero">
       <div class="container-xl landing-public-page-head">
         <p class="landing-eyebrow">Guía de producto</p>
-        <h1 class="landing-section-title">Cómo funciona Roustix</h1>
+        <h1 class="landing-section-title">{{ "Cómo funciona Roustix"|protect_brands }}</h1>
         <p class="landing-section-sub mx-auto text-center">{{ guia_intro }}</p>
         <p class="landing-guia-tagline">Toda la operación. Una sola plataforma.</p>
         <div class="landing-hero-ctas justify-content-center landing-guia-toolbar">
@@ -39,7 +39,7 @@
       <div class="container-xl">
         <h2 class="landing-section-title">Pensado para la operación real</h2>
         <p class="landing-section-sub mb-4">
-          Roustix es una plataforma SaaS modular: organzas activos, inventario y procesos
+          {{ "Roustix es una plataforma SaaS modular: organzas activos, inventario y procesos"|protect_brands }}
           desde un solo lugar, sin instalar software en servidores propios.
         </p>
         <div class="landing-guia-grid">
@@ -64,7 +64,7 @@
               <p>{{ row.antes }}</p>
             </div>
             <div class="landing-guia-compare-after">
-              <span class="landing-guia-label">Con Roustix</span>
+              <span class="landing-guia-label">{{ "Con Roustix"|protect_brands }}</span>
               <p>{{ row.despues }}</p>
             </div>
           </div>
@@ -139,7 +139,7 @@
       <div class="container-xl">
         <h2 class="landing-section-title">Empieza con un módulo. Crece sin cambiar de plataforma.</h2>
         <p class="landing-section-sub mb-4">
-          La transformación comienza con lo que necesitas hoy. El crecimiento ocurre dentro de Roustix.
+          {{ "La transformación comienza con lo que necesitas hoy. El crecimiento ocurre dentro de Roustix."|protect_brands }}
         </p>
         <div class="landing-guia-steps">
           {% for paso in guia_crecimiento %}
@@ -184,7 +184,7 @@
     <section class="landing-cta-band">
       <div class="container-xl text-center">
         <h2>¿Listo para recuperar el control?</h2>
-        <p>Comienza hoy. Prueba Roustix durante {{ trial_dias }} días sin compromiso.</p>
+        <p>{{ ("Comienza hoy. Prueba Roustix durante " ~ trial_dias ~ " días sin compromiso.")|protect_brands }}</p>
         <div class="landing-hero-ctas justify-content-center">
           <a href="{{ url_for('onboarding.wizard') }}" class="landing-btn landing-btn-light">
             <i class="bi bi-rocket-takeoff"></i> {{ cta_final }}

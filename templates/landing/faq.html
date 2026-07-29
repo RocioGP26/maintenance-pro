@@ -20,7 +20,7 @@
         <p class="landing-eyebrow">MCM-08 · FAQ oficial</p>
         <h1 class="landing-section-title">Preguntas frecuentes</h1>
         <p class="landing-section-sub mx-auto text-center">
-          Respuestas alineadas con la documentación comercial y funcional de Roustix.
+          {{ "Respuestas alineadas con la documentación comercial y funcional de Roustix."|protect_brands }}
           Si no encuentras tu caso, <a href="{{ url_for('main.contacto') }}">contáctanos</a>.
         </p>
       </div>
@@ -54,7 +54,7 @@
     <section class="landing-cta-band">
       <div class="container-xl text-center">
         <h2>¿Listo para probar?</h2>
-        <p>Comienza hoy. Prueba Roustix durante {{ trial_dias }} días sin compromiso.</p>
+        <p>{{ ("Comienza hoy. Prueba Roustix durante " ~ trial_dias ~ " días sin compromiso.")|protect_brands }}</p>
         <button type="button" class="landing-btn landing-btn-light"
                 data-send-prompt="Quiero comenzar mi prueba gratuita en Roustix"
                 data-prompt-url="{{ url_for('onboarding.wizard') }}">

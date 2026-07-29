@@ -26,89 +26,88 @@ REGLAS_DEFAULT: dict[str, str] = {
     "dias_alerta_mora": "3",
 }
 
+# Oferta comercial COM-01 v1.3.1 · Start · Business · Enterprise (Scale oculto / legacy).
 PLANES_SEED: list[dict[str, Any]] = [
     {
         "clave": PlanTipo.BASICO.value,
         "label": "Plan Start",
         "short_label": "Start",
-        "descripcion": "Digitaliza tu operación en menos de una semana",
-        "precio_mensual": 280_000,
-        "precio_anual": 2_800_000,
-        "max_usuarios": 5,
-        "max_activos": 20,
-        "storage_mb": 500,
+        "descripcion": "Entrada al ecosistema Roustix — digitaliza tu operación",
+        "precio_mensual": 1_000_000,
+        "precio_anual": 10_000_000,
+        "max_usuarios": 20,
+        "max_activos": None,  # Ilimitados
+        "storage_mb": 2048,
         "soporte": "Email",
         "visible_registro": True,
         "destacado": False,
         "orden": 10,
         "caracteristicas": [
-            {"text": "1 módulo a elegir", "included": True},
-            {"text": "Órdenes de trabajo o inventario", "included": True},
-            {"text": "Dashboard operativo", "included": True},
-            {"text": "Onboarding self-service", "included": True},
+            {"text": "20 usuarios · 1 sede", "included": True},
+            {"text": "1 módulo principal a elegir", "included": True},
+            {"text": "2 GB de almacenamiento", "included": True},
+            {"text": "Soporte por email", "included": True},
         ],
     },
     {
         "clave": "grow",
-        "label": "Plan Grow",
-        "short_label": "Grow",
-        "descripcion": "Unifica mantenimiento e inventario en una sola plataforma",
-        "precio_mensual": 420_000,
-        "precio_anual": 4_200_000,
-        "max_usuarios": 10,
-        "max_activos": 50,
-        "storage_mb": 1000,
-        "soporte": "Email",
+        "label": "Plan Business",
+        "short_label": "Business",
+        "descripcion": "Integra más procesos y acompaña el crecimiento",
+        "precio_mensual": 1_500_000,
+        "precio_anual": 15_000_000,
+        "max_usuarios": 50,
+        "max_activos": None,  # Ilimitados
+        "storage_mb": 10240,
+        "soporte": "Chat",
         "visible_registro": True,
         "destacado": True,
         "orden": 20,
         "caracteristicas": [
-            {"text": "Hasta 2 módulos", "included": True},
-            {"text": "Usuarios y sedes ampliados", "included": True},
-            {"text": "Reportes e indicadores", "included": True},
-            {"text": "Onboarding guiado", "included": True},
+            {"text": "50 usuarios · 3 sedes", "included": True},
+            {"text": "Hasta 2 módulos principales", "included": True},
+            {"text": "10 GB de almacenamiento", "included": True},
+            {"text": "Soporte por chat", "included": True},
         ],
     },
     {
+        # Legacy · fuera de oferta COM-01 (oculto en registro/landing).
         "clave": PlanTipo.PROFESIONAL.value,
-        "label": "Plan Scale",
+        "label": "Plan Scale (legacy)",
         "short_label": "Scale",
-        "descripcion": "Control multisede y mayor volumen operativo",
+        "descripcion": "Legacy — no ofertar; usar Business o Enterprise",
         "precio_mensual": 580_000,
         "precio_anual": 5_800_000,
         "max_usuarios": 20,
-        "max_activos": 100,
+        "max_activos": None,
         "storage_mb": 2000,
         "soporte": "Chat",
-        "visible_registro": True,
+        "visible_registro": False,
         "destacado": False,
-        "orden": 30,
+        "orden": 90,
         "caracteristicas": [
-            {"text": "Módulos combinados", "included": True},
-            {"text": "Multisede", "included": True},
-            {"text": "Campos personalizados", "included": True},
-            {"text": "Integraciones vía API", "included": True},
+            {"text": "Plan discontinuado en oferta comercial", "included": False},
         ],
     },
     {
         "clave": PlanTipo.ENTERPRISE.value,
         "label": "Plan Enterprise",
         "short_label": "Enterprise",
-        "descripcion": "Gobernanza, soporte dedicado y operación a escala",
-        "precio_mensual": 1_450_000,
-        "precio_anual": 14_500_000,
-        "max_usuarios": 999,
-        "max_activos": 999,
-        "storage_mb": 10000,
+        "descripcion": "Adapta Roustix a la operación específica del cliente",
+        "precio_mensual": 2_500_000,  # Desde
+        "precio_anual": 25_000_000,
+        "max_usuarios": None,  # Personalizado
+        "max_activos": None,  # Ilimitados
+        "storage_mb": 51200,
         "soporte": "Dedicado",
         "visible_registro": True,
         "destacado": False,
-        "orden": 40,
+        "orden": 30,
         "caracteristicas": [
-            {"text": "Capacidad ampliada", "included": True},
-            {"text": "API e integraciones", "included": True},
-            {"text": "SLA y soporte prioritario", "included": True},
-            {"text": "Acompañamiento comercial", "included": True},
+            {"text": "Usuarios y sedes personalizados", "included": True},
+            {"text": "Todos los módulos disponibles", "included": True},
+            {"text": "50 GB + ampliable · soporte dedicado", "included": True},
+            {"text": "API · SLA · puesta en marcha asistida", "included": True},
         ],
     },
 ]
@@ -155,7 +154,7 @@ def ensure_platform_config() -> None:
 
 
 def sincronizar_catalogo_planes_mcm() -> None:
-    """Alinea catálogo con MCM-04 (Start · Grow · Scale · Enterprise)."""
+    """Alinea catálogo con COM-01 v1.3.1 (Start · Business · Enterprise)."""
     for data in PLANES_SEED:
         plan = CatalogoPlan.query.filter_by(clave=data["clave"]).first()
         if not plan:

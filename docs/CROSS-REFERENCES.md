@@ -70,6 +70,7 @@ Convenciones para enlazar manuales de forma **consistente**. Objetivo: un lector
 | MDL | [/mdl/](http://127.0.0.1:5000/mdl/) | [mdl/README.md](mdl/README.md) |
 | MUX | [/mux/](http://127.0.0.1:5000/mux/) | [mux/README.md](mux/README.md) |
 | MCM | [/mcm/](http://127.0.0.1:5000/mcm/) | [mcm/README.md](mcm/README.md) |
+| COM | — *(interno)* | [com/README.md](com/README.md) |
 | MPA | [/mpa/](http://127.0.0.1:5000/mpa/) | [mpa/README.md](mpa/README.md) |
 | MRL | [/mrl/](http://127.0.0.1:5000/mrl/) | [mrl/README.md](mrl/README.md) |
 | MAG | [/mag/](http://127.0.0.1:5000/mag/) | [mag/README.md](mag/README.md) |
@@ -86,7 +87,9 @@ Convenciones para enlazar manuales de forma **consistente**. Objetivo: un lector
 | Definición EMP | MCM-01 · **MPA-01** | MBB · MCM · MPA |
 | UX Laws obligatorias | MUX laws.md | MDL · MPA-12 · Developer |
 | Componentes UI | MDL | MUX · MPA-11 · MPA-12 |
-| Planes Start/Grow/Scale | MCM-06 | MPA-05 · MPA-04 |
+| Planes Start/Grow/Scale | **COM-01** · MCM-04 | MPA-05 · MPA-04 · `PLANES_SEED` |
+| Add-ons / servicios | **COM-02** | MCM-06 onboarding |
+| Piloto · clientes fundadores | **COM-03** | GTM appendix |
 | Mapa de módulos | **MPA-02** | MCM-05 · MCM-10 |
 | Arquitectura modular | **MPA-03** | MPA-04 · Developer |
 | Constitución desarrollo | **MPA-12** | MUX · Developer |

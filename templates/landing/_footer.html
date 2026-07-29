@@ -1,23 +1,23 @@
 <footer class="landing-footer">
   <div class="container-xl landing-footer-grid">
     <div class="landing-footer-brand">
-      <strong>{{ app_name }}</strong>
+      <strong class="notranslate" translate="no">{{ app_name }}</strong>
       <p class="landing-footer-slogan">{{ brand_slogan }}</p>
     </div>
     <div class="landing-footer-col">
       <span class="landing-footer-heading">Producto</span>
-      <a href="{{ url_for('main.index') }}#modulos">Roustix Maintenance</a>
-      <a href="{{ url_for('main.index') }}#modulos">Roustix Inventory</a>
-      <a href="{{ url_for('main.index') }}#precios">Planes</a>
+      <a href="{{ url_for('main.index') }}#modulos" class="notranslate" translate="no">Roustix Maintenance</a>
+      <a href="{{ url_for('main.index') }}#modulos" class="notranslate" translate="no">Roustix Inventory</a>
+      <a href="{{ url_for('main.index') }}#precios" class="notranslate" translate="no">Planes</a>
       <a href="{{ url_for('onboarding.wizard') }}">Prueba gratuita</a>
     </div>
     <div class="landing-footer-col">
       <span class="landing-footer-heading">Documentación</span>
-      <a href="/docs/" target="_blank" rel="noopener">Roustix Docs</a>
+      <a href="/docs/" target="_blank" rel="noopener" class="notranslate" translate="no">Roustix Docs</a>
       <a href="{{ url_for('main.guia_producto') }}">Guía de producto</a>
       <a href="/mkt/assets/brochure-corporativo.html" target="_blank" rel="noopener">Brochure</a>
-      <a href="/mag/" target="_blank" rel="noopener">MAG · API</a>
-      <a href="/msd/" target="_blank" rel="noopener">MSD · SDK</a>
+      <a href="/mag/" target="_blank" rel="noopener" class="notranslate" translate="no">MAG · API</a>
+      <a href="/msd/" target="_blank" rel="noopener" class="notranslate" translate="no">MSD · SDK</a>
     </div>
     <div class="landing-footer-col">
       <span class="landing-footer-heading">Empresa</span>
@@ -29,7 +29,7 @@
     </div>
   </div>
   <div class="container-xl landing-footer-bottom">
-    <span>© {{ now_year }} {{ app_name }} · Bogotá, Colombia · v{{ app_version }}</span>
+    <span>© {{ now_year }} <span class="notranslate" translate="no">{{ app_name }}</span> · Bogotá, Colombia · v{{ app_version }}</span>
     <nav class="landing-footer-legal" aria-label="Enlaces legales">
       <a href="/docs/" target="_blank" rel="noopener">Documentación pública</a>
       <a href="{{ url_for('main.contacto') }}">Contacto</a>

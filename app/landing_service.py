@@ -19,7 +19,7 @@ from app.platform_config_service import (
 # CTAs oficiales (MKT-05 · unificados en todo el sitio público)
 CTA_DEMO = "Solicitar demostración"
 CTA_FINAL = "Comenzar prueba gratuita"
-CTA_ENTERPRISE = "Solicitar demostración"
+CTA_ENTERPRISE = "Hablar con un asesor"
 
 PROBLEMA_LANDING: dict[str, Any] = {
     "title": "Tu operación no debería depender de Excel.",
@@ -173,21 +173,14 @@ MIN_ACTIVOS_STATS = 500
 
 
 def formato_precio_landing(valor: float | int | None, moneda: str = "COP") -> str:
+    """Formato público COP: $280.000"""
     try:
-        n = float(valor or 0)
+        n = int(round(float(valor or 0)))
     except (TypeError, ValueError):
         return "—"
     if n <= 0:
         return "Gratis"
-    if n >= 1_000_000:
-        m = n / 1_000_000
-        label = f"{m:.2f}".rstrip("0").rstrip(".")
-        return f"${label}M"
-    if n >= 1_000:
-        k = n / 1_000
-        label = f"{k:.0f}" if k == int(k) else f"{k:.1f}".rstrip("0").rstrip(".")
-        return f"${label}K"
-    return f"${int(n):,}".replace(",", ".")
+    return f"${n:,}".replace(",", ".")
 
 
 def _limite_texto(valor: int | None, singular: str, plural: str) -> str:
@@ -197,17 +190,48 @@ def _limite_texto(valor: int | None, singular: str, plural: str) -> str:
 
 
 def _plan_features_pricing(meta: dict[str, Any]) -> list[str]:
+    """Diferenciadores del plan (COM-01). Lo compartido va en PLANES_INCLUYEN_TODOS."""
     lines: list[str] = []
+    for feat in meta.get("caracteristicas") or []:
+        if feat.get("included") and feat.get("text"):
+            lines.append(str(feat["text"]))
+    if lines:
+        return lines
     if meta.get("max_usuarios") is not None:
         lines.append(_limite_texto(meta.get("max_usuarios"), "usuario", "usuarios"))
     if meta.get("max_activos") is not None:
         lines.append(_limite_texto(meta.get("max_activos"), "activo", "activos"))
-    for feat in meta.get("caracteristicas") or []:
-        if feat.get("included") and feat.get("text"):
-            lines.append(str(feat["text"]))
     if not lines and meta.get("descripcion"):
         lines.append(str(meta["descripcion"]))
     return lines
+
+
+# COM-01 §6 · Todos los planes incluyen (debajo de las tarjetas).
+PLANES_INCLUYEN_TODOS: tuple[str, ...] = (
+    "Plataforma SaaS en la nube",
+    "Actualizaciones automáticas",
+    "Copias de seguridad automáticas",
+    "Acceso seguro mediante HTTPS",
+    "Gestión de usuarios y roles",
+    "Auditoría de acciones",
+    "Base de datos dedicada por empresa",
+    "Acceso desde computador, tablet y móvil",
+    "Soporte según el plan contratado",
+)
+
+
+def _precio_label_plan(plan_clave: str, meta: dict[str, Any]) -> tuple[str, str | None]:
+    """Start/Business: precio lista. Enterprise: sin precio público."""
+    if plan_clave == "enterprise":
+        return "Contactar para conocer el precio", None
+    precio = meta.get("precio_mensual") or 0
+    try:
+        n = float(precio)
+    except (TypeError, ValueError):
+        n = 0
+    if n <= 0:
+        return "Contactar para conocer el precio", None
+    return formato_precio_landing(n), "COP / mes"
 
 
 def planes_landing() -> list[dict[str, Any]]:
@@ -216,24 +240,20 @@ def planes_landing() -> list[dict[str, Any]]:
         meta = plan_a_meta(plan)
         is_enterprise = plan.clave == "enterprise"
         short = meta.get("short_label", plan.clave)
+        precio_label, precio_periodo = _precio_label_plan(plan.clave, meta)
         items.append(
             {
                 **meta,
-                # Los valores del catálogo siguen disponibles para facturación y
-                # administración, pero no se exponen en la experiencia pública
-                # mientras se valida la estrategia comercial.
-                "precio_label": (
-                    "Contactar para conocer el precio"
-                    if is_enterprise
-                    else "Precio disponible próximamente"
-                ),
+                "precio_label": precio_label,
+                "precio_periodo": precio_periodo,
                 "features": _plan_features_pricing(meta),
                 "cta": CTA_ENTERPRISE if is_enterprise else CTA_FINAL,
                 "cta_prompt": (
-                    f"Quiero información sobre el plan Enterprise de Roustix"
+                    f"Quiero hablar con un asesor sobre el plan Enterprise de Roustix"
                     if is_enterprise
                     else f"Quiero probar Roustix con el plan {short}"
                 ),
+                "cta_url_name": "main.contacto" if is_enterprise else "onboarding.wizard",
             }
         )
     return items
@@ -294,6 +314,7 @@ def landing_context() -> dict[str, Any]:
             "modulos_roadmap": MODULOS_ROADMAP,
             "sectores": sectores_landing(),
             "planes": planes_landing(),
+            "planes_incluyen": PLANES_INCLUYEN_TODOS,
             "mockups": [
             {
                 "modulo": "Roustix Inventory",
