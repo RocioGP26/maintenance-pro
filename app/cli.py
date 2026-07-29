@@ -97,16 +97,38 @@ def restore_db_command(path: str, target: str, yes: bool):
 
 @click.command("migrate-storage")
 @click.option("--apply", is_flag=True, help="Copia los archivos y actualiza sus referencias.")
+@click.option("--inventory-only", is_flag=True, help="Solo cuenta referencias legacy en BD.")
 @with_appcontext
-def migrate_storage_command(apply: bool):
+def migrate_storage_command(apply: bool, inventory_only: bool):
     """Inventaría o migra archivos históricos al backend configurado."""
-    from app.storage_migration import migrate_legacy_storage
+    from app.storage_migration import inventory_legacy_refs, migrate_legacy_storage
+
+    if inventory_only and apply:
+        raise click.ClickException("Usa --inventory-only o --apply, no ambos.")
+    if inventory_only:
+        inv = inventory_legacy_refs()
+        click.echo(f"Inventario de referencias: {inv}")
+        if inv.get("legacy_total", 0) == 0:
+            click.echo("OK: no quedan referencias legacy pendientes en BD.")
+        else:
+            click.echo(
+                f"Pendientes: {inv['legacy_total']} refs. "
+                "Ejecuta `migrate-storage` (simulación) y luego `--apply`."
+            )
+        return
 
     stats = migrate_legacy_storage(apply=apply)
     mode = "APLICADA" if apply else "SIMULACIÓN"
+    inv = stats.pop("inventory", {})
     click.echo(f"Migración de almacenamiento ({mode}): {stats}")
+    click.echo(f"Inventario post-paso: {inv}")
     if not apply:
-        click.echo("Ejecuta nuevamente con --apply después de revisar el inventario.")
+        click.echo("Ejecuta nuevamente con --apply después de revisar missing=0 (ideal).")
+    elif inv.get("legacy_total", 0) == 0:
+        click.echo(
+            "Cutover BD completo. Conserva static/uploads hasta validar medios; "
+            "luego bórralos y deja STORAGE_BACKEND=s3 (metering ya no suma legacy)."
+        )
 
 
 @click.command("version")

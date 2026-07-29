@@ -25,6 +25,13 @@ STORAGE_SECRET_ACCESS_KEY=<secreto>
 El bucket debe ser privado. Las descargas pasan por Roustix y validan que el
 usuario pertenezca a la empresa propietaria de la clave `empresas/<id>/...`.
 
+Con `STORAGE_BACKEND=s3`, el metering **no** suma `static/uploads` (evita doble
+conteo tras migrar). Forzar legacy solo si hace falta:
+
+```text
+STORAGE_INCLUDE_LEGACY_UPLOADS=true
+```
+
 ## Cuota por plan (hard-limit)
 
 Cada upload bajo `empresas/{id}/...` pasa por `save_bytes`, que consulta el cupo
@@ -36,23 +43,49 @@ efectivo del tenant (plan + add-ons) y **rechaza** el archivo si no cabe.
   (columna `empresas.storage_addon_mb`; suma 2048 MB a la cuota).
 - Migración legacy: `migrate-storage --apply` usa `enforce_quota=False`.
 
-## Migración de archivos existentes
+## Cutover S0 · Migración de archivos existentes
 
-Primero ejecutar el inventario sin modificar datos:
+### 1. Inventario (solo BD)
+
+```powershell
+flask --app run:app migrate-storage --inventory-only
+```
+
+Si `legacy_total = 0`, no hay refs `uploads/` ni evidencias fuera de `empresas/`.
+
+### 2. Simulación (disco + conteos)
 
 ```powershell
 flask --app run:app migrate-storage
 ```
 
-Después de revisar el contador `missing`, aplicar:
+Revisar `missing`. Ideal: `missing = 0`. Archivos ausentes en disco quedarán
+contados como missing (refs rotas previas).
+
+### 3. Aplicar
 
 ```powershell
 flask --app run:app migrate-storage --apply
 ```
 
-La operación copia antes de cambiar la referencia en base de datos y puede
-repetirse. No elimina automáticamente los archivos antiguos; deben conservarse
-hasta validar imágenes y descargas en producción.
+Copia al backend configurado y reescribe referencias a `storage://...` (o keys
+`empresas/...` en evidencias/bitácora). Es idempotente: se puede repetir.
+
+### 4. Validar en producción
+
+Comprobar por un tenant piloto:
+
+- Logo empresa
+- Foto de activo
+- Informe OT (descarga)
+- Evidencia de checklist
+- Adjunto de bitácora
+
+### 5. Limpieza
+
+Conservar `static/uploads` y `data/checklist_evidence|maintenance_log` hasta
+validar. Después, borrar residuales del disco/efímero. El metering con
+`STORAGE_BACKEND=s3` ya no los incluye.
 
 ## Recuperación
 

@@ -87,10 +87,24 @@ def _uploads_root() -> str:
     return os.path.join(os.path.dirname(__file__), "..", "static", "uploads", "empresas")
 
 
+def _include_legacy_uploads() -> bool:
+    from flask import current_app
+
+    from app.file_storage import _backend
+
+    configured = current_app.config.get("STORAGE_INCLUDE_LEGACY_UPLOADS")
+    if configured is None:
+        # En R2/S3 el prefijo empresas/ es la fuente de verdad (cutover S0).
+        return _backend() != "s3"
+    return bool(configured)
+
+
 def storage_bytes_empresa(empresa_id: int) -> int:
     from app.file_storage import size_for_prefix
 
     object_total = size_for_prefix(f"empresas/{int(empresa_id)}")
+    if not _include_legacy_uploads():
+        return object_total
     carpeta = os.path.join(_uploads_root(), str(empresa_id))
     if not os.path.isdir(carpeta):
         return object_total
@@ -187,7 +201,7 @@ def database_size_bytes() -> Optional[int]:
 
 
 def files_storage_total_bytes() -> int:
-    """Consumo agregado de archivos (prefijo empresas/ + uploads legacy)."""
+    """Consumo agregado de archivos (prefijo empresas/ + uploads legacy opcional)."""
     from app.file_storage import size_for_prefix
 
     total = 0
@@ -195,6 +209,8 @@ def files_storage_total_bytes() -> int:
         total += size_for_prefix("empresas")
     except Exception:
         pass
+    if not _include_legacy_uploads():
+        return total
     root = _uploads_root()
     if os.path.isdir(root):
         for raiz, _dirs, archivos in os.walk(root):

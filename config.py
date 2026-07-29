@@ -159,6 +159,17 @@ class Config:
     STORAGE_REGION = os.environ.get("STORAGE_REGION", "auto").strip()
     STORAGE_ACCESS_KEY_ID = os.environ.get("STORAGE_ACCESS_KEY_ID", "").strip()
     STORAGE_SECRET_ACCESS_KEY = os.environ.get("STORAGE_SECRET_ACCESS_KEY", "")
+    # Si es None: con backend s3 no suma static/uploads (evita doble conteo post-migración).
+    _legacy_flag = os.environ.get("STORAGE_INCLUDE_LEGACY_UPLOADS")
+    if _legacy_flag is None or _legacy_flag.strip() == "":
+        STORAGE_INCLUDE_LEGACY_UPLOADS = None
+    else:
+        STORAGE_INCLUDE_LEGACY_UPLOADS = _legacy_flag.strip().lower() in {
+            "1",
+            "true",
+            "yes",
+            "on",
+        }
     # Evita errores cuando Neon suspende la BD por inactividad (scale-to-zero)
     SQLALCHEMY_ENGINE_OPTIONS = {
         "pool_pre_ping": True,
