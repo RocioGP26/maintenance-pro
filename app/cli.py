@@ -142,7 +142,7 @@ def migrate_storage_command(apply: bool, inventory_only: bool, list_pending: boo
             flags.append("local" if row["local"] else "no-local")
             flags.append("remote" if row["remote"] else "no-remote")
             click.echo(
-                f"{row['kind']}#{row['id']}  {row['legacy']}  →  {row['key'] or '—'}  [{', '.join(flags)}]"
+                f"{row['kind']}#{row['id']}  {row['legacy']}  ->  {row['key'] or '-'}  [{', '.join(flags)}]"
             )
         click.echo(f"Total: {len(rows)}. Si remote=sí, `--apply` reescribe la BD sin disco local.")
         return
@@ -161,7 +161,7 @@ def migrate_storage_command(apply: bool, inventory_only: bool, list_pending: boo
     click.echo(f"Migración de almacenamiento ({mode}): {stats}")
     click.echo(f"Inventario post-paso: {inv}")
     if not apply:
-        click.echo("Ejecuta nuevamente con --apply después de revisar. missing>0 → --list.")
+        click.echo("Ejecuta nuevamente con --apply después de revisar. missing>0 -> --list.")
     elif inv.get("legacy_total", 0) == 0:
         click.echo(
             "Cutover BD completo. Conserva static/uploads hasta validar medios; "

@@ -37,6 +37,11 @@ STORAGE_INCLUDE_LEGACY_UPLOADS=true
 Cada upload bajo `empresas/{id}/...` pasa por `save_bytes`, que consulta el cupo
 efectivo del tenant (plan + add-ons) y **rechaza** el archivo si no cabe.
 
+Los reemplazos entre extensiones acreditan el tamaño del objeto anterior, pero
+no lo eliminan hasta que la transacción PostgreSQL termina correctamente. Una
+falla de limpieza posterior se alerta y no convierte un cambio ya confirmado
+en un error para el usuario.
+
 - Alerta preventiva: ≥ 80% del cupo (banner portal + página `/configuracion/almacenamiento`).
 - Mensaje de rechazo al 100 %: ofrece add-on +2 GB (`ADD-STG-2G`) vía `contacto@roustix.com`.
 - CTA **Ampliar almacenamiento** → correo a `contacto@roustix.com`.
@@ -100,6 +105,13 @@ Comprobar por un tenant piloto:
 - Evidencia de checklist
 - Adjunto de bitácora
 
+Además:
+
+- Reemplazar una foto PNG por JPG con el tenant al límite de cuota.
+- Confirmar que otro tenant recibe HTTP 403 al intentar abrir la clave.
+- Simular indisponibilidad R2 y comprobar alerta operativa sin referencia nueva en BD.
+- Eliminar un activo y comprobar que foto, manual y ficha dejan de contabilizarse.
+
 ### 5. Limpieza
 
 Conservar `static/uploads` y `data/checklist_evidence|maintenance_log` hasta
@@ -120,3 +132,5 @@ Documento canónico: [`docs/production-readiness/backup-restore-runbook.md`](pro
 
 La copia de PostgreSQL y la copia del bucket forman un único respaldo lógico:
 restaurar solamente la base deja referencias a objetos inexistentes.
+
+Estado y evidencia de certificación: [`storage-certification.md`](production-readiness/storage-certification.md).

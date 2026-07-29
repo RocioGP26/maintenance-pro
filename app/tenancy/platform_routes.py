@@ -31,7 +31,7 @@ from app.platform_billing import (
     listar_facturas_platform,
     monto_suscripcion_empresa,
 )
-from app.subscription_service import marcar_factura_pagada
+from app.subscription_service import cambiar_plan_manual, marcar_factura_pagada
 from app.platform_service import (
     ESTADO_META,
     activos_por_empresa,
@@ -56,6 +56,7 @@ from app.platform_config_service import (
     listar_sectores_catalogo,
     parse_caracteristicas_form,
     plan_a_meta,
+    planes_comerciales_piloto,
     planes_claves_validas,
     reglas_para_formulario,
     trial_dias,
@@ -386,7 +387,51 @@ def empresa_detail(id: int):
         activity_labels=ACTIVITY_LABELS,
         factura_estado_label=factura_estado_label,
         monto_sugerido=monto_suscripcion_empresa(empresa),
+        planes_comerciales=planes_comerciales_piloto(),
     )
+
+
+@platform_bp.route("/empresas/<int:id>/plan", methods=["POST"])
+@platform_login_required
+def empresa_cambiar_plan(id: int):
+    empresa = Empresa.query.get_or_404(id)
+    nuevo_key = (request.form.get("plan") or "").strip().lower()
+    try:
+        _sub, anterior_key, changed = cambiar_plan_manual(empresa, nuevo_key)
+    except ValueError as exc:
+        flash(str(exc), "danger")
+        return redirect(url_for("platform.empresa_detail", id=id))
+
+    if not changed:
+        flash(f"{empresa.razon_social} ya tiene ese plan activo.", "info")
+        return redirect(url_for("platform.empresa_detail", id=id))
+
+    anterior = plan_a_meta_key(anterior_key)
+    nuevo = plan_a_meta_key(nuevo_key)
+    detalle = f"{anterior} → {nuevo} · asignación manual piloto; no genera factura"
+    registrar_auditoria_plataforma(
+        "plan_change",
+        empresa_id=empresa.id,
+        detalle=detalle,
+        visible_cliente=True,
+    )
+    registrar_actividad_tenant(
+        empresa.id,
+        "plan_changed",
+        detalle=detalle,
+    )
+    db.session.commit()
+    flash(f"Plan actualizado: {nuevo}. Crea la factura manual por separado.", "success")
+    return redirect(url_for("platform.empresa_detail", id=id))
+
+
+def plan_a_meta_key(plan_key: str) -> str:
+    if plan_key == "sin_plan":
+        return "Sin plan"
+    from app.platform_config_service import catalogo_plan_meta
+
+    meta = catalogo_plan_meta(plan_key)
+    return str(meta.get("short_label") or meta.get("label") or plan_key)
 
 
 @platform_bp.route("/empresas/<int:id>/storage-addon", methods=["POST"])

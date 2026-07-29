@@ -1,10 +1,10 @@
 """
-Suscripciones SaaS — Etapa 1 (sin pasarela real).
+Suscripciones SaaS — piloto con facturación y pago manual.
 
 Flujo:
   registro → crear_suscripcion_trial()
   trial vence → verificar_vencimientos() → factura pendiente + mora
-  pago manual / futuro webhook → marcar_factura_pagada() → activa
+  pago manual → marcar_factura_pagada() → activa
   sin pago en gracia → suspendida
 """
 
@@ -63,7 +63,7 @@ def crear_suscripcion_trial(
     empresa: Empresa,
     plan_key: str = PlanTipo.TRIAL.value,
 ) -> PlanSuscripcion:
-    """Alta de tenant: trial 14 días sin tarjeta."""
+    """Alta de tenant: trial configurable (15 días por defecto) sin tarjeta."""
     if plan_key != PlanTipo.TRIAL.value:
         return crear_suscripcion_pagada(empresa, plan_key)
     inicio = date.today()
@@ -80,7 +80,7 @@ def crear_suscripcion_trial(
 
 
 def crear_suscripcion_pagada(empresa: Empresa, plan_key: str) -> PlanSuscripcion:
-    """Suscripción de plan de pago (sin pasarela; se factura manualmente)."""
+    """Suscripción de plan de pago para el flujo manual del piloto."""
     inicio = date.today()
     sub = PlanSuscripcion(
         empresa_id=empresa.id,
@@ -92,6 +92,47 @@ def crear_suscripcion_pagada(empresa: Empresa, plan_key: str) -> PlanSuscripcion
     )
     db.session.add(sub)
     return sub
+
+
+def cambiar_plan_manual(
+    empresa: Empresa,
+    plan_key: str,
+    *,
+    hoy: date | None = None,
+) -> tuple[PlanSuscripcion, str, bool]:
+    """Asigna un plan comercial durante el piloto, sin generar una factura."""
+    from app.platform_config_service import PLANES_COMERCIALES_PILOTO
+
+    key = (plan_key or "").strip().lower()
+    if key not in PLANES_COMERCIALES_PILOTO:
+        raise ValueError("El plan no pertenece a la oferta comercial del piloto.")
+
+    hoy = hoy or date.today()
+    sub = empresa.plan_activo
+    anterior = sub.plan if sub else "sin_plan"
+    if sub and anterior == key and sub.estado_ciclo == SuscripcionEstado.ACTIVA.value:
+        return sub, anterior, False
+
+    if not sub:
+        sub = crear_suscripcion_pagada(empresa, key)
+        sub.fecha_inicio = hoy
+        sub.fecha_fin = hoy + timedelta(days=dias_periodo_pago())
+    else:
+        reiniciar_ciclo = (
+            anterior == PlanTipo.TRIAL.value
+            or sub.estado_ciclo != SuscripcionEstado.ACTIVA.value
+            or not sub.fecha_fin
+            or sub.fecha_fin < hoy
+        )
+        sub.plan = key
+        sub.activo = True
+        sub.estado_ciclo = SuscripcionEstado.ACTIVA.value
+        if reiniciar_ciclo:
+            sub.fecha_inicio = hoy
+            sub.fecha_fin = hoy + timedelta(days=dias_periodo_pago())
+
+    empresa.suspendida = False
+    return sub, anterior, True
 
 
 def _plan_facturable(sub: PlanSuscripcion) -> str:
@@ -248,8 +289,7 @@ def marcar_factura_pagada(
     pasarela_payment_id: str = "",
 ) -> FacturaEmpresa:
     """
-    Etapa 1: pago manual desde superadmin.
-    Etapa 2+: el webhook de la pasarela llamará aquí con pasarela_payment_id.
+    Piloto: pago manual desde SuperAdmin. La pasarela queda diferida a postpiloto.
     """
     fecha_pago = fecha_pago or date.today()
     factura.estado = FacturaEstado.PAGADA.value

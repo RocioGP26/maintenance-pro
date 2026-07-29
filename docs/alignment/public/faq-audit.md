@@ -20,7 +20,7 @@
 | Módulos hoy vs roadmap | ✅ |
 | Planes Start–Enterprise | ✅ |
 | Trial 15 días | ✅ |
-| Tiempos onboarding Start/Grow | ✅ |
+| Tiempos onboarding Start/Business/Enterprise | ✅ |
 | Integraciones / ERP | ✅ honesto |
 
 ---

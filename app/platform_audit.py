@@ -23,6 +23,7 @@ PLATFORM_AUDIT_LABELS = {
     "platform_logout": "Cierre de sesión de plataforma",
     "storage_addon_activate": "Add-on almacenamiento activado",
     "storage_addon_deactivate": "Add-on almacenamiento desactivado",
+    "plan_change": "Plan comercial cambiado",
 }
 
 DEFAULT_ACTOR = "Soporte Roustix (Plataforma)"

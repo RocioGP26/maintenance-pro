@@ -112,8 +112,12 @@ def _persistir_producto(eid: int, *, producto: InvProducto | None = None) -> Inv
         permitir_stock_inicial=producto is None,
     )
     db.session.flush()
-    aplicar_imagen_producto(item, request.form, request.files.get("imagen_archivo"))
+    obsolete = aplicar_imagen_producto(item, request.form, request.files.get("imagen_archivo"))
     db.session.commit()
+    from app.file_storage import delete_best_effort
+
+    for key in obsolete:
+        delete_best_effort(key)
     return item
 
 

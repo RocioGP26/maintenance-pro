@@ -24,7 +24,7 @@ reintentos, desactivación automática auditada y aislamiento estricto por tenan
 ## Matriz comercial (entitlements)
 
 Claves estables (`webhooks.enabled`, `public_api.credentials_max`, …) resueltas
-desde el plan activo (Trial / Start / Grow / Scale / Enterprise) sin
+desde el plan activo (Trial / Start / Business / Enterprise; Scale legacy) sin
 `if plan == enterprise` en las rutas.
 
 ## Entregables

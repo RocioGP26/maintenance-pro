@@ -17,6 +17,7 @@ from app.permissions import USER_ROLE_LABELS, UserRole  # noqa: E402
 class PlanTipo(str, Enum):
     TRIAL = "trial"
     BASICO = "basico"
+    BUSINESS = "grow"
     PROFESIONAL = "profesional"
     ENTERPRISE = "enterprise"
 
@@ -37,6 +38,14 @@ PLAN_CATALOG = {
         "max_activos": None,
         "dias": None,
         "precio_mensual": 1_000_000,
+    },
+    PlanTipo.BUSINESS.value: {
+        "label": "Plan Business",
+        "short_label": "Business",
+        "descripcion": "Integra más procesos y acompaña el crecimiento",
+        "max_activos": None,
+        "dias": None,
+        "precio_mensual": 1_500_000,
     },
     PlanTipo.PROFESIONAL.value: {
         # Legacy Scale — fuera de oferta COM-01 v1.3.

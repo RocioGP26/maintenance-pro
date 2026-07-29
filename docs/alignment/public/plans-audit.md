@@ -1,58 +1,38 @@
 # Auditoría · Planes
 
-**Sprint 14 · Fase 2** · **Estado:** 🟡 **Auditoría inicial**  
-**Rutas:** `/#precios` · catálogo BD · `app/platform_config_service.py` · `app/models.py`  
+**Actualización:** 2026-07-29 · **Estado:** ✅ Alineado para piloto
+
+**Rutas:** `/#precios` · catálogo BD · `app/platform_config_service.py` · `app/models.py`
+
 **Referencia:** [MCM-04 · Planes SaaS](/mcm/chapters/04-planes-saas.md)
 
----
+## Oferta oficial
 
-## Resumen
+| Plan comercial | Clave técnica | Precio mensual | Landing | Estado |
+|----------------|---------------|---------------:|---------|--------|
+| **Start** | `basico` | $1.000.000 COP | Visible con precio | ✅ |
+| **Business** | `grow` *(legacy estable)* | $1.500.000 COP | Visible con precio | ✅ |
+| **Enterprise** | `enterprise` | Desde $2.500.000 interno | Contactar | ✅ |
+| Scale *(legacy)* | `profesional` | $580.000 COP | Oculto | ✅ No ofertar |
 
-| Pregunta | Respuesta |
-|----------|-----------|
-| ¿Planes oficiales MCM-04? | Start · Grow · Scale · Enterprise |
-| ¿Planes visibles al público? | Starter · Pro · Enterprise (**3 tiers**) |
-| ¿Página `/planes`? | 📋 No existe |
+## Operación del piloto
 
----
+- Trial de **15 días**, sin tarjeta.
+- Facturación y confirmación de pago manual desde SuperAdmin.
+- Asignación o cambio manual entre Start, Business y Enterprise con auditoría.
+- La pasarela de pago está diferida a postpiloto y no bloquea la operación actual.
 
-## Nomenclatura
+## Fuentes vigentes
 
-| Plan MCM-04 | Código BD / seed | Visible landing | Estado |
-|-------------|------------------|-----------------|--------|
-| **Start** | `basico` / **Starter** | Starter | ❌ |
-| **Grow** | — | **Ausente** | ❌ |
-| **Scale** | `profesional` / **Pro** | Pro | ❌ |
-| **Enterprise** | `enterprise` | Enterprise | 🟡 nombre OK |
+- Oferta y precios: `PLANES_SEED` + COM-01.
+- Claves compatibles: `PlanTipo` y `CatalogoPlan`.
+- Landing y onboarding consumen el catálogo de plataforma.
 
----
+## Checklist
 
-## Trial y copy comercial
-
-| Tema | MCM-04 / MCM-08 | Producto | Estado |
-|------|-----------------|----------|--------|
-| Trial | **15 días** | `trial_dias` default **14** | ❌ |
-| Start = 1 módulo | ✅ doc | ✅ lógica planes | ✅ |
-| Precios | Catálogo plataforma | `PLAN_CATALOG` vs `PLANES_SEED` duplicados | 🟡 |
-
----
-
-## Acciones Fase 2
-
-1. Renombrar labels públicos → Start · Grow · Scale · Enterprise  
-2. Añadir tier **Grow** (o mapear Pro → Grow + Scale intermedio según MCM-04)  
-3. Unificar seed catálogo con MCM-04  
-4. Crear ruta `/planes` o canonical desde MKT-05  
-5. Copy trial **15 días** en toda superficie pública  
-
----
-
-## Checklist cierre
-
-- [ ] 4 planes visibles con nombres MCM-04
-- [ ] Sin «Starter» / «Pro» en UI pública
-- [ ] Trial 15 días
-- [ ] Precios coherentes (una fuente de verdad)
-- [ ] Página o sección `/planes` alineada
-
-→ [plans-audit](plans-audit.md) · [MCM-04](/mcm/chapters/04-planes-saas.md)
+- [x] Start · Business · Enterprise en superficies comerciales.
+- [x] Trial 15 días.
+- [x] Precios reales de Start y Business.
+- [x] Enterprise con CTA de contacto.
+- [x] Scale oculto y marcado como legacy.
+- [x] Business conserva `grow` para compatibilidad.

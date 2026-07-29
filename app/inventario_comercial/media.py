@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Optional
 
-from app.file_storage import delete, key_from_reference, reference, save_bytes, tenant_key, url_for_reference
+from app.file_storage import key_from_reference, reference, save_bytes, tenant_key, url_for_reference
 from werkzeug.utils import secure_filename
 
 if TYPE_CHECKING:
@@ -36,9 +36,14 @@ def producto_imagen_url_or_none(producto: Optional["InvProducto"]) -> Optional[s
     return url_for_reference(ref)
 
 
-def guardar_imagen_producto_archivo(producto: "InvProducto", archivo) -> None:
+def guardar_imagen_producto_archivo(
+    producto: "InvProducto",
+    archivo,
+    *,
+    replacing_key: str | None = None,
+) -> set[str]:
     if not archivo or not getattr(archivo, "filename", None):
-        return
+        return set()
     if not producto.id:
         raise ValueError("El producto debe guardarse antes de subir la imagen.")
     nombre = secure_filename(archivo.filename)
@@ -48,20 +53,42 @@ def guardar_imagen_producto_archivo(producto: "InvProducto", archivo) -> None:
     content = archivo.stream.read()
     if not content:
         raise ValueError("La imagen está vacía.")
-    for old_ext in PRODUCTO_IMAGEN_EXTENSIONS:
-        if old_ext != ext:
-            delete(tenant_key(producto.empresa_id, "productos", f"{producto.id}.{old_ext}"))
+    old_key = replacing_key or key_from_reference(producto.imagen or "")
     key = tenant_key(producto.empresa_id, "productos", f"{producto.id}.{ext}")
-    save_bytes(key, content, content_type=f"image/{'jpeg' if ext in {'jpg', 'jpeg'} else ext}")
+    save_bytes(
+        key,
+        content,
+        content_type=f"image/{'jpeg' if ext in {'jpg', 'jpeg'} else ext}",
+        replacing_key=old_key,
+    )
     producto.imagen = reference(key)
+    obsolete = {
+        tenant_key(producto.empresa_id, "productos", f"{producto.id}.{old_ext}")
+        for old_ext in PRODUCTO_IMAGEN_EXTENSIONS
+        if old_ext != ext
+    }
+    if old_key and old_key != key:
+        obsolete.add(old_key)
+    return obsolete
 
 
-def aplicar_imagen_producto(producto: "InvProducto", form, archivo) -> None:
+def aplicar_imagen_producto(producto: "InvProducto", form, archivo) -> set[str]:
+    obsolete: set[str] = set()
+    old_key = key_from_reference(producto.imagen or "")
     imagen_url = (form.get("imagen_url") or "").strip()
     if imagen_url:
         norm = normalizar_imagen_producto(imagen_url)
         if norm is None:
             raise ValueError("URL de imagen no válida. Use https:// o una ruta bajo uploads/.")
         producto.imagen = norm
+        if old_key and key_from_reference(norm) != old_key:
+            obsolete.add(old_key)
     if archivo and getattr(archivo, "filename", None):
-        guardar_imagen_producto_archivo(producto, archivo)
+        obsolete.update(
+            guardar_imagen_producto_archivo(
+                producto,
+                archivo,
+                replacing_key=old_key,
+            )
+        )
+    return obsolete

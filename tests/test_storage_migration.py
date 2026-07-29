@@ -109,6 +109,11 @@ class TestStorageMigration(unittest.TestCase):
         db.session.refresh(self.empresa)
         self.assertTrue(self.empresa.logo.startswith("storage://"))
 
+    def test_cli_list_is_ascii_safe(self):
+        result = self.app.test_cli_runner().invoke(args=["migrate-storage", "--list"])
+        self.assertEqual(result.exit_code, 0, result.output)
+        self.assertIn("->", result.output)
+
 
 class TestLegacyMeteringFlag(unittest.TestCase):
     def setUp(self):

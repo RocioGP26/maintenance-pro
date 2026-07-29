@@ -1451,33 +1451,44 @@ def _documento_url_desde_form(raw: Optional[str], actual: Optional[str]) -> str:
     return (actual or "").strip()
 
 
-def _guardar_imagen_activo(machine: Machine, archivo) -> None:
+def _guardar_imagen_activo(machine: Machine, archivo) -> set[str]:
     """Guarda la fotografía del activo dentro del espacio de su empresa."""
     if not archivo or not getattr(archivo, "filename", None):
-        return
+        return set()
     if not machine.id or not machine.empresa_id:
         raise ValueError("El activo debe estar guardado antes de cargar la imagen.")
     nombre = secure_filename(archivo.filename)
     ext = nombre.rsplit(".", 1)[-1].lower() if "." in nombre else ""
     if ext not in ACTIVO_IMAGE_EXTENSIONS:
         raise ValueError("Formato de imagen no permitido. Use PNG, JPG o WEBP.")
-    from app.file_storage import delete, reference, save_bytes, tenant_key
+    from app.file_storage import key_from_reference, reference, save_bytes, tenant_key
 
     content = archivo.stream.read()
     if not content:
         raise ValueError("La imagen está vacía.")
-    for old_ext in ACTIVO_IMAGE_EXTENSIONS:
-        if old_ext != ext:
-            delete(tenant_key(machine.empresa_id, "activos", f"{machine.id}.{old_ext}"))
+    old_key = key_from_reference(machine.foto_url or "")
     key = tenant_key(machine.empresa_id, "activos", f"{machine.id}.{ext}")
-    save_bytes(key, content, content_type=f"image/{'jpeg' if ext in {'jpg', 'jpeg'} else ext}")
+    save_bytes(
+        key,
+        content,
+        content_type=f"image/{'jpeg' if ext in {'jpg', 'jpeg'} else ext}",
+        replacing_key=old_key,
+    )
     machine.foto_url = reference(key)
+    obsolete = {
+        tenant_key(machine.empresa_id, "activos", f"{machine.id}.{old_ext}")
+        for old_ext in ACTIVO_IMAGE_EXTENSIONS
+        if old_ext != ext
+    }
+    if old_key and old_key != key:
+        obsolete.add(old_key)
+    return obsolete
 
 
-def _guardar_documento_activo(machine: Machine, archivo, tipo: str) -> None:
+def _guardar_documento_activo(machine: Machine, archivo, tipo: str) -> set[str]:
     """Guarda manual o ficha técnica en PDF dentro del almacenamiento del tenant."""
     if not archivo or not getattr(archivo, "filename", None):
-        return
+        return set()
     attr = ACTIVO_DOC_CAMPOS.get(tipo)
     if not attr:
         raise ValueError("Tipo de documento no válido.")
@@ -1487,7 +1498,7 @@ def _guardar_documento_activo(machine: Machine, archivo, tipo: str) -> None:
     ext = nombre.rsplit(".", 1)[-1].lower() if "." in nombre else ""
     if ext not in ACTIVO_DOC_EXTENSIONS:
         raise ValueError("Formato de documento no permitido. Use PDF.")
-    from app.file_storage import delete, key_from_reference, reference, save_bytes, tenant_key
+    from app.file_storage import key_from_reference, reference, save_bytes, tenant_key
 
     content = archivo.stream.read()
     if not content:
@@ -1497,17 +1508,25 @@ def _guardar_documento_activo(machine: Machine, archivo, tipo: str) -> None:
         raise ValueError("El PDF supera el tamaño máximo de 15 MB.")
     actual = getattr(machine, attr, "") or ""
     old_key = key_from_reference(actual)
-    if old_key:
-        delete(old_key)
     key = tenant_key(machine.empresa_id, "activos", f"{machine.id}-{tipo}.pdf")
-    save_bytes(key, content, content_type="application/pdf")
+    save_bytes(key, content, content_type="application/pdf", replacing_key=old_key)
     setattr(machine, attr, reference(key))
+    return {old_key} if old_key and old_key != key else set()
 
 
-def _guardar_adjuntos_activo(machine: Machine, files) -> None:
-    _guardar_imagen_activo(machine, files.get("foto_archivo"))
-    _guardar_documento_activo(machine, files.get("manual_archivo"), "manual")
-    _guardar_documento_activo(machine, files.get("ficha_archivo"), "ficha")
+def _guardar_adjuntos_activo(machine: Machine, files) -> set[str]:
+    obsolete: set[str] = set()
+    obsolete.update(_guardar_imagen_activo(machine, files.get("foto_archivo")))
+    obsolete.update(_guardar_documento_activo(machine, files.get("manual_archivo"), "manual"))
+    obsolete.update(_guardar_documento_activo(machine, files.get("ficha_archivo"), "ficha"))
+    return obsolete
+
+
+def _limpiar_objetos_post_commit(keys: set[str]) -> None:
+    from app.file_storage import delete_best_effort
+
+    for key in keys:
+        delete_best_effort(key)
 
 
 def _save_machine_custom_fields(
@@ -3087,8 +3106,9 @@ def activos_new():
                         from app.maintenance.cronograma_preventivo import aplicar_plantillas_sector
 
                         aplicar_plantillas_sector(m)
-                        _guardar_adjuntos_activo(m, request.files)
+                        obsolete = _guardar_adjuntos_activo(m, request.files)
                         db.session.commit()
+                        _limpiar_objetos_post_commit(obsolete)
                         flash(
                             f"Activo registrado con código {m.codigo}. "
                             "Se aplicó la plantilla de preventivos del sector.",
@@ -3157,8 +3177,9 @@ def activos_edit(id):
                 flash(err_campo, "danger")
             else:
                 try:
-                    _guardar_adjuntos_activo(m, request.files)
+                    obsolete = _guardar_adjuntos_activo(m, request.files)
                     db.session.commit()
+                    _limpiar_objetos_post_commit(obsolete)
                     flash("Activo actualizado.", "success")
                     return redirect(url_for("main.activos_list"))
                 except ValueError as exc:
@@ -3219,8 +3240,20 @@ def activos_api_campos():
 @bp.route("/activos/<int:id>/eliminar", methods=["POST"])
 def activos_delete(id):
     m = _filter_empresa(Machine.query.filter_by(id=id), Machine).first_or_404()
+    from app.file_storage import key_from_reference
+
+    stored_keys = {
+        key
+        for key in (
+            key_from_reference(m.foto_url or ""),
+            key_from_reference(m.manual_url or ""),
+            key_from_reference(m.ficha_tecnica_url or ""),
+        )
+        if key
+    }
     db.session.delete(m)
     db.session.commit()
+    _limpiar_objetos_post_commit(stored_keys)
     flash("Activo eliminado.", "info")
     return redirect(url_for("main.activos_list"))
 
@@ -5059,7 +5092,7 @@ def ordenes_informe_delete(id, informe_id):
     informe = WorkOrderInforme.query.filter_by(
         id=informe_id, work_order_id=wo.id, empresa_id=wo.empresa_id
     ).first_or_404()
-    from app.file_storage import delete as delete_stored_file, key_from_reference
+    from app.file_storage import delete_best_effort as delete_stored_file, key_from_reference
 
     key = key_from_reference(informe.ruta_archivo)
     ruta = None if key else _ruta_informe_ot(informe)
@@ -5068,7 +5101,10 @@ def ordenes_informe_delete(id, informe_id):
     if key:
         delete_stored_file(key)
     elif ruta and os.path.isfile(ruta):
-        os.remove(ruta)
+        try:
+            os.remove(ruta)
+        except OSError:
+            current_app.logger.exception("No se pudo limpiar el informe legacy %s", ruta)
     flash("Informe técnico eliminado.", "success")
     return redirect(url_for("main.ordenes_edit", id=wo.id) + "#informes-tecnicos")
 
@@ -6238,24 +6274,40 @@ def _empresa_logo_url_or_none(empresa: Optional[Empresa]) -> Optional[str]:
     return empresa_logo_url_or_none(empresa)
 
 
-def _guardar_logo_empresa(empresa: Empresa, archivo) -> None:
+def _guardar_logo_empresa(
+    empresa: Empresa,
+    archivo,
+    *,
+    replacing_key: str | None = None,
+) -> set[str]:
     if not archivo or not getattr(archivo, "filename", None):
-        return
+        return set()
     nombre = secure_filename(archivo.filename)
     ext = nombre.rsplit(".", 1)[-1].lower() if "." in nombre else ""
     if ext not in EMPRESA_LOGO_EXTENSIONS:
         raise ValueError("Formato de imagen no permitido. Use PNG, JPG o WEBP.")
-    from app.file_storage import delete, reference, save_bytes, tenant_key
+    from app.file_storage import key_from_reference, reference, save_bytes, tenant_key
 
     content = archivo.stream.read()
     if not content:
         raise ValueError("La imagen está vacía.")
-    for old_ext in EMPRESA_LOGO_EXTENSIONS:
-        if old_ext != ext:
-            delete(tenant_key(empresa.id, f"logo.{old_ext}"))
+    old_key = replacing_key or key_from_reference(empresa.logo or "")
     key = tenant_key(empresa.id, f"logo.{ext}")
-    save_bytes(key, content, content_type=f"image/{'jpeg' if ext in {'jpg', 'jpeg'} else ext}")
+    save_bytes(
+        key,
+        content,
+        content_type=f"image/{'jpeg' if ext in {'jpg', 'jpeg'} else ext}",
+        replacing_key=old_key,
+    )
     empresa.logo = reference(key)
+    obsolete = {
+        tenant_key(empresa.id, f"logo.{old_ext}")
+        for old_ext in EMPRESA_LOGO_EXTENSIONS
+        if old_ext != ext
+    }
+    if old_key and old_key != key:
+        obsolete.add(old_key)
+    return obsolete
 
 
 @bp.route("/configuracion/empresa", methods=["GET", "POST"])
@@ -6309,6 +6361,9 @@ def configuracion_empresa():
             emp.sector = nuevo
         emp.moneda = request.form.get("moneda", emp.moneda) or "COP"
         emp.zona_horaria = request.form.get("zona_horaria", emp.zona_horaria) or "America/Bogota"
+        from app.file_storage import key_from_reference
+
+        old_logo_key = key_from_reference(emp.logo or "")
         logo_url = request.form.get("logo_url", "").strip()
         if logo_url:
             logo_norm = normalizar_logo_empresa(logo_url)
@@ -6322,8 +6377,16 @@ def configuracion_empresa():
         if sede_principal:
             sede_principal.nombre = request.form.get("sede_principal_nombre", "").strip() or sede_principal.nombre
         try:
-            _guardar_logo_empresa(emp, request.files.get("logo_archivo"))
+            obsolete = _guardar_logo_empresa(
+                emp,
+                request.files.get("logo_archivo"),
+                replacing_key=old_logo_key,
+            )
+            new_logo_key = key_from_reference(emp.logo or "")
+            if old_logo_key and old_logo_key != new_logo_key:
+                obsolete.add(old_logo_key)
             db.session.commit()
+            _limpiar_objetos_post_commit(obsolete)
             flash("Configuración de la empresa guardada.", "success")
             return redirect(url_for("main.configuracion_empresa"))
         except ValueError as e:

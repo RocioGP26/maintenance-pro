@@ -55,7 +55,7 @@ from app.maintenance_execution.log_service import (
     mark_log_notification_read, resolve_log_context,
 )
 from app.maintenance_execution.log_storage import read_log_file, save_log_file
-from app.file_storage import delete as delete_stored_file
+from app.file_storage import delete_best_effort as delete_stored_file
 from app.maintenance_execution.meter_service import (
     can_manage_meters,
     can_record_reading,

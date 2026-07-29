@@ -22,7 +22,7 @@
 
 | Ítem | ☐ |
 |------|---|
-| Start · Grow · Scale · Enterprise visibles | ✅ |
+| Start · Business · Enterprise visibles | ✅ |
 | Sin Starter/Pro legacy | ✅ |
 | Trial 15 días en copy | ✅ |
 | Catálogo BD alineado MCM-04 | ✅ |

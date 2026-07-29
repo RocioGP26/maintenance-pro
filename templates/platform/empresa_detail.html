@@ -161,6 +161,32 @@
 </div>
 
 
+<div class="platform-section mt-4">
+  <h2 class="platform-section-title">Plan comercial del piloto</h2>
+  <div class="platform-card p-3">
+    <form method="post" action="{{ url_for('platform.empresa_cambiar_plan', id=e.id) }}"
+          class="d-flex flex-wrap gap-2 align-items-end"
+          onsubmit="return confirm('¿Asignar el plan seleccionado? La acción activará el ciclo y no generará factura.');">
+      {% include "_csrf.html" %}
+      <div>
+        <label for="planComercial" class="form-label small text-secondary mb-1">Asignar o cambiar plan</label>
+        <select id="planComercial" name="plan" class="platform-select" required>
+          {% for plan_key, meta in planes_comerciales %}
+          <option value="{{ plan_key }}" {% if e.plan_activo and e.plan_activo.plan == plan_key %}selected{% endif %}>
+            {{ meta.short_label or meta.label }} · {{ formato_moneda(meta.precio_mensual) }}/mes
+          </option>
+          {% endfor %}
+        </select>
+      </div>
+      <button type="submit" class="platform-btn platform-btn-success">Guardar plan</button>
+    </form>
+    <p class="small text-secondary mb-0 mt-2">
+      Operación piloto: el cambio es manual, activa el ciclo y queda auditado. No crea factura automáticamente.
+    </p>
+  </div>
+</div>
+
+
 
 <div class="platform-actions">
 
@@ -202,11 +228,11 @@
 </div>
 
 <div class="platform-etapa-info mt-4">
-  <strong>Etapa 1 — sin pasarela.</strong>
-  Trial 14 días → al vencer el cron genera factura pendiente (mora, acceso bloqueado) →
+  <strong>Piloto — cobro manual, sin pasarela.</strong>
+  Trial 15 días → al vencer el cron genera factura pendiente (mora, acceso bloqueado) →
   registras el pago aquí → suscripción activa.
   Sin pago en 5 días → suspendida.
-  Campos <code>pasarela_*</code> listos para Wompi/Stripe en Etapa 2.
+  La integración de pasarela queda diferida a postpiloto.
 </div>
 
 <div class="platform-section mt-4">

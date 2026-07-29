@@ -26,6 +26,12 @@ REGLAS_DEFAULT: dict[str, str] = {
     "dias_alerta_mora": "3",
 }
 
+PLANES_COMERCIALES_PILOTO: tuple[str, ...] = (
+    PlanTipo.BASICO.value,
+    PlanTipo.BUSINESS.value,
+    PlanTipo.ENTERPRISE.value,
+)
+
 # Oferta comercial COM-01 v1.3.2 · Start · Business · Enterprise (Scale oculto / legacy).
 # Almacenamiento año 1 (piloto): 1 GB / 5 GB / 20 GB — alineado a R2 free tier ~10 GB.
 PLANES_SEED: list[dict[str, Any]] = [
@@ -51,7 +57,7 @@ PLANES_SEED: list[dict[str, Any]] = [
         ],
     },
     {
-        "clave": "grow",
+        "clave": PlanTipo.BUSINESS.value,
         "label": "Plan Business",
         "short_label": "Business",
         "descripcion": "Integra más procesos y acompaña el crecimiento",
@@ -317,6 +323,11 @@ def planes_para_registro() -> list[tuple[str, dict[str, Any]]]:
     for plan in listar_planes_catalogo(solo_visibles=True):
         items.append((plan.clave, plan_a_meta(plan)))
     return items
+
+
+def planes_comerciales_piloto() -> list[tuple[str, dict[str, Any]]]:
+    """Oferta asignable manualmente durante el piloto (sin planes legacy)."""
+    return [(key, catalogo_plan_meta(key)) for key in PLANES_COMERCIALES_PILOTO]
 
 
 def planes_claves_validas() -> set[str]:

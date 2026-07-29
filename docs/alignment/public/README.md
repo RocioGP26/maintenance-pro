@@ -26,7 +26,7 @@ Que cualquier visitante vea **el mismo Roustix** que describen MCM y MKT: marca 
 | Módulos Python contenido | `public_faq.py` · `public_demo.py` · `public_contact.py` · `public_recursos.py` |
 | Trial default | **15 días** (MCM-04 · MCM-06 · MCM-08) |
 | Marca pública | **Roustix** |
-| Planes públicos | Start · Grow · Scale · Enterprise |
+| Planes públicos | Start · Business · Enterprise |
 
 ---
 
@@ -52,7 +52,7 @@ Que cualquier visitante vea **el mismo Roustix** que describen MCM y MKT: marca 
 ```
 app/branding.py              APP_NAME · contacto@roustix.com
 app/landing_service.py       Hero · sectores · problema · CTAs
-app/platform_config_service  Planes Start/Grow/Scale · trial 15d
+app/platform_config_service  Planes Start/Business/Enterprise · trial 15d
 app/public_*.py              FAQ · demo · contacto · recursos
 app/routes.py                /faq /demo /contacto /recursos
 templates/landing/           index · partials nav/footer · páginas

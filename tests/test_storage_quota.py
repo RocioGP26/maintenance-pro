@@ -4,8 +4,10 @@ from __future__ import annotations
 
 import tempfile
 import unittest
+from io import BytesIO
 from types import SimpleNamespace
 from unittest.mock import patch
+from werkzeug.datastructures import FileStorage
 
 from app import create_app, db
 from app.file_storage import save_bytes, tenant_key
@@ -144,6 +146,31 @@ class TestSaveBytesEnforcesQuota(unittest.TestCase):
             return_value=1024 * 1024 * 1024,
         ):
             save_bytes(key, b"migrado", content_type="image/png", enforce_quota=False)
+
+    def test_image_extension_change_credits_old_file_without_predelete(self):
+        from app.file_storage import exists, reference
+        from app.routes import _guardar_imagen_activo
+
+        old_key = tenant_key(self.empresa.id, "activos", "77.png")
+        save_bytes(old_key, b"old-image", content_type="image/png", enforce_quota=False)
+        machine = SimpleNamespace(
+            id=77,
+            empresa_id=self.empresa.id,
+            foto_url=reference(old_key),
+        )
+        upload = FileStorage(stream=BytesIO(b"new-image"), filename="foto.jpg")
+        quota_bytes = 1024 * 1024 * 1024
+        with (
+            patch("app.storage_quota.quota_mb_efectiva", return_value=1024),
+            patch("app.platform_service.storage_bytes_empresa", return_value=quota_bytes),
+        ):
+            obsolete = _guardar_imagen_activo(machine, upload)
+
+        new_key = tenant_key(self.empresa.id, "activos", "77.jpg")
+        self.assertTrue(exists(old_key), "el objeto anterior debe vivir hasta el commit")
+        self.assertTrue(exists(new_key))
+        self.assertIn(old_key, obsolete)
+        self.assertEqual(machine.foto_url, reference(new_key))
 
 
 if __name__ == "__main__":

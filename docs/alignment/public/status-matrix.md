@@ -28,7 +28,7 @@
 | Tema | Doc oficial | Sitio Fase 2 | Estado |
 |------|-------------|--------------|--------|
 | Marca | Roustix | Roustix en público | ✅ |
-| Planes | Start/Grow/Scale/Enterprise | Catálogo MCM-04 | ✅ |
+| Planes | Start/Business/Enterprise | Catálogo COM-01 / MCM-04 | ✅ |
 | Trial | 15 días | `trial_dias` = 15 | ✅ |
 | Hero H1 | MKT-05 §5.1 | Copy oficial | ✅ |
 | CTA trial | Probar gratis N días | Dinámico · onboarding | ✅ |

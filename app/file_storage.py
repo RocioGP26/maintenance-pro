@@ -131,19 +131,27 @@ def save_bytes(
     *,
     content_type: str = "application/octet-stream",
     enforce_quota: bool = True,
+    replacing_key: str | None = None,
 ) -> str:
     safe = _safe_key(key)
+    replacement = _safe_key(replacing_key) if replacing_key else None
     payload = content if isinstance(content, (bytes, bytearray)) else bytes(content)
     if enforce_quota:
         from app.storage_quota import assert_storage_capacity, empresa_id_from_storage_key
 
         empresa_id = empresa_id_from_storage_key(safe)
         if empresa_id is not None:
+            if replacement and empresa_id_from_storage_key(replacement) != empresa_id:
+                raise ValueError("El archivo reemplazado debe pertenecer a la misma empresa.")
             replacing = 0
             try:
                 existing = object_size(safe)
                 if existing is not None:
                     replacing = int(existing)
+                elif replacement and replacement != safe:
+                    previous = object_size(replacement)
+                    if previous is not None:
+                        replacing = int(previous)
             except Exception:
                 replacing = 0
             assert_storage_capacity(empresa_id, len(payload), replacing_bytes=replacing)
@@ -194,6 +202,18 @@ def delete(key: str) -> None:
             raise
         return
     raise RuntimeError(f"Backend de almacenamiento no soportado: {_backend()}")
+
+
+def delete_best_effort(key: str | None) -> bool:
+    """Elimina un objeto sin convertir una limpieza post-commit en error de usuario."""
+    if not key:
+        return True
+    try:
+        delete(key)
+        return True
+    except Exception as exc:
+        _alert_storage_failure("cleanup", exc)
+        return False
 
 
 def exists(key: str) -> bool:

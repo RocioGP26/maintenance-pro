@@ -36,7 +36,7 @@ ENTITLEMENT_MATRIX: dict[str, dict[str, Any]] = {
         "webhooks.manual_retry": True,
         "webhooks.auto_disable_after": 15,
     },
-    "grow": {  # Plan Business (clave técnica grow)
+    PlanTipo.BUSINESS.value: {  # Plan Business (clave técnica legacy: grow)
         "public_api.enabled": True,
         "public_api.requests_per_minute": 90,
         "public_api.credentials_max": 5,

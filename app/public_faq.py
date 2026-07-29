@@ -46,9 +46,8 @@ FAQ_SECTIONS: tuple[dict, ...] = (
             {
                 "q": "¿Cuánto cuesta?",
                 "a": (
-                    "SaaS mensual por plan: Start · Grow · Scale · Enterprise. "
-                    "Los precios definitivos estarán disponibles próximamente. "
-                    "Contacta al equipo Roustix para recibir información comercial."
+                    "Start cuesta $1.000.000 COP/mes y Business $1.500.000 COP/mes. "
+                    "Enterprise se cotiza según el alcance; contacta al equipo Roustix."
                 ),
             },
             {
@@ -78,15 +77,15 @@ FAQ_SECTIONS: tuple[dict, ...] = (
             {
                 "q": "¿Cuánto tarda implementar?",
                 "a": (
-                    "Orientación por plan: Start 3–7 días · Grow 1–2 semanas · "
-                    "Scale 2–4 semanas."
+                    "Orientación por plan: Start 3–7 días · Business 1–2 semanas · "
+                    "Enterprise según el alcance acordado."
                 ),
             },
             {
                 "q": "¿Necesito consultoría externa?",
                 "a": (
                     "No es obligatorio. Start es self-service con guías oficiales. "
-                    "Grow y superiores incluyen onboarding guiado."
+                    "Business y Enterprise incluyen onboarding guiado."
                 ),
             },
             {

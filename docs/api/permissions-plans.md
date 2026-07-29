@@ -84,7 +84,7 @@ capacidad resolubles desde el catálogo o una asignación por tenant:
 | `webhooks.retention_days` | entero |
 | `webhooks.manual_retry` | booleano |
 
-La asignación comercial a Trial, Start, Grow, Scale y Enterprise está definida
+La asignación comercial a Trial, Start, Business (`grow`) y Enterprise está definida
 en la matriz de entitlements de Sprint 22.4 (`app/integrations/entitlements.py`).
 
 ## Revocación automática

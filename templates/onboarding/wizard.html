@@ -268,20 +268,19 @@
             <section class="onboarding-form-section">
               <h3 class="onboarding-section-title">Plan comercial</h3>
             <p class="text-muted small mb-3">
-              Comienza con la prueba gratuita de {{ trial_dias }} días o elige un plan de pago.
-              Los precios definitivos se publicarán próximamente; puedes seleccionar el plan
-              que mejor se ajuste a tu operación sin modificar su configuración interna.
+              Todos los registros comienzan con una prueba gratuita de {{ trial_dias }} días.
+              Durante el piloto, el equipo Roustix confirma el pago y asigna manualmente
+              Start, Business o Enterprise.
             </p>
             {% if sales_prompt %}
             <div class="alert alert-light border small py-2 mb-3">
               <i class="bi bi-chat-left-text me-1"></i> {{ sales_prompt }}
             </div>
             {% endif %}
+            <input type="hidden" name="plan" value="trial">
             <div class="onboarding-plans-grid">
               {% for plan_key, meta in planes %}
-              <label class="onboarding-plan-card {% if meta.destacado %}onboarding-plan-card--featured{% endif %}">
-                <input type="radio" name="plan" value="{{ plan_key }}" class="onboarding-plan-radio"
-                       {% if loop.first %}checked{% endif %}>
+              <div class="onboarding-plan-card {% if meta.destacado %}onboarding-plan-card--featured{% endif %}">
                 {% if meta.destacado %}
                 <span class="onboarding-plan-badge">Más popular</span>
                 {% endif %}
@@ -292,7 +291,7 @@
                   {% elif plan_key == 'enterprise' %}
                   <span class="onboarding-plan-price">Contactar para conocer el precio</span>
                   {% else %}
-                  <span class="onboarding-plan-price">Precio disponible próximamente</span>
+                  <span class="onboarding-plan-price">{{ formato_moneda(meta.precio_mensual) }}/mes</span>
                   {% endif %}
                 </div>
                 <p class="small text-muted mb-2">{{ meta.descripcion }}</p>
@@ -315,7 +314,7 @@
                   {% endif %}
                   {% endfor %}
                 </ul>
-              </label>
+              </div>
               {% endfor %}
             </div>
             </section>
