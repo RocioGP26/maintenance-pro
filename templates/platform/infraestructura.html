@@ -4,7 +4,7 @@
 <div class="platform-page-head">
   <div>
     <h1 class="platform-page-title">Infraestructura</h1>
-    <p class="platform-page-sub mb-0">Monitor operativo · administrar Roustix sin saltar entre consolas externas</p>
+    <p class="platform-page-sub mb-0">Estado operativo de Roustix en un solo lugar</p>
   </div>
 </div>
 
@@ -31,7 +31,7 @@
     {% endif %}
     {% if block.warn %}
     <p class="small text-warning mb-0">
-      <i class="bi bi-exclamation-triangle"></i> Próximo al límite de referencia del piloto.
+      <i class="bi bi-exclamation-triangle"></i> Próximo al límite de capacidad.
     </p>
     {% endif %}
   </div>
@@ -49,7 +49,7 @@
     <p class="small text-secondary mb-0">{{ svc.detail }}</p>
     {% if svc.key == 'health' and svc.endpoint %}
     <p class="small mt-2 mb-0">
-      <a class="platform-link" href="{{ svc.endpoint }}" target="_blank" rel="noopener">Abrir {{ svc.endpoint }}</a>
+      <a class="platform-link" href="{{ svc.endpoint }}" target="_blank" rel="noopener">Ver health check</a>
     </p>
     {% endif %}
   </div>
@@ -57,12 +57,12 @@
 </div>
 
 <div class="platform-detail-card">
-  <h3>Almacenamiento por plan (COM-01)</h3>
+  <h3>Cupos por plan</h3>
   <ul class="mb-0 small">
     <li><span class="notranslate" translate="no">Start</span>: 1 GB incluido</li>
     <li><span class="notranslate" translate="no">Business</span>: 5 GB incluidos</li>
     <li><span class="notranslate" translate="no">Enterprise</span>: 20 GB ampliables</li>
-    <li>Add-on sugerido: +2 GB · $100.000 / mes (COM-02)</li>
+    <li>Add-on: +2 GB · $100.000 / mes</li>
   </ul>
 </div>
 {% endblock %}

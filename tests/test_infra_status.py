@@ -32,7 +32,7 @@ class TestInfraStatus(unittest.TestCase):
         )
         card = smtp_status(probe=False)
         self.assertEqual(card["status"], "error")
-        self.assertIn("MAIL_SERVER", card["detail"])
+        self.assertIn("servidor", card["detail"])
 
     def test_smtp_suppress_is_warn(self):
         self.app.config["MAIL_SUPPRESS_SEND"] = True

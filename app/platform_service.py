@@ -275,8 +275,8 @@ def infra_snapshot(*, probe_smtp: bool = True) -> dict[str, Any]:
         },
         "services": service_statuses(probe_smtp=probe_smtp),
         "notes": (
-            "Cupos de referencia del piloto (Render Starter ~256 MB BD · "
-            "Cloudflare R2 free ~10 GB). Ajustar cuando se amplíe infraestructura."
+            f"Límites de referencia del entorno actual: PostgreSQL {INFRA_DB_QUOTA_MB} MB · "
+            f"Cloudflare R2 {INFRA_FILES_QUOTA_GB} GB."
         ),
     }
 

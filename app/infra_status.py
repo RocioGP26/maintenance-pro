@@ -72,14 +72,15 @@ def smtp_status(*, probe: bool = True) -> dict[str, Any]:
     ).strip()
     port = int(current_app.config.get("MAIL_PORT", 587) or 587)
     configured = bool(server and username and password and sender)
+    label = "SMTP"
 
     if suppress:
         return _status_card(
             key="smtp",
-            label="Estado SMTP",
+            label=label,
             status="warn",
             status_label="Suprimido",
-            detail="MAIL_SUPPRESS_SEND activo · los correos no salen (modo prueba).",
+            detail="El envío de correo está desactivado en este entorno (modo prueba).",
             configured=configured,
             server=server or None,
         )
@@ -87,19 +88,19 @@ def smtp_status(*, probe: bool = True) -> dict[str, Any]:
         missing = [
             name
             for name, value in (
-                ("MAIL_SERVER", server),
-                ("MAIL_USERNAME", username),
-                ("MAIL_PASSWORD", password),
-                ("MAIL_DEFAULT_SENDER", sender),
+                ("servidor", server),
+                ("usuario", username),
+                ("contraseña", password),
+                ("remitente", sender),
             )
             if not value
         ]
         return _status_card(
             key="smtp",
-            label="Estado SMTP",
+            label=label,
             status="error",
             status_label="No configurado",
-            detail="Faltan: " + ", ".join(missing),
+            detail="Falta configurar: " + ", ".join(missing) + ".",
             configured=False,
             server=None,
         )
@@ -107,7 +108,7 @@ def smtp_status(*, probe: bool = True) -> dict[str, Any]:
     if not probe:
         return _status_card(
             key="smtp",
-            label="Estado SMTP",
+            label=label,
             status="ok",
             status_label="Configurado",
             detail=f"{server}:{port} · remitente {sender}",
@@ -130,22 +131,22 @@ def smtp_status(*, probe: bool = True) -> dict[str, Any]:
         latency_ms = round((time.perf_counter() - started) * 1000, 2)
         return _status_card(
             key="smtp",
-            label="Estado SMTP",
+            label=label,
             status="ok",
             status_label="Operativo",
-            detail=f"{server}:{port} · login OK ({latency_ms} ms)",
+            detail=f"{server}:{port} · autenticación correcta ({int(round(latency_ms))} ms)",
             configured=True,
             server=server,
             latency_ms=latency_ms,
         )
-    except (OSError, smtplib.SMTPException) as exc:
+    except (OSError, smtplib.SMTPException):
         latency_ms = round((time.perf_counter() - started) * 1000, 2)
         return _status_card(
             key="smtp",
-            label="Estado SMTP",
+            label=label,
             status="error",
             status_label="Fallido",
-            detail=f"No se pudo autenticar en {server}:{port} ({type(exc).__name__})",
+            detail=f"No se pudo autenticar en {server}:{port}.",
             configured=True,
             server=server,
             latency_ms=latency_ms,
@@ -181,19 +182,20 @@ def backups_status() -> dict[str, Any]:
     """Config de backup S3 + último artefacto local en BACKUP_DIR."""
     from app.storage_backup import StorageBackupConfig
 
+    label = "Backups"
     storage_ok = False
-    storage_detail = "STORAGE_BACKUP_* incompleto"
+    storage_detail = "Falta configurar el bucket de recuperación y sus credenciales."
     try:
         cfg = StorageBackupConfig.from_environment()
         cfg.validate()
         storage_ok = True
-        storage_detail = f"Bucket recuperación: {cfg.target_bucket}"
-    except ValueError as exc:
-        storage_detail = str(exc)
+        storage_detail = f"Bucket de recuperación: {cfg.target_bucket}"
+    except ValueError:
+        pass
 
     latest = _latest_local_backup()
     max_age_h = max(1, int(os.environ.get("BACKUP_STALE_HOURS", "36") or 36))
-    local_detail = "Sin archivos en BACKUP_DIR"
+    local_detail = "No hay copias locales en este servidor."
     age_hours: Optional[float] = None
     local_name: Optional[str] = None
     if latest:
@@ -201,32 +203,32 @@ def backups_status() -> dict[str, Any]:
         local_name = path.name
         age_hours = max(0.0, (time.time() - mtime) / 3600.0)
         when = datetime.fromtimestamp(mtime, tz=timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
-        local_detail = f"Último local: {local_name} · {when} ({age_hours:.1f} h)"
+        local_detail = f"Última copia local: {local_name} · {when} ({age_hours:.1f} h)"
 
     if storage_ok and latest and age_hours is not None and age_hours <= max_age_h:
-        status, label = "ok", "Al día"
-        detail = f"{storage_detail}. {local_detail}"
+        status, status_label = "ok", "Al día"
+        detail = f"{storage_detail}. {local_detail}."
     elif storage_ok and latest:
-        status, label = "warn", "Antiguo"
-        detail = f"{storage_detail}. {local_detail} · umbral {max_age_h} h"
+        status, status_label = "warn", "Antiguo"
+        detail = f"{storage_detail}. {local_detail} · umbral {max_age_h} h."
     elif storage_ok:
-        status, label = "warn", "Sin local reciente"
+        status, status_label = "warn", "Sin copia local"
         detail = (
-            f"{storage_detail}. {local_detail}. "
-            "Los dumps diarios viven en el bucket de recuperación (GitHub Actions)."
+            f"{storage_detail}. {local_detail} "
+            "Los respaldos diarios se guardan en el bucket de recuperación (GitHub Actions)."
         )
     elif latest and age_hours is not None and age_hours <= max_age_h:
-        status, label = "warn", "Solo local"
-        detail = f"{local_detail}. Config S3 de recuperación incompleta."
+        status, status_label = "warn", "Solo local"
+        detail = f"{local_detail}. Aún falta el bucket de recuperación."
     else:
-        status, label = "error", "Sin respaldo"
-        detail = f"{storage_detail}. {local_detail}"
+        status, status_label = "error", "Sin respaldo"
+        detail = f"{storage_detail} {local_detail}"
 
     return _status_card(
         key="backups",
-        label="Estado Backups",
+        label=label,
         status=status,
-        status_label=label,
+        status_label=status_label,
         detail=detail,
         storage_configured=storage_ok,
         local_name=local_name,
@@ -240,15 +242,16 @@ def workers_status() -> dict[str, Any]:
     worker_max_age = max(
         10, int(current_app.config.get("WORKER_HEARTBEAT_MAX_AGE_SECONDS", 90) or 90)
     )
+    label = "Workers"
 
     if not redis_configured:
         status = "error" if worker_required else "warn"
         return _status_card(
             key="workers",
-            label="Estado Workers",
+            label=label,
             status=status,
             status_label="Sin Redis",
-            detail="REDIS_URL no configurada · no hay heartbeat de worker.",
+            detail="Redis no está configurado; no se puede verificar el worker.",
             required=worker_required,
             heartbeat_age_seconds=None,
         )
@@ -259,13 +262,14 @@ def workers_status() -> dict[str, Any]:
     if not redis_ok:
         return _status_card(
             key="workers",
-            label="Estado Workers",
+            label=label,
             status="error",
             status_label="Redis caído",
-            detail=f"No se pudo hacer ping a Redis ({redis_error})",
+            detail="No se pudo conectar a Redis.",
             required=worker_required,
             heartbeat_age_seconds=None,
             redis_latency_ms=redis_ms,
+            redis_error=redis_error,
         )
 
     try:
@@ -273,21 +277,22 @@ def workers_status() -> dict[str, Any]:
     except Exception as exc:
         return _status_card(
             key="workers",
-            label="Estado Workers",
+            label=label,
             status="error",
-            status_label="Error heartbeat",
-            detail=type(exc).__name__,
+            status_label="Error",
+            detail="No se pudo leer el heartbeat del worker.",
             required=worker_required,
             heartbeat_age_seconds=None,
+            error=type(exc).__name__,
         )
 
     if age is not None and age <= worker_max_age:
         return _status_card(
             key="workers",
-            label="Estado Workers",
+            label=label,
             status="ok",
             status_label="Activo",
-            detail=f"Heartbeat hace {age:.0f} s · límite {worker_max_age} s",
+            detail=f"Último latido hace {age:.0f} s (límite {worker_max_age} s).",
             required=worker_required,
             heartbeat_age_seconds=round(age, 2),
             redis_latency_ms=redis_ms,
@@ -295,15 +300,15 @@ def workers_status() -> dict[str, Any]:
 
     if worker_required:
         detail = (
-            "Heartbeat ausente o caducado."
+            "El worker no ha reportado latido recientemente."
             if age is None
-            else f"Heartbeat hace {age:.0f} s · límite {worker_max_age} s"
+            else f"Último latido hace {age:.0f} s (límite {worker_max_age} s)."
         )
         return _status_card(
             key="workers",
-            label="Estado Workers",
+            label=label,
             status="error",
-            status_label="Sin heartbeat",
+            status_label="Sin latido",
             detail=detail,
             required=True,
             heartbeat_age_seconds=round(age, 2) if age is not None else None,
@@ -312,13 +317,13 @@ def workers_status() -> dict[str, Any]:
 
     return _status_card(
         key="workers",
-        label="Estado Workers",
+        label=label,
         status="warn",
         status_label="Opcional",
         detail=(
-            "Worker no requerido en este entorno."
+            "El worker no es obligatorio en este entorno."
             if age is None
-            else f"Heartbeat hace {age:.0f} s (no obligatorio)."
+            else f"Último latido hace {age:.0f} s (no obligatorio)."
         ),
         required=False,
         heartbeat_age_seconds=round(age, 2) if age is not None else None,
@@ -363,32 +368,29 @@ def health_status() -> dict[str, Any]:
     redis_degraded = redis_ok and redis_configured and redis_latency_ms >= redis_threshold
 
     if not ready_ok:
-        status, label = "error", "No listo"
+        status, status_label = "error", "No listo"
     elif db_degraded or redis_degraded or not worker_ok:
-        status, label = "warn", "Degradado"
+        status, status_label = "warn", "Degradado"
     else:
-        status, label = "ok", "Saludable"
+        status, status_label = "ok", "Saludable"
+
+    def _ok(flag: bool) -> str:
+        return "ok" if flag else "fallo"
 
     parts = [
-        f"BD {'OK' if db_ok else 'FAIL'} ({db_latency_ms} ms)",
-        f"migraciones {'OK' if migration else 'FAIL'}",
+        f"Base de datos {_ok(db_ok)} ({int(round(db_latency_ms))} ms)",
+        f"migraciones {_ok(bool(migration))}",
     ]
     if redis_configured or redis_required:
-        parts.append(f"Redis {'OK' if redis_ok else 'FAIL'}")
+        parts.append(f"Redis {_ok(redis_ok)}")
     if worker_required:
-        parts.append(f"worker {'OK' if worker_ok else 'FAIL'}")
-    if db_error:
-        parts.append(db_error)
-    if migration_error and not migration:
-        parts.append(migration_error)
-    if redis_error and not redis_ok:
-        parts.append(str(redis_error))
+        parts.append(f"worker {_ok(worker_ok)}")
 
     return _status_card(
         key="health",
-        label="Estado Health Check",
+        label="Health check",
         status=status,
-        status_label=label,
+        status_label=status_label,
         detail=" · ".join(parts),
         ready=ready_ok,
         endpoint="/health/ready",
@@ -399,6 +401,9 @@ def health_status() -> dict[str, Any]:
             "migration": migration,
             "redis_ok": redis_ok,
             "worker_ok": worker_ok,
+            "database_error": db_error,
+            "migration_error": migration_error,
+            "redis_error": redis_error,
         },
     )
 
