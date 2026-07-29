@@ -12,6 +12,12 @@ La suite documental mantiene un ciclo independiente en
 
 - Espacio reservado para cambios aún no publicados.
 
+## [1.0.19] - 2026-07-28
+
+### Changed
+
+- Observabilidad, Redis y worker operativo (Sprint 23.4).
+
 ## [1.0.18] - 2026-07-28
 
 ### Changed
@@ -320,7 +326,7 @@ La suite documental mantiene un ciclo independiente en
 
 - Este release formaliza el versionado; no modifica funcionalidades de negocio.
 
-[Unreleased]: https://github.com/RocioGP26/maintenance-pro/compare/v1.0.18...HEAD
+[Unreleased]: https://github.com/RocioGP26/maintenance-pro/compare/v1.0.19...HEAD
 [1.0.0]: https://github.com/RocioGP26/maintenance-pro/releases/tag/v1.0.0
 [1.0.1]: https://github.com/RocioGP26/maintenance-pro/compare/v1.0.0...v1.0.1
 [1.0.2]: https://github.com/RocioGP26/maintenance-pro/compare/v1.0.1...v1.0.2
@@ -340,3 +346,4 @@ La suite documental mantiene un ciclo independiente en
 [1.0.16]: https://github.com/RocioGP26/maintenance-pro/compare/v1.0.15...v1.0.16
 [1.0.17]: https://github.com/RocioGP26/maintenance-pro/compare/v1.0.16...v1.0.17
 [1.0.18]: https://github.com/RocioGP26/maintenance-pro/compare/v1.0.17...v1.0.18
+[1.0.19]: https://github.com/RocioGP26/maintenance-pro/compare/v1.0.18...v1.0.19
