@@ -156,7 +156,10 @@
         </ul>
         {% if storage_uso %}
         <div class="border-top pt-3">
-          <p class="small text-muted text-uppercase fw-semibold mb-1">Almacenamiento</p>
+          <div class="d-flex justify-content-between align-items-center mb-1">
+            <p class="small text-muted text-uppercase fw-semibold mb-0">Almacenamiento</p>
+            <a class="small" href="{{ url_for('main.configuracion_almacenamiento') }}">Ver detalle</a>
+          </div>
           <p class="small mb-1">
             <strong>{{ storage_uso.used_label }}</strong>
             <span class="text-muted"> / {{ storage_uso.quota_label }}</span>
@@ -171,18 +174,17 @@
           </div>
           {% endif %}
           {% if storage_uso.addon_active %}
-          <p class="small text-success mb-2">
+          <p class="small text-success mb-0">
             Add-on activo: <strong>{{ storage_uso.addon_label }}</strong>
             incluidos en tu cupo ({{ storage_uso.addon_mb }} MB).
           </p>
           {% elif storage_uso.warn %}
           <p class="small text-warning mb-2">
-            Estás próximo al límite de almacenamiento. ¿Deseas ampliar tu capacidad?
-            <strong>{{ storage_uso.addon_label }} por {{ storage_uso.addon_price_label }}</strong>.
+            <i class="bi bi-exclamation-triangle-fill me-1"></i>
+            Estás próximo al límite de almacenamiento.
           </p>
-          <a class="btn btn-sm btn-outline-dark"
-             href="mailto:contacto@roustix.com?subject={{ ('Solicitud add-on ' ~ storage_uso.addon_label ~ ' (' ~ storage_uso.addon_sku ~ ')')|urlencode }}">
-            Solicitar {{ storage_uso.addon_label }}
+          <a class="btn btn-sm btn-outline-dark" href="{{ url_for('main.configuracion_almacenamiento') }}">
+            Ampliar almacenamiento
           </a>
           {% endif %}
         </div>

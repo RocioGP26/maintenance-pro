@@ -127,6 +127,7 @@ def endpoint_exento_modulo(endpoint: str | None) -> bool:
         "main.cuenta_suspendida",
         "main.salir_impersonacion",
         "main.configuracion_empresa",
+        "main.configuracion_almacenamiento",
         "main.equipo_list",
         "main.equipo_new",
         "main.equipo_edit",

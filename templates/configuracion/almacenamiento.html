@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+{% block title %}Almacenamiento — {{ app_name }}{% endblock %}
+{% block page_title %}Almacenamiento{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+  <div class="col-lg-6 col-xl-5">
+    <div class="card card-dashboard">
+      <div class="card-body p-4">
+        {% if storage_uso %}
+        <p class="fs-5 fw-semibold mb-1">{{ storage_uso.empresa_nombre }}</p>
+        <p class="text-muted mb-4">Plan {{ storage_uso.plan_label }}</p>
+
+        <p class="small text-muted text-uppercase fw-semibold mb-2">Almacenamiento</p>
+        <p class="fs-4 fw-semibold mb-1">
+          {{ storage_uso.used_label }}
+          <span class="fs-6 fw-normal text-muted"> / {{ storage_uso.quota_label }}</span>
+        </p>
+
+        {% if storage_uso.pct is not none %}
+        <div class="progress mb-2" style="height: 10px;" role="progressbar"
+             aria-valuenow="{{ storage_uso.pct }}" aria-valuemin="0" aria-valuemax="100"
+             aria-label="Uso de almacenamiento">
+          <div class="progress-bar {% if storage_uso.pct >= 90 %}bg-danger{% elif storage_uso.warn %}bg-warning{% else %}bg-primary{% endif %}"
+               style="width: {{ storage_uso.pct }}%;"></div>
+        </div>
+        <p class="mb-0 {% if storage_uso.warn %}text-warning fw-semibold{% else %}text-muted{% endif %}">
+          {{ storage_uso.pct }} %
+        </p>
+        {% endif %}
+
+        {% if storage_uso.addon_active %}
+        <div class="alert alert-success mt-4 mb-0 small" role="status">
+          Add-on activo: <strong>{{ storage_uso.addon_label }}</strong>
+          ({{ storage_uso.addon_mb }} MB incluidos en tu cupo).
+        </div>
+        {% elif storage_uso.warn %}
+        <div class="alert alert-warning mt-4 mb-3 d-flex align-items-start gap-2" role="status">
+          <i class="bi bi-exclamation-triangle-fill mt-1"></i>
+          <div class="mb-0">
+            Estás próximo al límite de almacenamiento.
+            {% if storage_uso.addon_label and storage_uso.addon_price_label %}
+            <span class="d-block mt-1">
+              Amplía con <strong>{{ storage_uso.addon_label }}</strong>
+              por <strong>{{ storage_uso.addon_price_label }}</strong>.
+            </span>
+            {% endif %}
+          </div>
+        </div>
+        <a class="btn btn-dark"
+           href="mailto:contacto@roustix.com?subject={{ ('Solicitud add-on ' ~ storage_uso.addon_label ~ ' (' ~ storage_uso.addon_sku ~ ') — ' ~ storage_uso.empresa_nombre)|urlencode }}">
+          Ampliar almacenamiento
+        </a>
+        {% else %}
+        <p class="small text-muted mt-4 mb-0">
+          Cuando superes el 80 % del cupo te avisaremos aquí para ampliar capacidad
+          ({{ storage_uso.addon_label }} · {{ storage_uso.addon_price_label }}).
+        </p>
+        {% endif %}
+        {% else %}
+        <p class="text-muted mb-0">
+          No hay cupo de almacenamiento asociado a tu plan. Contacta a
+          <a href="mailto:contacto@roustix.com">contacto@roustix.com</a>.
+        </p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-6 col-xl-5">
+    <div class="card card-dashboard">
+      <div class="card-body p-4">
+        <h5 class="fw-semibold mb-2">¿Qué cuenta en el cupo?</h5>
+        <p class="small text-muted mb-3">
+          Fotografías de activos, evidencias de órdenes, logos e informes
+          almacenados en tu empresa.
+        </p>
+        <ul class="small text-muted mb-0">
+          <li class="mb-2">El cupo base lo define tu plan comercial.</li>
+          <li class="mb-2">Puedes sumar <strong>+2 GB</strong> como add-on (pago por transferencia).</li>
+          <li>Al 100 % se bloquean nuevos archivos hasta ampliar o liberar espacio.</li>
+        </ul>
+        <hr class="my-4">
+        <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('main.configuracion_empresa') }}">
+          <i class="bi bi-building-gear me-1"></i> Configuración empresa
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

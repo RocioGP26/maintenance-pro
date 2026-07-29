@@ -6357,6 +6357,18 @@ def configuracion_empresa():
     )
 
 
+@bp.route("/configuracion/almacenamiento")
+def configuracion_almacenamiento():
+    emp = _empresa_del_usuario()
+    if emp is None:
+        flash("No hay una empresa asociada a tu cuenta.", "warning")
+        return redirect(url_for("main.dashboard"))
+    if not can_manage_config(current_user):
+        flash("Solo un administrador puede ver el almacenamiento de la empresa.", "warning")
+        return redirect(url_for("main.dashboard"))
+    return render_template("configuracion/almacenamiento.html")
+
+
 # --- Reportes ---
 @bp.route("/reportes")
 def reportes():

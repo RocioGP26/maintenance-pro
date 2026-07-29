@@ -124,8 +124,22 @@ def _format_storage(bytes_val: int) -> str:
     if bytes_val < 1024 * 1024:
         return f"{bytes_val / 1024:.1f} KB"
     if bytes_val < 1024 * 1024 * 1024:
-        return f"{bytes_val / (1024 * 1024):.1f} MB"
-    return f"{bytes_val / (1024 * 1024 * 1024):.2f} GB"
+        mb = bytes_val / (1024 * 1024)
+        if abs(mb - round(mb)) < 0.05:
+            return f"{int(round(mb))} MB"
+        return f"{mb:.1f} MB"
+    gb = bytes_val / (1024 * 1024 * 1024)
+    if abs(gb - round(gb)) < 0.05:
+        return f"{int(round(gb))} GB"
+    return f"{gb:.2f} GB"
+
+
+def _format_quota_mb(quota_mb: int) -> str:
+    """Etiqueta amigable de cupo (1 GB, 5 GB, 2048 MB, …)."""
+    q = int(quota_mb)
+    if q >= 1024 and q % 1024 == 0:
+        return f"{q // 1024} GB"
+    return f"{q} MB"
 
 
 # Cupos de infraestructura de referencia (piloto · Render Starter + R2 free).
@@ -165,11 +179,17 @@ def storage_uso_tenant(empresa: Empresa | None) -> Optional[dict[str, Any]]:
     used = storage_bytes_empresa(int(empresa.id))
     pct = _storage_uso_pct(used, int(quota_mb))
     addon_mb = addon_storage_mb(empresa)
+    plan = getattr(empresa, "plan_activo", None)
+    plan_key = getattr(plan, "plan", None) or PlanTipo.TRIAL.value
+    meta = plan_meta(plan_key)
     return {
+        "empresa_nombre": (getattr(empresa, "razon_social", None) or "").strip() or "Tu empresa",
+        "plan_key": plan_key,
+        "plan_label": meta.get("label") or meta.get("short_label") or plan_key,
         "used_bytes": used,
         "used_label": _format_storage(used),
         "quota_mb": int(quota_mb),
-        "quota_label": _format_storage(int(quota_mb) * 1024 * 1024),
+        "quota_label": _format_quota_mb(int(quota_mb)),
         "pct": pct,
         "warn": pct is not None and pct >= STORAGE_WARN_PCT,
         "addon_mb": addon_mb,

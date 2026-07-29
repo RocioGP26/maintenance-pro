@@ -271,10 +271,11 @@
         {% if empresa_actual and (perm.equipo or perm.config or perm.integraciones) %}
         {% set es_submenu_usuarios = ep and (ep.startswith('main.equipo') or ep == 'main.mi_perfil') %}
         {% set es_submenu_config_empresa = ep == 'main.configuracion_empresa' %}
+        {% set es_submenu_almacenamiento = ep == 'main.configuracion_almacenamiento' %}
         {% set es_submenu_campos = ep and ep.startswith('main.configuracion_campos') %}
         {% set es_submenu_seguridad = ep == 'main.seguridad_sesiones' %}
         {% set es_submenu_integraciones = ep and ep.startswith('integrations.') %}
-        {% set menu_admin_abierto = es_submenu_usuarios or es_submenu_config_empresa or es_submenu_campos or es_submenu_seguridad or es_submenu_integraciones %}
+        {% set menu_admin_abierto = es_submenu_usuarios or es_submenu_config_empresa or es_submenu_almacenamiento or es_submenu_campos or es_submenu_seguridad or es_submenu_integraciones %}
         <p class="sidebar-module-label px-3 small text-uppercase text-white-50 mb-1 mt-2">Administración</p>
         <div class="sidebar-nav-group">
           <button type="button" class="nav-link sidebar-nav-toggle w-100 text-start {% if menu_admin_abierto %}active-parent{% endif %}"
@@ -309,6 +310,10 @@
             <a class="nav-link nav-link-sub {% if es_submenu_config_empresa %}active{% endif %}"
                href="{{ url_for('main.configuracion_empresa') }}">
               <i class="bi bi-building-gear me-2"></i> Configuración empresa
+            </a>
+            <a class="nav-link nav-link-sub {% if es_submenu_almacenamiento %}active{% endif %}"
+               href="{{ url_for('main.configuracion_almacenamiento') }}">
+              <i class="bi bi-hdd me-2"></i> Almacenamiento
             </a>
             <a class="nav-link nav-link-sub {% if es_submenu_campos %}active{% endif %}"
                href="{{ url_for('main.configuracion_campos_list') }}">
@@ -418,16 +423,15 @@
             {% endfor %}
           {% endif %}
         {% endwith %}
-        {% if perm.config and storage_uso and storage_uso.warn %}
+        {% if perm.config and storage_uso and storage_uso.warn and ep != 'main.configuracion_almacenamiento' %}
         <div class="alert alert-warning d-flex flex-wrap align-items-center justify-content-between gap-2" role="status">
           <div class="small mb-0">
             <i class="bi bi-exclamation-triangle-fill me-1"></i>
             Estás próximo al límite de almacenamiento
             ({{ storage_uso.used_label }} / {{ storage_uso.quota_label }} · {{ storage_uso.pct }}%).
-            ¿Deseas ampliar tu capacidad? <strong>{{ storage_uso.addon_label }} por {{ storage_uso.addon_price_label }}</strong>.
           </div>
           <a class="btn btn-sm btn-dark text-nowrap"
-             href="mailto:contacto@roustix.com?subject={{ ('Solicitud add-on ' ~ storage_uso.addon_label ~ ' (' ~ storage_uso.addon_sku ~ ')')|urlencode }}">
+             href="{{ url_for('main.configuracion_almacenamiento') }}">
             Ampliar almacenamiento
           </a>
         </div>

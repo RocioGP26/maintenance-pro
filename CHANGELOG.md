@@ -12,6 +12,12 @@ La suite documental mantiene un ciclo independiente en
 
 - Espacio reservado para cambios aún no publicados.
 
+## [1.0.26] - 2026-07-29
+
+### Added
+
+- Página **Almacenamiento** (`/configuracion/almacenamiento`): empresa, plan, barra de uso y CTA «Ampliar almacenamiento» al ≥80 %.
+
 ## [1.0.25] - 2026-07-29
 
 ### Fixed
@@ -381,7 +387,8 @@ La suite documental mantiene un ciclo independiente en
 
 - Este release formaliza el versionado; no modifica funcionalidades de negocio.
 
-[Unreleased]: https://github.com/RocioGP26/maintenance-pro/compare/v1.0.25...HEAD
+[Unreleased]: https://github.com/RocioGP26/maintenance-pro/compare/v1.0.26...HEAD
+[1.0.26]: https://github.com/RocioGP26/maintenance-pro/compare/v1.0.25...v1.0.26
 [1.0.0]: https://github.com/RocioGP26/maintenance-pro/releases/tag/v1.0.0
 [1.0.1]: https://github.com/RocioGP26/maintenance-pro/compare/v1.0.0...v1.0.1
 [1.0.2]: https://github.com/RocioGP26/maintenance-pro/compare/v1.0.1...v1.0.2
