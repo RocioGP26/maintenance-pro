@@ -388,6 +388,54 @@ def empresa_detail(id: int):
     )
 
 
+@platform_bp.route("/empresas/<int:id>/storage-addon", methods=["POST"])
+@platform_login_required
+def empresa_storage_addon(id: int):
+    from app.storage_quota import (
+        ADDON_STG_2G_LABEL,
+        ADDON_STG_2G_MB,
+        ADDON_STG_2G_SKU,
+        has_addon_stg_2g,
+        set_addon_stg_2g,
+    )
+
+    empresa = Empresa.query.get_or_404(id)
+    accion = (request.form.get("accion") or "").strip().lower()
+    active = accion == "activar"
+    if accion not in {"activar", "desactivar"}:
+        flash("Acción de add-on no válida.", "danger")
+        return redirect(url_for("platform.empresa_detail", id=id))
+
+    antes = has_addon_stg_2g(empresa)
+    set_addon_stg_2g(empresa, active=active)
+    despues = has_addon_stg_2g(empresa)
+    if antes == despues:
+        flash(
+            f"El add-on {ADDON_STG_2G_LABEL} ya estaba "
+            f"{'activo' if despues else 'inactivo'} para {empresa.razon_social}.",
+            "info",
+        )
+        return redirect(url_for("platform.empresa_detail", id=id))
+
+    registrar_auditoria_plataforma(
+        "storage_addon_activate" if active else "storage_addon_deactivate",
+        empresa_id=empresa.id,
+        detalle=(
+            f"{ADDON_STG_2G_SKU} ({ADDON_STG_2G_LABEL} · {ADDON_STG_2G_MB} MB) "
+            f"{'activado' if active else 'desactivado'}."
+        ),
+        visible_cliente=True,
+    )
+    db.session.commit()
+    flash(
+        f"Add-on {ADDON_STG_2G_LABEL} "
+        f"{'activado' if active else 'desactivado'} para {empresa.razon_social}. "
+        f"Cuota adicional: {empresa.storage_addon_mb} MB.",
+        "success",
+    )
+    return redirect(url_for("platform.empresa_detail", id=id))
+
+
 @platform_bp.route("/empresas/<int:id>/facturas/nueva", methods=["POST"])
 @platform_login_required
 def empresa_nueva_factura(id: int):

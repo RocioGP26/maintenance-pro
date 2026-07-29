@@ -130,20 +130,27 @@ def _storage_uso_pct(used_bytes: int, quota_mb: Optional[int]) -> Optional[int]:
 
 
 def storage_uso_tenant(empresa: Empresa | None) -> Optional[dict[str, Any]]:
-    """Uso de archivos del tenant vs cupo del plan (portal cliente y plataforma).
+    """Uso de archivos del tenant vs cupo efectivo (plan + add-ons).
 
     Retorna None si no hay empresa o cuota. `warn` es True al ≥ STORAGE_WARN_PCT (80%).
     """
     if empresa is None or not getattr(empresa, "id", None):
         return None
-    plan = empresa.plan_activo
-    plan_key = plan.plan if plan else PlanTipo.TRIAL.value
-    meta = plan_meta(plan_key)
-    quota_mb = meta.get("storage_mb")
+    from app.storage_quota import (
+        ADDON_STG_2G_LABEL,
+        ADDON_STG_2G_PRICE_LABEL,
+        ADDON_STG_2G_SKU,
+        addon_storage_mb,
+        has_addon_stg_2g,
+        quota_mb_efectiva,
+    )
+
+    quota_mb = quota_mb_efectiva(empresa)
     if quota_mb is None or int(quota_mb) <= 0:
         return None
     used = storage_bytes_empresa(int(empresa.id))
     pct = _storage_uso_pct(used, int(quota_mb))
+    addon_mb = addon_storage_mb(empresa)
     return {
         "used_bytes": used,
         "used_label": _format_storage(used),
@@ -151,9 +158,11 @@ def storage_uso_tenant(empresa: Empresa | None) -> Optional[dict[str, Any]]:
         "quota_label": _format_storage(int(quota_mb) * 1024 * 1024),
         "pct": pct,
         "warn": pct is not None and pct >= STORAGE_WARN_PCT,
-        "addon_label": "+2 GB",
-        "addon_price_label": "$100.000 / mes",
-        "addon_sku": "ADD-STG-2G",
+        "addon_mb": addon_mb,
+        "addon_active": has_addon_stg_2g(empresa),
+        "addon_label": ADDON_STG_2G_LABEL,
+        "addon_price_label": ADDON_STG_2G_PRICE_LABEL,
+        "addon_sku": ADDON_STG_2G_SKU,
     }
 
 
@@ -312,7 +321,9 @@ def empresa_a_fila(
     meta = plan_meta(plan_key)
     activos = activos_map.get(empresa.id, 0)
     storage = storage_bytes_empresa(empresa.id)
-    quota_mb = meta.get("storage_mb")
+    from app.storage_quota import quota_mb_efectiva
+
+    quota_mb = quota_mb_efectiva(empresa)
     storage_pct = _storage_uso_pct(storage, quota_mb)
     adm = admin_empresa(empresa)
     from app.platform_billing import mrr_empresa

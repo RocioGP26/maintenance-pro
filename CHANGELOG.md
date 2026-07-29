@@ -12,6 +12,14 @@ La suite documental mantiene un ciclo independiente en
 
 - Espacio reservado para cambios aún no publicados.
 
+## [1.0.22] - 2026-07-29
+
+### Added
+
+- Hard-limit de almacenamiento por plan: `save_bytes` rechaza uploads que superen la cuota efectiva (plan + add-ons) con mensaje de upsell +2 GB.
+- Add-on **ADD-STG-2G** (+2 GB): activable/desactivable desde SuperAdmin (`empresas.storage_addon_mb`); suma a la cuota efectiva y queda auditado.
+- Migración `qs8t3u95v17x_storage_addon`.
+
 ## [1.0.21] - 2026-07-29
 
 ### Added
@@ -354,7 +362,7 @@ La suite documental mantiene un ciclo independiente en
 
 - Este release formaliza el versionado; no modifica funcionalidades de negocio.
 
-[Unreleased]: https://github.com/RocioGP26/maintenance-pro/compare/v1.0.21...HEAD
+[Unreleased]: https://github.com/RocioGP26/maintenance-pro/compare/v1.0.22...HEAD
 [1.0.0]: https://github.com/RocioGP26/maintenance-pro/releases/tag/v1.0.0
 [1.0.1]: https://github.com/RocioGP26/maintenance-pro/compare/v1.0.0...v1.0.1
 [1.0.2]: https://github.com/RocioGP26/maintenance-pro/compare/v1.0.1...v1.0.2
@@ -377,3 +385,4 @@ La suite documental mantiene un ciclo independiente en
 [1.0.19]: https://github.com/RocioGP26/maintenance-pro/compare/v1.0.18...v1.0.19
 [1.0.20]: https://github.com/RocioGP26/maintenance-pro/compare/v1.0.19...v1.0.20
 [1.0.21]: https://github.com/RocioGP26/maintenance-pro/compare/v1.0.20...v1.0.21
+[1.0.22]: https://github.com/RocioGP26/maintenance-pro/compare/v1.0.21...v1.0.22

@@ -4993,7 +4993,11 @@ def ordenes_informe_upload(id):
         flash("El informe técnico está vacío.", "danger")
         return redirect(url_for("main.ordenes_edit", id=wo.id) + "#informes-tecnicos")
     key = tenant_key(empresa_id, "ordenes", wo.id, "informes", nombre_guardado)
-    save_bytes(key, content, content_type=archivo.mimetype or "application/octet-stream")
+    try:
+        save_bytes(key, content, content_type=archivo.mimetype or "application/octet-stream")
+    except ValueError as exc:
+        flash(str(exc), "danger")
+        return redirect(url_for("main.ordenes_edit", id=wo.id) + "#informes-tecnicos")
     informe = WorkOrderInforme(
         empresa_id=empresa_id,
         work_order_id=wo.id,

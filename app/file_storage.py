@@ -103,16 +103,58 @@ def _bucket() -> str:
     return value
 
 
-def save_bytes(key: str, content: bytes, *, content_type: str = "application/octet-stream") -> str:
+def object_size(key: str) -> int | None:
+    """Tamaño en bytes del objeto, o None si no existe."""
     safe = _safe_key(key)
+    if _backend() == "local":
+        path = _local_path(safe)
+        if not path.is_file():
+            return None
+        return path.stat().st_size
+    if _backend() == "s3":
+        try:
+            head = _s3_client().head_object(Bucket=_bucket(), Key=safe)
+            return int(head.get("ContentLength") or 0)
+        except Exception as exc:
+            response = getattr(exc, "response", {})
+            code = str(response.get("Error", {}).get("Code", ""))
+            if code in {"404", "NoSuchKey", "NotFound"}:
+                return None
+            _alert_storage_failure("head", exc)
+            raise
+    raise RuntimeError(f"Backend de almacenamiento no soportado: {_backend()}")
+
+
+def save_bytes(
+    key: str,
+    content: bytes,
+    *,
+    content_type: str = "application/octet-stream",
+    enforce_quota: bool = True,
+) -> str:
+    safe = _safe_key(key)
+    payload = content if isinstance(content, (bytes, bytearray)) else bytes(content)
+    if enforce_quota:
+        from app.storage_quota import assert_storage_capacity, empresa_id_from_storage_key
+
+        empresa_id = empresa_id_from_storage_key(safe)
+        if empresa_id is not None:
+            replacing = 0
+            try:
+                existing = object_size(safe)
+                if existing is not None:
+                    replacing = int(existing)
+            except Exception:
+                replacing = 0
+            assert_storage_capacity(empresa_id, len(payload), replacing_bytes=replacing)
     if _backend() == "local":
         target = _local_path(safe)
         target.parent.mkdir(parents=True, exist_ok=True)
-        target.write_bytes(content)
+        target.write_bytes(payload)
     elif _backend() == "s3":
         try:
             _s3_client().put_object(
-                Bucket=_bucket(), Key=safe, Body=content, ContentType=content_type
+                Bucket=_bucket(), Key=safe, Body=payload, ContentType=content_type
             )
         except Exception as exc:
             _alert_storage_failure("write", exc)

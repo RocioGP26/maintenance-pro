@@ -1,0 +1,150 @@
+"""Tests · hard-limit de cuota de almacenamiento (S1)."""
+
+from __future__ import annotations
+
+import tempfile
+import unittest
+from types import SimpleNamespace
+from unittest.mock import patch
+
+from app import create_app, db
+from app.file_storage import save_bytes, tenant_key
+from app.models import Empresa, PlanSuscripcion, PlanTipo
+from app.storage_quota import (
+    StorageQuotaExceeded,
+    assert_storage_capacity,
+    empresa_id_from_storage_key,
+    quota_mb_efectiva,
+)
+
+
+class TestStorageQuotaHelpers(unittest.TestCase):
+    def test_empresa_id_from_key(self):
+        self.assertEqual(empresa_id_from_storage_key("empresas/42/logo.png"), 42)
+        self.assertIsNone(empresa_id_from_storage_key("otros/1/x"))
+
+    def test_assert_allows_when_fits(self):
+        empresa = SimpleNamespace(id=1, plan_activo=SimpleNamespace(plan="basico"), storage_addon_mb=0)
+        with (
+            patch("app.db.session.get", return_value=empresa),
+            patch("app.storage_quota.quota_mb_efectiva", return_value=1024),
+            patch("app.platform_service.storage_bytes_empresa", return_value=100),
+        ):
+            assert_storage_capacity(1, 1024)  # 1 KB extra — ok
+
+    def test_assert_rejects_when_over_quota(self):
+        empresa = SimpleNamespace(id=1, plan_activo=SimpleNamespace(plan="basico"), storage_addon_mb=0)
+        used = 1024 * 1024 * 1024  # 1 GB used of 1 GB plan
+        with (
+            patch("app.db.session.get", return_value=empresa),
+            patch("app.storage_quota.quota_mb_efectiva", return_value=1024),
+            patch("app.platform_service.storage_bytes_empresa", return_value=used),
+        ):
+            with self.assertRaises(StorageQuotaExceeded) as ctx:
+                assert_storage_capacity(1, 1)
+            self.assertIn("límite de almacenamiento", str(ctx.exception))
+            self.assertIn("contacto@roustix.com", str(ctx.exception))
+
+    def test_replacing_bytes_credits_overwrite(self):
+        empresa = SimpleNamespace(id=1, plan_activo=SimpleNamespace(plan="basico"), storage_addon_mb=0)
+        used = 1024 * 1024 * 1024
+        with (
+            patch("app.db.session.get", return_value=empresa),
+            patch("app.storage_quota.quota_mb_efectiva", return_value=1024),
+            patch("app.platform_service.storage_bytes_empresa", return_value=used),
+        ):
+            # Reemplazo 10 bytes por 10 bytes → net 0
+            assert_storage_capacity(1, 10, replacing_bytes=10)
+
+    def test_quota_incluye_addon_atributo(self):
+        empresa = SimpleNamespace(
+            id=9,
+            plan_activo=SimpleNamespace(plan="basico"),
+            storage_addon_mb=2048,
+        )
+        with patch(
+            "app.platform_service.plan_meta",
+            return_value={"storage_mb": 1024},
+        ):
+            self.assertEqual(quota_mb_efectiva(empresa), 1024 + 2048)
+
+
+class TestSaveBytesEnforcesQuota(unittest.TestCase):
+    def setUp(self):
+        from datetime import date
+
+        self.temp = tempfile.TemporaryDirectory()
+        self.app = create_app("testing")
+        self.app.config.update(STORAGE_BACKEND="local", STORAGE_LOCAL_ROOT=self.temp.name)
+        self.ctx = self.app.app_context()
+        self.ctx.push()
+        db.create_all()
+        self.empresa = Empresa(
+            razon_social="Cuota SA",
+            slug="cuota-sa",
+            nit="900",
+            sector="industrial",
+        )
+        db.session.add(self.empresa)
+        db.session.flush()
+        db.session.add(
+            PlanSuscripcion(
+                empresa_id=self.empresa.id,
+                plan=PlanTipo.BASICO.value,
+                fecha_inicio=date.today(),
+                activo=True,
+                estado_ciclo="activa",
+            )
+        )
+        db.session.commit()
+
+    def tearDown(self):
+        db.session.remove()
+        db.drop_all()
+        self.ctx.pop()
+        self.temp.cleanup()
+
+    def test_save_rejects_when_plan_full(self):
+        key = tenant_key(self.empresa.id, "activos", "1.png")
+        with (
+            patch("app.storage_quota.quota_mb_efectiva", return_value=1024),
+            patch(
+                "app.platform_service.storage_bytes_empresa",
+                return_value=1024 * 1024 * 1024,
+            ),
+        ):
+            with self.assertRaises(StorageQuotaExceeded):
+                save_bytes(key, b"x" * 100, content_type="image/png")
+
+    def test_save_allows_without_empresa_row(self):
+        # Tests legacy / ids huérfanos: sin fila Empresa no bloquea
+        key = tenant_key(99999, "activos", "1.png")
+        save_bytes(key, b"ok", content_type="image/png")
+
+    def test_addon_raises_effective_quota(self):
+        from app.storage_quota import ADDON_STG_2G_MB, set_addon_stg_2g
+
+        key = tenant_key(self.empresa.id, "activos", "addon.png")
+        set_addon_stg_2g(self.empresa, active=True)
+        db.session.commit()
+        # Uso = cupo del plan (1024 MB); con add-on debe caber
+        with (
+            patch("app.storage_quota.quota_mb_efectiva", return_value=1024 + ADDON_STG_2G_MB),
+            patch(
+                "app.platform_service.storage_bytes_empresa",
+                return_value=1024 * 1024 * 1024,
+            ),
+        ):
+            save_bytes(key, b"cabe-con-addon", content_type="image/png")
+
+    def test_migration_bypass(self):
+        key = tenant_key(self.empresa.id, "activos", "mig.png")
+        with patch(
+            "app.platform_service.storage_bytes_empresa",
+            return_value=1024 * 1024 * 1024,
+        ):
+            save_bytes(key, b"migrado", content_type="image/png", enforce_quota=False)
+
+
+if __name__ == "__main__":
+    unittest.main()

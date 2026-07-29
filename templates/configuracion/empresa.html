@@ -170,7 +170,12 @@
                  style="width: {{ storage_uso.pct }}%;"></div>
           </div>
           {% endif %}
-          {% if storage_uso.warn %}
+          {% if storage_uso.addon_active %}
+          <p class="small text-success mb-2">
+            Add-on activo: <strong>{{ storage_uso.addon_label }}</strong>
+            incluidos en tu cupo ({{ storage_uso.addon_mb }} MB).
+          </p>
+          {% elif storage_uso.warn %}
           <p class="small text-warning mb-2">
             Estás próximo al límite de almacenamiento. ¿Deseas ampliar tu capacidad?
             <strong>{{ storage_uso.addon_label }} por {{ storage_uso.addon_price_label }}</strong>.

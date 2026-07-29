@@ -21,6 +21,8 @@ PLATFORM_AUDIT_LABELS = {
     "platform_mfa_expired": "MFA de plataforma expirado",
     "platform_session_expired": "Sesión de plataforma expirada",
     "platform_logout": "Cierre de sesión de plataforma",
+    "storage_addon_activate": "Add-on almacenamiento activado",
+    "storage_addon_deactivate": "Add-on almacenamiento desactivado",
 }
 
 DEFAULT_ACTOR = "Soporte Roustix (Plataforma)"

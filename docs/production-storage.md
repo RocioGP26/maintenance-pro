@@ -25,6 +25,17 @@ STORAGE_SECRET_ACCESS_KEY=<secreto>
 El bucket debe ser privado. Las descargas pasan por Roustix y validan que el
 usuario pertenezca a la empresa propietaria de la clave `empresas/<id>/...`.
 
+## Cuota por plan (hard-limit)
+
+Cada upload bajo `empresas/{id}/...` pasa por `save_bytes`, que consulta el cupo
+efectivo del tenant (plan + add-ons) y **rechaza** el archivo si no cabe.
+
+- Alerta preventiva: ≥ 80% del cupo (portal admin + panel plataforma).
+- Mensaje de rechazo: ofrece add-on +2 GB (`ADD-STG-2G`) vía `contacto@roustix.com`.
+- Activación comercial (P0): SuperAdmin en `/platform/empresas/<id>` → **Activar +2 GB**
+  (columna `empresas.storage_addon_mb`; suma 2048 MB a la cuota).
+- Migración legacy: `migrate-storage --apply` usa `enforce_quota=False`.
+
 ## Migración de archivos existentes
 
 Primero ejecutar el inventario sin modificar datos:

@@ -180,6 +180,8 @@ class Empresa(db.Model):
     session_warning_minutes = db.Column(db.Integer, default=2, nullable=False)
     session_revoke_on_password = db.Column(db.Boolean, default=True, nullable=False)
     session_allow_multiple = db.Column(db.Boolean, default=True, nullable=False)
+    # Add-ons de almacenamiento activos (MB sumados a la cuota del plan). COM-02 ADD-STG-*.
+    storage_addon_mb = db.Column(db.Integer, default=0, nullable=False)
 
     sedes = db.relationship("Sede", back_populates="empresa", lazy="dynamic")
     usuarios = db.relationship("User", back_populates="empresa", lazy="dynamic")
@@ -2831,6 +2833,11 @@ def ensure_saas_schema():
         _add_column_if_missing("empresas", "email", "email VARCHAR(120)")
         _add_column_if_missing("empresas", "slug", "slug VARCHAR(48)")
         _add_column_if_missing("empresas", "suspendida", "suspendida BOOLEAN DEFAULT 0")
+        _add_column_if_missing(
+            "empresas",
+            "storage_addon_mb",
+            "storage_addon_mb INTEGER DEFAULT 0",
+        )
         _add_column_if_missing(
             "empresas",
             "modulos_activos_json",

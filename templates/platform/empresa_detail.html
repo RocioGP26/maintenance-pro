@@ -104,11 +104,33 @@
     </div>
     {% endif %}
     {% if fila.storage_warn %}
-    <p class="small text-warning mb-0">
+    <p class="small text-warning mb-2">
       ⚠ Próximo al límite de almacenamiento.
       Oferta sugerida: +2 GB · $100.000 / mes (COM-02).
     </p>
     {% endif %}
+    {% if e.storage_addon_mb %}
+    <p class="small text-secondary mb-2">
+      Add-on activo: <strong>+{{ e.storage_addon_mb }} MB</strong>
+      ({{ 'ADD-STG-2G' if e.storage_addon_mb >= 2048 else 'custom' }}).
+    </p>
+    {% endif %}
+    <form method="post" action="{{ url_for('platform.empresa_storage_addon', id=e.id) }}" class="mt-2">
+      {% include "_csrf.html" %}
+      {% if e.storage_addon_mb and e.storage_addon_mb >= 2048 %}
+      <input type="hidden" name="accion" value="desactivar">
+      <button type="submit" class="platform-btn platform-btn-outline"
+              onclick="return confirm('¿Quitar el add-on +2 GB de esta empresa?');">
+        Quitar +2 GB
+      </button>
+      {% else %}
+      <input type="hidden" name="accion" value="activar">
+      <button type="submit" class="platform-btn platform-btn-outline"
+              onclick="return confirm('¿Activar add-on +2 GB · $100.000/mes (ADD-STG-2G)?');">
+        Activar +2 GB
+      </button>
+      {% endif %}
+    </form>
 
   </div>
 

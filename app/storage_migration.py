@@ -18,7 +18,7 @@ def _upload(path: Path, key: str, *, apply: bool) -> bool:
         return False
     if apply and not exists(key):
         mime = mimetypes.guess_type(path.name)[0] or "application/octet-stream"
-        save_bytes(key, path.read_bytes(), content_type=mime)
+        save_bytes(key, path.read_bytes(), content_type=mime, enforce_quota=False)
     return True
 
 

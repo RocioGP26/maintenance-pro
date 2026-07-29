@@ -15,15 +15,35 @@ def test_storage_uso_pct_warn_threshold():
     assert STORAGE_WARN_PCT == 80
 
 
-def test_storage_uso_tenant_none_without_empresa():
-    assert storage_uso_tenant(None) is None
+def test_set_addon_stg_2g_updates_quota():
+    from app.storage_quota import (
+        ADDON_STG_2G_MB,
+        has_addon_stg_2g,
+        quota_mb_efectiva,
+        set_addon_stg_2g,
+    )
+
+    empresa = SimpleNamespace(
+        id=3,
+        plan_activo=SimpleNamespace(plan="basico"),
+        storage_addon_mb=0,
+    )
+    with patch("app.platform_service.plan_meta", return_value={"storage_mb": 1024}):
+        assert quota_mb_efectiva(empresa) == 1024
+        set_addon_stg_2g(empresa, active=True)
+        assert has_addon_stg_2g(empresa)
+        assert empresa.storage_addon_mb == ADDON_STG_2G_MB
+        assert quota_mb_efectiva(empresa) == 1024 + ADDON_STG_2G_MB
+        set_addon_stg_2g(empresa, active=False)
+        assert not has_addon_stg_2g(empresa)
+        assert quota_mb_efectiva(empresa) == 1024
 
 
 def test_storage_uso_tenant_warn_and_addon_copy():
-    empresa = SimpleNamespace(id=42, plan_activo=SimpleNamespace(plan="basico"))
+    empresa = SimpleNamespace(id=42, plan_activo=SimpleNamespace(plan="basico"), storage_addon_mb=0)
     used = int(1024 * 1024 * 1024 * 0.85)  # 85% de 1 GB
     with (
-        patch("app.platform_service.plan_meta", return_value={"storage_mb": 1024}),
+        patch("app.storage_quota.quota_mb_efectiva", return_value=1024),
         patch("app.platform_service.storage_bytes_empresa", return_value=used),
     ):
         uso = storage_uso_tenant(empresa)
@@ -36,10 +56,10 @@ def test_storage_uso_tenant_warn_and_addon_copy():
 
 
 def test_storage_uso_tenant_no_warn_below_threshold():
-    empresa = SimpleNamespace(id=7, plan_activo=SimpleNamespace(plan="grow"))
+    empresa = SimpleNamespace(id=7, plan_activo=SimpleNamespace(plan="grow"), storage_addon_mb=0)
     used = int(5 * 1024 * 1024 * 1024 * 0.5)  # 50% de 5 GB
     with (
-        patch("app.platform_service.plan_meta", return_value={"storage_mb": 5 * 1024}),
+        patch("app.storage_quota.quota_mb_efectiva", return_value=5 * 1024),
         patch("app.platform_service.storage_bytes_empresa", return_value=used),
     ):
         uso = storage_uso_tenant(empresa)
