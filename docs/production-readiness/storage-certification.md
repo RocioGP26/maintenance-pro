@@ -14,10 +14,9 @@ medición, cuotas, reemplazo, eliminación y migración legacy.
 | Cuotas por plan y add-on | ✅ Aprobado | Hard-limit, crédito de reemplazo y +2 GB cubiertos por pruebas |
 | Ciclo de reemplazo/eliminación | ✅ Aprobado | El objeto anterior vive hasta el commit; limpieza posterior tolerante a fallos |
 | Migración legacy local | ✅ Lista | 11 referencias recuperables; `missing = 0`; 2 referencias ya migradas |
-| Cutover sobre R2 de producción | ⏳ Pendiente de ejecución remota | El workspace local no contiene bucket ni credenciales R2 |
+| Cutover sobre R2 de producción | ✅ Aprobado | Migración ejecutada; inventario final `legacy_total = 0` y smoke funcional aprobado |
 
-**Estado global:** aprobado a nivel de código; certificación de producción
-condicionada a ejecutar y firmar el cutover remoto descrito abajo.
+**Estado global:** almacenamiento R2 certificado en producción para el piloto.
 
 > **Bucket de recuperación de backups:** operativo en producción. Los respaldos
 > diarios se conservan en el bucket de recuperación mediante GitHub Actions y
@@ -74,9 +73,9 @@ es `local`; hacerlo aquí no certificaría Cloudflare R2.
 - Las fallas S3/R2 emiten alerta operativa y se propagan en escritura/lectura.
 - Las limpiezas posteriores al commit son best-effort y alertables.
 
-## Gate remoto obligatorio
+## Gate remoto · Ejecutado
 
-Ejecutar desde una consola conectada a la configuración real de Render/R2:
+Se ejecutó desde una consola conectada a la configuración real de Render/R2:
 
 ```powershell
 flask --app run:app migrate-storage --inventory-only
@@ -102,15 +101,18 @@ Criterios de aprobación:
 
 | Campo | Valor |
 |-------|-------|
-| Fecha UTC | Pendiente |
-| Responsable | Pendiente |
-| Commit desplegado | Pendiente |
-| Inventario inicial | Pendiente |
-| Resultado `--apply` | Pendiente |
-| Inventario final | Pendiente |
-| Smoke de seis tipos de archivo | Pendiente |
-| Aislamiento cruzado | Pendiente |
-| Veredicto final | Pendiente |
+| Fecha Colombia | 2026-07-29; hora no registrada |
+| Responsable | Gladis Rocio Gelves Pabon |
+| Commit desplegado | `5f1780c` · Roustix v1.0.29 |
+| Inventario inicial | Salida de producción no conservada |
+| Resultado `--apply` | Salida detallada no conservada; ejecución finalizó correctamente |
+| Inventario final | ✅ `legacy_total = 0` confirmado |
+| Smoke de seis tipos de archivo | ✅ Logo, foto de activo, imagen de producto, informe OT, evidencia y adjunto de bitácora |
+| Aislamiento cruzado | ✅ Usuario de otra empresa recibió HTTP 403 |
+| Medición por tenant | ✅ Sin doble conteo después de la migración |
+| Capturas y salida de consola | No conservadas; validación registrada por la responsable |
+| Veredicto final | ✅ Gate R2 aprobado en producción |
 
-No eliminar `static/uploads` hasta completar este registro y conservar un
-backup verificable de PostgreSQL + R2 de la misma ventana.
+El registro queda completo. Cualquier eliminación física posterior de
+`static/uploads` debe tratarse como un cambio independiente y ejecutarse solo
+después de confirmar un backup verificable de PostgreSQL + R2.
