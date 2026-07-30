@@ -21,7 +21,7 @@ operaciones.
 
 ### GitHub Actions
 
-El workflow `uptime-monitor.yml` requiere los mismos secretos SMTP y
+El workflow `uptime-monitor.yaml` requiere los mismos secretos SMTP y
 `OPS_ALERT_EMAIL`. Ejecuta cada cinco minutos:
 
 - `GET /health/live`
@@ -49,15 +49,23 @@ dependencia. No deben simularse fallos de PostgreSQL, Redis o R2 en producción.
 
 | Campo | Resultado |
 | --- | --- |
-| Fecha Colombia | Pendiente |
-| Responsable | Pendiente |
-| Commit / versión | Pendiente |
-| Panel Observabilidad | Pendiente |
-| Workflow externo | Pendiente |
-| Evento Sentry | Pendiente |
-| Correo operativo | Pendiente |
-| Auditoría | Pendiente |
-| Veredicto | Pendiente |
+| Fecha Colombia | 2026-07-29 |
+| Responsable | Gladis Rocio Gelves Pabon |
+| Commit / versión | `366fe4e` · `1.0.32` |
+| Panel Observabilidad | ✅ Operativa; Sentry, métricas y correo configurados |
+| Workflow externo | ✅ Ejecución manual `30515172554` aprobada en 14 s (`health` en verde) |
+| Evento Sentry | ✅ `platforma.infraestructura_probar_alerta` recibido en el proyecto Roustix (`ROUSTIX-FRASCO-1`) |
+| Correo operativo | ✅ Alerta `operations / controlled_test` recibida a las 2026-07-30 04:26 UTC (2026-07-29 23:26 Colombia) |
+| Auditoría | ✅ Registro `ops_alert_test` ID 60 confirmado en PostgreSQL de producción (`2026-07-30 04:26:54 UTC`) |
+| Veredicto | ✅ Gate aprobado: monitor externo, Sentry, correo y auditoría operativos |
+
+### Observación de entregabilidad
+
+Outlook recibió correctamente la alerta, pero la clasificó como **Correo no
+deseado**. La ruta SMTP queda funcional; antes del piloto se debe revisar SPF,
+DKIM, DMARC y la alineación del remitente para mejorar la entrega en bandeja de
+entrada. El nombre de remitente fue corregido en producción a
+`Roustix <gladis.rocio.gelves.pabon@gmail.com>`.
 
 ## Respuesta
 
