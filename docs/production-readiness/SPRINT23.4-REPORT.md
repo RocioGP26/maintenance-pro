@@ -1,7 +1,7 @@
 # Sprint 23.4 · Reporte en curso
 
-Fecha de corte: 2026-07-28  
-Estado: implementación local verificada; configuración y validación remota pendientes.
+Fecha de corte: 2026-07-29
+Estado: observabilidad base y workers desplegados; gate remoto de Sentry y monitor externo pendiente.
 
 ## Cierre previo registrado
 
@@ -60,6 +60,29 @@ Estado: implementación local verificada; configuración y validación remota pe
 - Readiness comprueba Redis y reporta heartbeat ausente como degradación.
 - El runbook operativo quedó versionado en `SPRINT23.4-WORKERS-RUNBOOK.md`.
 - Pruebas focalizadas del avance: 43 aprobadas.
+
+## Avance 3 · Monitor externo y gate operativo
+
+- El panel de infraestructura incorpora una tarjeta segura de observabilidad:
+  informa si Sentry, el token de métricas y el destino de alertas están activos
+  sin exponer sus valores.
+- El SuperAdmin dispone de una prueba controlada y auditada para Sentry y correo
+  operativo; no altera datos de tenants ni degrada dependencias.
+- GitHub Actions ejecuta un monitor externo cada cinco minutos contra liveness y
+  readiness.
+- El monitor considera `degraded` como fallo operativo, conserva el fallo del
+  workflow como canal independiente e intenta notificar por SMTP.
+- Se versionó el runbook `SPRINT23.4-OBSERVABILITY-RUNBOOK.md` con configuración,
+  gate remoto y respuesta operativa.
+
+### Pendiente del gate remoto
+
+- Confirmar la tarjeta **Observabilidad · Operativa** en producción.
+- Ejecutar manualmente el workflow externo y registrar el run.
+- Enviar, con confirmación de la responsable, una alerta controlada y comprobar
+  Sentry, correo y auditoría.
+- Implementar la outbox cifrada de correos/notificaciones y ejecutar la prueba
+  de carga antes de cerrar completamente Sprint 23.4.
 
 Los correos y notificaciones todavía no se trasladaron al worker: requieren una
 outbox cifrada para no persistir códigos de verificación ni tokens crudos.

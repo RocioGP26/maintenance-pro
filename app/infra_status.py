@@ -153,6 +153,50 @@ def smtp_status(*, probe: bool = True) -> dict[str, Any]:
         )
 
 
+def observability_status() -> dict[str, Any]:
+    """Estado seguro de Sentry, métricas y destino de alertas.
+
+    Solo expone presencia y validez mínima de la configuración; nunca devuelve
+    DSN, tokens ni direcciones de correo.
+    """
+    sentry_dsn = bool((current_app.config.get("SENTRY_DSN") or "").strip())
+    sentry_enabled = bool(current_app.extensions.get("sentry_enabled"))
+    metrics_token = (current_app.config.get("METRICS_TOKEN") or "").strip()
+    metrics_configured = len(metrics_token) >= 32
+    alerts_configured = bool((current_app.config.get("OPS_ALERT_EMAIL") or "").strip())
+
+    checks = {
+        "sentry": sentry_enabled,
+        "metrics": metrics_configured,
+        "alerts": alerts_configured,
+    }
+    if all(checks.values()):
+        return _status_card(
+            key="observability",
+            label="Observabilidad",
+            status="ok",
+            status_label="Operativa",
+            detail="Sentry activo · métricas protegidas · destino de alertas configurado.",
+            **checks,
+        )
+
+    missing = []
+    if not sentry_enabled:
+        missing.append("Sentry" if not sentry_dsn else "inicio de Sentry")
+    if not metrics_configured:
+        missing.append("token de métricas")
+    if not alerts_configured:
+        missing.append("correo de alertas")
+    return _status_card(
+        key="observability",
+        label="Observabilidad",
+        status="error" if sentry_dsn and not sentry_enabled else "warn",
+        status_label="Incompleta",
+        detail="Falta validar: " + ", ".join(missing) + ".",
+        **checks,
+    )
+
+
 def _backup_dir() -> Path:
     return Path(os.environ.get("BACKUP_DIR", "backups"))
 
@@ -410,6 +454,7 @@ def health_status() -> dict[str, Any]:
 
 def service_statuses(*, probe_smtp: bool = True) -> list[dict[str, Any]]:
     return [
+        observability_status(),
         smtp_status(probe=probe_smtp),
         backups_status(),
         workers_status(),

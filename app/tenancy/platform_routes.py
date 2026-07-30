@@ -368,6 +368,34 @@ def infraestructura():
     )
 
 
+@platform_bp.post("/infraestructura/probar-alerta")
+@platform_login_required
+@limiter.limit("2 per hour")
+def infraestructura_probar_alerta():
+    from app.observability import emit_operational_alert
+
+    emitted = emit_operational_alert(
+        "operations",
+        "controlled_test",
+        "Controlled operational alert requested from the Roustix platform panel",
+        severity="warning",
+        dedupe_key=f"platform_ops_test:{int(time.time())}",
+    )
+    registrar_auditoria_plataforma(
+        "ops_alert_test",
+        detalle="Prueba controlada de Sentry y correo operativo.",
+        visible_cliente=False,
+    )
+    db.session.commit()
+    flash(
+        "Alerta de prueba enviada a los canales configurados."
+        if emitted
+        else "La alerta fue omitida por la ventana de deduplicación.",
+        "success" if emitted else "warning",
+    )
+    return redirect(url_for("platform.infraestructura", probe_smtp="0"))
+
+
 @platform_bp.route("/empresas/<int:id>")
 @platform_login_required
 def empresa_detail(id: int):

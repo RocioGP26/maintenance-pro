@@ -60,10 +60,10 @@ pago, siempre activa, con capacidad y escalamiento definidos. El archivo
 
 ## Definition of Done
 
-- [ ] Toda respuesta incluye un ID de correlación y los errores lo conservan.
+- [x] Toda respuesta incluye un ID de correlación y los errores lo conservan.
 - [ ] Excepciones no controladas llegan al capturador central sin datos sensibles.
 - [ ] Existen métricas y alertas probadas para disponibilidad, DB y dependencias.
-- [ ] Los límites críticos usan almacenamiento distribuido.
+- [x] Los límites críticos usan almacenamiento distribuido.
 - [ ] Webhooks y correos salen de workers con reintentos e idempotencia.
 - [ ] Los runbooks y la prueba de carga están versionados.
-- [ ] La instancia de Render de pago fue verificada y quedó registrada.
+- [x] La instancia de Render de pago fue verificada y quedó registrada.
