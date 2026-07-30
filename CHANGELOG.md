@@ -12,6 +12,15 @@ La suite documental mantiene un ciclo independiente en
 
 - Espacio reservado para cambios aún no publicados.
 
+## [1.0.31] - 2026-07-29
+
+### Changed
+
+- El filtro de planes del panel de plataforma oculta el plan Scale legacy y
+  presenta únicamente la oferta vigente Start, Business y Enterprise.
+- Certificación visual de capacidad cerrada con evidencia de activación y
+  retiro del add-on +2 GB en producción.
+
 ## [1.0.30] - 2026-07-29
 
 ### Added

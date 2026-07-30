@@ -20,8 +20,8 @@ cargas; add-on `ADD-STG-2G`; retiro de capacidad y nomenclatura comercial.
 | Nomenclatura comercial | ✅ Aprobado | Start · Business · Enterprise; `grow` solo técnico |
 | Operación comercial | ✅ Definida | Cobro anticipado mensual y retiro al cierre del periodo pagado |
 
-**Estado global:** controles de código y política operativa aprobados para el
-piloto. Falta el smoke visual posterior al despliegue de esta versión.
+**Estado global:** certificación aprobada para el piloto. Los controles de
+código, política operativa y gate visual en producción quedaron verificados.
 
 ## Evidencia automatizada
 
@@ -74,14 +74,28 @@ de archivos después de retirar capacidad.
 
 | Campo | Valor |
 |-------|-------|
-| Fecha Colombia | Pendiente de despliegue |
-| Responsable | Pendiente |
-| Commit desplegado | Pendiente |
-| Start 1 GB | Pendiente |
-| Business 5 GB | Pendiente |
-| Enterprise 20 GB | Pendiente |
-| Alerta 80 % | Pendiente |
-| Bloqueo 100 % | Pendiente |
-| Add-on +2 GB | Pendiente |
-| Auditoría de retiro | Pendiente |
-| Veredicto final | Pendiente |
+| Fecha Colombia | 2026-07-29 |
+| Responsable | Gladis Rocio Gelves Pabon |
+| Commit desplegado | `92649b4` · Roustix `1.0.30` |
+| Start 1 GB | ✅ Producción: 31.1 KB / 1 GB en Inversiones Reinoso y Cía SAS |
+| Business 5 GB | ✅ Catálogo oficial visible y prueba automatizada |
+| Enterprise 20 GB | ✅ Catálogo oficial visible y prueba automatizada |
+| Alerta 80 % | ✅ Texto preventivo visible; umbral exacto cubierto por pruebas |
+| Bloqueo 100 % | ✅ Texto de bloqueo y conservación visible; hard limit cubierto por pruebas |
+| Add-on +2 GB | ✅ Activación temporal: cuota 1 GB → 3 GB y confirmación de 2048 MB |
+| Auditoría de retiro | ✅ Desactivación confirmada; cuota restaurada a 1 GB sin eliminar archivos |
+| Nomenclatura | ✅ Start · Business · Enterprise; legacy oculto del filtro de plataforma |
+| Veredicto final | ✅ Aprobado para piloto |
+
+### Evidencia remota
+
+- `/health/ready`: `status=ok`, versión `1.0.30`, PostgreSQL, migraciones,
+  Redis y heartbeat del worker en verde.
+- Tenant piloto: **Inversiones Reinoso y Cía SAS**, plan Start, uso inicial y
+  final `31.1 KB / 1 GB`.
+- Activación temporal: mensaje “Add-on +2 GB activado”, cuota efectiva
+  `31.1 KB / 3 GB` y capacidad adicional `2048 MB`.
+- Retiro temporal: mensaje “Add-on +2 GB desactivado”, capacidad adicional
+  `0 MB` y cuota efectiva restaurada a `31.1 KB / 1 GB`.
+- El gate detectó y corrigió la exposición del plan legacy Scale en el filtro
+  interno; la oferta visible queda limitada a Start, Business y Enterprise.
