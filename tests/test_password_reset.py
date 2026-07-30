@@ -7,8 +7,8 @@ import unittest
 from datetime import datetime, timedelta
 from urllib.parse import urlparse
 
-from app import create_app, db
-from app.models import Empresa, PasswordReset, User
+from app import create_app, db, limiter
+from app.models import ActiveSession, Empresa, PasswordReset, User
 from app.password_reset_service import (
     GENERIC_REQUEST_MESSAGE,
     consume_password_reset,
@@ -20,6 +20,7 @@ from app.password_reset_service import (
 class TestPasswordReset(unittest.TestCase):
     def setUp(self):
         self.app = create_app("testing")
+        limiter.reset()
         self.ctx = self.app.app_context()
         self.ctx.push()
         db.create_all()
@@ -45,6 +46,7 @@ class TestPasswordReset(unittest.TestCase):
         self.client = self.app.test_client()
 
     def tearDown(self):
+        limiter.reset()
         db.session.remove()
         db.drop_all()
         self.ctx.pop()
@@ -128,6 +130,104 @@ class TestPasswordReset(unittest.TestCase):
         self.assertIsNone(get_valid_reset(raw))
         err = consume_password_reset(raw, "Clave-Nueva-456!")
         self.assertIn("no es válido", err.lower())
+
+    def test_new_request_invalidates_previous_token(self):
+        request_password_reset("ops@example.com")
+        first_raw = self._raw_token_from_outbox()
+
+        request_password_reset("ops@example.com")
+        second_raw = self._raw_token_from_outbox()
+
+        self.assertIsNone(get_valid_reset(first_raw))
+        self.assertIsNotNone(get_valid_reset(second_raw))
+        first, second = PasswordReset.query.order_by(PasswordReset.id).all()
+        self.assertIsNotNone(first.used_at)
+        self.assertIsNone(second.used_at)
+
+    def test_consumed_token_cannot_be_reused(self):
+        request_password_reset("ops@example.com")
+        raw = self._raw_token_from_outbox()
+
+        self.assertIsNone(consume_password_reset(raw, "Clave-Nueva-456!"))
+        second_attempt = consume_password_reset(raw, "Otra-Clave-789!")
+
+        self.assertIsNotNone(second_attempt)
+        self.assertIn("enlace", second_attempt.lower())
+        db.session.refresh(self.user)
+        self.assertTrue(self.user.check_password("Clave-Nueva-456!"))
+
+    def test_reset_revokes_existing_managed_session(self):
+        active_client = self.app.test_client()
+        login = active_client.post(
+            "/login",
+            data={
+                "username": "operador",
+                "empresa_slug": "empresa-demo",
+                "password": "Clave-Antigua-123!",
+            },
+        )
+        self.assertIn(login.status_code, (302, 303))
+        managed_session = ActiveSession.query.one()
+        self.assertIsNone(managed_session.revoked_at)
+
+        # setUp conserva el app context para la BD. Limpia el usuario cacheado
+        # antes de simular un segundo navegador anonimo.
+        from flask import g
+
+        g.pop("_login_user", None)
+        reset_client = self.app.test_client()
+        reset_client.post(
+            "/recuperar-contrasena",
+            data={"email": "ops@example.com", "empresa_slug": "empresa-demo"},
+        )
+        raw = self._raw_token_from_outbox()
+        done = reset_client.post(
+            f"/restablecer-contrasena/{raw}",
+            data={
+                "password": "Clave-Nueva-456!",
+                "password_confirm": "Clave-Nueva-456!",
+            },
+        )
+        self.assertIn(done.status_code, (302, 303))
+
+        db.session.refresh(managed_session)
+        self.assertIsNotNone(managed_session.revoked_at)
+        self.assertEqual(managed_session.revoked_reason, "password_reset")
+        g.pop("_login_user", None)
+        blocked = active_client.get("/dashboard")
+        self.assertIn(blocked.status_code, (302, 303))
+        self.assertIn("/login", blocked.location)
+
+    def test_request_endpoint_hides_account_existence(self):
+        known = self.client.post(
+            "/recuperar-contrasena",
+            data={"email": "ops@example.com", "empresa_slug": "empresa-demo"},
+            follow_redirects=True,
+        )
+        unknown = self.client.post(
+            "/recuperar-contrasena",
+            data={"email": "nadie@example.com", "empresa_slug": "empresa-demo"},
+            follow_redirects=True,
+        )
+
+        self.assertEqual(known.status_code, 200)
+        self.assertEqual(unknown.status_code, 200)
+        self.assertIn(GENERIC_REQUEST_MESSAGE, known.get_data(as_text=True))
+        self.assertIn(GENERIC_REQUEST_MESSAGE, unknown.get_data(as_text=True))
+
+    def test_request_endpoint_rate_limits_sixth_attempt(self):
+        responses = [
+            self.client.post(
+                "/recuperar-contrasena",
+                data={"email": "nadie@example.com", "empresa_slug": "empresa-demo"},
+            )
+            for _ in range(6)
+        ]
+
+        self.assertTrue(
+            all(response.status_code in (302, 303) for response in responses[:5])
+        )
+        self.assertEqual(responses[5].status_code, 429)
 
     def test_faq_mentions_forgot_password(self):
         response = self.client.get("/faq")

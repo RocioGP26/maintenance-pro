@@ -23,6 +23,7 @@ clientes reales, sin incorporar funcionalidades nuevas de negocio.
 - `backup-restore-runbook.md`: **recuperación de backups** (RTO/RPO, procedimiento, integridad).
 - `backup-recovery-drill.md`: plantilla de simulacro trimestral.
 - `storage-certification.md`: evidencia y gate de certificación R2 del piloto.
+- `account-recovery-certification.md`: controles y gate SMTP de recuperación de cuenta.
 
 ## Regla de salida
 
