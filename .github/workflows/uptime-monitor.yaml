@@ -1,0 +1,37 @@
+name: Roustix uptime monitor
+
+on:
+  push:
+    branches: [main]
+    paths: [.github/workflows/uptime-monitor.yaml]
+  schedule:
+    - cron: "*/5 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: roustix-uptime-monitor
+  cancel-in-progress: true
+
+jobs:
+  health:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    env:
+      ROUSTIX_BASE_URL: https://roustix.com
+      OPS_ALERT_EMAIL: ${{ secrets.OPS_ALERT_EMAIL }}
+      MAIL_SERVER: ${{ secrets.MAIL_SERVER }}
+      MAIL_PORT: ${{ secrets.MAIL_PORT }}
+      MAIL_USERNAME: ${{ secrets.MAIL_USERNAME }}
+      MAIL_PASSWORD: ${{ secrets.MAIL_PASSWORD }}
+      MAIL_DEFAULT_SENDER: ${{ secrets.MAIL_DEFAULT_SENDER }}
+      MAIL_USE_TLS: "true"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: Comprobar liveness y readiness
+        run: python scripts/monitor_health.py
