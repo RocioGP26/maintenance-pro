@@ -29,7 +29,21 @@
         </p>
         {% endif %}
 
-        {% if storage_uso.addon_active %}
+        {% if storage_uso.uploads_blocked %}
+        <div class="alert alert-danger mt-4 mb-3" role="alert">
+          <strong>Las nuevas cargas están bloqueadas.</strong>
+          <span class="d-block mt-1">
+            Tus archivos existentes se conservan y puedes descargarlos o eliminarlos.
+            Libera espacio o amplía la capacidad para volver a cargar archivos.
+          </span>
+        </div>
+        {% if not storage_uso.addon_active %}
+        <a class="btn btn-dark"
+           href="mailto:contacto@roustix.com?subject={{ ('Solicitud add-on ' ~ storage_uso.addon_label ~ ' (' ~ storage_uso.addon_sku ~ ') — ' ~ storage_uso.empresa_nombre)|urlencode }}">
+          Ampliar almacenamiento
+        </a>
+        {% endif %}
+        {% elif storage_uso.addon_active %}
         <div class="alert alert-success mt-4 mb-0 small" role="status">
           Add-on activo: <strong>{{ storage_uso.addon_label }}</strong>
           ({{ storage_uso.addon_mb }} MB incluidos en tu cupo).

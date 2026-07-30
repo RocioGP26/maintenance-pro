@@ -154,7 +154,9 @@ def _storage_uso_pct(used_bytes: int, quota_mb: Optional[int]) -> Optional[int]:
     quota_bytes = int(quota_mb) * 1024 * 1024
     if quota_bytes <= 0:
         return None
-    return min(100, int(round(used_bytes / quota_bytes * 100)))
+    # Entero truncado: evita anunciar 80 % o 100 % antes de alcanzar realmente
+    # el umbral correspondiente.
+    return min(100, max(0, int(used_bytes) * 100 // quota_bytes))
 
 
 def storage_uso_tenant(empresa: Empresa | None) -> Optional[dict[str, Any]]:
@@ -177,6 +179,7 @@ def storage_uso_tenant(empresa: Empresa | None) -> Optional[dict[str, Any]]:
     if quota_mb is None or int(quota_mb) <= 0:
         return None
     used = storage_bytes_empresa(int(empresa.id))
+    quota_bytes = int(quota_mb) * 1024 * 1024
     pct = _storage_uso_pct(used, int(quota_mb))
     addon_mb = addon_storage_mb(empresa)
     plan = getattr(empresa, "plan_activo", None)
@@ -192,6 +195,8 @@ def storage_uso_tenant(empresa: Empresa | None) -> Optional[dict[str, Any]]:
         "quota_label": _format_quota_mb(int(quota_mb)),
         "pct": pct,
         "warn": pct is not None and pct >= STORAGE_WARN_PCT,
+        "uploads_blocked": used >= quota_bytes,
+        "over_quota": used > quota_bytes,
         "addon_mb": addon_mb,
         "addon_active": has_addon_stg_2g(empresa),
         "addon_label": ADDON_STG_2G_LABEL,

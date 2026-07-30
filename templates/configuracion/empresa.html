@@ -173,7 +173,16 @@
                  style="width: {{ storage_uso.pct }}%;"></div>
           </div>
           {% endif %}
-          {% if storage_uso.addon_active %}
+          {% if storage_uso.uploads_blocked %}
+          <p class="small text-danger mb-2">
+            <i class="bi bi-exclamation-triangle-fill me-1"></i>
+            Nuevas cargas bloqueadas. Los archivos existentes se conservan; libera espacio
+            o amplía la capacidad.
+          </p>
+          <a class="btn btn-sm btn-outline-dark" href="{{ url_for('main.configuracion_almacenamiento') }}">
+            Gestionar almacenamiento
+          </a>
+          {% elif storage_uso.addon_active %}
           <p class="small text-success mb-0">
             Add-on activo: <strong>{{ storage_uso.addon_label }}</strong>
             incluidos en tu cupo ({{ storage_uso.addon_mb }} MB).

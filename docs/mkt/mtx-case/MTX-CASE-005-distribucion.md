@@ -19,7 +19,7 @@
 | **País** | LatAm |
 | **Empleados** | 40–100 |
 | **Módulo inicial** | Inventario |
-| **Plan** | Start → Grow |
+| **Plan** | Start → Business |
 | **Fecha publicación** | — |
 
 ---

@@ -19,7 +19,7 @@
 | **País** | LatAm |
 | **Empleados** | 30–70 |
 | **Módulo inicial** | Inventario |
-| **Plan** | Start → Scale |
+| **Plan** | Start → Enterprise |
 | **Fecha publicación** | — |
 
 ---
@@ -46,7 +46,7 @@ Antes de la siembra, el encargado no sabía con certeza cuánto fertilizante que
 | **Módulo** | Inventario — sedes · insumos · stock |
 | **Onboarding** | Bodega central + 2 sedes · catálogo insumos críticos |
 | **Duración** | 4 semanas hasta operación estable multisede |
-| **Plan** | Start → Scale |
+| **Plan** | Start → Enterprise |
 
 ---
 

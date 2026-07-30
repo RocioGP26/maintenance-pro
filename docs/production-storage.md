@@ -49,6 +49,29 @@ en un error para el usuario.
   (columna `empresas.storage_addon_mb`; suma 2048 MB a la cuota).
 - Migración legacy: `migrate-storage --apply` usa `enforce_quota=False`.
 
+### Capacidades oficiales del piloto
+
+| Plan comercial | Clave técnica | Cuota base |
+|----------------|---------------|-----------:|
+| Start | `basico` | 1 GB |
+| Business | `grow` | 5 GB |
+| Enterprise | `enterprise` | 20 GB |
+
+`grow` se conserva exclusivamente como clave compatible. La interfaz y la
+oferta comercial deben mostrar siempre **Business**.
+
+### Retiro del add-on durante el piloto
+
+- El add-on `ADD-STG-2G` se factura por mes anticipado a **$100.000 COP**.
+- La activación es manual después de confirmar el pago y queda auditada.
+- La solicitud de retiro se ejecuta al terminar el periodo mensual ya pagado;
+  durante el piloto no hay prorrateo automático.
+- Retirar el add-on nunca elimina archivos existentes.
+- Si el uso queda igual o por encima de la cuota base, las nuevas cargas se
+  bloquean hasta liberar espacio, reactivar capacidad o cambiar de plan.
+- Las descargas y eliminaciones permanecen disponibles para que el cliente
+  pueda volver a estar por debajo del límite.
+
 ## Cutover S0 · Migración de archivos existentes
 
 ### 1. Inventario (solo BD)

@@ -12,6 +12,20 @@ La suite documental mantiene un ciclo independiente en
 
 - Espacio reservado para cambios aún no publicados.
 
+## [1.0.30] - 2026-07-29
+
+### Added
+
+- Certificación de cuotas Start 1 GB, Business 5 GB y Enterprise 20 GB.
+- Estado visible de bloqueo cuando el tenant alcanza o supera su capacidad.
+
+### Changed
+
+- El umbral preventivo se calcula sin redondear anticipadamente al 80 %.
+- Retirar el add-on conserva los archivos y bloquea solamente nuevas cargas
+  mientras el uso permanezca sobre la cuota base.
+- Materiales comerciales públicos alineados a Start, Business y Enterprise.
+
 ## [1.0.29] - 2026-07-29
 
 ### Added

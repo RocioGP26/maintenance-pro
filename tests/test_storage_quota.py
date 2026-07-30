@@ -139,6 +139,32 @@ class TestSaveBytesEnforcesQuota(unittest.TestCase):
         ):
             save_bytes(key, b"cabe-con-addon", content_type="image/png")
 
+    def test_removing_addon_preserves_files_and_blocks_new_uploads_over_base(self):
+        from app.file_storage import exists
+        from app.storage_quota import set_addon_stg_2g
+
+        existing_key = tenant_key(self.empresa.id, "activos", "conservado.png")
+        save_bytes(
+            existing_key,
+            b"archivo-existente",
+            content_type="image/png",
+            enforce_quota=False,
+        )
+        set_addon_stg_2g(self.empresa, active=True)
+        set_addon_stg_2g(self.empresa, active=False)
+
+        self.assertTrue(exists(existing_key))
+        used_over_base = 2 * 1024 * 1024 * 1024
+        with (
+            patch("app.storage_quota.quota_mb_efectiva", return_value=1024),
+            patch(
+                "app.platform_service.storage_bytes_empresa",
+                return_value=used_over_base,
+            ),
+        ):
+            with self.assertRaises(StorageQuotaExceeded):
+                assert_storage_capacity(self.empresa.id, 1)
+
     def test_migration_bypass(self):
         key = tenant_key(self.empresa.id, "activos", "mig.png")
         with patch(

@@ -3,16 +3,30 @@
 from types import SimpleNamespace
 from unittest.mock import patch
 
+from app import create_app, db
+from app.models import PlanTipo
+from app.platform_config_service import catalogo_plan_meta, ensure_platform_config
 from app.platform_service import STORAGE_WARN_PCT, _storage_uso_pct, storage_uso_tenant
 
 
 def test_storage_uso_pct_warn_threshold():
     quota_mb = 1024  # 1 GB
-    used_79 = int(quota_mb * 1024 * 1024 * 0.79)
-    used_80 = int(quota_mb * 1024 * 1024 * 0.80)
+    quota_bytes = quota_mb * 1024 * 1024
+    used_79 = (quota_bytes * 79 + 99) // 100
+    used_80 = (quota_bytes * 80 + 99) // 100
     assert _storage_uso_pct(used_79, quota_mb) == 79
     assert _storage_uso_pct(used_80, quota_mb) == 80
     assert STORAGE_WARN_PCT == 80
+
+
+def test_storage_uso_pct_does_not_round_up_before_threshold():
+    quota_mb = 1024
+    quota_bytes = quota_mb * 1024 * 1024
+    used_just_below_80 = (quota_bytes * 80 // 100) - 1
+    used_just_below_100 = quota_bytes - 1
+
+    assert _storage_uso_pct(used_just_below_80, quota_mb) == 79
+    assert _storage_uso_pct(used_just_below_100, quota_mb) == 99
 
 
 def test_set_addon_stg_2g_updates_quota():
@@ -46,7 +60,8 @@ def test_storage_uso_tenant_warn_and_addon_copy():
         plan_activo=SimpleNamespace(plan="basico"),
         storage_addon_mb=0,
     )
-    used = int(1024 * 1024 * 1024 * 0.85)  # 85% de 1 GB
+    quota_bytes = 1024 * 1024 * 1024
+    used = (quota_bytes * 85 + 99) // 100  # umbral exacto de 85% de 1 GB
     with (
         patch("app.storage_quota.quota_mb_efectiva", return_value=1024),
         patch("app.platform_service.storage_bytes_empresa", return_value=used),
@@ -90,3 +105,82 @@ def test_format_quota_mb_friendly():
     assert _format_quota_mb(1024) == "1 GB"
     assert _format_quota_mb(5120) == "5 GB"
     assert _format_quota_mb(500) == "500 MB"
+
+
+def test_official_plan_storage_quotas():
+    app = create_app("testing")
+    with app.app_context():
+        db.create_all()
+        try:
+            ensure_platform_config()
+            db.session.commit()
+            expected = {
+                PlanTipo.BASICO.value: ("Start", 1024),
+                PlanTipo.BUSINESS.value: ("Business", 5120),
+                PlanTipo.ENTERPRISE.value: ("Enterprise", 20480),
+            }
+            for plan_key, (label, quota_mb) in expected.items():
+                meta = catalogo_plan_meta(plan_key)
+                assert meta["short_label"] == label
+                assert meta["storage_mb"] == quota_mb
+        finally:
+            db.session.remove()
+            db.drop_all()
+
+
+def test_storage_at_limit_marks_uploads_blocked():
+    empresa = SimpleNamespace(
+        id=11,
+        razon_social="Empresa al limite",
+        plan_activo=SimpleNamespace(plan="basico"),
+        storage_addon_mb=0,
+    )
+    quota_bytes = 1024 * 1024 * 1024
+    with (
+        patch("app.storage_quota.quota_mb_efectiva", return_value=1024),
+        patch("app.platform_service.storage_bytes_empresa", return_value=quota_bytes),
+        patch(
+            "app.platform_service.plan_meta",
+            return_value={"label": "Start", "storage_mb": 1024},
+        ),
+    ):
+        uso = storage_uso_tenant(empresa)
+
+    assert uso is not None
+    assert uso["pct"] == 100
+    assert uso["warn"] is True
+    assert uso["uploads_blocked"] is True
+    assert uso["over_quota"] is False
+
+
+def test_storage_over_quota_after_addon_removal_is_explicit():
+    empresa = SimpleNamespace(
+        id=12,
+        razon_social="Empresa sobre cuota",
+        plan_activo=SimpleNamespace(plan="basico"),
+        storage_addon_mb=0,
+    )
+    used = 2 * 1024 * 1024 * 1024
+    with (
+        patch("app.storage_quota.quota_mb_efectiva", return_value=1024),
+        patch("app.platform_service.storage_bytes_empresa", return_value=used),
+        patch(
+            "app.platform_service.plan_meta",
+            return_value={"label": "Start", "storage_mb": 1024},
+        ),
+    ):
+        uso = storage_uso_tenant(empresa)
+
+    assert uso is not None
+    assert uso["uploads_blocked"] is True
+    assert uso["over_quota"] is True
+
+
+def test_storage_templates_compile():
+    app = create_app("testing")
+    for template_name in (
+        "base.html",
+        "configuracion/almacenamiento.html",
+        "configuracion/empresa.html",
+    ):
+        app.jinja_env.get_template(template_name)

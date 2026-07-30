@@ -18,8 +18,8 @@
 | **Industria** | Planta + bodega de repuestos |
 | **País** | LatAm |
 | **Empleados** | 50–120 |
-| **Módulo inicial** | Según dolor dominante → segundo módulo en Grow |
-| **Plan** | Grow |
+| **Módulo inicial** | Según dolor dominante → segundo módulo en Business |
+| **Plan** | Business |
 | **Fecha publicación** | — |
 
 ---
@@ -44,10 +44,10 @@ Una OT consume cuatro rodamientos. Nadie descuenta bodega. Gerencia no sabe el c
 | | |
 |---|---|
 | **Módulo 1** | Mantenimiento *(dolor dominante)* |
-| **Módulo 2** | Inventario *(plan Grow)* |
+| **Módulo 2** | Inventario *(plan Business)* |
 | **Onboarding** | Activos críticos + bodega repuestos · enlace OT-inventario |
 | **Duración** | 6–8 semanas expansión modular |
-| **Plan** | Grow |
+| **Plan** | Business |
 
 ---
 
@@ -66,7 +66,7 @@ Una OT consume cuatro rodamientos. Nadie descuenta bodega. Gerencia no sabe el c
 
 > «No necesitábamos dos sistemas. Necesitábamos que la OT hablara con bodega.»
 
-- Entrar por el dolor dominante · expandir en Grow
+- Entrar por el dolor dominante · expandir en Business
 - El segundo módulo vende solo cuando el primero ya tiene adopción
 - Este caso ilustra el pilar *«La transformación comienza con un módulo»*
 
@@ -88,7 +88,7 @@ Una OT consume cuatro rodamientos. Nadie descuenta bodega. Gerencia no sabe el c
 | Documento | Uso |
 |-----------|-----|
 | [MKT-01 · Pilar modular](../chapters/01-identidad-mensajes-marca.md#9--pilares-de-comunicación) | Mensaje crecimiento |
-| [MCM-04 · Planes](/mcm/chapters/04-planes-saas.md) | Plan Grow |
+| [MCM-04 · Planes](/mcm/chapters/04-planes-saas.md) | Plan Business |
 | [MCM-03 · Operación mixta](/mcm/chapters/03-sectores-mercados.md) | Sector |
 | [MCM-09](/mcm/chapters/09-manejo-objeciones.md) | OBJ-003 · OBJ-010 |
 | MKT-04 | Slide pilar crecimiento |

@@ -5,6 +5,7 @@ from __future__ import annotations
 import time
 import unittest
 from datetime import date, timedelta
+from pathlib import Path
 
 from app import create_app, db
 from app.models import (
@@ -133,6 +134,17 @@ class TestCommercialPilot(unittest.TestCase):
         self.assertIn("Business", body)
         self.assertIn("Enterprise", body)
         self.assertNotIn("Scale (legacy)", body)
+
+    def test_materiales_publicos_no_ofrecen_grow_ni_scale(self):
+        public_files = [
+            Path("docs/mkt/assets/brochure-corporativo.html"),
+            Path("docs/mkt/assets/one-pager.html"),
+            *Path("docs/mkt/mtx-case").glob("*.md"),
+        ]
+        for path in public_files:
+            content = path.read_text(encoding="utf-8")
+            self.assertNotRegex(content, r"\bGrow\b", str(path))
+            self.assertNotRegex(content, r"\bScale\b", str(path))
 
 
 if __name__ == "__main__":

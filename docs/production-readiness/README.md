@@ -24,6 +24,7 @@ clientes reales, sin incorporar funcionalidades nuevas de negocio.
 - `backup-recovery-drill.md`: plantilla de simulacro trimestral.
 - `storage-certification.md`: evidencia y gate de certificación R2 del piloto.
 - `account-recovery-certification.md`: controles y gate SMTP de recuperación de cuenta.
+- `storage-capacity-certification.md`: cuotas por plan, umbrales y política del add-on.
 
 ## Regla de salida
 

@@ -24,6 +24,16 @@
 
 **Producto:** banner en portal cliente (admins con configuración) + CTA a `contacto@roustix.com` · misma lógica en panel plataforma.
 
+### Operación del piloto · `ADD-STG-2G`
+
+- Cobro mensual anticipado de **$100.000 COP** mediante factura/pago manual.
+- Activación por SuperAdmin cuando el pago esté confirmado.
+- Retiro al cierre del periodo mensual pagado; sin prorrateo automático.
+- Los archivos existentes nunca se eliminan al retirar capacidad.
+- Si el uso supera la cuota base, se bloquean nuevas cargas, pero se mantienen
+  disponibles las descargas y eliminaciones.
+- Activación y retiro quedan registrados en la auditoría de plataforma.
+
 ## Según cotización
 
 | Complemento | SKU |

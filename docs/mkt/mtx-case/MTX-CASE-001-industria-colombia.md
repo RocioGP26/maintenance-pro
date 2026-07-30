@@ -19,7 +19,7 @@
 | **País** | Colombia *(origen INR)* |
 | **Empleados** | 40–80 *(referencia ICP)* |
 | **Módulo inicial** | Mantenimiento |
-| **Plan** | Start → Grow |
+| **Plan** | Start → Business |
 | **Fecha publicación** | — *(completar con cliente real)* |
 
 ---
