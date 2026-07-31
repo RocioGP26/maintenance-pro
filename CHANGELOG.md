@@ -12,6 +12,22 @@ La suite documental mantiene un ciclo independiente en
 
 - Espacio reservado para cambios aún no publicados.
 
+## [1.0.33] - 2026-07-30
+
+### Added
+
+- Outbox cifrada para correos transaccionales con idempotencia por empresa,
+  arrendamientos recuperables, reintentos controlados y retención automática.
+- Procesamiento de correos de verificación, bienvenida y recuperación mediante
+  `roustix-worker`.
+- Gate de certificación productiva y pruebas de cifrado, aislamiento, contenido
+  alterado y errores saneados.
+
+### Changed
+
+- Las solicitudes web ya no esperan la respuesta del proveedor SMTP.
+- La fecha `sent_at` sólo se registra después de que SMTP acepta la entrega.
+
 ## [1.0.32] - 2026-07-29
 
 ### Added
