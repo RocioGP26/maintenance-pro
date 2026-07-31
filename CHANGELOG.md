@@ -12,6 +12,15 @@ La suite documental mantiene un ciclo independiente en
 
 - Espacio reservado para cambios aún no publicados.
 
+## [1.0.36] - 2026-07-30
+
+### Fixed
+
+- Un enlace de recuperación ya consumido muestra el rechazo controlado aunque
+  el navegador tenga una sesión autenticada.
+- Gunicorn atiende peticiones mediante hilos para que un dashboard lento no
+  bloquee el health check ni provoque respuestas 502 transitorias.
+
 ## [1.0.35] - 2026-07-30
 
 ### Fixed
