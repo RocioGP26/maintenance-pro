@@ -434,8 +434,6 @@ def login():
 @limiter.limit("5 per 15 minutes", methods=["POST"])
 def recuperar_contrasena():
     """Solicitud self-service de restablecimiento por correo corporativo."""
-    if current_user.is_authenticated:
-        return redirect(url_for("main.dashboard"))
     email = ""
     empresa_slug = ""
     if request.method == "POST":
@@ -452,7 +450,12 @@ def recuperar_contrasena():
                 empresa_slug=empresa_slug,
             )
         flash(message, "success")
-        return redirect(url_for("main.login"))
+        destination = (
+            "main.recuperar_contrasena"
+            if current_user.is_authenticated
+            else "main.login"
+        )
+        return redirect(url_for(destination))
     return render_template("password_reset/request.html", email=email, empresa_slug=empresa_slug)
 
 

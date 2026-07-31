@@ -12,6 +12,13 @@ La suite documental mantiene un ciclo independiente en
 
 - Espacio reservado para cambios aún no publicados.
 
+## [1.0.37] - 2026-07-30
+
+### Fixed
+
+- La solicitud de un enlace nuevo permanece accesible cuando el navegador
+  tiene una sesión iniciada y confirma el envío sin redirigir al dashboard.
+
 ## [1.0.36] - 2026-07-30
 
 ### Fixed

@@ -177,6 +177,17 @@ class TestPasswordReset(unittest.TestCase):
         self.assertIn("Solicitar un enlace nuevo", body)
         self.assertNotIn("/dashboard", reused.request.path)
 
+        request_page = self.client.get("/recuperar-contrasena")
+        self.assertEqual(request_page.status_code, 200)
+        self.assertIn("Enviar enlace", request_page.get_data(as_text=True))
+
+        requested = self.client.post(
+            "/recuperar-contrasena",
+            data={"email": "ops@example.com", "empresa_slug": "empresa-demo"},
+        )
+        self.assertIn(requested.status_code, (302, 303))
+        self.assertTrue(requested.location.endswith("/recuperar-contrasena"))
+
     def test_reset_revokes_existing_managed_session(self):
         active_client = self.app.test_client()
         login = active_client.post(
