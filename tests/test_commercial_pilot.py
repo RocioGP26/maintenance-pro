@@ -135,6 +135,24 @@ class TestCommercialPilot(unittest.TestCase):
         self.assertIn("Enterprise", body)
         self.assertNotIn("Scale (legacy)", body)
 
+    def test_filtro_superadmin_muestra_solo_planes_oficiales(self):
+        client = self.app.test_client()
+        now = int(time.time())
+        with client.session_transaction() as session:
+            session["platform_admin"] = True
+            session["platform_started_at"] = now
+            session["platform_last_activity_at"] = now
+
+        response = client.get("/platform/empresas")
+
+        self.assertEqual(response.status_code, 200)
+        body = response.get_data(as_text=True)
+        self.assertIn("Start", body)
+        self.assertIn("Business", body)
+        self.assertIn("Enterprise", body)
+        self.assertNotIn(">Grow<", body)
+        self.assertNotIn(">Scale<", body)
+
     def test_materiales_publicos_no_ofrecen_grow_ni_scale(self):
         public_files = [
             Path("docs/mkt/assets/brochure-corporativo.html"),

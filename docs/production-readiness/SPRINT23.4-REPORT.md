@@ -1,7 +1,7 @@
 # Sprint 23.4 · Reporte en curso
 
-Fecha de corte: 2026-07-28  
-Estado: implementación local verificada; configuración y validación remota pendientes.
+Fecha de corte: 2026-07-29
+Estado: observabilidad, workers y monitor externo desplegados; gate operativo aprobado.
 
 ## Cierre previo registrado
 
@@ -40,12 +40,11 @@ Estado: implementación local verificada; configuración y validación remota pe
 
 ## Pendiente para el siguiente avance
 
-- Conectar Sentry y el recolector Prometheus en producción y provocar alertas controladas.
-- Configurar un monitor externo contra `/health/live` y `/health/ready`.
 - Implementar la outbox cifrada para correos y notificaciones.
 - Versionar runbooks completos y ejecutar la prueba de carga.
-- Confirmar en el dashboard que `mantis-app` usa el plan `starter`; el blueprint
-  ya lo declara, pero el archivo no demuestra el estado real del servicio remoto.
+- Mejorar la entregabilidad del correo operativo mediante SPF, DKIM y DMARC.
+- Actualizar las acciones de GitHub que aún generan la advertencia de
+  compatibilidad con Node.js 20.
 
 ## Avance 2 · Redis y worker
 
@@ -60,6 +59,69 @@ Estado: implementación local verificada; configuración y validación remota pe
 - Readiness comprueba Redis y reporta heartbeat ausente como degradación.
 - El runbook operativo quedó versionado en `SPRINT23.4-WORKERS-RUNBOOK.md`.
 - Pruebas focalizadas del avance: 43 aprobadas.
+
+## Avance 3 · Monitor externo y gate operativo
+
+- El panel de infraestructura incorpora una tarjeta segura de observabilidad:
+  informa si Sentry, el token de métricas y el destino de alertas están activos
+  sin exponer sus valores.
+- El SuperAdmin dispone de una prueba controlada y auditada para Sentry y correo
+  operativo; no altera datos de tenants ni degrada dependencias.
+- GitHub Actions ejecuta un monitor externo cada cinco minutos contra liveness y
+  readiness.
+- El monitor considera `degraded` como fallo operativo, conserva el fallo del
+  workflow como canal independiente e intenta notificar por SMTP.
+- Se versionó el runbook `SPRINT23.4-OBSERVABILITY-RUNBOOK.md` con configuración,
+  gate remoto y respuesta operativa.
+
+### Criterios del gate remoto
+
+- [x] Confirmar la tarjeta **Observabilidad · Operativa** en producción.
+- [x] Ejecutar manualmente el workflow externo y registrar el run.
+- [x] Enviar, con confirmación de la responsable, una alerta controlada y
+  comprobar Sentry, correo y auditoría.
+- [ ] Implementar la outbox cifrada de correos/notificaciones y ejecutar la
+  prueba de carga antes de cerrar completamente Sprint 23.4.
+
+### Gate remoto parcial · 2026-07-29
+
+- Roustix `1.0.32` desplegada desde `366fe4e`.
+- `/health/ready`: PostgreSQL, migraciones, Redis y worker en verde.
+- Panel: SMTP operativo con autenticación correcta; worker activo y health
+  saludable.
+- Bloqueo encontrado: la tarjeta **Observabilidad** reporta ausentes
+  `SENTRY_DSN`, `METRICS_TOKEN` y `OPS_ALERT_EMAIL`.
+- La alerta controlada no se ejecutó: hacerlo sin esos destinos produciría una
+  evidencia inválida. Deben configurarse las variables y repetir el gate.
+
+### Gate de alerta controlada · 2026-07-29
+
+- Responsable: Gladis Rocio Gelves Pabon.
+- La tarjeta **Observabilidad** quedó en estado **Operativa** después de
+  configurar `SENTRY_DSN`, `METRICS_TOKEN` y `OPS_ALERT_EMAIL`.
+- Sentry recibió un evento del endpoint auditado de prueba en el proyecto
+  Roustix (`ROUSTIX-FRASCO-1`).
+- El correo `[Roustix][WARNING] operations: controlled_test` fue recibido a las
+  `2026-07-30 04:26 UTC` (`2026-07-29 23:26`, hora de Colombia).
+- Veredicto del canal de alertas: **aprobado** para Sentry y SMTP.
+- Observación: Outlook clasificó el mensaje como correo no deseado. La entrega
+  funciona, pero deben validarse SPF, DKIM, DMARC y alineación del remitente
+  antes del piloto.
+- El nombre del remitente se corrigió en producción a
+  `Roustix <gladis.rocio.gelves.pabon@gmail.com>`.
+- La auditoría fue verificada mediante consulta de solo lectura en producción:
+  registro `ops_alert_test` ID `60`, fecha `2026-07-30 04:26:54 UTC`, actor
+  `Soporte Roustix (Plataforma)` y detalle de prueba controlada.
+- GitHub Actions registró `uptime-monitor.yaml` después de incorporar un
+  disparador limitado a cambios del propio workflow y publicar la definición
+  operativa en la rama predeterminada `develop`.
+- La primera ejecución manual detectó correctamente que `develop` aún no
+  contenía `scripts/monitor_health.py`; el script se publicó de forma aislada y
+  se repitió el gate.
+- Ejecución manual final `30515172554`: **Success**, duración total `14 s`, job
+  `health` aprobado en `9 s`, evento `workflow_dispatch`, commit `8ed2af8`.
+- Veredicto del gate operativo: **aprobado** para monitor externo, Sentry,
+  correo y auditoría.
 
 Los correos y notificaciones todavía no se trasladaron al worker: requieren una
 outbox cifrada para no persistir códigos de verificación ni tokens crudos.

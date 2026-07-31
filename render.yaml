@@ -18,6 +18,8 @@ services:
         value: production
       - key: SECRET_KEY
         generateValue: true
+      - key: OUTBOX_ENCRYPTION_KEY
+        sync: false
       - key: DATABASE_URL
         sync: false
       - key: REDIS_URL
@@ -75,6 +77,9 @@ services:
       # los secretos HMAC ya sellados de los endpoints de webhook.
       - key: SECRET_KEY
         sync: false
+      # Debe coincidir con mantis-app para descifrar los sobres de correo.
+      - key: OUTBOX_ENCRYPTION_KEY
+        sync: false
       - key: DATABASE_URL
         sync: false
       - key: REDIS_URL
@@ -101,6 +106,8 @@ services:
       - key: WORKER_POLL_SECONDS
         value: "2"
       - key: WORKER_WEBHOOK_BATCH_SIZE
+        value: "50"
+      - key: WORKER_EMAIL_BATCH_SIZE
         value: "50"
       - key: WORKER_MAINTENANCE_ENABLED
         value: "true"

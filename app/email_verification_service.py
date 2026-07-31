@@ -68,8 +68,11 @@ def issue_verification(user: User, *, enforce_cooldown: bool = False) -> EmailVe
     now = _now()
     latest = _latest(user, for_update=enforce_cooldown)
     cooldown = max(0, int(current_app.config["EMAIL_VERIFICATION_RESEND_SECONDS"]))
-    if enforce_cooldown and latest and latest.sent_at:
-        remaining = cooldown - int((now - latest.sent_at).total_seconds())
+    if enforce_cooldown and latest:
+        # Un mensaje encolado aún no tiene sent_at; created_at evita que ese
+        # intervalo permita generar desafíos sucesivos antes de que actúe el worker.
+        cooldown_started_at = latest.sent_at or latest.created_at
+        remaining = cooldown - int((now - cooldown_started_at).total_seconds())
         if remaining > 0:
             raise ResendCooldown(remaining)
 
@@ -90,9 +93,10 @@ def issue_verification(user: User, *, enforce_cooldown: bool = False) -> EmailVe
         attempts=0,
     )
     db.session.add(item)
-    db.session.commit()
+    db.session.flush()
 
     send_templated_email(
+        empresa_id=user.empresa_id,
         recipient=email,
         subject=f"Tu código de verificación de {APP_NAME}",
         template_name="verification_code",
@@ -102,8 +106,10 @@ def issue_verification(user: User, *, enforce_cooldown: bool = False) -> EmailVe
             "empresa": user.empresa,
             "ttl_minutes": current_app.config["EMAIL_VERIFICATION_TTL_MINUTES"],
         },
+        idempotency_key=f"email-verification:{item.id}",
+        source_type="email_verification",
+        source_id=item.id,
     )
-    item.sent_at = _now()
     db.session.commit()
     return item
 
@@ -143,11 +149,14 @@ def verify_code(user: User, code: str) -> VerificationStatus:
 
 def send_welcome_email(user: User) -> None:
     send_templated_email(
+        empresa_id=user.empresa_id,
         recipient=normalize_email(user.email),
         subject=f"Te damos la bienvenida a {APP_NAME}",
         template_name="welcome",
         context={"user": user, "empresa": user.empresa},
+        idempotency_key=f"welcome:{user.id}",
     )
+    db.session.commit()
 
 
 def masked_email(value: str) -> str:

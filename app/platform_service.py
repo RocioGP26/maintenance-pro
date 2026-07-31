@@ -457,14 +457,14 @@ def sector_choices_platform() -> list[tuple[str, str]]:
 
 
 def plan_choices_platform() -> list[tuple[str, str]]:
-    from app.platform_config_service import listar_planes_catalogo
+    from app.platform_config_service import planes_comerciales_piloto
 
     items: list[tuple[str, str]] = [
         ("", "Todos los planes"),
         (PlanTipo.TRIAL.value, "Trial"),
     ]
-    for plan in listar_planes_catalogo():
-        items.append((plan.clave, plan.short_label))
+    for plan_key, meta in planes_comerciales_piloto():
+        items.append((plan_key, meta["short_label"]))
     return items
 
 

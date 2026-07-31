@@ -47,6 +47,14 @@
       <span class="platform-status-pill platform-status-pill--{{ svc.status }}">{{ svc.status_label }}</span>
     </div>
     <p class="small text-secondary mb-0">{{ svc.detail }}</p>
+    {% if svc.key == 'observability' %}
+    <form method="post" action="{{ url_for('platform.infraestructura_probar_alerta') }}" class="mt-3 mb-0">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button type="submit" class="platform-btn platform-btn-outline platform-btn-sm">
+        <i class="bi bi-bell"></i> Enviar alerta de prueba
+      </button>
+    </form>
+    {% endif %}
     {% if svc.key == 'health' and svc.endpoint %}
     <p class="small mt-2 mb-0">
       <a class="platform-link" href="{{ svc.endpoint }}" target="_blank" rel="noopener">Ver health check</a>
