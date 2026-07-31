@@ -9,12 +9,14 @@ import smtplib
 import ssl
 from datetime import datetime, timedelta
 from email.message import EmailMessage
+from email.utils import format_datetime
 
 from cryptography.fernet import Fernet, InvalidToken
 from flask import current_app
 
 from app import db
 from app.models import EmailOutbox, EmailVerification, PasswordReset
+from app.timezone_utils import timezone_obj
 
 
 RETRY_DELAYS = (
@@ -90,6 +92,9 @@ def _build_message(payload: dict) -> EmailMessage:
 
 def _deliver_message(message: EmailMessage) -> None:
     app = current_app
+    if not message.get("Date"):
+        local_tz = timezone_obj(tz_name=app.config.get("OPS_TIMEZONE"))
+        message["Date"] = format_datetime(datetime.now(local_tz))
     if app.config.get("MAIL_SUPPRESS_SEND"):
         app.extensions.setdefault("mail_outbox", []).append(message)
         return
@@ -111,7 +116,7 @@ def _deliver_message(message: EmailMessage) -> None:
                 smtp.ehlo()
             smtp.login(username, password)
             smtp.send_message(message)
-    except (OSError, smtplib.SMTPException) as exc:
+    except (OSError, UnicodeError, ValueError, smtplib.SMTPException) as exc:
         raise EmailDeliveryError("No fue posible entregar el correo mediante SMTP.") from exc
 
 

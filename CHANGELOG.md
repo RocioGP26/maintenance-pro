@@ -12,6 +12,15 @@ La suite documental mantiene un ciclo independiente en
 
 - Espacio reservado para cambios aún no publicados.
 
+## [1.0.35] - 2026-07-30
+
+### Fixed
+
+- Un host SMTP inválido se convierte en un reintento controlado y ya no
+  interrumpe el ciclo completo del worker.
+- Los correos operativos muestran la fecha de Colombia y envían un encabezado
+  RFC 2822 con zona horaria `America/Bogota`.
+
 ## [1.0.34] - 2026-07-30
 
 ### Fixed

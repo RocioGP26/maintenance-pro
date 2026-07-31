@@ -13,8 +13,10 @@ import ssl
 import sys
 import time
 from dataclasses import dataclass
-from datetime import datetime, timezone
+from datetime import datetime
 from email.message import EmailMessage
+from email.utils import format_datetime
+from zoneinfo import ZoneInfo
 from urllib.error import HTTPError, URLError
 from urllib.parse import urljoin
 from urllib.request import Request, urlopen
@@ -62,9 +64,11 @@ def send_failure_email(results: list[HealthResult]) -> bool:
     message["Subject"] = "[Roustix][ERROR] Monitor externo de disponibilidad"
     message["From"] = sender
     message["To"] = recipient
+    local_now = datetime.now(ZoneInfo(os.environ.get("OPS_TIMEZONE", "America/Bogota")))
+    message["Date"] = format_datetime(local_now)
     lines = [
         "El monitor externo detectó un estado no saludable.",
-        f"Fecha UTC: {datetime.now(timezone.utc).isoformat()}",
+        f"Fecha Colombia: {local_now.strftime('%Y-%m-%d %H:%M:%S %z')}",
         "",
     ]
     for result in results:
@@ -83,7 +87,7 @@ def send_failure_email(results: list[HealthResult]) -> bool:
             smtp.login(username, password)
             smtp.send_message(message)
         return True
-    except (OSError, smtplib.SMTPException):
+    except (OSError, UnicodeError, ValueError, smtplib.SMTPException):
         return False
 
 
