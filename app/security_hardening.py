@@ -38,6 +38,11 @@ def production_configuration_errors(config: Mapping) -> list[str]:
     secret = _value(config, "SECRET_KEY")
     if _weak_secret(secret):
         errors.append("SECRET_KEY debe ser aleatoria y contener al menos 32 caracteres.")
+    outbox_key = _value(config, "OUTBOX_ENCRYPTION_KEY")
+    if outbox_key and _weak_secret(outbox_key):
+        errors.append(
+            "OUTBOX_ENCRYPTION_KEY debe ser aleatoria y contener al menos 32 caracteres."
+        )
 
     database_url = _value(config, "SQLALCHEMY_DATABASE_URI").lower()
     if not database_url.startswith(("postgresql://", "postgresql+psycopg://")):
@@ -91,12 +96,20 @@ def enforce_worker_configuration(app) -> None:
     errors: list[str] = []
     if _weak_secret(_value(app.config, "SECRET_KEY")):
         errors.append("SECRET_KEY debe ser aleatoria y contener al menos 32 caracteres.")
+    outbox_key = _value(app.config, "OUTBOX_ENCRYPTION_KEY")
+    if outbox_key and _weak_secret(outbox_key):
+        errors.append(
+            "OUTBOX_ENCRYPTION_KEY debe ser aleatoria y contener al menos 32 caracteres."
+        )
     database_url = _value(app.config, "SQLALCHEMY_DATABASE_URI").lower()
     if not database_url.startswith(("postgresql://", "postgresql+psycopg://")):
         errors.append("DATABASE_URL debe usar PostgreSQL para el worker.")
     redis_url = _value(app.config, "REDIS_URL").lower()
     if not redis_url.startswith(("redis://", "rediss://")):
         errors.append("REDIS_URL debe usar Redis/Render Key Value para el worker.")
+    for key in ("MAIL_SERVER", "MAIL_USERNAME", "MAIL_PASSWORD", "MAIL_DEFAULT_SENDER"):
+        if not _value(app.config, key):
+            errors.append(f"{key} es obligatoria para el worker de correo.")
     if errors:
         detail = "\n- ".join(errors)
         raise RuntimeError(f"Configuración insegura del worker:\n- {detail}")

@@ -8,6 +8,7 @@ import threading
 import time
 
 from app import create_app, db
+from app.email_service import process_pending_emails
 from app.integrations.webhooks import process_pending_deliveries
 from app.observability import emit_operational_alert
 from app.redis_client import get_redis, publish_worker_heartbeat
@@ -27,6 +28,11 @@ def process_worker_cycle(*, run_maintenance: bool = False) -> dict:
         publish_worker_heartbeat(ttl_seconds=heartbeat_ttl)
         stats = process_pending_deliveries(
             limit=max(1, int(app.config.get("WORKER_WEBHOOK_BATCH_SIZE", 50)))
+        )
+        stats.update(
+            process_pending_emails(
+                limit=max(1, int(app.config.get("WORKER_EMAIL_BATCH_SIZE", 50)))
+            )
         )
         if run_maintenance:
             stats["maintenance"] = _run_maintenance_with_lock(app)
@@ -67,6 +73,7 @@ def run_forever() -> None:
 
     poll_seconds = max(0.25, float(app.config.get("WORKER_POLL_SECONDS", 2.0)))
     batch_size = max(1, int(app.config.get("WORKER_WEBHOOK_BATCH_SIZE", 50)))
+    email_batch_size = max(1, int(app.config.get("WORKER_EMAIL_BATCH_SIZE", 50)))
     maintenance_enabled = bool(app.config.get("WORKER_MAINTENANCE_ENABLED"))
     maintenance_interval = max(
         60, int(app.config.get("WORKER_MAINTENANCE_INTERVAL_SECONDS", 3600))
@@ -87,6 +94,7 @@ def run_forever() -> None:
             with app.app_context():
                 publish_worker_heartbeat(ttl_seconds=heartbeat_ttl)
                 stats = process_pending_deliveries(limit=batch_size)
+                stats.update(process_pending_emails(limit=email_batch_size))
                 if maintenance_enabled and started >= next_maintenance:
                     stats["maintenance"] = _run_maintenance_with_lock(app)
                     next_maintenance = started + maintenance_interval
@@ -96,7 +104,9 @@ def run_forever() -> None:
                         "component": "worker",
                         "event": "worker_cycle_completed",
                         **{key: stats.get(key, 0) for key in (
-                            "recovered", "claimed", "delivered", "failed", "retry"
+                            "recovered", "claimed", "delivered", "failed", "retry",
+                            "email_recovered", "email_claimed", "email_sent",
+                            "email_failed", "email_retry",
                         )},
                     },
                 )

@@ -63,10 +63,12 @@ def run_maintenance_tasks(empresa_id: int | None = None) -> dict:
         verificar_vencimientos,
     )
     from app.work_order_status import sincronizar_estados_ordenes
+    from app.email_service import prune_email_outbox
 
     sincronizar_estados_ordenes(empresa_id)
     stats: dict = {
         "suscripciones_backfill": backfill_estado_ciclo_suscripciones(),
+        "email_outbox_pruned": prune_email_outbox(),
     }
     stats.update(verificar_vencimientos())
     logger.info("Tareas de mantenimiento completadas: %s", stats)

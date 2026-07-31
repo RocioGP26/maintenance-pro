@@ -777,6 +777,43 @@ class PasswordReset(db.Model):
     )
 
 
+class EmailOutbox(db.Model):
+    """Correo transaccional cifrado y procesado de forma idempotente."""
+
+    __tablename__ = "email_outbox"
+    __table_args__ = (
+        db.UniqueConstraint(
+            "empresa_id", "idempotency_key", name="uq_email_outbox_tenant_idempotency"
+        ),
+    )
+
+    id = db.Column(db.Integer, primary_key=True)
+    empresa_id = db.Column(
+        db.Integer,
+        db.ForeignKey("empresas.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    kind = db.Column(db.String(40), nullable=False, index=True)
+    idempotency_key = db.Column(db.String(160), nullable=False)
+    payload_sealed = db.Column(db.Text, nullable=False)
+    status = db.Column(db.String(20), nullable=False, default="pending", index=True)
+    attempts = db.Column(db.Integer, nullable=False, default=0)
+    max_attempts = db.Column(db.Integer, nullable=False, default=5)
+    next_attempt_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow, index=True)
+    lease_expires_at = db.Column(db.DateTime, nullable=True, index=True)
+    last_error = db.Column(db.String(120), nullable=True)
+    source_type = db.Column(db.String(40), nullable=True)
+    source_id = db.Column(db.Integer, nullable=True)
+    sent_at = db.Column(db.DateTime, nullable=True, index=True)
+    created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow, index=True)
+    updated_at = db.Column(
+        db.DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow
+    )
+
+    empresa = db.relationship("Empresa", backref=db.backref("email_outbox", lazy="dynamic"))
+
+
 class MachineStatus(str, Enum):
     OPERATIVO = "operativo"
     MANTENIMIENTO = "mantenimiento"

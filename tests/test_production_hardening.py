@@ -24,6 +24,7 @@ class TestProductionConfiguration(unittest.TestCase):
     def _valid_config(self) -> dict:
         return {
             "SECRET_KEY": "prod-secret-0123456789-ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+            "OUTBOX_ENCRYPTION_KEY": "outbox-key-0123456789-ABCDEFGHIJKLMNOPQRSTUVWXYZ",
             "SQLALCHEMY_DATABASE_URI": "postgresql+psycopg://user:pwd@db/roustix",
             "STORAGE_BACKEND": "s3",
             "STORAGE_BUCKET": "roustix-production",
@@ -60,6 +61,12 @@ class TestProductionConfiguration(unittest.TestCase):
         self.assertIn("STORAGE_BACKEND", errors)
         self.assertIn("HTTPS", errors)
         self.assertIn("PLATFORM_ADMIN_TOTP_SECRET", errors)
+
+    def test_weak_optional_outbox_key_is_rejected(self):
+        config = self._valid_config()
+        config["OUTBOX_ENCRYPTION_KEY"] = "short"
+        errors = " ".join(production_configuration_errors(config))
+        self.assertIn("OUTBOX_ENCRYPTION_KEY", errors)
 
     def test_production_rejects_in_memory_rate_limiting(self):
         config = self._valid_config()

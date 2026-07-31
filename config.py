@@ -99,6 +99,13 @@ class Config:
     EMAIL_VERIFICATION_MAX_ATTEMPTS = _env_int("EMAIL_VERIFICATION_MAX_ATTEMPTS", 5)
     EMAIL_VERIFICATION_RESEND_SECONDS = _env_int("EMAIL_VERIFICATION_RESEND_SECONDS", 60)
     PASSWORD_RESET_TTL_MINUTES = _env_int("PASSWORD_RESET_TTL_MINUTES", 60)
+    # Se recomienda una clave dedicada de 32+ caracteres. Si se omite, la
+    # envoltura deriva una clave separada a partir de SECRET_KEY para mantener
+    # compatibilidad durante el despliegue.
+    OUTBOX_ENCRYPTION_KEY = os.environ.get("OUTBOX_ENCRYPTION_KEY", "")
+    EMAIL_OUTBOX_MAX_ATTEMPTS = _env_int("EMAIL_OUTBOX_MAX_ATTEMPTS", 5)
+    EMAIL_OUTBOX_LEASE_SECONDS = _env_int("EMAIL_OUTBOX_LEASE_SECONDS", 60)
+    EMAIL_OUTBOX_RETENTION_DAYS = _env_int("EMAIL_OUTBOX_RETENTION_DAYS", 30)
 
     # Acceso privilegiado de plataforma.
     PLATFORM_ADMIN_KEY = os.environ.get("PLATFORM_ADMIN_KEY", "").strip()
@@ -129,6 +136,7 @@ class Config:
     WORKER_HEARTBEAT_MAX_AGE_SECONDS = _env_int("WORKER_HEARTBEAT_MAX_AGE_SECONDS", 90)
     WORKER_POLL_SECONDS = _env_float("WORKER_POLL_SECONDS", 2.0)
     WORKER_WEBHOOK_BATCH_SIZE = _env_int("WORKER_WEBHOOK_BATCH_SIZE", 50)
+    WORKER_EMAIL_BATCH_SIZE = _env_int("WORKER_EMAIL_BATCH_SIZE", 50)
     WORKER_MAINTENANCE_ENABLED = _env_flag("WORKER_MAINTENANCE_ENABLED", False)
     WORKER_MAINTENANCE_INTERVAL_SECONDS = _env_int(
         "WORKER_MAINTENANCE_INTERVAL_SECONDS", 3600
@@ -235,6 +243,7 @@ class TestingConfig(Config):
     RUN_STARTUP_TASKS = False
     RUN_LEGACY_SCHEMA_MIGRATIONS = False
     MAIL_SUPPRESS_SEND = True
+    EMAIL_OUTBOX_SYNC_IN_TESTS = True
     # Tests unitarios no simulan login de docs salvo test_docs_access
     DOCS_ACCESS_POLICY = os.environ.get("DOCS_ACCESS_POLICY", "open").strip().lower() or "open"
 

@@ -11,7 +11,7 @@ from sqlalchemy import func
 
 from app import db
 from app.branding import APP_NAME
-from app.email_service import EmailDeliveryError, send_templated_email
+from app.email_service import send_templated_email
 from app.email_verification_service import is_valid_email, normalize_email
 from app.models import Empresa, PasswordReset, User
 from app.password_policy import validar_password
@@ -95,25 +95,21 @@ def request_password_reset(email: str, *, empresa_slug: str | None = None) -> st
         db.session.flush()
 
         action_url = _reset_action_url(raw)
-        try:
-            send_templated_email(
-                recipient=normalized,
-                subject=f"Restablece tu contraseña de {APP_NAME}",
-                template_name="password_reset",
-                context={
-                    "user": user,
-                    "empresa": user.empresa,
-                    "action_url": action_url,
-                    "ttl_minutes": ttl,
-                },
-            )
-            item.sent_at = _now()
-        except EmailDeliveryError:
-            current_app.logger.exception(
-                "No se pudo enviar reset de contraseña a user_id=%s", user.id
-            )
-            # No revelar fallo de SMTP al solicitante anónimo.
-            item.used_at = _now()
+        send_templated_email(
+            empresa_id=user.empresa_id,
+            recipient=normalized,
+            subject=f"Restablece tu contraseña de {APP_NAME}",
+            template_name="password_reset",
+            context={
+                "user": user,
+                "empresa": user.empresa,
+                "action_url": action_url,
+                "ttl_minutes": ttl,
+            },
+            idempotency_key=f"password-reset:{item.id}",
+            source_type="password_reset",
+            source_id=item.id,
+        )
 
     db.session.commit()
     return GENERIC_REQUEST_MESSAGE
