@@ -12,6 +12,13 @@ La suite documental mantiene un ciclo independiente en
 
 - Espacio reservado para cambios aún no publicados.
 
+## [1.0.34] - 2026-07-30
+
+### Fixed
+
+- La adopción de `OUTBOX_ENCRYPTION_KEY` conserva lectura de los sobres
+  pendientes creados previamente con la clave derivada de `SECRET_KEY`.
+
 ## [1.0.33] - 2026-07-30
 
 ### Added
