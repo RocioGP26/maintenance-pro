@@ -142,6 +142,11 @@ class Config:
     WORKER_MAINTENANCE_INTERVAL_SECONDS = _env_int(
         "WORKER_MAINTENANCE_INTERVAL_SECONDS", 3600
     )
+    # Compatibilidad local: en producción el worker periódico mantiene los
+    # estados de las OT y evita tres escrituras redundantes por petición web.
+    WORK_ORDER_STATUS_SYNC_ON_REQUEST = _env_flag(
+        "WORK_ORDER_STATUS_SYNC_ON_REQUEST", True
+    )
 
     # Arranque: tareas pesadas desactivadas por defecto en producción
     RUN_STARTUP_TASKS = _env_flag("RUN_STARTUP_TASKS", False)
@@ -207,6 +212,9 @@ class ProductionConfig(Config):
     REMEMBER_COOKIE_SECURE = True
     LOG_JSON = True
     DISTRIBUTED_RATE_LIMITS_REQUIRED = True
+    WORK_ORDER_STATUS_SYNC_ON_REQUEST = _env_flag(
+        "WORK_ORDER_STATUS_SYNC_ON_REQUEST", False
+    )
     SQLALCHEMY_DATABASE_URI = normalize_database_url(
         os.environ.get("DATABASE_URL", _default_sqlite_uri())
     )

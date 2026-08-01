@@ -1,5 +1,6 @@
 from datetime import date, datetime, timedelta
 import unittest
+from unittest.mock import patch
 
 from sqlalchemy import event
 
@@ -146,6 +147,15 @@ class TestDashboardAnalysisSeparation(unittest.TestCase):
             35,
             "Inicio no debe volver a ejecutar el bloque analítico completo.",
         )
+
+    def test_production_mode_leaves_status_sync_to_worker(self):
+        self.app.config["WORK_ORDER_STATUS_SYNC_ON_REQUEST"] = False
+
+        with patch("app.work_order_status.sincronizar_estados_ordenes") as sync:
+            response = self.client.get("/dashboard")
+
+        self.assertEqual(response.status_code, 200)
+        sync.assert_not_called()
 
 
 if __name__ == "__main__":

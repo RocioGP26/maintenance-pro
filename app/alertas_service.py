@@ -5,7 +5,7 @@ from __future__ import annotations
 from datetime import date
 from typing import Any
 
-from flask import request, url_for
+from flask import current_app, request, url_for
 from flask_login import current_user
 from sqlalchemy import or_
 
@@ -152,9 +152,10 @@ def _resumen_alertas_mantenimiento(hoy: date) -> dict[str, Any]:
             ],
         )
 
-    from app.work_order_status import sincronizar_estados_ordenes
+    if current_app.config.get("WORK_ORDER_STATUS_SYNC_ON_REQUEST", True):
+        from app.work_order_status import sincronizar_estados_ordenes
 
-    sincronizar_estados_ordenes(eid, hoy)
+        sincronizar_estados_ordenes(eid, hoy)
     base = _base_ordenes_empresa()
 
     vencimientos = aplicar_filtro_alerta_orden(base, "vencimientos", hoy).count()

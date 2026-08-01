@@ -4758,7 +4758,14 @@ def ordenes_list():
     filtros = _ordenes_filtros_desde_request()
     orders = _ordenes_list_query(filtros).all()
     filtros_stats = {**filtros, "status": "", "alerta": ""}
-    ot_resumen = _ordenes_list_resumen(_ordenes_list_query(filtros_stats).all())
+    resumen_rows = (
+        _ordenes_list_query(filtros_stats)
+        .enable_eagerloads(False)
+        .with_entities(WorkOrder.tipo, WorkOrder.status)
+        .order_by(None)
+        .all()
+    )
+    ot_resumen = _ordenes_list_resumen(resumen_rows)
     hay_filtros = any(filtros.values())
     filtros_qs_base = {
         k: v for k, v in filtros.items() if v and k not in ("status", "alerta", "tipo")
@@ -7136,18 +7143,43 @@ def _cambiar_estado(inc, nuevo, accion, comentario=""):
 
 
 def _incidentes_kpis(base_q) -> dict:
-    pendientes_q = base_q.filter(Incident.resuelto.is_(False))
+    from sqlalchemy import case
+
+    row = base_q.with_entities(
+        func.count(Incident.id).label("total"),
+        func.sum(case((Incident.resuelto.is_(False), 1), else_=0)).label("pendientes"),
+        func.sum(
+            case(
+                (
+                    and_(
+                        Incident.resuelto.is_(False),
+                        Incident.prioridad == IncidentPrioridad.CRITICA.value,
+                    ),
+                    1,
+                ),
+                else_=0,
+            )
+        ).label("criticas"),
+        func.sum(case((Incident.resuelto.is_(True), 1), else_=0)).label("resueltas"),
+        func.sum(
+            case(
+                (
+                    and_(
+                        Incident.user_id == current_user.id,
+                        Incident.resuelto.is_(False),
+                    ),
+                    1,
+                ),
+                else_=0,
+            )
+        ).label("mis_pendientes"),
+    ).one()
     return {
-        "total": base_q.count(),
-        "pendientes": pendientes_q.count(),
-        "criticas": pendientes_q.filter(
-            Incident.prioridad == IncidentPrioridad.CRITICA.value
-        ).count(),
-        "resueltas": base_q.filter(Incident.resuelto.is_(True)).count(),
-        "mis_pendientes": base_q.filter(
-            Incident.user_id == current_user.id,
-            Incident.resuelto.is_(False),
-        ).count()
+        "total": int(row.total or 0),
+        "pendientes": int(row.pendientes or 0),
+        "criticas": int(row.criticas or 0),
+        "resueltas": int(row.resueltas or 0),
+        "mis_pendientes": int(row.mis_pendientes or 0)
         if current_user.is_authenticated
         else 0,
     }
