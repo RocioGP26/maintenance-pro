@@ -12,6 +12,26 @@ La suite documental mantiene un ciclo independiente en
 
 - Espacio reservado para cambios aún no publicados.
 
+## [1.0.38] - 2026-08-01
+
+### Added
+
+- Clasificación explícita de empresas de prueba, con filtro y acción auditada
+  desde el panel de plataforma.
+- Gate productivo para certificar la entrega idempotente de la outbox de correo.
+
+### Changed
+
+- Las empresas de prueba quedan excluidas de métricas comerciales, facturación,
+  vencimientos y automatizaciones del piloto, sin eliminar su información.
+- Se documentaron las evidencias productivas de capacidad e idempotencia de
+  correo del piloto controlado.
+
+### Fixed
+
+- Se estabilizaron las consultas de alertas operativas bajo concurrencia y se
+  ajustó la prueba de carga para respetar las cuotas reales de la API.
+
 ## [1.0.37] - 2026-07-30
 
 ### Fixed
