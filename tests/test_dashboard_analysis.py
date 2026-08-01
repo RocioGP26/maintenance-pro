@@ -157,6 +157,47 @@ class TestDashboardAnalysisSeparation(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         sync.assert_not_called()
 
+    def test_alert_summary_cache_reduces_repeated_page_queries(self):
+        class FakeRedis:
+            def __init__(self):
+                self.values = {}
+
+            def get(self, key):
+                return self.values.get(key)
+
+            def set(self, key, value, ex=None):
+                self.values[key] = value
+                return True
+
+        self.app.config.update(
+            REDIS_URL="redis://cache-test",
+            ALERT_SUMMARY_CACHE_SECONDS=15,
+            WORK_ORDER_STATUS_SYNC_ON_REQUEST=False,
+        )
+        engine = self.app.extensions["sqlalchemy"].engine
+        fake_redis = FakeRedis()
+
+        def request_query_count():
+            statements = 0
+
+            def count_statement(*_args, **_kwargs):
+                nonlocal statements
+                statements += 1
+
+            event.listen(engine, "before_cursor_execute", count_statement)
+            try:
+                response = self.client.get("/dashboard")
+            finally:
+                event.remove(engine, "before_cursor_execute", count_statement)
+            self.assertEqual(response.status_code, 200)
+            return statements
+
+        with patch("app.redis_client.get_redis", return_value=fake_redis):
+            first = request_query_count()
+            cached = request_query_count()
+
+        self.assertLess(cached, first)
+
 
 if __name__ == "__main__":
     unittest.main()

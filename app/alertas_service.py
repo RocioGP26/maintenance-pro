@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from datetime import date
+import json
 from typing import Any
 
 from flask import current_app, request, url_for
@@ -79,6 +80,42 @@ def _alertas_vacio() -> dict[str, Any]:
         "total": 0,
         "tiene_alertas": False,
     }
+
+
+def _alertas_cache_key(*, modulo: str, hoy: date) -> str:
+    return (
+        f"roustix:alert-summary:v1:{_current_empresa_id() or 0}:"
+        f"{current_user.id}:{modulo}:{hoy.isoformat()}"
+    )
+
+
+def _alertas_cache_get(*, modulo: str, hoy: date) -> dict[str, Any] | None:
+    if not current_app.config.get("REDIS_URL"):
+        return None
+    try:
+        from app.redis_client import get_redis
+
+        raw = get_redis().get(_alertas_cache_key(modulo=modulo, hoy=hoy))
+        value = json.loads(raw) if raw else None
+        return value if isinstance(value, dict) else None
+    except Exception:
+        return None
+
+
+def _alertas_cache_set(*, modulo: str, hoy: date, value: dict[str, Any]) -> None:
+    ttl = max(0, int(current_app.config.get("ALERT_SUMMARY_CACHE_SECONDS", 15)))
+    if not current_app.config.get("REDIS_URL") or ttl <= 0:
+        return
+    try:
+        from app.redis_client import get_redis
+
+        get_redis().set(
+            _alertas_cache_key(modulo=modulo, hoy=hoy),
+            json.dumps(value, ensure_ascii=False, separators=(",", ":")),
+            ex=ttl,
+        )
+    except Exception:
+        return
 
 
 def _empacar_alertas(*, modulo: str, titulo: str, items: list[dict[str, Any]]) -> dict[str, Any]:
@@ -332,6 +369,18 @@ def resumen_alertas_campana() -> dict[str, Any]:
         eid = _current_empresa_id()
         if not eid:
             return _alertas_vacio()
-        return _resumen_alertas_inventario(eid, hoy)
+        modulo = "inventario"
+        cached = _alertas_cache_get(modulo=modulo, hoy=hoy)
+        if cached is not None:
+            return cached
+        result = _resumen_alertas_inventario(eid, hoy)
+        _alertas_cache_set(modulo=modulo, hoy=hoy, value=result)
+        return result
 
-    return _resumen_alertas_mantenimiento(hoy)
+    modulo = "mantenimiento"
+    cached = _alertas_cache_get(modulo=modulo, hoy=hoy)
+    if cached is not None:
+        return cached
+    result = _resumen_alertas_mantenimiento(hoy)
+    _alertas_cache_set(modulo=modulo, hoy=hoy, value=result)
+    return result
