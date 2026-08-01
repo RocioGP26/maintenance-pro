@@ -198,6 +198,7 @@ def run_stage(
     duration: int,
     scenarios: list[tuple[str, dict[str, str]]],
     timeout: float,
+    api_rpm_per_path: int = 50,
 ) -> list[Sample]:
     # La línea base garantiza representación de cada endpoint incluso en
     # escalones cortos; el periodo concurrente comienza después de medirla.
@@ -206,12 +207,35 @@ def run_stage(
     ]
     stop_at = time.monotonic() + duration
     lock = threading.Lock()
+    budget_lock = threading.Lock()
+    api_counts = {
+        path: 1 for path, _headers in scenarios if path.startswith("/api/v1/")
+    }
+    api_window_started = time.monotonic()
+
+    def choose_scenario(rng: random.Random) -> tuple[str, dict[str, str]]:
+        nonlocal api_window_started
+        with budget_lock:
+            now = time.monotonic()
+            if now - api_window_started >= 60:
+                api_counts.clear()
+                api_window_started = now
+            candidates = list(scenarios)
+            rng.shuffle(candidates)
+            for path, headers in candidates:
+                if not path.startswith("/api/v1/"):
+                    return path, headers
+                used = api_counts.get(path, 0)
+                if used < api_rpm_per_path:
+                    api_counts[path] = used + 1
+                    return path, headers
+            return rng.choice(scenarios)
 
     def virtual_user(seed: int) -> None:
         rng = random.Random(seed)
         local: list[Sample] = []
         while time.monotonic() < stop_at:
-            path, headers = rng.choice(scenarios)
+            path, headers = choose_scenario(rng)
             local.append(_sample(base_url, path, headers, timeout))
             time.sleep(rng.uniform(0.15, 0.45))
         with lock:
@@ -234,6 +258,12 @@ def _parser() -> argparse.ArgumentParser:
     parser.add_argument("--public-only", action="store_true")
     parser.add_argument("--env-file", type=Path)
     parser.add_argument("--output", type=Path)
+    parser.add_argument(
+        "--api-rpm-per-path",
+        type=int,
+        default=50,
+        help="Tope por ruta API y minuto para respetar el plan Start (predeterminado: 50).",
+    )
     return parser
 
 
@@ -263,6 +293,8 @@ def main(argv: list[str] | None = None) -> int:
         raise SystemExit("--users debe estar entre 1 y 50.")
     if not 5 <= args.duration <= 300:
         raise SystemExit("--duration debe estar entre 5 y 300 segundos.")
+    if not 1 <= args.api_rpm_per_path <= 1000:
+        raise SystemExit("--api-rpm-per-path debe estar entre 1 y 1000.")
 
     scenarios: list[tuple[str, dict[str, str]]] = [
         ("/health/live", {}),
@@ -306,11 +338,13 @@ def main(argv: list[str] | None = None) -> int:
         duration=args.duration,
         scenarios=scenarios,
         timeout=args.timeout,
+        api_rpm_per_path=args.api_rpm_per_path,
     )
     report = {
         "base_url": args.base_url,
         "users": args.users,
         "duration_seconds": args.duration,
+        "api_rpm_per_path": args.api_rpm_per_path,
         "generated_at_epoch": int(time.time()),
         "summary": summarize(samples),
         "by_path": {

@@ -61,6 +61,11 @@ El máximo técnico del runner es 50 usuarios y cinco minutos por escalón.
 Antes de iniciar la concurrencia, el runner toma una muestra de línea base por
 ruta para evitar endpoints sin representación en escalones cortos.
 
+El runner limita cada ruta API a 50 solicitudes por minuto de forma
+predeterminada para no convertir el gate de capacidad en una prueba de abuso
+contra el límite de 60 RPM del plan Start. El valor puede ajustarse con
+`--api-rpm-per-path` cuando el tenant certificado tenga otro entitlement.
+
 ## Smoke público · 2026-07-31
 
 - 1 usuario durante 5 segundos; sólo `/health/live` y `/health/ready`.
