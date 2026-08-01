@@ -12,7 +12,7 @@ from uuid import UUID, uuid4
 from flask import Blueprint, abort, current_app, flash, jsonify, redirect, render_template, request, session, url_for
 from werkzeug.utils import secure_filename
 from flask_login import current_user, login_required, login_user, logout_user
-from sqlalchemy import and_, false, func, or_
+from sqlalchemy import and_, case, false, func, or_
 from sqlalchemy.exc import IntegrityError
 
 from app import db, limiter
@@ -2025,6 +2025,18 @@ def dashboard(
     hoy = date.today()
     periodo_anios = list(range(hoy.year - 2, hoy.year + 3))
 
+    # Inicio es una vista operativa. No debe ejecutar los cálculos históricos
+    # de MTBF, MTTR, Pareto y carga técnica que pertenecen a Análisis.
+    if _template_name == "inicio/dashboard.html":
+        return _render_operational_dashboard(
+            show_welcome=show_welcome,
+            show_tour=show_tour,
+            sector=sector,
+            machine_ids=machine_ids,
+            filtros=dash_filtros,
+            hoy=hoy,
+        )
+
     machines_q = _machines_query_con_filtros(_machines_for_sector_query(sector), dash_filtros)
     total_m = machines_q.count()
     op = machines_q.filter(Machine.status == MachineStatus.OPERATIVO.value).count()
@@ -2388,6 +2400,198 @@ def dashboard(
         preventivos_hoy_items=preventivos_hoy_items,
         garantias_por_vencer=garantias_por_vencer,
         actividad_reciente=actividad_reciente,
+    )
+
+
+def _render_operational_dashboard(
+    *,
+    show_welcome: bool,
+    show_tour: bool,
+    sector: str,
+    machine_ids: Optional[list[int]],
+    filtros: dict[str, str],
+    hoy: date,
+):
+    """Contexto mínimo del Inicio; los KPI históricos viven en /analisis."""
+    from sqlalchemy.orm import joinedload
+
+    machines_q = _machines_query_con_filtros(
+        _machines_for_sector_query(sector), filtros
+    )
+    machine_counts = machines_q.with_entities(
+        func.count(Machine.id),
+        func.coalesce(
+            func.sum(
+                case((Machine.status == MachineStatus.OPERATIVO.value, 1), else_=0)
+            ),
+            0,
+        ),
+        func.coalesce(
+            func.sum(
+                case(
+                    (Machine.status == MachineStatus.MANTENIMIENTO.value, 1),
+                    else_=0,
+                )
+            ),
+            0,
+        ),
+        func.coalesce(
+            func.sum(case((Machine.status == MachineStatus.FALLA.value, 1), else_=0)),
+            0,
+        ),
+    ).one()
+    _total, operativos, mantenimiento, falla = (int(value or 0) for value in machine_counts)
+
+    ordenes_q = _filter_work_orders_empresa(WorkOrder.query)
+    if sector:
+        ordenes_q = ordenes_q.filter(_wo_for_sector(sector))
+    ordenes_q = _wo_apply_machine_ids(ordenes_q, machine_ids)
+    open_statuses = list(WORK_ORDER_PENDING_STATUSES)
+    ordenes_abiertas, ordenes_vencidas, preventivos_hoy = (
+        int(value or 0)
+        for value in ordenes_q.with_entities(
+            func.coalesce(
+                func.sum(case((WorkOrder.status.in_(open_statuses), 1), else_=0)),
+                0,
+            ),
+            func.coalesce(
+                func.sum(
+                    case(
+                        (WorkOrder.status == WorkOrderStatus.VENCIDA.value, 1),
+                        else_=0,
+                    )
+                ),
+                0,
+            ),
+            func.coalesce(
+                func.sum(
+                    case(
+                        (
+                            and_(
+                                WorkOrder.fecha_programada == hoy,
+                                func.lower(WorkOrder.tipo)
+                                == WorkOrderType.PREVENTIVO.value,
+                            ),
+                            1,
+                        ),
+                        else_=0,
+                    )
+                ),
+                0,
+            ),
+        ).one()
+    )
+    repuestos_bajo_minimo = (
+        _filter_empresa(SparePart.query, SparePart)
+        .filter(SparePart.cantidad < SparePart.stock_minimo)
+        .count()
+    )
+
+    incidentes_q = _incidents_scope_query().filter(
+        Incident.estado.notin_(
+            [
+                IncidentEstado.RESUELTO.value,
+                IncidentEstado.CERRADO.value,
+                IncidentEstado.CANCELADO.value,
+            ]
+        )
+    )
+    incidentes_nuevas = incidentes_q.filter(
+        Incident.estado.in_(
+            [IncidentEstado.REPORTADO.value, IncidentEstado.RECIBIDO.value]
+        )
+    ).count()
+    incidentes_recientes = (
+        incidentes_q.options(joinedload(Incident.machine))
+        .order_by(Incident.reportado_en.desc())
+        .limit(6)
+        .all()
+    )
+    preventivos_hoy_items = (
+        _wo_in_period_query(hoy, hoy, sector, machine_ids)
+        .options(joinedload(WorkOrder.machine))
+        .filter(func.lower(WorkOrder.tipo) == WorkOrderType.PREVENTIVO.value)
+        .order_by(WorkOrder.fecha_programada, WorkOrder.id)
+        .limit(6)
+        .all()
+    )
+    garantias_por_vencer = (
+        machines_q.filter(
+            Machine.garantia_hasta.isnot(None),
+            Machine.garantia_hasta >= hoy,
+            Machine.garantia_hasta <= hoy + timedelta(days=30),
+        )
+        .order_by(Machine.garantia_hasta)
+        .limit(6)
+        .all()
+    )
+    actividad_reciente = (
+        _filter_work_orders_empresa(WorkOrder.query)
+        .options(joinedload(WorkOrder.machine))
+        .order_by(WorkOrder.created_at.desc())
+        .limit(8)
+        .all()
+    )
+
+    operacion_cards = [
+        {
+            "label": "OT abiertas",
+            "value": ordenes_abiertas,
+            "icon": "bi-clipboard2-check",
+            "style": "warning",
+            "href": url_for("main.ordenes_list", status=WorkOrderStatus.ABIERTA.value),
+        },
+        {
+            "label": "OT vencidas",
+            "value": ordenes_vencidas,
+            "icon": "bi-clock-history",
+            "style": "danger",
+            "href": url_for("main.ordenes_list", status=WorkOrderStatus.VENCIDA.value),
+        },
+        {
+            "label": "Incidencias nuevas",
+            "value": incidentes_nuevas,
+            "icon": "bi-exclamation-triangle",
+            "style": "danger",
+            "href": url_for("main.incidencias_list"),
+        },
+        {
+            "label": "Preventivos de hoy",
+            "value": preventivos_hoy,
+            "icon": "bi-calendar2-check",
+            "style": "success",
+            "href": url_for(
+                "main.ordenes_list",
+                tipo=WorkOrderType.PREVENTIVO.value,
+                fecha_desde=hoy.isoformat(),
+                fecha_hasta=hoy.isoformat(),
+            ),
+        },
+        {
+            "label": "Repuestos bajo mínimo",
+            "value": repuestos_bajo_minimo,
+            "icon": "bi-box-seam",
+            "style": "warning",
+            "href": url_for("main.inventario_list"),
+        },
+        {
+            "label": "Activos fuera de servicio",
+            "value": mantenimiento + falla,
+            "icon": "bi-cone-striped",
+            "style": "danger" if mantenimiento + falla else "success",
+            "href": url_for("main.activos_list"),
+        },
+    ]
+    return render_template(
+        "inicio/dashboard.html",
+        show_welcome=show_welcome,
+        show_tour=show_tour,
+        operacion_cards=operacion_cards,
+        incidentes_recientes=incidentes_recientes,
+        preventivos_hoy_items=preventivos_hoy_items,
+        garantias_por_vencer=garantias_por_vencer,
+        actividad_reciente=actividad_reciente,
+        operativos=operativos,
     )
 
 

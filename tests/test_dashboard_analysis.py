@@ -1,6 +1,8 @@
 from datetime import date, datetime, timedelta
 import unittest
 
+from sqlalchemy import event
+
 from app import create_app, db
 from app.models import Empresa, Machine, MachineType, PlanSuscripcion, User, WorkOrder
 
@@ -122,6 +124,28 @@ class TestDashboardAnalysisSeparation(unittest.TestCase):
         self.assertIn("Inicio", html)
         self.assertIn("Inteligencia", html)
         self.assertIn("Análisis", html)
+
+
+    def test_operational_dashboard_keeps_a_bounded_query_budget(self):
+        engine = self.app.extensions["sqlalchemy"].engine
+        statements = 0
+
+        def count_statement(*_args, **_kwargs):
+            nonlocal statements
+            statements += 1
+
+        event.listen(engine, "before_cursor_execute", count_statement)
+        try:
+            response = self.client.get("/dashboard")
+        finally:
+            event.remove(engine, "before_cursor_execute", count_statement)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertLessEqual(
+            statements,
+            35,
+            "Inicio no debe volver a ejecutar el bloque analítico completo.",
+        )
 
 
 if __name__ == "__main__":

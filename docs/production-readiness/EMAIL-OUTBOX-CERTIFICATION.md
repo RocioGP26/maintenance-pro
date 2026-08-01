@@ -49,7 +49,7 @@ Variables opcionales:
 | Regresión de verificación y recuperación | ✅ |
 | Alembic | ✅ una sola cabeza: `rt9u4v06w18y_email_outbox` |
 
-## Gate de producción pendiente de despliegue
+## Gate de producción
 
 1. Definir `OUTBOX_ENCRYPTION_KEY` primero en el worker, esperar que vuelva a
    estar saludable y después definir exactamente el mismo valor en la web.
@@ -70,11 +70,25 @@ Variables opcionales:
 
 | Campo | Resultado |
 | --- | --- |
-| Fecha Colombia | Pendiente |
-| Responsable | Pendiente |
-| Commit / versión | Pendiente |
-| Verificación entregada | Pendiente |
-| Recuperación entregada | Pendiente |
-| Idempotencia | Pendiente |
-| Reintento controlado | Pendiente |
-| Veredicto | Pendiente |
+| Fecha Colombia | 2026-07-30; hora exacta no registrada |
+| Responsable | Gladis Rocio Gelves Pabon |
+| Commit / versión | `805d14a` / `1.0.37` |
+| Verificación entregada | Pendiente de comprobar con un código nuevo de onboarding |
+| Recuperación entregada | ✅ Correo recibido, contraseña cambiada y nueva clave aceptada |
+| Uso único y sesiones | ✅ Enlace reutilizado rechazado y sesión anterior revocada |
+| Idempotencia | ✅ Automatizada por empresa; ensayo remoto específico pendiente |
+| Reintento controlado | ✅ El correo pendiente se conservó y entregó tras corregir la configuración SMTP |
+| Health y worker | ✅ `/health/ready` en `ok`; heartbeat estable |
+| Veredicto | Recuperación aprobada; cierre total pendiente de verificación e idempotencia remotas |
+
+### Incidencias observadas y correcciones
+
+- Una configuración inválida de `MAIL_SERVER` produjo un error IDNA en el
+  worker. Desde `1.0.35` el fallo se convierte en reintento controlado y no
+  interrumpe el ciclo completo.
+- La reutilización del enlace desde una sesión autenticada redirigía al
+  dashboard. Las versiones `1.0.36` y `1.0.37` garantizan rechazo visible del
+  token consumido y permiten solicitar un enlace nuevo sin abandonar el flujo.
+- El dashboard registró una latencia cercana a 9 segundos y bloqueó
+  temporalmente el health check. `1.0.36` habilitó concurrencia `gthread` para
+  mantener las sondas operativas mientras se atienden peticiones lentas.

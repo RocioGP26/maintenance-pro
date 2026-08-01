@@ -1,6 +1,6 @@
 # Certificación de recuperación de cuenta · Piloto Roustix
 
-**Fecha de corte:** 2026-07-29
+**Fecha de corte:** 2026-07-30
 
 **Alcance:** solicitud anónima, entrega del enlace, expiración, uso único,
 revocación de sesiones, protección contra enumeración y rate limiting.
@@ -26,10 +26,10 @@ producción.
 
 Archivo: `tests/test_password_reset.py`.
 
-Resultado focalizado al 2026-07-29:
+Resultado focalizado al 2026-07-30:
 
 ```text
-10 passed
+18 pruebas aprobadas (recuperación y versión)
 ```
 
 La batería comprueba:
@@ -66,15 +66,15 @@ confirmó los siguientes controles:
 
 | Campo | Valor |
 |-------|-------|
-| Fecha y hora Colombia | 2026-07-29; hora exacta no registrada |
-| Responsable | Responsable del piloto Roustix |
-| Commit desplegado | `5f1780c` · Roustix v1.0.29 |
+| Fecha y hora Colombia | 2026-07-30; hora exacta no registrada |
+| Responsable | Gladis Rocio Gelves Pabon |
+| Commit desplegado | `805d14a` · Roustix v1.0.37 |
 | Cuenta piloto | Cuenta de producción; identificador reservado |
 | Tiempo de entrega SMTP | Correo recibido correctamente; tiempo exacto no medido |
 | Cambio de contraseña | ✅ Aprobado |
 | Reutilización rechazada | ✅ Aprobado |
 | Sesión anterior revocada | ✅ Aprobado |
-| Logs revisados | No informado; seguimiento operativo separado |
+| Logs revisados | ✅ Render confirmó entrega, consumo único y revocación sin exponer secretos |
 | Veredicto final | ✅ Gate SMTP aprobado en producción |
 
 No incluir en la evidencia capturas del enlace completo, el token, la contraseña

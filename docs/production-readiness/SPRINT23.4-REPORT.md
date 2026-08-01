@@ -1,7 +1,7 @@
 # Sprint 23.4 · Reporte en curso
 
-Fecha de corte: 2026-07-29
-Estado: observabilidad, workers y monitor externo desplegados; gate operativo aprobado.
+Fecha de corte: 2026-07-30
+Estado: observabilidad, workers, monitor externo y outbox desplegados; prueba de carga pendiente.
 
 ## Cierre previo registrado
 
@@ -40,8 +40,7 @@ Estado: observabilidad, workers y monitor externo desplegados; gate operativo ap
 
 ## Pendiente para el siguiente avance
 
-- Implementar la outbox cifrada para correos y notificaciones.
-- Versionar runbooks completos y ejecutar la prueba de carga.
+- Completar los runbooks y ejecutar la prueba de carga.
 - Mejorar la entregabilidad del correo operativo mediante SPF, DKIM y DMARC.
 - Actualizar las acciones de GitHub que aún generan la advertencia de
   compatibilidad con Node.js 20.
@@ -80,8 +79,9 @@ Estado: observabilidad, workers y monitor externo desplegados; gate operativo ap
 - [x] Ejecutar manualmente el workflow externo y registrar el run.
 - [x] Enviar, con confirmación de la responsable, una alerta controlada y
   comprobar Sentry, correo y auditoría.
-- [ ] Implementar la outbox cifrada de correos/notificaciones y ejecutar la
-  prueba de carga antes de cerrar completamente Sprint 23.4.
+- [x] Implementar la outbox cifrada de correos/notificaciones y comprobar la
+  recuperación de cuenta mediante el worker.
+- [ ] Ejecutar la prueba de carga antes de cerrar completamente Sprint 23.4.
 
 ### Gate remoto parcial · 2026-07-29
 
@@ -123,5 +123,14 @@ Estado: observabilidad, workers y monitor externo desplegados; gate operativo ap
 - Veredicto del gate operativo: **aprobado** para monitor externo, Sentry,
   correo y auditoría.
 
-Los correos y notificaciones todavía no se trasladaron al worker: requieren una
-outbox cifrada para no persistir códigos de verificación ni tokens crudos.
+## Avance 4 · Outbox cifrada y recuperación
+
+- `email_outbox` cifra destinatario, asunto y contenido mediante Fernet.
+- El worker entrega verificación, bienvenida y recuperación con leases,
+  idempotencia por empresa y reintentos controlados.
+- `OUTBOX_ENCRYPTION_KEY` fue configurada con el mismo valor en web y worker.
+- La recuperación real fue aprobada en producción: correo recibido, cambio de
+  contraseña, rechazo del enlace reutilizado y revocación de sesión anterior.
+- La versión `1.0.37` quedó saludable en producción desde `805d14a`.
+- El cierre total de la certificación de outbox requiere todavía comprobar un
+  código nuevo de verificación y ejecutar un ensayo remoto de idempotencia.
