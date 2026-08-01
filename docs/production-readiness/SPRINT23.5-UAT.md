@@ -12,7 +12,7 @@ como **Pruebas** y después, de forma abreviada, con cada empresa piloto real.
 | --- | --- |
 | Fecha y hora Colombia | 2026-08-01, 15:49–16:00 aprox. |
 | Responsable | Gladis Rocio Gelves Pabon |
-| Versión y commit | v1.0.39 · build productivo previo a la corrección del hallazgo UAT |
+| Versión y commit | v1.0.40 · `bc6c593` |
 | Tenant de prueba | Empresa de Prueba |
 | Plan | Start · tenant clasificado como Pruebas |
 | Navegador / dispositivo | Navegador de escritorio · Windows |
@@ -57,9 +57,10 @@ personales innecesarios en las capturas o en este documento.
 - [ ] Registrar jornada externa con proveedor y técnico del proveedor.
 - [ ] Instalar un repuesto y confirmar jornada, hora y técnico.
 - [ ] Adjuntar informe técnico.
-- [ ] Completar la OT y confirmar el cierre del incidente asociado. La OT quedó
-  completada, pero el incidente permaneció en `Pendiente de OT`; hallazgo alto
-  corregido en v1.0.40 y pendiente de revalidación productiva.
+- [x] Completar la OT y confirmar el cierre del incidente asociado. El hallazgo
+  inicial fue corregido en v1.0.40 y revalidado en producción: `OT-26-0002`
+  cerró automáticamente `INC-26-0001` el 01/08/2026 a las 16:07, con historial
+  `cerrado por ot` y motivo de cierre registrado.
 - [ ] Descargar y revisar el PDF de la OT.
 
 ## 5. Almacenamiento y capacidad
