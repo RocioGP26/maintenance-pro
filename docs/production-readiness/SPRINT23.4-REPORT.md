@@ -1,7 +1,9 @@
-# Sprint 23.4 · Reporte en curso
+# Sprint 23.4 · Reporte de cierre
 
 Fecha de corte: 2026-08-01
-Estado: observabilidad, workers, monitor externo y outbox desplegados; gate de carga ejecutado y capacidad piloto certificada hasta 10 usuarios concurrentes en la instancia Starter actual.
+Estado: **cerrado**. Observabilidad, workers, monitor externo y outbox están
+desplegados; el gate de carga certificó hasta 10 usuarios concurrentes en la
+instancia Starter actual.
 
 ## Cierre previo registrado
 
@@ -50,6 +52,18 @@ Estado: observabilidad, workers, monitor externo y outbox desplegados; gate de c
   `actions/setup-python@v5` a `@v6` para usar el runtime Node.js 24.
 - La actualización elimina la dependencia operativa de Node.js 20 y mantiene
   los mismos permisos, eventos y versiones de Python de cada workflow.
+- La ejecución remota `30715554954` del monitor terminó en estado **Success**
+  sobre el commit `11552ec` y validó las acciones actualizadas.
+
+## Decisiones de cierre
+
+- La capacidad certificada del piloto permanece en 10 usuarios concurrentes;
+  optimizar incidencias y órdenes para el escalón de 20 es una mejora posterior
+  de capacidad, no un bloqueo para el piloto de máximo tres empresas.
+- SPF, DKIM, DMARC y la alineación del remitente se gestionarán en el Sprint
+  23.5 junto con el dominio y el correo corporativo.
+- Todos los criterios de la Definition of Done del Sprint 23.4 cuentan con
+  implementación, pruebas locales y evidencia productiva o remota.
 
 ## Avance 2 · Redis y worker
 
