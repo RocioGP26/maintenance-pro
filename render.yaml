@@ -39,7 +39,7 @@ services:
       - key: WORK_ORDER_STATUS_SYNC_ON_REQUEST
         value: "false"
       - key: ALERT_SUMMARY_CACHE_SECONDS
-        value: "15"
+        value: "60"
       - key: STORAGE_BACKEND
         value: s3
       - key: STORAGE_BUCKET

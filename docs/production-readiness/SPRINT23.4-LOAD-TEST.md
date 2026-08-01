@@ -165,3 +165,8 @@ tipo de error, ruta, estado y latencia.
   p95 `5.646,84 ms` (**rojo**), por lo que el gate se detuvo. El patrón es de
   cola de ejecución con 20 usuarios sobre 8 hilos; se requiere ajustar la
   concurrencia y repetir este escalón antes de certificarlo.
+- Repetición con 16 hilos: 926 solicitudes, 0 fallos y p95 global
+  `1.845,20 ms` (**verde**). Health y API quedaron verdes; `/dashboard`
+  alcanzó `5.437,23 ms` por ráfagas coincidentes con la expiración de la
+  caché cada 15 segundos. Se amplía el TTL a 60 segundos y se exige una nueva
+  confirmación del escalón de 20 usuarios.

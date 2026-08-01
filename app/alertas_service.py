@@ -103,7 +103,7 @@ def _alertas_cache_get(*, modulo: str, hoy: date) -> dict[str, Any] | None:
 
 
 def _alertas_cache_set(*, modulo: str, hoy: date, value: dict[str, Any]) -> None:
-    ttl = max(0, int(current_app.config.get("ALERT_SUMMARY_CACHE_SECONDS", 15)))
+    ttl = max(0, int(current_app.config.get("ALERT_SUMMARY_CACHE_SECONDS", 60)))
     if not current_app.config.get("REDIS_URL") or ttl <= 0:
         return
     try:
