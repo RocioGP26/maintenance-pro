@@ -43,8 +43,13 @@ Estado: observabilidad, workers, monitor externo y outbox desplegados; gate de c
 - Ampliar la infraestructura u optimizar incidencias y órdenes antes de repetir
   el escalón de 20 usuarios concurrentes.
 - Mejorar la entregabilidad del correo operativo mediante SPF, DKIM y DMARC.
-- Actualizar las acciones de GitHub que aún generan la advertencia de
-  compatibilidad con Node.js 20.
+
+### Actualización de GitHub Actions · 2026-08-01
+
+- Todos los workflows migraron de `actions/checkout@v4` a `@v5` y de
+  `actions/setup-python@v5` a `@v6` para usar el runtime Node.js 24.
+- La actualización elimina la dependencia operativa de Node.js 20 y mantiene
+  los mismos permisos, eventos y versiones de Python de cada workflow.
 
 ## Avance 2 · Redis y worker
 
