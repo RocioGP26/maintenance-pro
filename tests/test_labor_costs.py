@@ -213,7 +213,9 @@ class TestLaborCosts(unittest.TestCase):
                 empresa_id=empresa.id,
                 sku="REP-JORNADAS-001",
                 nombre="Repuesto por jornadas",
-                cantidad=2,
+                # La primera unidad ya fue consumida por la jornada existente;
+                # esta es la existencia que ve el usuario antes de editar la OT.
+                cantidad=1,
             )
             db.session.add_all([machine, part])
             db.session.flush()
@@ -224,6 +226,17 @@ class TestLaborCosts(unittest.TestCase):
                 tipo="correctivo",
             )
             db.session.add(order)
+            db.session.flush()
+            order.repuestos.append(
+                WorkOrderRepuesto(
+                    spare_part_id=part.id,
+                    cantidad=1,
+                    jornada_fecha=date(2026, 8, 1),
+                    jornada_hora_inicio="08:00",
+                    jornada_hora_fin="09:00",
+                    jornada_tecnico="Técnico 1",
+                )
+            )
             db.session.commit()
             payload = [
                 {
@@ -252,9 +265,13 @@ class TestLaborCosts(unittest.TestCase):
 
             self.assertIsNone(error)
             self.assertEqual(part.cantidad, 0)
-            self.assertEqual(len(order.repuestos), 2)
+            db.session.commit()
+            lineas = WorkOrderRepuesto.query.filter_by(work_order_id=order.id).order_by(
+                WorkOrderRepuesto.jornada_fecha
+            ).all()
+            self.assertEqual(len(lineas), 2)
             self.assertEqual(
-                [line.jornada_tecnico for line in order.repuestos],
+                [line.jornada_tecnico for line in lineas],
                 ["Técnico 1", "Técnico 2"],
             )
         finally:

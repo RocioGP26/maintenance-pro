@@ -3944,9 +3944,17 @@ def _repuesto_linea_a_dict(line: WorkOrderRepuesto) -> dict:
 
 
 def _revertir_repuestos_stock(wo: WorkOrder) -> None:
-    for line in list(wo.repuestos):
-        if line.spare_part:
-            line.spare_part.cantidad = (line.spare_part.cantidad or 0) + line.cantidad
+    lineas = list(wo.repuestos)
+    cantidades_previas: dict[int, int] = {}
+    for line in lineas:
+        cantidades_previas[line.spare_part_id] = (
+            cantidades_previas.get(line.spare_part_id, 0) + int(line.cantidad or 0)
+        )
+    if cantidades_previas:
+        partes = SparePart.query.filter(SparePart.id.in_(cantidades_previas)).all()
+        for part in partes:
+            part.cantidad = (part.cantidad or 0) + cantidades_previas[part.id]
+    for line in lineas:
         db.session.delete(line)
     db.session.flush()
 
@@ -4015,9 +4023,14 @@ def _guardar_repuestos_orden(wo: WorkOrder) -> Optional[str]:
         ): line.costo_unitario_linea
         for line in wo.repuestos
     }
-    _revertir_repuestos_stock(wo)
+    cantidades_previas: dict[int, int] = {}
+    for line in wo.repuestos:
+        cantidades_previas[line.spare_part_id] = (
+            cantidades_previas.get(line.spare_part_id, 0) + int(line.cantidad or 0)
+        )
 
     if request.form.get("usa_repuestos") != "1":
+        _revertir_repuestos_stock(wo)
         return None
 
     items, err = _parse_repuestos_json()
@@ -4032,20 +4045,28 @@ def _guardar_repuestos_orden(wo: WorkOrder) -> Optional[str]:
         cantidades_requeridas[item["spare_part_id"]] = (
             cantidades_requeridas.get(item["spare_part_id"], 0) + item["cantidad"]
         )
+    partes_por_id: dict[int, SparePart] = {}
     for part_id, cantidad_total in cantidades_requeridas.items():
         part = db.session.get(SparePart, part_id)
         if part is None:
             return "Uno de los repuestos seleccionados ya no existe."
         if eid and part.empresa_id != eid:
             return f"El repuesto {part.sku} no pertenece a tu empresa."
-        if (part.cantidad or 0) < cantidad_total:
+        partes_por_id[part_id] = part
+        cantidad_disponible = (part.cantidad or 0) + cantidades_previas.get(part_id, 0)
+        if cantidad_disponible < cantidad_total:
             return (
                 f"Stock insuficiente para {part.nombre} "
-                f"(disponible: {part.cantidad} {part.unidad or 'pza'})."
+                f"(disponible: {cantidad_disponible} {part.unidad or 'pza'})."
             )
 
+    # Solo se revierte el consumo anterior después de validar el reemplazo
+    # completo. Así una edición compara contra stock actual + unidades ya
+    # consumidas por esta misma OT, sin exigir existencias duplicadas.
+    _revertir_repuestos_stock(wo)
+
     for item in items:
-        part = db.session.get(SparePart, item["spare_part_id"])
+        part = partes_por_id[item["spare_part_id"]]
         jornada = wo.jornadas[-1] if wo.jornadas else None
         jornada_fecha = None
         if item["jornada_fecha"]:

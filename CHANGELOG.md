@@ -12,6 +12,17 @@ La suite documental mantiene un ciclo independiente en
 
 - Espacio reservado para cambios aún no publicados.
 
+## [1.0.43] - 2026-08-01
+
+### Fixed
+
+- Al agregar repuestos a una jornada posterior, la validación considera el
+  stock actual más las unidades que la misma OT ya había consumido. Una
+  existencia disponible de una unidad permite instalar esa unidad sin volver
+  a exigir el inventario de las jornadas anteriores.
+- La edición valida el reemplazo completo antes de revertir consumos, evitando
+  alterar temporalmente el inventario cuando una línea nueva es inválida.
+
 ## [1.0.42] - 2026-08-01
 
 ### Fixed
