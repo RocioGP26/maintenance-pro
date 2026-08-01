@@ -23,6 +23,7 @@ clientes reales, sin incorporar funcionalidades nuevas de negocio.
 - `SPRINT23.4-OBSERVABILITY-RUNBOOK.md`: monitor externo, Sentry y alertas controladas.
 - `SPRINT23.5-CHARTER.md`: alcance y criterios de salida del piloto controlado.
 - `SPRINT23.5-REPORT.md`: evidencia de dominio, correo, UAT y decisión Go/No-Go.
+- `SPRINT23.5-UAT.md`: recorrido de aceptación para tenant de prueba y pilotos reales.
 - `backup-restore-runbook.md`: **recuperación de backups** (RTO/RPO, procedimiento, integridad).
 - `backup-recovery-drill.md`: plantilla de simulacro trimestral.
 - `storage-certification.md`: evidencia y gate de certificación R2 del piloto.

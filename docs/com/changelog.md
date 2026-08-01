@@ -1,5 +1,15 @@
 # COM Changelog
 
+## [1.3.3] — 2026-08-01 · Piloto controlado
+
+### Changed
+- El cupo inicial se limita a un máximo de **3 empresas piloto reales**.
+- Los tenants internos marcados como prueba no consumen el cupo comercial.
+- El ingreso de nuevas empresas queda sujeto al gate UAT y a una decisión
+  Go/No-Go documentada.
+
+---
+
 ## [1.3.2] — 2026-07-29 · Storage conservador año 1
 
 ### Changed

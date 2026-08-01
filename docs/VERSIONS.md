@@ -8,13 +8,13 @@
 |---|---:|---|---|---|
 | **Aplicación Flask** | **v1.0.39** | [`app/version.py`](../app/version.py) | [`CHANGELOG.md`](../CHANGELOG.md) | `v1.0.39` |
 | **Suite documental** | **v1.22.5** | Este archivo | [changelog.md](changelog.md) | `docs-vX.Y` |
-| **COM (empaquetado comercial)** | **v1.3.2** | [`com/README.md`](com/README.md) | [`com/changelog.md`](com/changelog.md) | — |
+| **COM (empaquetado comercial)** | **v1.3.3** | [`com/README.md`](com/README.md) | [`com/changelog.md`](com/changelog.md) | — |
 
 La aplicación y la documentación son productos versionados de forma
 independiente. Flujo de release del software: [APP_VERSIONING.md](APP_VERSIONING.md).
 
 **Suite actual:** **v1.22.5** (Sprint 22 completo · API pública y Webhooks)  
-**COM v1.3.2**: Start $1M · Business $1.5M · Enterprise desde $2.5M
+**COM v1.3.3**: Start $1M · Business $1.5M · Enterprise desde $2.5M · piloto máximo 3 empresas
 **Últimos tags:** `docs-v1.0` · `docs-foundation-1.0` (recomendado)
 
 ---

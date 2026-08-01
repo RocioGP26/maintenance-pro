@@ -31,6 +31,21 @@ Estado: **iniciado · gate de correo corporativo pendiente**
 5. Actualizar secretos de web, worker y GitHub Actions.
 6. Ejecutar y documentar las pruebas de entregabilidad.
 
+## Hallazgo legal inicial
+
+- El footer público todavía presenta **Privacidad · próximamente**.
+- No existen páginas públicas vigentes para privacidad, tratamiento de datos y
+  términos del servicio.
+- Antes de redactarlas se requieren como mínimo la identidad legal del
+  responsable, NIT, domicilio, canal de atención de titulares, política de
+  conservación, subencargados relevantes y condiciones comerciales aprobadas.
+- Los textos deberán someterse a revisión legal antes de publicarse.
+
+## Gate UAT
+
+El recorrido reproducible quedó definido en `SPRINT23.5-UAT.md`. Se ejecutará
+primero con la empresa marcada como **Pruebas**, sin consumir el cupo máximo de
+tres empresas piloto reales.
+
 No se deben publicar valores de contraseñas, claves DKIM privadas, tokens ni
 credenciales SMTP en este documento o en el repositorio.
-
