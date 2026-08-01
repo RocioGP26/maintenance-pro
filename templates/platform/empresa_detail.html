@@ -30,6 +30,8 @@
 
     <span class="{{ fila.plan_badge_class }}">{{ fila.plan_short }}</span>
 
+    {% if e.es_prueba %}<span class="platform-badge platform-badge--trial ms-2">Pruebas</span>{% endif %}
+
     <span class="text-secondary ms-2">{{ e.sector_label }}</span>
 
   </p>
@@ -138,7 +140,7 @@
 
     <h3>MRR (facturación real)</h3>
 
-    <p>{{ formato_moneda(fila.mrr) }}</p>
+    <p>{% if e.es_prueba %}Excluida{% else %}{{ formato_moneda(fila.mrr) }}{% endif %}</p>
 
   </div>
 
@@ -181,7 +183,11 @@
       <button type="submit" class="platform-btn platform-btn-success">Guardar plan</button>
     </form>
     <p class="small text-secondary mb-0 mt-2">
+      {% if e.es_prueba %}
+      Tenant de pruebas: el plan conserva los límites funcionales, pero no genera MRR, mora ni facturas.
+      {% else %}
       Operación piloto: el cambio es manual, activa el ciclo y queda auditado. No crea factura automáticamente.
+      {% endif %}
     </p>
   </div>
 </div>
@@ -189,6 +195,15 @@
 
 
 <div class="platform-actions">
+
+  <form method="post" action="{{ url_for('platform.empresa_clasificacion', id=e.id) }}"
+        onsubmit="return confirm('¿Cambiar la clasificación de esta empresa?');">
+    {% include "_csrf.html" %}
+    <input type="hidden" name="es_prueba" value="{{ '0' if e.es_prueba else '1' }}">
+    <button type="submit" class="platform-btn platform-btn-outline">
+      {{ 'Convertir en cliente' if e.es_prueba else 'Marcar como pruebas' }}
+    </button>
+  </form>
 
   {% if e.suspendida or fila.estado == 'suspendida' %}
 
@@ -241,6 +256,7 @@
 
     <h2 class="platform-section-title mb-0">Facturación</h2>
 
+    {% if not e.es_prueba %}
     <form method="post" action="{{ url_for('platform.empresa_nueva_factura', id=e.id) }}" class="d-flex flex-wrap gap-2 align-items-center">
       {% include "_csrf.html" %}
 
@@ -253,6 +269,9 @@
       <button type="submit" class="platform-btn platform-btn-outline">+ Nueva factura</button>
 
     </form>
+    {% else %}
+    <span class="small text-secondary">Facturación desactivada para este tenant de pruebas.</span>
+    {% endif %}
 
   </div>
 

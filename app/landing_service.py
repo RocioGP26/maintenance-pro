@@ -277,8 +277,19 @@ def public_page_context() -> dict[str, Any]:
 
 
 def estadisticas_confianza() -> dict[str, Any]:
-    empresas = db.session.query(func.count(Empresa.id)).scalar() or 0
-    activos = db.session.query(func.count(Machine.id)).scalar() or 0
+    empresas = (
+        db.session.query(func.count(Empresa.id))
+        .filter(Empresa.es_prueba.is_(False))
+        .scalar()
+        or 0
+    )
+    activos = (
+        db.session.query(func.count(Machine.id))
+        .join(Empresa, Machine.empresa_id == Empresa.id)
+        .filter(Empresa.es_prueba.is_(False))
+        .scalar()
+        or 0
+    )
     dias = trial_dias()
 
     if empresas >= MIN_EMPRESAS_STATS or activos >= MIN_ACTIVOS_STATS:

@@ -43,6 +43,7 @@ from app.platform_service import (
     listar_empresas_platform,
     plan_choices_platform,
     sector_choices_platform,
+    tipo_choices_platform,
     usuarios_por_empresa,
 )
 from app.platform_audit import PLATFORM_AUDIT_LABELS, registrar_auditoria_plataforma
@@ -321,6 +322,9 @@ def facturacion():
 def facturacion_pagar(factura_id: int):
     factura = FacturaEmpresa.query.get_or_404(factura_id)
     empresa = factura.empresa
+    if empresa and empresa.es_prueba:
+        flash("Las empresas de prueba están excluidas de facturación.", "warning")
+        return redirect(request.referrer or url_for("platform.facturacion"))
     marcar_factura_pagada(
         factura,
         metodo=request.form.get("metodo", "manual"),
@@ -344,16 +348,18 @@ def empresas():
     sector = request.args.get("sector", "")
     plan = request.args.get("plan", "")
     estado = request.args.get("estado", "")
+    tipo = request.args.get("tipo", "")
     q = request.args.get("q", "")
-    filas = listar_empresas_platform(sector=sector, plan=plan, estado=estado, q=q)
+    filas = listar_empresas_platform(sector=sector, plan=plan, estado=estado, tipo=tipo, q=q)
     return render_template(
         "platform/empresas.html",
         filas=filas,
         kpis=kpis_platform(filas),
-        filtros={"sector": sector, "plan": plan, "estado": estado, "q": q},
+        filtros={"sector": sector, "plan": plan, "estado": estado, "tipo": tipo, "q": q},
         sectores=sector_choices_platform(),
         planes=plan_choices_platform(),
         estados=estado_choices_platform(),
+        tipos=tipo_choices_platform(),
         estado_meta=ESTADO_META,
     )
 
@@ -514,6 +520,9 @@ def empresa_storage_addon(id: int):
 @platform_login_required
 def empresa_nueva_factura(id: int):
     empresa = Empresa.query.get_or_404(id)
+    if empresa.es_prueba:
+        flash("Las empresas de prueba están excluidas de facturación.", "warning")
+        return redirect(url_for("platform.empresa_detail", id=id))
     try:
         monto = float(request.form.get("monto") or monto_suscripcion_empresa(empresa))
     except (TypeError, ValueError):
@@ -529,6 +538,9 @@ def empresa_nueva_factura(id: int):
 @platform_login_required
 def empresa_pagar_factura(id: int, factura_id: int):
     empresa = Empresa.query.get_or_404(id)
+    if empresa.es_prueba:
+        flash("Las empresas de prueba están excluidas de facturación.", "warning")
+        return redirect(url_for("platform.empresa_detail", id=id))
     factura = FacturaEmpresa.query.filter_by(id=factura_id, empresa_id=empresa.id).first_or_404()
     marcar_factura_pagada(
         factura,
@@ -566,6 +578,28 @@ def empresa_reactivar(id: int):
     empresa.suspendida = False
     db.session.commit()
     flash(f"{empresa.razon_social} reactivada.", "success")
+    return redirect(url_for("platform.empresa_detail", id=id))
+
+
+@platform_bp.route("/empresas/<int:id>/clasificacion", methods=["POST"])
+@platform_login_required
+def empresa_clasificacion(id: int):
+    empresa = Empresa.query.get_or_404(id)
+    es_prueba = request.form.get("es_prueba") == "1"
+    if empresa.es_prueba == es_prueba:
+        flash("La clasificación de la empresa no cambió.", "info")
+        return redirect(url_for("platform.empresa_detail", id=id))
+    empresa.es_prueba = es_prueba
+    detalle = "Empresa clasificada como prueba" if es_prueba else "Empresa clasificada como cliente"
+    registrar_auditoria_plataforma(
+        "company_test_classification",
+        empresa_id=empresa.id,
+        detalle=detalle,
+        visible_cliente=False,
+    )
+    registrar_actividad_tenant(empresa.id, "classification_changed", detalle=detalle)
+    db.session.commit()
+    flash(f"{empresa.razon_social}: {detalle.lower()}.", "success")
     return redirect(url_for("platform.empresa_detail", id=id))
 
 

@@ -181,6 +181,7 @@ class Empresa(db.Model):
     fecha_registro = db.Column(db.DateTime, default=datetime.utcnow)
     email_verified_at = db.Column(db.DateTime, nullable=True)
     suspendida = db.Column(db.Boolean, default=False, nullable=False)
+    es_prueba = db.Column(db.Boolean, default=False, nullable=False)
     modulos_activos_json = db.Column(db.Text, default='["mantenimiento"]')
     session_idle_minutes = db.Column(db.Integer, default=30, nullable=False)
     session_absolute_minutes = db.Column(db.Integer, default=480, nullable=False)

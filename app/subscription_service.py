@@ -153,6 +153,8 @@ def _crear_factura_suscripcion(
     concepto: str = "",
     periodo: str | None = None,
 ) -> FacturaEmpresa:
+    if empresa.es_prueba:
+        raise ValueError("Las empresas de prueba están excluidas de facturación.")
     hoy = hoy or date.today()
     plan_key = _plan_facturable(sub)
     meta = plan_meta(plan_key)
@@ -207,7 +209,8 @@ def verificar_vencimientos(hoy: date | None = None) -> dict[str, int]:
     hoy = hoy or date.today()
     stats = {"trials_a_mora": 0, "facturas_vencidas": 0, "suspensiones": 0}
 
-    trials_vencidos = PlanSuscripcion.query.filter(
+    trials_vencidos = PlanSuscripcion.query.join(Empresa).filter(
+        Empresa.es_prueba.is_(False),
         PlanSuscripcion.activo.is_(True),
         PlanSuscripcion.estado_ciclo == SuscripcionEstado.TRIAL.value,
         PlanSuscripcion.fecha_fin.isnot(None),
@@ -235,7 +238,8 @@ def verificar_vencimientos(hoy: date | None = None) -> dict[str, int]:
         sub.estado_ciclo = SuscripcionEstado.MORA.value
         stats["trials_a_mora"] += 1
 
-    facturas_impagas = FacturaEmpresa.query.filter(
+    facturas_impagas = FacturaEmpresa.query.join(Empresa).filter(
+        Empresa.es_prueba.is_(False),
         FacturaEmpresa.estado == FacturaEstado.PENDIENTE.value,
         FacturaEmpresa.fecha_vencimiento.isnot(None),
         FacturaEmpresa.fecha_vencimiento < hoy,
@@ -256,7 +260,8 @@ def verificar_vencimientos(hoy: date | None = None) -> dict[str, int]:
         empresa.suspendida = True
         stats["suspensiones"] += 1
 
-    suscripciones_mora_vencidas = PlanSuscripcion.query.filter(
+    suscripciones_mora_vencidas = PlanSuscripcion.query.join(Empresa).filter(
+        Empresa.es_prueba.is_(False),
         PlanSuscripcion.activo.is_(True),
         PlanSuscripcion.estado_ciclo == SuscripcionEstado.MORA.value,
         PlanSuscripcion.fecha_fin.isnot(None),
@@ -318,6 +323,8 @@ def marcar_factura_pagada(
 
 
 def monto_suscripcion_empresa(empresa: Empresa) -> float:
+    if empresa.es_prueba:
+        return 0.0
     sub = empresa.plan_activo
     key = _plan_facturable(sub) if sub else PlanTipo.TRIAL.value
     return _monto_plan(key)
@@ -330,6 +337,8 @@ def crear_factura_mensual(
     monto: Optional[float] = None,
 ) -> FacturaEmpresa:
     """Factura manual adicional desde el panel (fuera del cron)."""
+    if empresa.es_prueba:
+        raise ValueError("Las empresas de prueba están excluidas de facturación.")
     sub = empresa.plan_activo
     if not sub:
         raise ValueError("La empresa no tiene suscripción activa.")

@@ -159,3 +159,16 @@ Estado: observabilidad, workers, monitor externo y outbox desplegados; gate de c
   completar una optimización específica de las dos vistas afectadas.
 - Evidencia técnica detallada: `SPRINT23.4-LOAD-TEST.md` y
   `artifacts/load-20-final.json` (artefacto local excluido de Git).
+
+## Avance 6 · Tenants internos de prueba
+
+- Las empresas pueden clasificarse explícitamente como **Pruebas** desde el
+  panel de Plataforma y filtrarse por tipo.
+- Los tenants de prueba conservan usuarios, aislamiento, planes funcionales,
+  archivos y auditoría para smoke tests reales.
+- Quedan excluidos de clientes activos, altas comerciales, MRR, cartera,
+  facturación manual, vencimientos automáticos y estadísticas públicas.
+- La clasificación y sus cambios quedan auditados; suspender un tenant sigue
+  siendo una acción independiente para revocar su acceso sin borrar evidencia.
+- El máximo comercial del piloto permanece en tres empresas reales; los
+  tenants marcados como prueba no consumen ese cupo.

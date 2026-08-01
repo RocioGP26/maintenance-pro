@@ -20,6 +20,8 @@ from app.subscription_service import crear_factura_mensual, marcar_factura_pagad
 
 def mrr_empresa(empresa: Empresa, hoy: date | None = None) -> float:
     """MRR real: factura pagada del mes; si no, catálogo si está activa."""
+    if empresa.es_prueba:
+        return 0.0
     hoy = hoy or date.today()
     periodo = f"{hoy.year:04d}-{hoy.month:02d}"
     factura = (
@@ -99,6 +101,7 @@ def listar_facturas_platform(
 ) -> list[FacturaEmpresa]:
     query = (
         FacturaEmpresa.query.join(Empresa, FacturaEmpresa.empresa_id == Empresa.id)
+        .filter(Empresa.es_prueba.is_(False))
         .order_by(FacturaEmpresa.fecha_emision.desc(), FacturaEmpresa.id.desc())
     )
     if estado:
@@ -118,15 +121,18 @@ def listar_facturas_platform(
 def kpis_facturacion() -> dict[str, Any]:
     hoy = date.today()
     periodo = f"{hoy.year:04d}-{hoy.month:02d}"
-    pendientes = FacturaEmpresa.query.filter_by(estado=FacturaEstado.PENDIENTE.value).count()
-    vencidas = FacturaEmpresa.query.filter_by(estado=FacturaEstado.VENCIDA.value).count()
-    pagadas_mes = FacturaEmpresa.query.filter(
+    base = FacturaEmpresa.query.join(Empresa).filter(Empresa.es_prueba.is_(False))
+    pendientes = base.filter(FacturaEmpresa.estado == FacturaEstado.PENDIENTE.value).count()
+    vencidas = base.filter(FacturaEmpresa.estado == FacturaEstado.VENCIDA.value).count()
+    pagadas_mes = base.filter(
         FacturaEmpresa.estado == FacturaEstado.PAGADA.value,
         FacturaEmpresa.periodo == periodo,
     ).count()
     cobrado_mes = (
         db.session.query(func.coalesce(func.sum(FacturaEmpresa.monto), 0))
+        .join(Empresa)
         .filter(
+            Empresa.es_prueba.is_(False),
             FacturaEmpresa.estado == FacturaEstado.PAGADA.value,
             FacturaEmpresa.periodo == periodo,
         )
@@ -134,7 +140,11 @@ def kpis_facturacion() -> dict[str, Any]:
     )
     por_cobrar = (
         db.session.query(func.coalesce(func.sum(FacturaEmpresa.monto), 0))
-        .filter(FacturaEmpresa.estado.in_((FacturaEstado.PENDIENTE.value, FacturaEstado.VENCIDA.value)))
+        .join(Empresa)
+        .filter(
+            Empresa.es_prueba.is_(False),
+            FacturaEmpresa.estado.in_((FacturaEstado.PENDIENTE.value, FacturaEstado.VENCIDA.value)),
+        )
         .scalar()
     )
     return {

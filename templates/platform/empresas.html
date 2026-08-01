@@ -9,7 +9,7 @@
 
 <div class="platform-kpi-grid">
   <div class="platform-kpi">
-    <div class="platform-kpi-label">Empresas totales</div>
+    <div class="platform-kpi-label">Clientes totales</div>
     <div class="platform-kpi-row">
       <div class="platform-kpi-value">{{ kpis.total }}</div>
       {% if kpis.nuevas_mes %}
@@ -62,6 +62,11 @@
     <option value="{{ val }}" {% if filtros.estado == val %}selected{% endif %}>{{ lbl }}</option>
     {% endfor %}
   </select>
+  <select name="tipo" class="platform-select" onchange="this.form.submit()">
+    {% for val, lbl in tipos %}
+    <option value="{{ val }}" {% if filtros.tipo == val %}selected{% endif %}>{{ lbl }}</option>
+    {% endfor %}
+  </select>
   <button type="submit" class="platform-btn platform-btn-outline">Buscar</button>
 </form>
 
@@ -88,7 +93,10 @@
             <div class="platform-empresa-cell">
               <div class="platform-avatar" style="background: {{ f.avatar_color }};">{{ e.iniciales() }}</div>
               <div>
-                <div class="platform-empresa-nombre">{{ e.razon_social }}</div>
+                <div class="platform-empresa-nombre">
+                  {{ e.razon_social }}
+                  {% if e.es_prueba %}<span class="platform-badge platform-badge--trial ms-1">Pruebas</span>{% endif %}
+                </div>
                 <div class="platform-empresa-nit">{% if e.nit %}NIT {{ e.nit }}{% else %}{{ e.slug or '—' }}{% endif %}</div>
               </div>
             </div>
@@ -140,7 +148,7 @@
     </table>
   </div>
   <div class="platform-table-footer">
-    <span>Mostrando {{ filas|length }} de {{ kpis.total }} empresas</span>
+    <span>Mostrando {{ filas|length }} empresas · {{ kpis.total }} clientes · {{ kpis.pruebas }} de pruebas</span>
   </div>
 </div>
 {% endblock %}
