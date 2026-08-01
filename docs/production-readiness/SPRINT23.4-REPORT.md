@@ -1,7 +1,7 @@
 # Sprint 23.4 · Reporte en curso
 
 Fecha de corte: 2026-07-30
-Estado: observabilidad, workers, monitor externo y outbox desplegados; prueba de carga pendiente.
+Estado: observabilidad, workers, monitor externo y outbox desplegados; escalón de carga de 1 usuario aprobado, concurrencia 5/10/20 pendiente.
 
 ## Cierre previo registrado
 
@@ -40,7 +40,7 @@ Estado: observabilidad, workers, monitor externo y outbox desplegados; prueba de
 
 ## Pendiente para el siguiente avance
 
-- Completar los runbooks y ejecutar la prueba de carga.
+- Completar los runbooks y ejecutar los escalones de carga de 5, 10 y 20 usuarios.
 - Mejorar la entregabilidad del correo operativo mediante SPF, DKIM y DMARC.
 - Actualizar las acciones de GitHub que aún generan la advertencia de
   compatibilidad con Node.js 20.

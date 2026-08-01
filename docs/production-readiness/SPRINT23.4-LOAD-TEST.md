@@ -77,16 +77,16 @@ ruta para evitar endpoints sin representación en escalones cortos.
 | Campo | Resultado |
 | --- | --- |
 | Fecha y responsable | 2026-07-31 · Gladis Rocio Gelves Pabon |
-| Commit / versión | Producción `805d14a` · `1.0.37`; corrección local pendiente |
+| Commit / versión | Producción `a04aeb3` · `1.0.37` |
 | Cuenta y tenant de carga | Identificadores reservados y comprobados |
-| Escalones ejecutados | 1 usuario · 30 s |
-| Resultado global | 23 solicitudes · 0 fallos · p95 8.227,86 ms |
-| Endpoint con mayor p95 | `/dashboard` · 8.464,05 ms |
+| Escalones ejecutados | 1 usuario · 30 s; dos repeticiones posteriores al despliegue |
+| Resultado global | 26/27 solicitudes · 0 fallos · p95 2.496,31/2.209,95 ms |
+| Endpoint con mayor p95 | `/dashboard` · 2.496,31/2.505,72 ms |
 | Error rate máximo | 0 % |
 | CPU / memoria Render | Pendiente |
 | Errores Sentry | Pendiente |
 | Reinicios / health fallidos | Pendiente |
-| Veredicto | Rojo; escalamiento detenido hasta desplegar la optimización |
+| Veredicto | Escalón de 1 usuario aprobado; 5/10/20 usuarios pendientes |
 
 ## Primera etapa autenticada · 2026-07-31
 
@@ -106,7 +106,22 @@ ruta para evitar endpoints sin representación en escalones cortos.
   `/analisis/mantenimiento`, aunque su plantilla no los muestra.
 - Corrección local: separar el contexto operativo del analítico y evitar 104
   sentencias SQL por carga (28 en Inicio frente a 132 en Análisis en la prueba
-  controlada). Pendiente desplegar y repetir este mismo escalón.
+  controlada).
+
+## Repetición posterior al despliegue · `a04aeb3`
+
+- Render confirmó el deploy `live`; readiness aprobó PostgreSQL, migraciones,
+  Redis y heartbeat del worker.
+- Primera repetición: 26 solicitudes, 0 fallos, p95 global `2.496,31 ms` y
+  veredicto **verde**. `/dashboard` bajó a `2.496,31 ms`.
+- `/ordenes` tuvo una muestra aislada de `2.825,66 ms`; se repitió el escalón
+  conforme a la regla del gate.
+- Confirmación: 27 solicitudes, 0 fallos, p95 global `2.209,95 ms` y veredicto
+  **verde**. `/ordenes` quedó en `1.951,83 ms`.
+- `/dashboard` osciló entre `2.209,50` y `2.505,72 ms` en la confirmación;
+  permanece cerca del umbral y debe observarse en el escalón de 5 usuarios.
+- Mejora del p95 de `/dashboard` frente al hallazgo inicial: aproximadamente
+  `70 %`, sin errores funcionales ni fallos de readiness.
 
 Los JSON de evidencia no deben contener credenciales ni identificadores
 personales. Antes de adjuntarlos, revisar el arreglo `failures` y conservar sólo
