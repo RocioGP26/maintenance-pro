@@ -50,7 +50,9 @@ personales innecesarios en las capturas o en este documento.
 ## 4. Incidencia y orden de trabajo
 
 - [x] Crear una incidencia como usuario reportante (`INC-26-0001`).
-- [ ] Confirmar notificación en la campana.
+- [ ] Confirmar notificación en la campana. El tenant de prueba no tiene
+  personal autorizado configurado en Mantenimiento y el reporte generó
+  `0 usuario(s)` notificados; condición de configuración pendiente.
 - [x] Asignar técnico y crear la OT desde el incidente (`OT-26-0002`).
 - [x] Seleccionar libremente el tipo de OT (se eligió Preventiva).
 - [x] Registrar jornada interna con horas, sin paro y recibido por.
@@ -61,7 +63,8 @@ personales innecesarios en las capturas o en este documento.
   inicial fue corregido en v1.0.40 y revalidado en producción: `OT-26-0002`
   cerró automáticamente `INC-26-0001` el 01/08/2026 a las 16:07, con historial
   `cerrado por ot` y motivo de cierre registrado.
-- [ ] Descargar y revisar el PDF de la OT.
+- [x] Abrir el PDF de `OT-26-0002` desde el enlace disponible en el detalle de
+  `INC-26-0001`; el visor recibió correctamente el documento en producción.
 
 ## 5. Almacenamiento y capacidad
 
