@@ -12,7 +12,7 @@ como **Pruebas** y después, de forma abreviada, con cada empresa piloto real.
 | --- | --- |
 | Fecha y hora Colombia | 2026-08-01, 15:49–16:00 aprox. |
 | Responsable | Gladis Rocio Gelves Pabon |
-| Versión y commit | v1.0.40 · `bc6c593` |
+| Versión y commit | v1.0.41 · `3af5970` |
 | Tenant de prueba | Empresa de Prueba |
 | Plan | Start · tenant clasificado como Pruebas |
 | Navegador / dispositivo | Navegador de escritorio · Windows |
@@ -26,7 +26,8 @@ personales innecesarios en las capturas o en este documento.
 - [ ] Registrar una empresa con un correo nuevo.
 - [ ] Recibir y consumir el código de verificación.
 - [ ] Confirmar el correo de bienvenida.
-- [ ] Iniciar y cerrar sesión.
+- [x] Iniciar y cerrar sesión con el administrador del tenant y con el
+  supervisor de Mantenimiento.
 - [ ] Recuperar la contraseña y rechazar la reutilización del enlace.
 - [ ] Confirmar que una sesión anterior queda revocada.
 - [ ] Verificar que un correo inexistente no pueda enumerarse.
@@ -35,7 +36,8 @@ personales innecesarios en las capturas o en este documento.
 
 - [ ] Completar datos generales, sector y zona horaria.
 - [ ] Crear sede y área.
-- [ ] Crear usuarios con área y cargo obligatorios.
+- [x] Crear usuarios con área y cargo obligatorios: solicitante, técnico y
+  supervisor activos para Mantenimiento.
 - [ ] Confirmar permisos por rol y acceso al menú correspondiente.
 - [ ] Verificar que otro tenant no pueda consultar ni modificar estos datos.
 
@@ -50,9 +52,10 @@ personales innecesarios en las capturas o en este documento.
 ## 4. Incidencia y orden de trabajo
 
 - [x] Crear una incidencia como usuario reportante (`INC-26-0001`).
-- [ ] Confirmar notificación en la campana. El tenant de prueba no tiene
-  personal autorizado configurado en Mantenimiento y el reporte generó
-  `0 usuario(s)` notificados; condición de configuración pendiente.
+- [x] Confirmar notificación en la campana. `INC-26-0002` notificó a 2
+  responsables autorizados; Pedro Pérez recibió el modal, abrió el detalle y
+  la campana pasó de 1 a 0. El historial registró `notificacion leida` y
+  `acceso desde notificacion` el 01/08/2026 a las 16:58.
 - [x] Asignar técnico y crear la OT desde el incidente (`OT-26-0002`).
 - [x] Seleccionar libremente el tipo de OT (se eligió Preventiva).
 - [x] Registrar jornada interna con horas, sin paro y recibido por.
