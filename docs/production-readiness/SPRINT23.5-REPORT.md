@@ -22,6 +22,18 @@ Estado: **iniciado · gate de correo corporativo pendiente**
 | SMTP transaccional | Operativo temporal | Gates funcionales aprobados con cuenta externa |
 | SPF / DKIM / DMARC | Pendiente | Requiere proveedor de correo y acceso DNS |
 
+### Consulta DNS pública · 2026-08-01
+
+- Los registros MX apuntan a `eforward1`–`eforward5.registrar-servers.com`,
+  correspondientes al reenvío de correo del registrador.
+- No se observó una política SPF utilizable ni un registro DMARC público.
+- El reenvío permite recibir mensajes, pero no certifica el envío SMTP
+  autenticado requerido por Roustix.
+- Ruta recomendada: crear `soporte@roustix.com` como buzón Private Email y
+  `contacto@roustix.com` como alias; los planes nuevos permiten recibir y enviar
+  mediante el alias.
+- La contratación y los cambios DNS requieren aprobación de la responsable.
+
 ## Próximo gate
 
 1. Seleccionar o confirmar el proveedor del correo corporativo.
