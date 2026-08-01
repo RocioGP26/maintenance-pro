@@ -12,6 +12,14 @@ La suite documental mantiene un ciclo independiente en
 
 - Espacio reservado para cambios aún no publicados.
 
+## [1.0.40] - 2026-08-01
+
+### Fixed
+
+- Al completar una orden de trabajo originada desde una incidencia, el ticket
+  asociado ahora se marca automáticamente como cerrado. El cierre también se
+  conserva cuando la OT pasa directamente al estado Cerrada.
+
 ## [1.0.39] - 2026-08-01
 
 ### Fixed

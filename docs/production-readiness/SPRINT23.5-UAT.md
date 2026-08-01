@@ -10,12 +10,12 @@ como **Pruebas** y después, de forma abreviada, con cada empresa piloto real.
 
 | Campo | Evidencia |
 | --- | --- |
-| Fecha y hora Colombia | Pendiente |
+| Fecha y hora Colombia | 2026-08-01, 15:49–16:00 aprox. |
 | Responsable | Gladis Rocio Gelves Pabon |
-| Versión y commit | Pendiente |
-| Tenant de prueba | Pendiente |
-| Plan | Pendiente |
-| Navegador / dispositivo | Pendiente |
+| Versión y commit | v1.0.39 · build productivo previo a la corrección del hallazgo UAT |
+| Tenant de prueba | Empresa de Prueba |
+| Plan | Start · tenant clasificado como Pruebas |
+| Navegador / dispositivo | Navegador de escritorio · Windows |
 | Resultado final | Pendiente |
 
 No registrar contraseñas, códigos de verificación, tokens, cookies ni datos
@@ -49,15 +49,17 @@ personales innecesarios en las capturas o en este documento.
 
 ## 4. Incidencia y orden de trabajo
 
-- [ ] Crear una incidencia como usuario reportante.
+- [x] Crear una incidencia como usuario reportante (`INC-26-0001`).
 - [ ] Confirmar notificación en la campana.
-- [ ] Asignar técnico y crear la OT desde el incidente.
-- [ ] Seleccionar libremente el tipo de OT.
-- [ ] Registrar jornada interna con horas, paro y recibido por.
+- [x] Asignar técnico y crear la OT desde el incidente (`OT-26-0002`).
+- [x] Seleccionar libremente el tipo de OT (se eligió Preventiva).
+- [x] Registrar jornada interna con horas, sin paro y recibido por.
 - [ ] Registrar jornada externa con proveedor y técnico del proveedor.
 - [ ] Instalar un repuesto y confirmar jornada, hora y técnico.
 - [ ] Adjuntar informe técnico.
-- [ ] Completar la OT y confirmar el cierre del incidente asociado.
+- [ ] Completar la OT y confirmar el cierre del incidente asociado. La OT quedó
+  completada, pero el incidente permaneció en `Pendiente de OT`; hallazgo alto
+  corregido en v1.0.40 y pendiente de revalidación productiva.
 - [ ] Descargar y revisar el PDF de la OT.
 
 ## 5. Almacenamiento y capacidad
@@ -98,4 +100,3 @@ flujo esencial bloqueado impide incorporar una empresa piloto real.
 ## Resultado
 
 **Decisión:** Pendiente · `GO` / `GO CONDICIONADO` / `NO-GO`
-

@@ -3823,8 +3823,8 @@ def _aplicar_estado_orden_desde_formulario(wo: WorkOrder) -> None:
 
 
 def _cerrar_incidente_vinculado_si_ot_terminal(wo: WorkOrder) -> None:
-    """Cierra el incidente de origen únicamente tras el cierre definitivo de la OT."""
-    if (wo.status or "").strip().lower() != WorkOrderStatus.CERRADA.value:
+    """Cierra el incidente de origen cuando la OT queda completada o cerrada."""
+    if (wo.status or "").strip().lower() not in WORK_ORDER_TERMINAL_STATUSES:
         return
     incidente = getattr(wo, "incidencia_origen", None)
     if not incidente or incidente.estado in (
