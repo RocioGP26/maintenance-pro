@@ -131,3 +131,37 @@ contra el límite de 60 RPM del plan Start. El valor puede ajustarse con
 Los JSON de evidencia no deben contener credenciales ni identificadores
 personales. Antes de adjuntarlos, revisar el arreglo `failures` y conservar sólo
 tipo de error, ruta, estado y latencia.
+
+## Escalones concurrentes · 2026-08-01
+
+- Responsable: Gladis Rocio Gelves Pabon.
+- Producción inicial: `9a3d773`, versión `1.0.37`, readiness completamente
+  verde.
+- Primer escalón de 5 usuarios: 181 solicitudes, 0 fallos, p95 global
+  `3.142,65 ms`; las tres vistas HTML quedaron rojas por cola de ejecución.
+- Corrección: 8 hilos web, estados de OT delegados al worker y consultas
+  agregadas para los resúmenes de OT e incidencias.
+- Repetición de 5 usuarios: 228 solicitudes, 0 fallos, p95 global
+  `2.493,92 ms` (**verde**). Confirmación: 234 solicitudes, 0 fallos y p95
+  `1.782,03 ms` (**verde**).
+- Primer escalón de 10 usuarios: las vistas de incidencias y OT superaron
+  `5.000 ms`; el escalamiento se detuvo y se identificaron 8–9 consultas de la
+  campana repetidas en cada página.
+- Corrección: caché distribuida por tenant y usuario durante 15 segundos
+  (`c9c98eb`). En prueba controlada, una recarga de OT bajó de 16 a 6
+  sentencias SQL.
+- Repetición sin tope API: incidencias `2.106,31 ms` y OT `2.412,98 ms`, sin
+  fallos web. Los `429` restantes correspondieron al límite contractual del
+  plan Start, no a errores de capacidad.
+- Runner corregido en `5804654` para limitar cada ruta API a 50 RPM.
+- Repetición de 10 usuarios con cuota respetada: 494 solicitudes, 0 fallos,
+  p95 global `2.180,98 ms` (**verde**). API completamente verde; dashboard,
+  incidencias y OT en amarillo, sin endpoints rojos.
+- Confirmación de 10 usuarios: 507 solicitudes, 0 fallos y p95 global
+  `2.052,03 ms` (**verde**). El resultado reproduce el patrón anterior sin
+  respuestas `429` ni errores funcionales; se autoriza avanzar a 20 usuarios.
+- Primer escalón de 20 usuarios: 770 solicitudes, 0 fallos y p95 global
+  `2.686,48 ms` (**amarillo**). API y health verdes; `/incidencias` alcanzó
+  p95 `5.646,84 ms` (**rojo**), por lo que el gate se detuvo. El patrón es de
+  cola de ejecución con 20 usuarios sobre 8 hilos; se requiere ajustar la
+  concurrencia y repetir este escalón antes de certificarlo.
