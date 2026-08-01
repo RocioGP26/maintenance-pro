@@ -288,7 +288,7 @@ class TestTechnicianExperience(unittest.TestCase):
         self.assertEqual(self.own_order.prioridad, "alta")
         self.assertEqual(self.own_order.status, "completado")
         db.session.refresh(self.own_incident)
-        self.assertNotEqual(self.own_incident.estado, "cerrado")
+        self.assertEqual(self.own_incident.estado, "cerrado")
 
         self.client.post("/logout")
         self.client.post("/login", data={

@@ -3935,6 +3935,7 @@ def _repuesto_linea_a_dict(line: WorkOrderRepuesto) -> dict:
         "nombre": p.nombre if p else "",
         "costo_unitario": cu,
         "costo_total": line.costo_total_linea,
+        "persistido": True,
         "jornada_fecha": line.jornada_fecha.isoformat() if line.jornada_fecha else "",
         "jornada_hora_inicio": line.jornada_hora_inicio or "",
         "jornada_hora_fin": line.jornada_hora_fin or "",
@@ -3960,7 +3961,7 @@ def _parse_repuestos_json() -> Tuple[list[dict], Optional[str]]:
         return [], "Los datos de repuestos no son válidos."
 
     parsed: list[dict] = []
-    vistos: set[int] = set()
+    vistos: set[tuple[int, str, str, str]] = set()
     for i, item in enumerate(items, start=1):
         if not isinstance(item, dict):
             return [], f"Repuesto línea {i}: formato inválido."
@@ -3970,23 +3971,27 @@ def _parse_repuestos_json() -> Tuple[list[dict], Optional[str]]:
             return [], f"Repuesto línea {i}: selecciona un repuesto válido."
         if part_id <= 0:
             return [], f"Repuesto línea {i}: selecciona un repuesto."
-        if part_id in vistos:
-            return [], f"Repuesto línea {i}: no repitas el mismo ítem."
-        vistos.add(part_id)
         try:
             qty = int(item.get("cantidad") or 0)
         except (TypeError, ValueError):
             return [], f"Repuesto línea {i}: cantidad inválida."
         if qty <= 0:
             return [], f"Repuesto línea {i}: la cantidad debe ser mayor a cero."
+        jornada_fecha = (item.get("jornada_fecha") or "").strip()
+        jornada_hora_inicio = (item.get("jornada_hora_inicio") or "").strip()[:5]
+        jornada_hora_fin = (item.get("jornada_hora_fin") or "").strip()[:5]
+        clave_linea = (part_id, jornada_fecha, jornada_hora_inicio, jornada_hora_fin)
+        if clave_linea in vistos:
+            return [], f"Repuesto línea {i}: no repitas el mismo ítem en la misma jornada."
+        vistos.add(clave_linea)
         parsed.append(
             {
                 "spare_part_id": part_id,
                 "cantidad": qty,
                 "notas": (item.get("notas") or "").strip()[:255],
-                "jornada_fecha": (item.get("jornada_fecha") or "").strip(),
-                "jornada_hora_inicio": (item.get("jornada_hora_inicio") or "").strip()[:5],
-                "jornada_hora_fin": (item.get("jornada_hora_fin") or "").strip()[:5],
+                "jornada_fecha": jornada_fecha,
+                "jornada_hora_inicio": jornada_hora_inicio,
+                "jornada_hora_fin": jornada_hora_fin,
                 "jornada_tecnico": (item.get("jornada_tecnico") or "").strip()[:200],
             }
         )
@@ -4022,13 +4027,18 @@ def _guardar_repuestos_orden(wo: WorkOrder) -> Optional[str]:
         return "Indica al menos un repuesto o desmarca «Requiere cambio de repuestos»."
 
     eid = _current_empresa_id()
+    cantidades_requeridas: dict[int, int] = {}
     for item in items:
-        part = db.session.get(SparePart, item["spare_part_id"])
+        cantidades_requeridas[item["spare_part_id"]] = (
+            cantidades_requeridas.get(item["spare_part_id"], 0) + item["cantidad"]
+        )
+    for part_id, cantidad_total in cantidades_requeridas.items():
+        part = db.session.get(SparePart, part_id)
         if part is None:
             return "Uno de los repuestos seleccionados ya no existe."
         if eid and part.empresa_id != eid:
             return f"El repuesto {part.sku} no pertenece a tu empresa."
-        if (part.cantidad or 0) < item["cantidad"]:
+        if (part.cantidad or 0) < cantidad_total:
             return (
                 f"Stock insuficiente para {part.nombre} "
                 f"(disponible: {part.cantidad} {part.unidad or 'pza'})."

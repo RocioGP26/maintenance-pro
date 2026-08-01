@@ -12,6 +12,16 @@ La suite documental mantiene un ciclo independiente en
 
 - Espacio reservado para cambios aún no publicados.
 
+## [1.0.42] - 2026-08-01
+
+### Fixed
+
+- Las OT correctivas ahora permiten registrar repuestos en cualquier jornada,
+  conservando los consumos anteriores y asociando cada nueva línea con la
+  fecha, horario y técnico de su instalación.
+- La validación de inventario acumula todas las líneas del mismo repuesto para
+  impedir stock negativo y permite reutilizarlo en jornadas diferentes.
+
 ## [1.0.41] - 2026-08-01
 
 ### Added
