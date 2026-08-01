@@ -27,7 +27,8 @@ Configurar el mismo valor en `mantis-app` y `roustix-worker`:
 
 El sistema puede derivar temporalmente una clave separada desde `SECRET_KEY`,
 pero la clave dedicada evita acoplar el descifrado a una futura rotación de la
-sesión. No debe rotarse mientras existan filas `pending` o `processing`.
+sesión. Al adoptar por primera vez la clave dedicada, el worker mantiene lectura
+de sobres pendientes creados con la derivación anterior.
 
 Variables opcionales:
 
@@ -50,7 +51,8 @@ Variables opcionales:
 
 ## Gate de producción pendiente de despliegue
 
-1. Definir la misma `OUTBOX_ENCRYPTION_KEY` en web y worker.
+1. Definir `OUTBOX_ENCRYPTION_KEY` primero en el worker, esperar que vuelva a
+   estar saludable y después definir exactamente el mismo valor en la web.
 2. Desplegar primero la web (la migración crea `email_outbox`) y después el
    worker.
 3. Solicitar un código de verificación y una recuperación de contraseña.

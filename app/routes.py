@@ -434,8 +434,6 @@ def login():
 @limiter.limit("5 per 15 minutes", methods=["POST"])
 def recuperar_contrasena():
     """Solicitud self-service de restablecimiento por correo corporativo."""
-    if current_user.is_authenticated:
-        return redirect(url_for("main.dashboard"))
     email = ""
     empresa_slug = ""
     if request.method == "POST":
@@ -452,7 +450,12 @@ def recuperar_contrasena():
                 empresa_slug=empresa_slug,
             )
         flash(message, "success")
-        return redirect(url_for("main.login"))
+        destination = (
+            "main.recuperar_contrasena"
+            if current_user.is_authenticated
+            else "main.login"
+        )
+        return redirect(url_for(destination))
     return render_template("password_reset/request.html", email=email, empresa_slug=empresa_slug)
 
 
@@ -463,10 +466,13 @@ def restablecer_contrasena(token: str):
     from app.password_policy import PASSWORD_REQUIREMENTS_TEXT
     from app.password_reset_service import consume_password_reset, get_valid_reset
 
-    if current_user.is_authenticated:
-        return redirect(url_for("main.dashboard"))
-
     reset = get_valid_reset(token)
+    # Un token consumido o vencido debe mostrar siempre el rechazo controlado,
+    # incluso si el navegador inició sesión después de cambiar la contraseña.
+    # Redirigir antes de validar ocultaba el resultado del gate y podía enviar
+    # innecesariamente al usuario al dashboard.
+    if current_user.is_authenticated and reset is not None:
+        return redirect(url_for("main.dashboard"))
     if request.method == "POST":
         if reset is None:
             flash("El enlace no es válido o ya expiró. Solicita uno nuevo.", "danger")

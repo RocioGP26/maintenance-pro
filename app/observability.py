@@ -10,12 +10,14 @@ import smtplib
 import ssl
 import threading
 import time
-from datetime import datetime, timezone
+from datetime import datetime
 from email.message import EmailMessage
+from email.utils import format_datetime
 
 from flask import abort, current_app, g, got_request_exception, request
 from flask_login import current_user
 
+from app.timezone_utils import timezone_obj
 from app.version import __version__, get_build_commit
 
 
@@ -110,10 +112,14 @@ def _send_support_email(component: str, event: str, message: str, severity: str)
     email["Subject"] = f"[Roustix][{severity.upper()}] {component}: {event}"
     email["From"] = sender
     email["To"] = recipient
+    local_tz = timezone_obj(tz_name=current_app.config.get("OPS_TIMEZONE"))
+    local_now = datetime.now(local_tz)
+    email["Date"] = format_datetime(local_now)
     email.set_content(
         "Se detectó un evento operativo en Roustix.\n\n"
         f"Componente: {component}\nEvento: {event}\nSeveridad: {severity}\n"
-        f"Fecha UTC: {datetime.now(timezone.utc).isoformat()}\nDetalle: {message}\n\n"
+        f"Fecha Colombia: {local_now.strftime('%Y-%m-%d %H:%M:%S %z')}\n"
+        f"Detalle: {message}\n\n"
         "Consulte los logs centralizados usando el componente y el evento."
     )
     try:
@@ -128,7 +134,7 @@ def _send_support_email(component: str, event: str, message: str, severity: str)
                 smtp.ehlo()
             smtp.login(username, password)
             smtp.send_message(email)
-    except (OSError, smtplib.SMTPException):
+    except (OSError, UnicodeError, ValueError, smtplib.SMTPException):
         logger.exception(
             "Operational support email delivery failed",
             extra={"component": "smtp", "event": "ops_alert_delivery_failed"},

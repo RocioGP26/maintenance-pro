@@ -12,6 +12,54 @@ La suite documental mantiene un ciclo independiente en
 
 - Espacio reservado para cambios aún no publicados.
 
+## [1.0.37] - 2026-07-30
+
+### Fixed
+
+- La solicitud de un enlace nuevo permanece accesible cuando el navegador
+  tiene una sesión iniciada y confirma el envío sin redirigir al dashboard.
+
+## [1.0.36] - 2026-07-30
+
+### Fixed
+
+- Un enlace de recuperación ya consumido muestra el rechazo controlado aunque
+  el navegador tenga una sesión autenticada.
+- Gunicorn atiende peticiones mediante hilos para que un dashboard lento no
+  bloquee el health check ni provoque respuestas 502 transitorias.
+
+## [1.0.35] - 2026-07-30
+
+### Fixed
+
+- Un host SMTP inválido se convierte en un reintento controlado y ya no
+  interrumpe el ciclo completo del worker.
+- Los correos operativos muestran la fecha de Colombia y envían un encabezado
+  RFC 2822 con zona horaria `America/Bogota`.
+
+## [1.0.34] - 2026-07-30
+
+### Fixed
+
+- La adopción de `OUTBOX_ENCRYPTION_KEY` conserva lectura de los sobres
+  pendientes creados previamente con la clave derivada de `SECRET_KEY`.
+
+## [1.0.33] - 2026-07-30
+
+### Added
+
+- Outbox cifrada para correos transaccionales con idempotencia por empresa,
+  arrendamientos recuperables, reintentos controlados y retención automática.
+- Procesamiento de correos de verificación, bienvenida y recuperación mediante
+  `roustix-worker`.
+- Gate de certificación productiva y pruebas de cifrado, aislamiento, contenido
+  alterado y errores saneados.
+
+### Changed
+
+- Las solicitudes web ya no esperan la respuesta del proveedor SMTP.
+- La fecha `sent_at` sólo se registra después de que SMTP acepta la entrega.
+
 ## [1.0.32] - 2026-07-29
 
 ### Added

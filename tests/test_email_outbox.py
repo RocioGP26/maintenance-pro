@@ -111,6 +111,23 @@ class TestEmailOutbox(unittest.TestCase):
         self.assertEqual(item.status, "sent")
         self.assertEqual(item.attempts, 2)
 
+    def test_invalid_smtp_hostname_is_a_retryable_delivery_error(self):
+        item = self._enqueue()
+        self.app.config["MAIL_SUPPRESS_SEND"] = False
+        self.app.config.update(
+            MAIL_SERVER="x" * 80,
+            MAIL_USERNAME="mailer@example.com",
+            MAIL_PASSWORD="app-password",
+            MAIL_DEFAULT_SENDER="Roustix <mailer@example.com>",
+        )
+
+        stats = process_pending_emails(limit=10)
+
+        db.session.refresh(item)
+        self.assertEqual(stats["email_retry"], 1)
+        self.assertEqual(item.status, "pending")
+        self.assertEqual(item.last_error, "EmailDeliveryError")
+
     def test_tampered_payload_fails_closed(self):
         item = self._enqueue()
         item.payload_sealed = item.payload_sealed[:-2] + "xx"
@@ -122,6 +139,19 @@ class TestEmailOutbox(unittest.TestCase):
         self.assertEqual(stats["email_failed"], 1)
         self.assertEqual(item.status, "failed")
         self.assertEqual(item.last_error, "EmailPayloadError")
+
+    def test_dedicated_key_can_read_pending_legacy_envelope(self):
+        self.app.config["OUTBOX_ENCRYPTION_KEY"] = ""
+        item = self._enqueue()
+        legacy_payload = item.payload_sealed
+
+        self.app.config["OUTBOX_ENCRYPTION_KEY"] = "dedicated-key-0123456789-ABCDEFGHIJKLMN"
+        stats = process_pending_emails(limit=10)
+
+        db.session.refresh(item)
+        self.assertEqual(stats["email_sent"], 1)
+        self.assertEqual(item.status, "sent")
+        self.assertEqual(item.payload_sealed, legacy_payload)
 
     def test_terminal_payloads_are_pruned_after_retention(self):
         item = self._enqueue()

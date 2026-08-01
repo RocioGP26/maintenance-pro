@@ -156,6 +156,38 @@ class TestPasswordReset(unittest.TestCase):
         db.session.refresh(self.user)
         self.assertTrue(self.user.check_password("Clave-Nueva-456!"))
 
+    def test_consumed_link_is_rejected_even_after_new_login(self):
+        request_password_reset("ops@example.com")
+        raw = self._raw_token_from_outbox()
+        self.assertIsNone(consume_password_reset(raw, "Clave-Nueva-456!"))
+
+        login = self.client.post(
+            "/login",
+            data={
+                "username": "operador",
+                "empresa_slug": "empresa-demo",
+                "password": "Clave-Nueva-456!",
+            },
+        )
+        self.assertIn(login.status_code, (302, 303))
+
+        reused = self.client.get(f"/restablecer-contrasena/{raw}")
+        self.assertEqual(reused.status_code, 200)
+        body = reused.get_data(as_text=True)
+        self.assertIn("Solicitar un enlace nuevo", body)
+        self.assertNotIn("/dashboard", reused.request.path)
+
+        request_page = self.client.get("/recuperar-contrasena")
+        self.assertEqual(request_page.status_code, 200)
+        self.assertIn("Enviar enlace", request_page.get_data(as_text=True))
+
+        requested = self.client.post(
+            "/recuperar-contrasena",
+            data={"email": "ops@example.com", "empresa_slug": "empresa-demo"},
+        )
+        self.assertIn(requested.status_code, (302, 303))
+        self.assertTrue(requested.location.endswith("/recuperar-contrasena"))
+
     def test_reset_revokes_existing_managed_session(self):
         active_client = self.app.test_client()
         login = active_client.post(

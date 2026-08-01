@@ -9,12 +9,14 @@ import smtplib
 import ssl
 from datetime import datetime, timedelta
 from email.message import EmailMessage
+from email.utils import format_datetime
 
 from cryptography.fernet import Fernet, InvalidToken
 from flask import current_app
 
 from app import db
 from app.models import EmailOutbox, EmailVerification, PasswordReset
+from app.timezone_utils import timezone_obj
 
 
 RETRY_DELAYS = (
@@ -31,11 +33,15 @@ class EmailPayloadError(RuntimeError):
     """El contenido cifrado de la outbox no pudo autenticarse."""
 
 
+def _fernet_for_secret(root_secret: str) -> Fernet:
+    digest = hashlib.sha256(f"roustix:email-outbox:v1:{root_secret}".encode()).digest()
+    return Fernet(base64.urlsafe_b64encode(digest))
+
+
 def _fernet() -> Fernet:
     configured = str(current_app.config.get("OUTBOX_ENCRYPTION_KEY") or "")
     root_secret = configured or str(current_app.config.get("SECRET_KEY") or "")
-    digest = hashlib.sha256(f"roustix:email-outbox:v1:{root_secret}".encode()).digest()
-    return Fernet(base64.urlsafe_b64encode(digest))
+    return _fernet_for_secret(root_secret)
 
 
 def _seal_payload(payload: dict) -> str:
@@ -44,8 +50,25 @@ def _seal_payload(payload: dict) -> str:
 
 
 def _unseal_payload(value: str) -> dict:
+    token = (value or "").encode("ascii")
+    configured = str(current_app.config.get("OUTBOX_ENCRYPTION_KEY") or "")
+    candidates = [_fernet()]
+    # Durante la adopción de una clave dedicada, conserva lectura de sobres
+    # pendientes creados con la derivación histórica de SECRET_KEY.
+    if configured:
+        candidates.append(
+            _fernet_for_secret(str(current_app.config.get("SECRET_KEY") or ""))
+        )
+    raw = None
+    for candidate in candidates:
+        try:
+            raw = candidate.decrypt(token)
+            break
+        except InvalidToken:
+            continue
     try:
-        raw = _fernet().decrypt((value or "").encode("ascii"))
+        if raw is None:
+            raise InvalidToken
         payload = json.loads(raw.decode("utf-8"))
     except (InvalidToken, ValueError, UnicodeError, json.JSONDecodeError) as exc:
         raise EmailPayloadError("El sobre de correo no es válido o fue alterado.") from exc
@@ -69,6 +92,9 @@ def _build_message(payload: dict) -> EmailMessage:
 
 def _deliver_message(message: EmailMessage) -> None:
     app = current_app
+    if not message.get("Date"):
+        local_tz = timezone_obj(tz_name=app.config.get("OPS_TIMEZONE"))
+        message["Date"] = format_datetime(datetime.now(local_tz))
     if app.config.get("MAIL_SUPPRESS_SEND"):
         app.extensions.setdefault("mail_outbox", []).append(message)
         return
@@ -90,7 +116,7 @@ def _deliver_message(message: EmailMessage) -> None:
                 smtp.ehlo()
             smtp.login(username, password)
             smtp.send_message(message)
-    except (OSError, smtplib.SMTPException) as exc:
+    except (OSError, UnicodeError, ValueError, smtplib.SMTPException) as exc:
         raise EmailDeliveryError("No fue posible entregar el correo mediante SMTP.") from exc
 
 

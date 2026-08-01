@@ -124,6 +124,7 @@ class Config:
     METRICS_TOKEN = os.environ.get("METRICS_TOKEN", "").strip()
     OPS_ALERT_COOLDOWN_SECONDS = _env_int("OPS_ALERT_COOLDOWN_SECONDS", 300)
     OPS_ALERT_EMAIL = os.environ.get("OPS_ALERT_EMAIL", "").strip()
+    OPS_TIMEZONE = os.environ.get("OPS_TIMEZONE", "America/Bogota").strip()
     DB_HEALTH_DEGRADED_MS = _env_int("DB_HEALTH_DEGRADED_MS", 750)
 
     # Redis/Render Key Value: límites compartidos, locks y heartbeat de workers.

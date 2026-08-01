@@ -8,7 +8,10 @@ services:
     plan: starter
     # El piloto exige como mínimo Starter; migraciones permanecen en buildCommand.
     buildCommand: pip install -r requirements.txt && python scripts/migrate_deploy.py
-    startCommand: gunicorn run:app
+    # Una petición lenta del dashboard no debe bloquear el health check. El
+    # worker gthread conserva un solo proceso (memoria acotada) y permite
+    # atender en paralelo las sondas de Render.
+    startCommand: gunicorn --worker-class gthread --workers 1 --threads 4 --timeout 120 --graceful-timeout 30 run:app
     healthCheckPath: /health
     autoDeploy: true
     envVars:
