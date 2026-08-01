@@ -66,6 +66,21 @@ Variables opcionales:
    reintento, alerta operativa y recuperación posterior.
 9. Registrar fecha, responsable, commit, versión y capturas en este documento.
 
+El ensayo de idempotencia se ejecuta desde la Shell del servicio web de Render.
+El primer comando crea un solo sobre aunque el servicio sea invocado dos veces:
+
+```powershell
+flask --app run:app email-outbox certify-idempotency `
+  --empresa-slug EMPRESA_PILOTO `
+  --user-email CORREO_RECEPTOR `
+  --run-id pilot-AAAAMMDD
+```
+
+El resultado aprobado muestra `approved: true`, `same_id: true` y
+`row_count: 1`. Después de que actúe el worker, repetir exactamente el mismo
+comando y comprobar además `status: sent`, `sent: true` y que `row_count`
+continúa en `1`. La salida no imprime destinatario, asunto ni contenido cifrado.
+
 ## Evidencia remota
 
 | Campo | Resultado |

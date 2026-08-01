@@ -166,6 +166,25 @@ class TestEmailOutbox(unittest.TestCase):
         self.assertEqual(removed, 1)
         self.assertIsNone(db.session.get(EmailOutbox, item_id))
 
+    def test_certification_cli_proves_idempotency_without_exposing_recipient(self):
+        runner = self.app.test_cli_runner()
+        args = [
+            "email-outbox", "certify-idempotency",
+            "--empresa-slug", self.empresa.slug,
+            "--user-email", self.user.email,
+            "--run-id", "pilot-20260801",
+        ]
+
+        first = runner.invoke(args=args)
+        second = runner.invoke(args=args)
+
+        self.assertEqual(first.exit_code, 0, first.output)
+        self.assertEqual(second.exit_code, 0, second.output)
+        self.assertIn('"approved": true', first.output)
+        self.assertIn('"row_count": 1', second.output)
+        self.assertNotIn(self.user.email, first.output)
+        self.assertEqual(EmailOutbox.query.count(), 1)
+
 
 if __name__ == "__main__":
     unittest.main()
