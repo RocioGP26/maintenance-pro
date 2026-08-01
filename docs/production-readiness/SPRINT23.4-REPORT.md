@@ -134,8 +134,12 @@ Estado: observabilidad, workers, monitor externo y outbox desplegados; gate de c
 - La recuperación real fue aprobada en producción: correo recibido, cambio de
   contraseña, rechazo del enlace reutilizado y revocación de sesión anterior.
 - La versión `1.0.37` quedó saludable en producción desde `805d14a`.
-- El cierre total de la certificación de outbox requiere todavía comprobar un
-  código nuevo de verificación y ejecutar un ensayo remoto de idempotencia.
+- El ensayo remoto de idempotencia quedó aprobado en producción con el build
+  `97fc527`: dos solicitudes conservaron un único sobre (`row_count=1`), el
+  worker lo entregó en un intento y la repetición confirmó `status=sent` sin
+  enviar un duplicado.
+- El cierre total de la certificación de outbox requiere únicamente comprobar
+  un código nuevo de verificación de onboarding.
 
 ## Avance 5 · Gate de carga
 

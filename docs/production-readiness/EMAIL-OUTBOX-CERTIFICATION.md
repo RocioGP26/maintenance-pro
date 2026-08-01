@@ -85,16 +85,28 @@ continúa en `1`. La salida no imprime destinatario, asunto ni contenido cifrado
 
 | Campo | Resultado |
 | --- | --- |
-| Fecha Colombia | 2026-07-30; hora exacta no registrada |
+| Fecha Colombia | 2026-08-01 13:43 |
 | Responsable | Gladis Rocio Gelves Pabon |
-| Commit / versión | `805d14a` / `1.0.37` |
+| Commit / versión | `97fc527` / `1.0.37` |
 | Verificación entregada | Pendiente de comprobar con un código nuevo de onboarding |
 | Recuperación entregada | ✅ Correo recibido, contraseña cambiada y nueva clave aceptada |
 | Uso único y sesiones | ✅ Enlace reutilizado rechazado y sesión anterior revocada |
-| Idempotencia | ✅ Automatizada por empresa; ensayo remoto específico pendiente |
+| Idempotencia | ✅ Ensayo remoto aprobado; un único sobre entregado |
 | Reintento controlado | ✅ El correo pendiente se conservó y entregó tras corregir la configuración SMTP |
 | Health y worker | ✅ `/health/ready` en `ok`; heartbeat estable |
-| Veredicto | Recuperación aprobada; cierre total pendiente de verificación e idempotencia remotas |
+| Veredicto | Recuperación e idempotencia aprobadas; cierre pendiente de verificación nueva |
+
+### Ensayo remoto de idempotencia · 2026-08-01
+
+- Tenant piloto: Inversiones Reinoso y Cía SAS; destinatario reservado.
+- Identificador del ensayo: `pilot-20260801`.
+- Primera ejecución: `approved=true`, `same_id=true`, `row_count=1` y estado
+  `pending`; no se creó un segundo sobre.
+- El worker entregó el mensaje **Certificación operativa de correo Roustix** y
+  la responsable confirmó su recepción.
+- Segunda ejecución con los mismos parámetros: `approved=true`,
+  `same_id=true`, `row_count=1`, `attempts=1`, `sent=true` y estado `sent`.
+- Veredicto: idempotencia y entrega mediante worker **aprobadas en producción**.
 
 ### Incidencias observadas y correcciones
 
