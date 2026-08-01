@@ -138,8 +138,10 @@ Estado: observabilidad, workers, monitor externo y outbox desplegados; gate de c
   `97fc527`: dos solicitudes conservaron un único sobre (`row_count=1`), el
   worker lo entregó en un intento y la repetición confirmó `status=sent` sin
   enviar un duplicado.
-- El cierre total de la certificación de outbox requiere únicamente comprobar
-  un código nuevo de verificación de onboarding.
+- La verificación nueva de onboarding quedó aprobada el `2026-08-01`: código
+  recibido y aceptado, empresa habilitada y correo de bienvenida entregado.
+- Veredicto de outbox cifrada: **certificación completa aprobada en producción**
+  para verificación, bienvenida, recuperación, reintentos e idempotencia.
 
 ## Avance 5 · Gate de carga
 

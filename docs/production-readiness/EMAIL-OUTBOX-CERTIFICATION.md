@@ -88,13 +88,13 @@ continúa en `1`. La salida no imprime destinatario, asunto ni contenido cifrado
 | Fecha Colombia | 2026-08-01 13:43 |
 | Responsable | Gladis Rocio Gelves Pabon |
 | Commit / versión | `97fc527` / `1.0.37` |
-| Verificación entregada | Pendiente de comprobar con un código nuevo de onboarding |
+| Verificación entregada | ✅ Código nuevo recibido, aceptado y empresa habilitada |
 | Recuperación entregada | ✅ Correo recibido, contraseña cambiada y nueva clave aceptada |
 | Uso único y sesiones | ✅ Enlace reutilizado rechazado y sesión anterior revocada |
 | Idempotencia | ✅ Ensayo remoto aprobado; un único sobre entregado |
 | Reintento controlado | ✅ El correo pendiente se conservó y entregó tras corregir la configuración SMTP |
 | Health y worker | ✅ `/health/ready` en `ok`; heartbeat estable |
-| Veredicto | Recuperación e idempotencia aprobadas; cierre pendiente de verificación nueva |
+| Veredicto | ✅ Certificación completa aprobada en producción |
 
 ### Ensayo remoto de idempotencia · 2026-08-01
 
@@ -107,6 +107,18 @@ continúa en `1`. La salida no imprime destinatario, asunto ni contenido cifrado
 - Segunda ejecución con los mismos parámetros: `approved=true`,
   `same_id=true`, `row_count=1`, `attempts=1`, `sent=true` y estado `sent`.
 - Veredicto: idempotencia y entrega mediante worker **aprobadas en producción**.
+
+### Verificación nueva de onboarding · 2026-08-01
+
+- La responsable registró una empresa de prueba mediante el onboarding público.
+- El código de seis dígitos fue recibido dentro de su vigencia y aceptado por
+  Roustix; el valor del código no se conserva como evidencia documental.
+- La empresa quedó habilitada y el correo de bienvenida fue entregado al mismo
+  destinatario.
+- Veredicto: verificación, habilitación y bienvenida mediante worker
+  **aprobadas en producción**.
+- Con esta evidencia quedan aprobados los flujos de verificación, bienvenida,
+  recuperación, reintento e idempotencia de la outbox cifrada.
 
 ### Incidencias observadas y correcciones
 
