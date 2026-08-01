@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from datetime import date
 import json
+import time
 from typing import Any
 
 from flask import current_app, request, url_for
@@ -89,17 +90,26 @@ def _alertas_cache_key(*, modulo: str, hoy: date) -> str:
     )
 
 
-def _alertas_cache_get(*, modulo: str, hoy: date) -> dict[str, Any] | None:
+def _alertas_cache_get(
+    *, modulo: str, hoy: date
+) -> tuple[dict[str, Any] | None, bool]:
     if not current_app.config.get("REDIS_URL"):
-        return None
+        return None, False
     try:
         from app.redis_client import get_redis
 
         raw = get_redis().get(_alertas_cache_key(modulo=modulo, hoy=hoy))
-        value = json.loads(raw) if raw else None
-        return value if isinstance(value, dict) else None
+        payload = json.loads(raw) if raw else None
+        if not isinstance(payload, dict):
+            return None, False
+        if "value" not in payload or "cached_at" not in payload:
+            return payload, True
+        value = payload.get("value")
+        ttl = max(1, int(current_app.config.get("ALERT_SUMMARY_CACHE_SECONDS", 60)))
+        age = max(0.0, time.time() - float(payload.get("cached_at") or 0))
+        return (value if isinstance(value, dict) else None), age <= ttl
     except Exception:
-        return None
+        return None, False
 
 
 def _alertas_cache_set(*, modulo: str, hoy: date, value: dict[str, Any]) -> None:
@@ -109,11 +119,40 @@ def _alertas_cache_set(*, modulo: str, hoy: date, value: dict[str, Any]) -> None
     try:
         from app.redis_client import get_redis
 
+        payload = {
+            "cached_at": time.time(),
+            "value": value,
+        }
         get_redis().set(
             _alertas_cache_key(modulo=modulo, hoy=hoy),
-            json.dumps(value, ensure_ascii=False, separators=(",", ":")),
-            ex=ttl,
+            json.dumps(payload, ensure_ascii=False, separators=(",", ":")),
+            ex=ttl * 3,
         )
+    except Exception:
+        return
+
+
+def _alertas_cache_refresh_lock(*, modulo: str, hoy: date):
+    if not current_app.config.get("REDIS_URL"):
+        return None
+    try:
+        from app.redis_client import get_redis
+
+        lock = get_redis().lock(
+            f"{_alertas_cache_key(modulo=modulo, hoy=hoy)}:refresh",
+            timeout=30,
+            blocking=False,
+        )
+        return lock if lock.acquire(blocking=False) else None
+    except Exception:
+        return None
+
+
+def _alertas_cache_release(lock) -> None:
+    if lock is None:
+        return
+    try:
+        lock.release()
     except Exception:
         return
 
@@ -370,17 +409,29 @@ def resumen_alertas_campana() -> dict[str, Any]:
         if not eid:
             return _alertas_vacio()
         modulo = "inventario"
-        cached = _alertas_cache_get(modulo=modulo, hoy=hoy)
-        if cached is not None:
+        cached, fresh = _alertas_cache_get(modulo=modulo, hoy=hoy)
+        if fresh and cached is not None:
             return cached
-        result = _resumen_alertas_inventario(eid, hoy)
-        _alertas_cache_set(modulo=modulo, hoy=hoy, value=result)
-        return result
+        lock = _alertas_cache_refresh_lock(modulo=modulo, hoy=hoy)
+        if cached is not None and lock is None:
+            return cached
+        try:
+            result = _resumen_alertas_inventario(eid, hoy)
+            _alertas_cache_set(modulo=modulo, hoy=hoy, value=result)
+            return result
+        finally:
+            _alertas_cache_release(lock)
 
     modulo = "mantenimiento"
-    cached = _alertas_cache_get(modulo=modulo, hoy=hoy)
-    if cached is not None:
+    cached, fresh = _alertas_cache_get(modulo=modulo, hoy=hoy)
+    if fresh and cached is not None:
         return cached
-    result = _resumen_alertas_mantenimiento(hoy)
-    _alertas_cache_set(modulo=modulo, hoy=hoy, value=result)
-    return result
+    lock = _alertas_cache_refresh_lock(modulo=modulo, hoy=hoy)
+    if cached is not None and lock is None:
+        return cached
+    try:
+        result = _resumen_alertas_mantenimiento(hoy)
+        _alertas_cache_set(modulo=modulo, hoy=hoy, value=result)
+        return result
+    finally:
+        _alertas_cache_release(lock)
