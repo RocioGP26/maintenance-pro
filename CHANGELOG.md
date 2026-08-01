@@ -12,6 +12,13 @@ La suite documental mantiene un ciclo independiente en
 
 - Espacio reservado para cambios aún no publicados.
 
+## [1.0.39] - 2026-08-01
+
+### Fixed
+
+- Los correos y otros valores largos ahora se ajustan dentro de las tarjetas
+  del panel de plataforma sin desbordar sus límites.
+
 ## [1.0.38] - 2026-08-01
 
 ### Added
