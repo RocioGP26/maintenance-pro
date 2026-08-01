@@ -1,7 +1,7 @@
 # Sprint 23.4 · Reporte en curso
 
-Fecha de corte: 2026-07-30
-Estado: observabilidad, workers, monitor externo y outbox desplegados; escalón de carga de 1 usuario aprobado, concurrencia 5/10/20 pendiente.
+Fecha de corte: 2026-08-01
+Estado: observabilidad, workers, monitor externo y outbox desplegados; gate de carga ejecutado y capacidad piloto certificada hasta 10 usuarios concurrentes en la instancia Starter actual.
 
 ## Cierre previo registrado
 
@@ -40,7 +40,8 @@ Estado: observabilidad, workers, monitor externo y outbox desplegados; escalón 
 
 ## Pendiente para el siguiente avance
 
-- Completar los runbooks y ejecutar los escalones de carga de 5, 10 y 20 usuarios.
+- Ampliar la infraestructura u optimizar incidencias y órdenes antes de repetir
+  el escalón de 20 usuarios concurrentes.
 - Mejorar la entregabilidad del correo operativo mediante SPF, DKIM y DMARC.
 - Actualizar las acciones de GitHub que aún generan la advertencia de
   compatibilidad con Node.js 20.
@@ -81,7 +82,8 @@ Estado: observabilidad, workers, monitor externo y outbox desplegados; escalón 
   comprobar Sentry, correo y auditoría.
 - [x] Implementar la outbox cifrada de correos/notificaciones y comprobar la
   recuperación de cuenta mediante el worker.
-- [ ] Ejecutar la prueba de carga antes de cerrar completamente Sprint 23.4.
+- [x] Ejecutar la prueba de carga y registrar la capacidad aprobada y el límite
+  encontrado en la infraestructura actual.
 
 ### Gate remoto parcial · 2026-07-29
 
@@ -134,3 +136,20 @@ Estado: observabilidad, workers, monitor externo y outbox desplegados; escalón 
 - La versión `1.0.37` quedó saludable en producción desde `805d14a`.
 - El cierre total de la certificación de outbox requiere todavía comprobar un
   código nuevo de verificación y ejecutar un ensayo remoto de idempotencia.
+
+## Avance 5 · Gate de carga
+
+- Responsable: Gladis Rocio Gelves Pabon.
+- Producción: Roustix `1.0.37`; PostgreSQL, migraciones, Redis y worker en verde.
+- Escalones de 1, 5 y 10 usuarios concurrentes aprobados sin errores
+  funcionales. La confirmación de 10 usuarios procesó 507 solicitudes, 0
+  fallos y obtuvo p95 global de `2.052,03 ms`.
+- En la prueba definitiva de 20 usuarios se procesaron 981 solicitudes con 0
+  fallos y p95 global de `1.568,86 ms`, pero `/incidencias` y `/ordenes`
+  superaron el límite rojo de `5.000 ms`.
+- Capacidad certificada para el piloto sobre la instancia Starter actual:
+  **10 usuarios concurrentes**.
+- El escalón de 20 usuarios queda bloqueado hasta ampliar CPU/instancias o
+  completar una optimización específica de las dos vistas afectadas.
+- Evidencia técnica detallada: `SPRINT23.4-LOAD-TEST.md` y
+  `artifacts/load-20-final.json` (artefacto local excluido de Git).

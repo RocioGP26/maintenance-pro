@@ -91,7 +91,7 @@ contra el límite de 60 RPM del plan Start. El valor puede ajustarse con
 | CPU / memoria Render | Pendiente |
 | Errores Sentry | Pendiente |
 | Reinicios / health fallidos | Pendiente |
-| Veredicto | Escalón de 1 usuario aprobado; 5/10/20 usuarios pendientes |
+| Veredicto | 1, 5 y 10 usuarios aprobados; 20 usuarios no aprobados en Starter |
 
 ## Primera etapa autenticada · 2026-07-31
 
@@ -170,3 +170,19 @@ tipo de error, ruta, estado y latencia.
   alcanzó `5.437,23 ms` por ráfagas coincidentes con la expiración de la
   caché cada 15 segundos. Se amplía el TTL a 60 segundos y se exige una nueva
   confirmación del escalón de 20 usuarios.
+- Confirmación con TTL de 60 segundos: 970 solicitudes, 0 fallos y p95 global
+  `1.857,06 ms` (**verde**). `/dashboard` quedó amarillo, `/incidencias`
+  verde y `/ordenes` alcanzó `7.274,91 ms` (**rojo**). El desplazamiento de la
+  ráfaga entre vistas confirmó una estampida al renovar la caché distribuida.
+- Corrección final `4f88bb6`: caché *stale-while-refresh*, renovación protegida
+  por lock de Redis y reutilización temporal del valor anterior para las
+  solicitudes concurrentes.
+- Prueba definitiva de 20 usuarios: 981 solicitudes, 0 fallos, tasa de error
+  `0 %` y p95 global `1.568,86 ms` (**verde**). Health y API quedaron verdes;
+  `/dashboard` quedó amarillo con `3.275,33 ms`, pero `/incidencias` alcanzó
+  `5.015,59 ms` y `/ordenes` `6.845,57 ms` (**rojo**).
+- Veredicto de capacidad: la instancia web Starter actual queda certificada
+  hasta **10 usuarios concurrentes** para el piloto. El escalón de 20 usuarios
+  queda **no aprobado**; antes de repetirlo se requiere ampliar CPU/instancias
+  o reducir el coste de las vistas de incidencias y órdenes. No se justifican
+  más ajustes a ciegas sobre la misma infraestructura.
