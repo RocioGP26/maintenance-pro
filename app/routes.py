@@ -187,6 +187,10 @@ ACTIVO_DOC_CAMPOS = {
     "manual": "manual_url",
     "ficha": "ficha_tecnica_url",
 }
+ACTIVO_ARCHIVO_CAMPOS = {
+    "foto": "foto_url",
+    **ACTIVO_DOC_CAMPOS,
+}
 ZONAS_EMPRESA = (
     ("America/Bogota", "América / Bogotá"),
     ("America/Mexico_City", "América / Ciudad de México"),
@@ -3419,6 +3423,41 @@ def activos_edit(id):
         .all()
     )
     return render_template("activos/form.html", **ctx)
+
+
+@bp.route("/activos/<int:id>/archivo/<tipo>/eliminar", methods=["POST"])
+def activos_archivo_delete(id, tipo):
+    """Retira un archivo individual del activo y libera su espacio almacenado."""
+    tipo_normalizado = (tipo or "").strip().lower()
+    attr = ACTIVO_ARCHIVO_CAMPOS.get(tipo_normalizado)
+    if not attr:
+        abort(404)
+    machine = _filter_empresa(Machine.query.filter_by(id=id), Machine).first_or_404()
+    referencia = (getattr(machine, attr, "") or "").strip()
+    if not referencia:
+        flash("El activo ya no tiene ese archivo.", "info")
+        return redirect(url_for("main.activos_edit", id=machine.id))
+
+    from app.file_storage import delete_best_effort, key_from_reference
+
+    key = key_from_reference(referencia)
+    setattr(machine, attr, "")
+    db.session.commit()
+    eliminado = delete_best_effort(key) if key else True
+    etiquetas = {
+        "foto": "La imagen del activo fue eliminada.",
+        "manual": "El manual técnico fue eliminado.",
+        "ficha": "La ficha técnica fue eliminada.",
+    }
+    if eliminado:
+        flash(etiquetas[tipo_normalizado], "success")
+    else:
+        flash(
+            "El archivo se retiró del activo, pero el almacenamiento no respondió. "
+            "Roustix registró una alerta para completar la limpieza.",
+            "warning",
+        )
+    return redirect(url_for("main.activos_edit", id=machine.id))
 
 
 @bp.route("/activos/api/campos")

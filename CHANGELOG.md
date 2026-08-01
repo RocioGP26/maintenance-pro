@@ -12,6 +12,14 @@ La suite documental mantiene un ciclo independiente en
 
 - Espacio reservado para cambios aún no publicados.
 
+## [1.0.41] - 2026-08-01
+
+### Added
+
+- La edición del activo ahora permite eliminar individualmente su imagen,
+  manual técnico o ficha técnica. Los objetos almacenados se retiran después
+  de confirmar la actualización para liberar la cuota del tenant.
+
 ## [1.0.40] - 2026-08-01
 
 ### Fixed

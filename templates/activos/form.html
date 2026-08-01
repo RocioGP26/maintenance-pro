@@ -330,6 +330,12 @@
                   <img src="{{ foto_actual }}" alt="Imagen actual de {{ machine.nombre }}"
                        class="img-thumbnail" style="max-width:220px;max-height:160px;object-fit:cover;">
                   <div class="small text-muted mt-1">Selecciona otro archivo para reemplazarla.</div>
+                  <button type="submit" class="btn btn-sm btn-outline-danger mt-2"
+                          formaction="{{ url_for('main.activos_archivo_delete', id=machine.id, tipo='foto') }}"
+                          formmethod="post" formnovalidate
+                          onclick="return confirm('¿Eliminar la imagen actual del activo?');">
+                    <i class="bi bi-trash me-1"></i>Eliminar imagen
+                  </button>
                 </div>
                 {% endif %}
                 <details class="mt-2 activo-url-externa">
@@ -352,6 +358,12 @@
                   <a href="{{ manual_href }}" target="_blank" rel="noopener" class="btn btn-sm btn-outline-primary">
                     <i class="bi bi-file-earmark-pdf me-1"></i>Ver manual actual
                   </a>
+                  <button type="submit" class="btn btn-sm btn-outline-danger"
+                          formaction="{{ url_for('main.activos_archivo_delete', id=machine.id, tipo='manual') }}"
+                          formmethod="post" formnovalidate
+                          onclick="return confirm('¿Eliminar el manual técnico actual?');">
+                    <i class="bi bi-trash me-1"></i>Eliminar manual
+                  </button>
                   <div class="small text-muted mt-1">Selecciona otro PDF para reemplazarlo.</div>
                 </div>
                 {% endif %}
@@ -376,6 +388,12 @@
                   <a href="{{ ficha_href }}" target="_blank" rel="noopener" class="btn btn-sm btn-outline-primary">
                     <i class="bi bi-file-earmark-pdf me-1"></i>Ver ficha actual
                   </a>
+                  <button type="submit" class="btn btn-sm btn-outline-danger"
+                          formaction="{{ url_for('main.activos_archivo_delete', id=machine.id, tipo='ficha') }}"
+                          formmethod="post" formnovalidate
+                          onclick="return confirm('¿Eliminar la ficha técnica actual?');">
+                    <i class="bi bi-trash me-1"></i>Eliminar ficha
+                  </button>
                   <div class="small text-muted mt-1">Selecciona otro PDF para reemplazarla.</div>
                 </div>
                 {% endif %}
