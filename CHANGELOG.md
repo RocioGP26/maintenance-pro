@@ -12,6 +12,15 @@ La suite documental mantiene un ciclo independiente en
 
 - Espacio reservado para cambios aún no publicados.
 
+## [1.0.44] - 2026-08-01
+
+### Fixed
+
+- Al guardar una jornada, el repuesto recién asociado se retira de la tabla
+  temporal antes de enviar la OT. Esto evita serializar dos veces la misma
+  línea —una con jornada y otra pendiente— y permite que el segundo repuesto
+  quede registrado correctamente.
+
 ## [1.0.43] - 2026-08-01
 
 ### Fixed

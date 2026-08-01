@@ -429,6 +429,7 @@ class TestLaborCostReport(unittest.TestCase):
         self.assertIn("costoMdo + herramientas + costoRepuestos", html)
         self.assertIn("Agregar repuestos en esta jornada", html)
         self.assertIn("repuestos.filter(repuestoAsignado)", html)
+        self.assertIn("if (typeof renderRepuestos === 'function') renderRepuestos();", html)
 
     def test_asset_life_includes_cost_breakdown(self):
         self.client.post(

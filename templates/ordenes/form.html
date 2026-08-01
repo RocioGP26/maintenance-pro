@@ -1163,7 +1163,11 @@
         r.jornada_hora_fin = item.hora_fin;
         r.jornada_tecnico = tecnicoLabel(item);
       });
-      if (typeof syncRepHidden === 'function') syncRepHidden();
+      // Una vez asignadas, las líneas dejan de ser pendientes. Volver a
+      // renderizar vacía la tabla del modal antes de requestSubmit(), evitando
+      // que el listener submit lea la misma fila y la duplique sin jornada.
+      if (typeof renderRepuestos === 'function') renderRepuestos();
+      else if (typeof syncRepHidden === 'function') syncRepHidden();
     }
     var picked = document.querySelector('input[name="jornadaEstadoOt"]:checked');
     var accion = picked ? picked.value : 'en_proceso';
