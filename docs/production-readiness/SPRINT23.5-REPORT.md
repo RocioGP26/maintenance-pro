@@ -1,13 +1,15 @@
 # Sprint 23.5 · Reporte en curso
 
 Fecha de inicio: 2026-08-01  
-Estado: **iniciado · gate de correo corporativo pendiente**
+Última actualización: 2026-08-02
+
+Estado: **GO condicionado · correo corporativo y revisión legal pendientes**
 
 ## Evidencia de entrada
 
 - Sprint 23.4 cerrado con observabilidad, workers, outbox, monitor y prueba de
   carga certificados.
-- Producción saludable en Roustix `1.0.39`.
+- Producción saludable en Roustix `1.0.46` (`100e206`).
 - Capacidad piloto aprobada: 10 usuarios concurrentes sobre la instancia actual.
 - Límite comercial: máximo tres empresas piloto reales.
 
@@ -53,11 +55,31 @@ Estado: **iniciado · gate de correo corporativo pendiente**
   conservación, subencargados relevantes y condiciones comerciales aprobadas.
 - Los textos deberán someterse a revisión legal antes de publicarse.
 
+### Avance legal · 2026-08-01
+
+- Roustix todavía no corresponde a una sociedad constituida y es desarrollado
+  por dos socios personas naturales.
+- Se prepararon en almacenamiento local privado borradores de política de
+  tratamiento, aviso de privacidad, términos del piloto y acuerdo de
+  transmisión de datos.
+- Los borradores están excluidos de Git porque contienen datos personales y no
+  pueden publicarse ni firmarse hasta completar la identificación de ambos
+  socios y obtener revisión jurídica colombiana.
+
 ## Gate UAT
 
-El recorrido reproducible quedó definido en `SPRINT23.5-UAT.md`. Se ejecutará
-primero con la empresa marcada como **Pruebas**, sin consumir el cupo máximo de
-tres empresas piloto reales.
+El recorrido reproducible definido en `SPRINT23.5-UAT.md` fue ejecutado con la
+empresa marcada como **Pruebas**, sin consumir el cupo máximo de tres empresas
+piloto reales.
+
+Resultado: **GO CONDICIONADO**. Todos los pasos técnicos del tenant de prueba
+quedaron aprobados en producción, incluida la descarga de la Hoja de Vida en PDF
+con la zona horaria de la empresa. No quedaron hallazgos críticos o altos
+abiertos.
+
+Antes de incorporar cada empresa piloto real se deberá ejecutar el recorrido
+abreviado, documentar responsables y soporte, y mantener el límite de tres
+empresas durante esta fase.
 
 No se deben publicar valores de contraseñas, claves DKIM privadas, tokens ni
 credenciales SMTP en este documento o en el repositorio.
