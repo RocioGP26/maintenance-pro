@@ -12,6 +12,15 @@ La suite documental mantiene un ciclo independiente en
 
 - Espacio reservado para cambios aún no publicados.
 
+## [1.0.45] - 2026-08-01
+
+### Fixed
+
+- Los medios privados se entregan sin caché persistente. Al reemplazar la foto
+  de un activo con otra imagen del mismo formato, el navegador muestra de
+  inmediato el archivo nuevo en lugar de conservar la copia anterior durante
+  cinco minutos.
+
 ## [1.0.44] - 2026-08-01
 
 ### Fixed

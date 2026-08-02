@@ -234,6 +234,7 @@ class TestMediaTenantIsolation(unittest.TestCase):
 
         self.assertEqual(own.status_code, 200)
         self.assertEqual(own.data, b"propio")
+        self.assertEqual(own.headers["Cache-Control"], "private, no-store, max-age=0")
         self.assertEqual(other.status_code, 403)
 
 if __name__ == "__main__":

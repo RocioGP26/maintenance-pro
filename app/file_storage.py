@@ -299,4 +299,9 @@ def media(key: str):
     except (FileNotFoundError, ValueError):
         abort(404)
     name = PurePosixPath(key).name
-    return send_file(BytesIO(content), download_name=name, max_age=300)
+    response = send_file(BytesIO(content), download_name=name, max_age=0)
+    # Las imágenes de activos conservan una clave estable al reemplazarse. No
+    # permitir que el navegador reutilice durante minutos el contenido anterior
+    # de esa misma URL; además se trata de medios privados del tenant.
+    response.headers["Cache-Control"] = "private, no-store, max-age=0"
+    return response
