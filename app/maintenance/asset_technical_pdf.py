@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-from datetime import datetime
 from io import BytesIO
 from xml.sax.saxutils import escape
 
@@ -13,7 +12,7 @@ from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
 from reportlab.lib.units import mm
 from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
 
-from app.maintenance.asset_life_pdf import _imagen_activo, _logo
+from app.maintenance.asset_life_pdf import _generated_timestamp, _imagen_activo, _logo
 from app.models import machine_status_meta
 from app.text_encoding import texto_legible
 
@@ -96,7 +95,7 @@ def export_asset_technical_pdf(empresa, machine, campos, valores, sector_label):
 
     def footer(canvas, _doc):
         canvas.saveState(); canvas.setFont("Helvetica", 7); canvas.setFillColor(colors.HexColor("#64748B"))
-        canvas.drawString(12*mm, 6*mm, f"Generado: {datetime.now().strftime('%d/%m/%Y %H:%M')}")
+        canvas.drawString(12*mm, 6*mm, f"Generado: {_generated_timestamp(empresa)}")
         canvas.drawRightString(A4[0]-12*mm, 6*mm, f"Página {canvas.getPageNumber()}"); canvas.restoreState()
 
     doc.build(story, onFirstPage=footer, onLaterPages=footer)

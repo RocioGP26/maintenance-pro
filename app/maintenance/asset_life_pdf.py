@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import datetime, timezone
 from io import BytesIO
 from pathlib import Path
 from xml.sax.saxutils import escape
@@ -18,6 +18,7 @@ from reportlab.platypus import Image, Paragraph, SimpleDocTemplate, Spacer, Tabl
 from app.models import machine_status_meta, wo_status_meta, wo_tipo_meta
 from app.money import formato_moneda
 from app.text_encoding import texto_legible
+from app.timezone_utils import formato_fecha_hora
 
 
 def _texto(valor) -> str:
@@ -27,6 +28,12 @@ def _texto(valor) -> str:
 def _p(valor, estilo):
     texto = _texto(valor).replace("\n", "<br/>")
     return Paragraph(escape(texto).replace("&lt;br/&gt;", "<br/>"), estilo)
+
+
+def _generated_timestamp(empresa, now: datetime | None = None) -> str:
+    """Fecha de generación localizada en la zona horaria de la empresa."""
+    generated_at = now or datetime.now(timezone.utc)
+    return formato_fecha_hora(generated_at, empresa=empresa)
 
 
 def _logo(empresa):
@@ -289,7 +296,7 @@ def export_asset_life_pdf(
         canvas.line(12 * mm, 10 * mm, A4[0] - 12 * mm, 10 * mm)
         canvas.setFont("Helvetica", 7)
         canvas.setFillColor(colors.HexColor("#64748B"))
-        canvas.drawString(12 * mm, 6 * mm, f"Generado: {datetime.now().strftime('%d/%m/%Y %H:%M')}")
+        canvas.drawString(12 * mm, 6 * mm, f"Generado: {_generated_timestamp(empresa)}")
         canvas.drawRightString(A4[0] - 12 * mm, 6 * mm, f"Página {canvas.getPageNumber()}")
         canvas.restoreState()
 

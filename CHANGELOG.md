@@ -12,6 +12,14 @@ La suite documental mantiene un ciclo independiente en
 
 - Espacio reservado para cambios aún no publicados.
 
+## [1.0.46] - 2026-08-01
+
+### Fixed
+
+- Los sellos `Generado` de la Hoja de Vida y la Ficha Técnica del activo
+  ahora usan la zona horaria configurada para la empresa, en lugar de la hora
+  UTC del servidor.
+
 ## [1.0.45] - 2026-08-01
 
 ### Fixed
