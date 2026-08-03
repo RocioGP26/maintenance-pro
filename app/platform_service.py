@@ -372,7 +372,11 @@ def empresa_a_fila(
     adm = admin_empresa(empresa)
     from app.platform_billing import mrr_empresa
 
-    mrr = mrr_empresa(empresa, hoy) if estado in ("activa", "mora") else 0.0
+    mrr = (
+        mrr_empresa(empresa, hoy)
+        if not empresa.es_prueba and estado in ("activa", "mora")
+        else 0.0
+    )
     return EmpresaRow(
         empresa=empresa,
         estado=estado,
@@ -403,12 +407,17 @@ def listar_empresas_platform(
     sector: str = "",
     plan: str = "",
     estado: str = "",
+    tipo: str = "",
     q: str = "",
 ) -> list[EmpresaRow]:
     hoy = date.today()
     query = Empresa.query.order_by(Empresa.razon_social)
     if sector:
         query = query.filter(Empresa.sector == sector)
+    if tipo == "clientes":
+        query = query.filter(Empresa.es_prueba.is_(False))
+    elif tipo == "pruebas":
+        query = query.filter(Empresa.es_prueba.is_(True))
     if q:
         like = f"%{q.strip()}%"
         query = query.filter(
@@ -430,20 +439,27 @@ def listar_empresas_platform(
 
 
 def kpis_platform(filas: list[EmpresaRow]) -> dict[str, Any]:
-    total = len(filas)
-    activas = sum(1 for f in filas if f.estado == "activa")
-    trial = sum(1 for f in filas if f.estado == "trial")
-    mora = sum(1 for f in filas if f.estado == "mora")
-    suspendidas = sum(1 for f in filas if f.estado == "suspendida")
-    mrr = sum(f.mrr for f in filas)
+    comerciales = [f for f in filas if not f.empresa.es_prueba]
+    total = len(comerciales)
+    activas = sum(1 for f in comerciales if f.estado == "activa")
+    trial = sum(1 for f in comerciales if f.estado == "trial")
+    mora = sum(1 for f in comerciales if f.estado == "mora")
+    suspendidas = sum(1 for f in comerciales if f.estado == "suspendida")
+    pruebas = sum(1 for f in filas if f.empresa.es_prueba)
+    mrr = sum(f.mrr for f in comerciales)
     mes_actual = date.today().replace(day=1)
-    nuevas_mes = Empresa.query.filter(Empresa.fecha_registro >= datetime.combine(mes_actual, datetime.min.time())).count()
+    nuevas_mes = Empresa.query.filter(
+        Empresa.es_prueba.is_(False),
+        Empresa.fecha_registro >= datetime.combine(mes_actual, datetime.min.time()),
+    ).count()
     return {
+        "visible": len(filas),
         "total": total,
         "activas": activas,
         "trial": trial,
         "mora": mora,
         "suspendidas": suspendidas,
+        "pruebas": pruebas,
         "mrr": mrr,
         "nuevas_mes": nuevas_mes,
         "pct_activas": int(round(activas / total * 100)) if total else 0,
@@ -470,3 +486,7 @@ def plan_choices_platform() -> list[tuple[str, str]]:
 
 def estado_choices_platform() -> list[tuple[str, str]]:
     return [("", "Todos los estados"), *ESTADOS_CICLO]
+
+
+def tipo_choices_platform() -> list[tuple[str, str]]:
+    return (("", "Todos los tipos"), ("clientes", "Clientes"), ("pruebas", "Pruebas"))

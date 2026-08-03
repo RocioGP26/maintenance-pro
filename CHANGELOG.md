@@ -12,6 +12,96 @@ La suite documental mantiene un ciclo independiente en
 
 - Espacio reservado para cambios aún no publicados.
 
+## [1.0.46] - 2026-08-01
+
+### Fixed
+
+- Los sellos `Generado` de la Hoja de Vida y la Ficha Técnica del activo
+  ahora usan la zona horaria configurada para la empresa, en lugar de la hora
+  UTC del servidor.
+
+## [1.0.45] - 2026-08-01
+
+### Fixed
+
+- Los medios privados se entregan sin caché persistente. Al reemplazar la foto
+  de un activo con otra imagen del mismo formato, el navegador muestra de
+  inmediato el archivo nuevo en lugar de conservar la copia anterior durante
+  cinco minutos.
+
+## [1.0.44] - 2026-08-01
+
+### Fixed
+
+- Al guardar una jornada, el repuesto recién asociado se retira de la tabla
+  temporal antes de enviar la OT. Esto evita serializar dos veces la misma
+  línea —una con jornada y otra pendiente— y permite que el segundo repuesto
+  quede registrado correctamente.
+
+## [1.0.43] - 2026-08-01
+
+### Fixed
+
+- Al agregar repuestos a una jornada posterior, la validación considera el
+  stock actual más las unidades que la misma OT ya había consumido. Una
+  existencia disponible de una unidad permite instalar esa unidad sin volver
+  a exigir el inventario de las jornadas anteriores.
+- La edición valida el reemplazo completo antes de revertir consumos, evitando
+  alterar temporalmente el inventario cuando una línea nueva es inválida.
+
+## [1.0.42] - 2026-08-01
+
+### Fixed
+
+- Las OT correctivas ahora permiten registrar repuestos en cualquier jornada,
+  conservando los consumos anteriores y asociando cada nueva línea con la
+  fecha, horario y técnico de su instalación.
+- La validación de inventario acumula todas las líneas del mismo repuesto para
+  impedir stock negativo y permite reutilizarlo en jornadas diferentes.
+
+## [1.0.41] - 2026-08-01
+
+### Added
+
+- La edición del activo ahora permite eliminar individualmente su imagen,
+  manual técnico o ficha técnica. Los objetos almacenados se retiran después
+  de confirmar la actualización para liberar la cuota del tenant.
+
+## [1.0.40] - 2026-08-01
+
+### Fixed
+
+- Al completar una orden de trabajo originada desde una incidencia, el ticket
+  asociado ahora se marca automáticamente como cerrado. El cierre también se
+  conserva cuando la OT pasa directamente al estado Cerrada.
+
+## [1.0.39] - 2026-08-01
+
+### Fixed
+
+- Los correos y otros valores largos ahora se ajustan dentro de las tarjetas
+  del panel de plataforma sin desbordar sus límites.
+
+## [1.0.38] - 2026-08-01
+
+### Added
+
+- Clasificación explícita de empresas de prueba, con filtro y acción auditada
+  desde el panel de plataforma.
+- Gate productivo para certificar la entrega idempotente de la outbox de correo.
+
+### Changed
+
+- Las empresas de prueba quedan excluidas de métricas comerciales, facturación,
+  vencimientos y automatizaciones del piloto, sin eliminar su información.
+- Se documentaron las evidencias productivas de capacidad e idempotencia de
+  correo del piloto controlado.
+
+### Fixed
+
+- Se estabilizaron las consultas de alertas operativas bajo concurrencia y se
+  ajustó la prueba de carga para respetar las cuotas reales de la API.
+
 ## [1.0.37] - 2026-07-30
 
 ### Fixed

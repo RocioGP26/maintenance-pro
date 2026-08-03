@@ -564,6 +564,8 @@ body.platform-body {
   background: var(--platform-surface);
   border: 1px solid var(--platform-border);
   border-radius: 0.75rem;
+  min-width: 0;
+  overflow-wrap: anywhere;
   padding: 1.1rem 1.25rem;
 }
 
@@ -580,6 +582,7 @@ body.platform-body {
   color: #fff;
   font-size: 0.95rem;
   margin: 0;
+  word-break: break-word;
 }
 
 .platform-status-card {

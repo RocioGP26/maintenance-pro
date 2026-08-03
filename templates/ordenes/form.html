@@ -305,13 +305,12 @@
             <div class="col-12 d-none" id="seccionRepuestos">
               <h6 class="fw-semibold mb-2"><i class="bi bi-box-seam me-1"></i> Repuestos (inventario)</h6>
               <div class="form-check mb-2">
-                <input class="form-check-input" type="checkbox" name="usa_repuestos" value="1" id="usa_repuestos"
-                       {% if usa_repuestos_inicial %}checked{% endif %}>
+                <input class="form-check-input" type="checkbox" id="usa_repuestos">
                 <label class="form-check-label" for="usa_repuestos">
-                  Requiere cambio de repuestos
+                  Agregar repuestos en esta jornada
                 </label>
               </div>
-              <div id="panelRepuestos" class="{% if not usa_repuestos_inicial %}d-none{% endif %}">
+              <div id="panelRepuestos" class="d-none">
                 <p class="form-text small mb-2">Selecciona los repuestos consumidos; el stock se descuenta al guardar la orden.</p>
                 <div class="table-responsive border rounded mb-2">
                   <table class="table table-sm table-hover mb-0 ot-repuestos-table">
@@ -334,6 +333,7 @@
                 <div id="repuestosVacio" class="form-text small text-muted mt-1">Sin repuestos agregados.</div>
                 <div id="repuestosCostoTotal" class="small text-end fw-semibold mt-2 d-none"></div>
               </div>
+              <input type="hidden" name="usa_repuestos" id="usaRepuestosPersistencia" value="{% if usa_repuestos_inicial %}1{% else %}0{% endif %}">
               <input type="hidden" name="repuestos_json" id="repuestosJson" value="">
             </div>
 
@@ -816,7 +816,7 @@
     var inicio = document.getElementById('jornadaHoraInicio')?.value || '';
     var fin = document.getElementById('jornadaHoraFin')?.value || '';
     return repuestos.reduce(function (suma, repuesto) {
-      var sinJornada = !repuesto.jornada_fecha;
+      var sinJornada = !repuestoAsignado(repuesto);
       var corresponde = repuesto.jornada_fecha === fecha
         && (!repuesto.jornada_hora_inicio || repuesto.jornada_hora_inicio === inicio)
         && (!repuesto.jornada_hora_fin || repuesto.jornada_hora_fin === fin);
@@ -1044,6 +1044,9 @@
       toggleTecnicoNombre();
       actualizarCostosJornada();
     }
+    if (typeof seccionRep !== 'undefined' && seccionRep && editIndex >= 0) {
+      seccionRep.classList.add('d-none');
+    }
     if (modal) modal.show();
   }
 
@@ -1052,11 +1055,15 @@
       if (e.relatedTarget && e.relatedTarget.id === 'btnAbrirModalJornada') {
         editIndex = -1;
         limpiarModal();
-        // En jornadas adicionales los repuestos ya instalados se consultan
-        // únicamente en la tabla principal de la OT.
         if (typeof seccionRep !== 'undefined' && seccionRep) {
           var esCorrectivo = selectTipo && selectTipo.value === 'correctivo';
-          seccionRep.classList.toggle('d-none', !esCorrectivo || jornadas.length > 0);
+          // Las líneas ya instaladas permanecen en la tabla principal. El
+          // modal comienza vacío y admite nuevos consumos en cada jornada.
+          repuestos = repuestos.filter(repuestoAsignado);
+          if (usaRep) usaRep.checked = false;
+          togglePanelRep();
+          renderRepuestos();
+          seccionRep.classList.toggle('d-none', !esCorrectivo);
         }
       }
     });
@@ -1150,13 +1157,17 @@
     if (typeof syncRepFromDom === 'function') syncRepFromDom();
     if (typeof repuestos !== 'undefined') {
       repuestos.forEach(function (r) {
-        if (r.jornada_fecha) return;
+        if (r.persistido || r.jornada_fecha) return;
         r.jornada_fecha = item.fecha;
         r.jornada_hora_inicio = item.hora_inicio;
         r.jornada_hora_fin = item.hora_fin;
         r.jornada_tecnico = tecnicoLabel(item);
       });
-      if (typeof syncRepHidden === 'function') syncRepHidden();
+      // Una vez asignadas, las líneas dejan de ser pendientes. Volver a
+      // renderizar vacía la tabla del modal antes de requestSubmit(), evitando
+      // que el listener submit lea la misma fila y la duplique sin jornada.
+      if (typeof renderRepuestos === 'function') renderRepuestos();
+      else if (typeof syncRepHidden === 'function') syncRepHidden();
     }
     var picked = document.querySelector('input[name="jornadaEstadoOt"]:checked');
     var accion = picked ? picked.value : 'en_proceso';
@@ -1285,11 +1296,16 @@
   var panelRep = document.getElementById('panelRepuestos');
   var repuestosTbody = document.getElementById('repuestosTbody');
   var repHidden = document.getElementById('repuestosJson');
+  var repPersistencia = document.getElementById('usaRepuestosPersistencia');
   var repVacio = document.getElementById('repuestosVacio');
   var btnAddRep = document.getElementById('btnAgregarRepuesto');
   var catalogoRep = {{ repuestos_catalog_data|tojson }};
   var repuestos = {{ repuestos_inicial|tojson }};
   var repCostoTotalEl = document.getElementById('repuestosCostoTotal');
+
+  function repuestoAsignado(r) {
+    return !!(r && (r.persistido || r.jornada_fecha));
+  }
 
   function escRep(s) {
     return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;');
@@ -1364,11 +1380,13 @@
 
   function syncRepHidden() {
     if (repHidden) repHidden.value = JSON.stringify(repuestos);
+    if (repPersistencia) repPersistencia.value = repuestos.length ? '1' : '0';
   }
 
   function syncRepFromDom() {
-    var anteriores = repuestos.slice();
-    repuestos = [];
+    var asignados = repuestos.filter(repuestoAsignado);
+    var anteriores = repuestos.filter(function (r) { return !repuestoAsignado(r); });
+    repuestos = asignados.slice();
     if (!repuestosTbody) return;
     repuestosTbody.querySelectorAll('tr').forEach(function (tr, idx) {
       var sel = tr.querySelector('.rep-spare');
@@ -1387,6 +1405,7 @@
         notas: notas ? notas.value.trim() : '',
         costo_unitario: costoUnitario,
         costo_total: costoUnitario * cantidad,
+        persistido: false,
         jornada_fecha: anterior.jornada_fecha || '',
         jornada_hora_inicio: anterior.jornada_hora_inicio || '',
         jornada_hora_fin: anterior.jornada_hora_fin || '',
@@ -1401,7 +1420,10 @@
       syncRepFromDom();
       var filas = repuestosTbody.querySelectorAll('tr');
       var idx = Array.prototype.indexOf.call(filas, tr);
-      if (idx >= 0) repuestos.splice(idx, 1);
+      var pendientes = repuestos.filter(function (r) { return !repuestoAsignado(r); });
+      var objetivo = idx >= 0 ? pendientes[idx] : null;
+      var globalIdx = objetivo ? repuestos.indexOf(objetivo) : -1;
+      if (globalIdx >= 0) repuestos.splice(globalIdx, 1);
       renderRepuestos();
     });
     tr.querySelectorAll('.rep-spare, .rep-qty, .rep-notas').forEach(function (el) {
@@ -1417,8 +1439,9 @@
   function renderRepuestos() {
     if (!repuestosTbody) return;
     repuestosTbody.innerHTML = '';
-    if (repVacio) repVacio.style.display = repuestos.length ? 'none' : 'block';
-    repuestos.forEach(function (r) {
+    var pendientes = repuestos.filter(function (r) { return !repuestoAsignado(r); });
+    if (repVacio) repVacio.style.display = pendientes.length ? 'none' : 'block';
+    pendientes.forEach(function (r) {
       var tr = document.createElement('tr');
       var cu = r.costo_unitario != null ? parseFloat(r.costo_unitario) : costoUnitarioRep(r.spare_part_id);
       var ct = r.costo_total != null ? parseFloat(r.costo_total) : cu * (r.cantidad || 1);
@@ -1454,7 +1477,7 @@
   if (btnAddRep && !soloLectura) {
     btnAddRep.addEventListener('click', function () {
       syncRepFromDom();
-      repuestos.push({ spare_part_id: '', cantidad: 1, notas: '', sku: '', nombre: '' });
+      repuestos.push({ spare_part_id: '', cantidad: 1, notas: '', sku: '', nombre: '', persistido: false });
       renderRepuestos();
     });
   }

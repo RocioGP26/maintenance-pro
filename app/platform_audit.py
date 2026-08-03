@@ -25,6 +25,7 @@ PLATFORM_AUDIT_LABELS = {
     "storage_addon_deactivate": "Add-on almacenamiento desactivado",
     "plan_change": "Plan comercial cambiado",
     "ops_alert_test": "Alerta operativa de prueba",
+    "company_test_classification": "Clasificación comercial de empresa",
 }
 
 DEFAULT_ACTOR = "Soporte Roustix (Plataforma)"

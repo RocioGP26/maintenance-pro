@@ -2,6 +2,7 @@ from datetime import date, datetime
 from decimal import Decimal
 import json
 import unittest
+from unittest.mock import patch
 
 from app import create_app, db
 from app.models import (
@@ -12,6 +13,7 @@ from app.models import (
     Machine,
     MachineType,
     PlanSuscripcion,
+    SparePart,
     Technician,
     User,
     WorkOrder,
@@ -20,7 +22,12 @@ from app.models import (
     WorkOrderRepuesto,
     WorkOrderStatus,
 )
-from app.routes import _parse_jornadas_json, _parse_tarifa_hora_equipo
+from app.routes import (
+    _guardar_repuestos_orden,
+    _parse_jornadas_json,
+    _parse_repuestos_json,
+    _parse_tarifa_hora_equipo,
+)
 
 
 class TestLaborCosts(unittest.TestCase):
@@ -136,6 +143,141 @@ class TestLaborCosts(unittest.TestCase):
         empresa = type("EmpresaStub", (), {"moneda": "USD"})()
         _, error = _parse_tarifa_hora_equipo({"tarifa_hora": "-5"}, empresa)
         self.assertIsNotNone(error)
+
+    def test_same_spare_part_is_allowed_in_different_journeys(self):
+        app = create_app("testing")
+        payload = [
+            {
+                "spare_part_id": 7,
+                "cantidad": 1,
+                "jornada_fecha": "2026-08-01",
+                "jornada_hora_inicio": "08:00",
+                "jornada_hora_fin": "09:00",
+            },
+            {
+                "spare_part_id": 7,
+                "cantidad": 1,
+                "jornada_fecha": "2026-08-02",
+                "jornada_hora_inicio": "10:00",
+                "jornada_hora_fin": "11:00",
+            },
+        ]
+        with app.test_request_context(
+            method="POST", data={"repuestos_json": json.dumps(payload)}
+        ):
+            parsed, error = _parse_repuestos_json()
+
+        self.assertIsNone(error)
+        self.assertEqual(len(parsed), 2)
+
+    def test_same_spare_part_is_rejected_twice_in_one_journey(self):
+        app = create_app("testing")
+        line = {
+            "spare_part_id": 7,
+            "cantidad": 1,
+            "jornada_fecha": "2026-08-01",
+            "jornada_hora_inicio": "08:00",
+            "jornada_hora_fin": "09:00",
+        }
+        with app.test_request_context(
+            method="POST", data={"repuestos_json": json.dumps([line, line])}
+        ):
+            _, error = _parse_repuestos_json()
+
+        self.assertIn("misma jornada", error)
+
+    def test_stock_is_accumulated_across_journeys(self):
+        app = create_app("testing")
+        ctx = app.app_context()
+        ctx.push()
+        try:
+            db.create_all()
+            empresa = Empresa(razon_social="Repuestos SAS", slug="repuestos-sas")
+            db.session.add(empresa)
+            db.session.flush()
+            tipo = MachineType(
+                empresa_id=empresa.id,
+                clave="repuestos_test",
+                nombre="Equipo",
+                prefijo="RP",
+            )
+            db.session.add(tipo)
+            db.session.flush()
+            machine = Machine(
+                empresa_id=empresa.id,
+                codigo="RP-001",
+                machine_type_id=tipo.id,
+                nombre="Equipo de repuestos",
+            )
+            part = SparePart(
+                empresa_id=empresa.id,
+                sku="REP-JORNADAS-001",
+                nombre="Repuesto por jornadas",
+                # La primera unidad ya fue consumida por la jornada existente;
+                # esta es la existencia que ve el usuario antes de editar la OT.
+                cantidad=1,
+            )
+            db.session.add_all([machine, part])
+            db.session.flush()
+            order = WorkOrder(
+                empresa_id=empresa.id,
+                titulo="Correctiva con varias jornadas",
+                machine_id=machine.id,
+                tipo="correctivo",
+            )
+            db.session.add(order)
+            db.session.flush()
+            order.repuestos.append(
+                WorkOrderRepuesto(
+                    spare_part_id=part.id,
+                    cantidad=1,
+                    jornada_fecha=date(2026, 8, 1),
+                    jornada_hora_inicio="08:00",
+                    jornada_hora_fin="09:00",
+                    jornada_tecnico="Técnico 1",
+                )
+            )
+            db.session.commit()
+            payload = [
+                {
+                    "spare_part_id": part.id,
+                    "cantidad": 1,
+                    "jornada_fecha": "2026-08-01",
+                    "jornada_hora_inicio": "08:00",
+                    "jornada_hora_fin": "09:00",
+                    "jornada_tecnico": "Técnico 1",
+                },
+                {
+                    "spare_part_id": part.id,
+                    "cantidad": 1,
+                    "jornada_fecha": "2026-08-02",
+                    "jornada_hora_inicio": "10:00",
+                    "jornada_hora_fin": "11:00",
+                    "jornada_tecnico": "Técnico 2",
+                },
+            ]
+            with app.test_request_context(
+                method="POST",
+                data={"usa_repuestos": "1", "repuestos_json": json.dumps(payload)},
+            ), patch("app.routes._current_empresa_id", return_value=empresa.id):
+                error = _guardar_repuestos_orden(order)
+                db.session.flush()
+
+            self.assertIsNone(error)
+            self.assertEqual(part.cantidad, 0)
+            db.session.commit()
+            lineas = WorkOrderRepuesto.query.filter_by(work_order_id=order.id).order_by(
+                WorkOrderRepuesto.jornada_fecha
+            ).all()
+            self.assertEqual(len(lineas), 2)
+            self.assertEqual(
+                [line.jornada_tecnico for line in lineas],
+                ["Técnico 1", "Técnico 2"],
+            )
+        finally:
+            db.session.remove()
+            db.drop_all()
+            ctx.pop()
 
 class TestLaborCostReport(unittest.TestCase):
     def setUp(self):
@@ -285,6 +427,9 @@ class TestLaborCostReport(unittest.TestCase):
         self.assertIn('id="jornadaCostoTotal"', html)
         self.assertGreaterEqual(html.count("col-12 col-sm-6 col-md-3"), 4)
         self.assertIn("costoMdo + herramientas + costoRepuestos", html)
+        self.assertIn("Agregar repuestos en esta jornada", html)
+        self.assertIn("repuestos.filter(repuestoAsignado)", html)
+        self.assertIn("if (typeof renderRepuestos === 'function') renderRepuestos();", html)
 
     def test_asset_life_includes_cost_breakdown(self):
         self.client.post(

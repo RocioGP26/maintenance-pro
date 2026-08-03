@@ -28,6 +28,7 @@ ACTIVITY_LABELS = {
     "integration_credential_rotated": "Credencial de integración rotada",
     "integration_credential_revoked": "Credencial de integración revocada",
     "plan_changed": "Plan comercial cambiado",
+    "classification_changed": "Clasificación comercial cambiada",
 }
 
 

@@ -133,6 +133,7 @@ class Config:
     RATELIMIT_HEADERS_ENABLED = True
     DISTRIBUTED_RATE_LIMITS_REQUIRED = _env_flag("DISTRIBUTED_RATE_LIMITS_REQUIRED", False)
     REDIS_HEALTH_DEGRADED_MS = _env_int("REDIS_HEALTH_DEGRADED_MS", 250)
+    ALERT_SUMMARY_CACHE_SECONDS = _env_int("ALERT_SUMMARY_CACHE_SECONDS", 60)
     WORKER_HEARTBEAT_REQUIRED = _env_flag("WORKER_HEARTBEAT_REQUIRED", False)
     WORKER_HEARTBEAT_MAX_AGE_SECONDS = _env_int("WORKER_HEARTBEAT_MAX_AGE_SECONDS", 90)
     WORKER_POLL_SECONDS = _env_float("WORKER_POLL_SECONDS", 2.0)
@@ -141,6 +142,11 @@ class Config:
     WORKER_MAINTENANCE_ENABLED = _env_flag("WORKER_MAINTENANCE_ENABLED", False)
     WORKER_MAINTENANCE_INTERVAL_SECONDS = _env_int(
         "WORKER_MAINTENANCE_INTERVAL_SECONDS", 3600
+    )
+    # Compatibilidad local: en producción el worker periódico mantiene los
+    # estados de las OT y evita tres escrituras redundantes por petición web.
+    WORK_ORDER_STATUS_SYNC_ON_REQUEST = _env_flag(
+        "WORK_ORDER_STATUS_SYNC_ON_REQUEST", True
     )
 
     # Arranque: tareas pesadas desactivadas por defecto en producción
@@ -207,6 +213,9 @@ class ProductionConfig(Config):
     REMEMBER_COOKIE_SECURE = True
     LOG_JSON = True
     DISTRIBUTED_RATE_LIMITS_REQUIRED = True
+    WORK_ORDER_STATUS_SYNC_ON_REQUEST = _env_flag(
+        "WORK_ORDER_STATUS_SYNC_ON_REQUEST", False
+    )
     SQLALCHEMY_DATABASE_URI = normalize_database_url(
         os.environ.get("DATABASE_URL", _default_sqlite_uri())
     )

@@ -1,12 +1,12 @@
 # COM · Commercial Packaging Roustix
 
-**Versión:** **v1.3.2** · 2026-07-29
+**Versión:** **v1.3.3** · 2026-08-01
 
 | Código | Documento | Ver. |
 |--------|-----------|------|
 | **COM-01** | [Planes y Licenciamiento](COM-01-planes-licenciamiento.md) | 1.3.2 |
 | **COM-02** | [Add-ons](COM-02-servicios-adicionales.md) | 1.3.2 |
-| **COM-03** | [Piloto / Fundadores](COM-03-programa-piloto-fundadores.md) | 1.3.2 |
+| **COM-03** | [Piloto / Fundadores](COM-03-programa-piloto-fundadores.md) | 1.3.3 |
 
 ## Matriz vigente (año 1)
 

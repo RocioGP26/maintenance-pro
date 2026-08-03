@@ -10,14 +10,22 @@ from pathlib import Path
 from app import create_app, db
 from app.models import (
     Empresa,
+    FacturaEmpresa,
+    FacturaEstado,
     PlanSuscripcion,
     PlanTipo,
     PlatformAuditLog,
     SuscripcionEstado,
     TenantActivityLog,
 )
+from app.platform_billing import kpis_facturacion, listar_facturas_platform
+from app.platform_service import kpis_platform, listar_empresas_platform
 from app.platform_config_service import PLANES_COMERCIALES_PILOTO
-from app.subscription_service import cambiar_plan_manual
+from app.subscription_service import (
+    cambiar_plan_manual,
+    crear_factura_mensual,
+    verificar_vencimientos,
+)
 
 
 class TestCommercialPilot(unittest.TestCase):
@@ -163,6 +171,110 @@ class TestCommercialPilot(unittest.TestCase):
             content = path.read_text(encoding="utf-8")
             self.assertNotRegex(content, r"\bGrow\b", str(path))
             self.assertNotRegex(content, r"\bScale\b", str(path))
+
+    def test_empresa_prueba_no_cuenta_como_cliente_y_se_puede_filtrar(self):
+        self.empresa.es_prueba = True
+        cliente = Empresa(
+            razon_social="Cliente Real SAS", slug="cliente-real", sector="manufactura"
+        )
+        db.session.add(cliente)
+        db.session.flush()
+        db.session.add(
+            PlanSuscripcion(
+                empresa_id=cliente.id,
+                plan=PlanTipo.BASICO.value,
+                fecha_inicio=date.today(),
+                fecha_fin=date.today() + timedelta(days=30),
+                activo=True,
+                estado_ciclo=SuscripcionEstado.ACTIVA.value,
+            )
+        )
+        db.session.commit()
+
+        todas = listar_empresas_platform()
+        kpis = kpis_platform(todas)
+        pruebas = listar_empresas_platform(tipo="pruebas")
+        clientes = listar_empresas_platform(tipo="clientes")
+
+        self.assertEqual(kpis["total"], 1)
+        self.assertEqual(kpis["pruebas"], 1)
+        self.assertEqual(kpis["visible"], 2)
+        self.assertEqual([f.empresa.slug for f in pruebas], ["piloto-sas"])
+        self.assertEqual([f.empresa.slug for f in clientes], ["cliente-real"])
+        self.assertEqual(
+            next(f for f in todas if f.empresa.slug == "piloto-sas").mrr,
+            0.0,
+        )
+
+    def test_empresa_prueba_no_genera_factura_ni_mora_automatica(self):
+        self.empresa.es_prueba = True
+        self.sub.fecha_fin = date.today() - timedelta(days=1)
+        db.session.commit()
+
+        stats = verificar_vencimientos(hoy=date.today())
+
+        db.session.refresh(self.sub)
+        self.assertEqual(stats["trials_a_mora"], 0)
+        self.assertEqual(self.sub.estado_ciclo, SuscripcionEstado.TRIAL.value)
+        self.assertEqual(FacturaEmpresa.query.count(), 0)
+        with self.assertRaisesRegex(ValueError, "excluidas de facturación"):
+            crear_factura_mensual(self.empresa)
+
+    def test_factura_historica_de_prueba_no_contamina_resumen_comercial(self):
+        self.empresa.es_prueba = True
+        factura = FacturaEmpresa(
+            empresa_id=self.empresa.id,
+            suscripcion_id=self.sub.id,
+            numero="FAC-TEST-001",
+            concepto="Evidencia histórica",
+            monto=250000,
+            periodo=date.today().strftime("%Y-%m"),
+            estado=FacturaEstado.PAGADA.value,
+            fecha_emision=date.today(),
+            fecha_pago=date.today(),
+        )
+        db.session.add(factura)
+        db.session.commit()
+
+        kpis = kpis_facturacion()
+
+        self.assertEqual(kpis["pagadas_mes"], 0)
+        self.assertEqual(kpis["cobrado_mes"], 0.0)
+        self.assertEqual(listar_facturas_platform(), [])
+
+    def test_superadmin_clasifica_empresa_de_prueba_y_audita(self):
+        client = self.app.test_client()
+        now = int(time.time())
+        with client.session_transaction() as session:
+            session["platform_admin"] = True
+            session["platform_started_at"] = now
+            session["platform_last_activity_at"] = now
+
+        response = client.post(
+            f"/platform/empresas/{self.empresa.id}/clasificacion",
+            data={"es_prueba": "1"},
+        )
+
+        self.assertEqual(response.status_code, 302)
+        db.session.refresh(self.empresa)
+        self.assertTrue(self.empresa.es_prueba)
+        self.assertEqual(
+            PlatformAuditLog.query.filter_by(
+                accion="company_test_classification", empresa_id=self.empresa.id
+            ).count(),
+            1,
+        )
+        page = client.get("/platform/empresas?tipo=pruebas")
+        self.assertEqual(page.status_code, 200)
+        self.assertIn("Pruebas", page.get_data(as_text=True))
+        detail = client.get(f"/platform/empresas/{self.empresa.id}")
+        self.assertIn("Facturación desactivada", detail.get_data(as_text=True))
+        invoice = client.post(
+            f"/platform/empresas/{self.empresa.id}/facturas/nueva",
+            data={"periodo": date.today().strftime("%Y-%m"), "monto": "100000"},
+        )
+        self.assertEqual(invoice.status_code, 302)
+        self.assertEqual(FacturaEmpresa.query.count(), 0)
 
 
 if __name__ == "__main__":

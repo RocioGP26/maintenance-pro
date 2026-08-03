@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 import os
 
 import click
@@ -211,6 +212,74 @@ def webhooks_prune(empresa_id: int | None):
     click.echo(f"Entregas eliminadas: {removed}")
 
 
+@click.group("email-outbox")
+def email_outbox():
+    """Utilidades controladas para certificar la outbox de correo."""
+    pass
+
+
+@email_outbox.command("certify-idempotency")
+@click.option("--empresa-slug", required=True, help="Slug exacto del tenant piloto.")
+@click.option("--user-email", required=True, help="Correo del usuario receptor del tenant.")
+@click.option(
+    "--run-id", required=True,
+    help="Identificador estable del ensayo; reutilízalo para consultar el mismo sobre.",
+)
+@with_appcontext
+def certify_email_outbox_idempotency(
+    empresa_slug: str, user_email: str, run_id: str,
+) -> None:
+    """Encola dos veces una prueba y demuestra que sólo se crea un sobre."""
+    from app import db
+    from app.email_service import send_templated_email
+    from app.email_verification_service import normalize_email
+    from app.models import EmailOutbox, Empresa, User
+
+    safe_run_id = (run_id or "").strip()
+    if not safe_run_id or len(safe_run_id) > 80:
+        raise click.ClickException("run-id debe contener entre 1 y 80 caracteres.")
+    empresa = Empresa.query.filter_by(slug=(empresa_slug or "").strip()).first()
+    if empresa is None:
+        raise click.ClickException("No existe el tenant indicado.")
+    user = User.query.filter_by(
+        empresa_id=empresa.id, email=normalize_email(user_email), activo=True,
+    ).first()
+    if user is None:
+        raise click.ClickException("No existe un usuario activo con ese correo en el tenant.")
+
+    key = f"certification:{safe_run_id}"
+    arguments = {
+        "empresa_id": empresa.id,
+        "recipient": normalize_email(user.email),
+        "subject": "Certificación operativa de correo Roustix",
+        "template_name": "outbox_certification",
+        "context": {"user": user, "empresa": empresa, "run_id": safe_run_id},
+        "idempotency_key": key,
+    }
+    first = send_templated_email(**arguments)
+    first_id = first.id
+    second = send_templated_email(**arguments)
+    second_id = second.id
+    db.session.commit()
+
+    count = EmailOutbox.query.filter_by(
+        empresa_id=empresa.id, idempotency_key=key,
+    ).count()
+    item = db.session.get(EmailOutbox, first_id)
+    approved = first_id == second_id and count == 1
+    result = {
+        "approved": approved,
+        "same_id": first_id == second_id,
+        "row_count": count,
+        "status": item.status if item is not None else "missing",
+        "attempts": int(item.attempts or 0) if item is not None else 0,
+        "sent": bool(item and item.sent_at),
+    }
+    click.echo(json.dumps(result, sort_keys=True))
+    if not approved:
+        raise click.ClickException("La outbox no superó el control de idempotencia.")
+
+
 def register_cli(app) -> None:
     app.cli.add_command(maintenance)
     app.cli.add_command(backup_db)
@@ -220,3 +289,4 @@ def register_cli(app) -> None:
     app.cli.add_command(migrate_storage_command)
     app.cli.add_command(version_command)
     app.cli.add_command(webhooks)
+    app.cli.add_command(email_outbox)

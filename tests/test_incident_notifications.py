@@ -11,8 +11,11 @@ from app.incident_notifications import (
 from app.models import (
     Empresa,
     Incident,
+    IncidentEstado,
     IncidentHistory,
     IncidentNotification,
+    WorkOrder,
+    WorkOrderStatus,
     PlanSuscripcion,
     User,
 )
@@ -335,6 +338,33 @@ class TestIncidentNotifications(unittest.TestCase):
         self.assertEqual(item.title, "Tu ticket fue cerrado")
         self.assertEqual(item.status_snapshot, "cerrado")
         self.assertIn("Resuelto → Cerrado", item.message)
+
+    def test_completed_work_order_closes_linked_incident(self):
+        from flask_login import login_user
+
+        from app.routes import _cerrar_incidente_vinculado_si_ot_terminal
+
+        incident = self._incident()
+        incident.estado = IncidentEstado.PENDIENTE_OT.value
+        work_order = WorkOrder(
+            empresa_id=self.company.id,
+            numero="OT-26-0099",
+            titulo="OT vinculada de prueba",
+            status=WorkOrderStatus.COMPLETADO.value,
+            machine_id=1,
+        )
+        work_order.incidencia_origen = incident
+        db.session.add_all([incident, work_order])
+
+        with self.app.test_request_context():
+            login_user(self.maintenance_supervisor)
+            _cerrar_incidente_vinculado_si_ot_terminal(work_order)
+
+        self.assertEqual(incident.estado, IncidentEstado.CERRADO.value)
+        self.assertTrue(incident.resuelto)
+        self.assertIsNotNone(incident.resuelto_en)
+        self.assertIsNotNone(incident.cerrado_en)
+        self.assertIn("OT-26-0099", incident.motivo_cierre)
 
     def test_reporter_does_not_receive_notification_for_own_transition(self):
         incident = self._incident()

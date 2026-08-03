@@ -1,7 +1,9 @@
-# Sprint 23.4 · Reporte en curso
+# Sprint 23.4 · Reporte de cierre
 
-Fecha de corte: 2026-07-29
-Estado: observabilidad, workers y monitor externo desplegados; gate operativo aprobado.
+Fecha de corte: 2026-08-01
+Estado: **cerrado**. Observabilidad, workers, monitor externo y outbox están
+desplegados; el gate de carga certificó hasta 10 usuarios concurrentes en la
+instancia Starter actual.
 
 ## Cierre previo registrado
 
@@ -40,11 +42,28 @@ Estado: observabilidad, workers y monitor externo desplegados; gate operativo ap
 
 ## Pendiente para el siguiente avance
 
-- Implementar la outbox cifrada para correos y notificaciones.
-- Versionar runbooks completos y ejecutar la prueba de carga.
+- Ampliar la infraestructura u optimizar incidencias y órdenes antes de repetir
+  el escalón de 20 usuarios concurrentes.
 - Mejorar la entregabilidad del correo operativo mediante SPF, DKIM y DMARC.
-- Actualizar las acciones de GitHub que aún generan la advertencia de
-  compatibilidad con Node.js 20.
+
+### Actualización de GitHub Actions · 2026-08-01
+
+- Todos los workflows migraron de `actions/checkout@v4` a `@v5` y de
+  `actions/setup-python@v5` a `@v6` para usar el runtime Node.js 24.
+- La actualización elimina la dependencia operativa de Node.js 20 y mantiene
+  los mismos permisos, eventos y versiones de Python de cada workflow.
+- La ejecución remota `30715554954` del monitor terminó en estado **Success**
+  sobre el commit `11552ec` y validó las acciones actualizadas.
+
+## Decisiones de cierre
+
+- La capacidad certificada del piloto permanece en 10 usuarios concurrentes;
+  optimizar incidencias y órdenes para el escalón de 20 es una mejora posterior
+  de capacidad, no un bloqueo para el piloto de máximo tres empresas.
+- SPF, DKIM, DMARC y la alineación del remitente se gestionarán en el Sprint
+  23.5 junto con el dominio y el correo corporativo.
+- Todos los criterios de la Definition of Done del Sprint 23.4 cuentan con
+  implementación, pruebas locales y evidencia productiva o remota.
 
 ## Avance 2 · Redis y worker
 
@@ -80,8 +99,10 @@ Estado: observabilidad, workers y monitor externo desplegados; gate operativo ap
 - [x] Ejecutar manualmente el workflow externo y registrar el run.
 - [x] Enviar, con confirmación de la responsable, una alerta controlada y
   comprobar Sentry, correo y auditoría.
-- [ ] Implementar la outbox cifrada de correos/notificaciones y ejecutar la
-  prueba de carga antes de cerrar completamente Sprint 23.4.
+- [x] Implementar la outbox cifrada de correos/notificaciones y comprobar la
+  recuperación de cuenta mediante el worker.
+- [x] Ejecutar la prueba de carga y registrar la capacidad aprobada y el límite
+  encontrado en la infraestructura actual.
 
 ### Gate remoto parcial · 2026-07-29
 
@@ -123,5 +144,50 @@ Estado: observabilidad, workers y monitor externo desplegados; gate operativo ap
 - Veredicto del gate operativo: **aprobado** para monitor externo, Sentry,
   correo y auditoría.
 
-Los correos y notificaciones todavía no se trasladaron al worker: requieren una
-outbox cifrada para no persistir códigos de verificación ni tokens crudos.
+## Avance 4 · Outbox cifrada y recuperación
+
+- `email_outbox` cifra destinatario, asunto y contenido mediante Fernet.
+- El worker entrega verificación, bienvenida y recuperación con leases,
+  idempotencia por empresa y reintentos controlados.
+- `OUTBOX_ENCRYPTION_KEY` fue configurada con el mismo valor en web y worker.
+- La recuperación real fue aprobada en producción: correo recibido, cambio de
+  contraseña, rechazo del enlace reutilizado y revocación de sesión anterior.
+- La versión `1.0.37` quedó saludable en producción desde `805d14a`.
+- El ensayo remoto de idempotencia quedó aprobado en producción con el build
+  `97fc527`: dos solicitudes conservaron un único sobre (`row_count=1`), el
+  worker lo entregó en un intento y la repetición confirmó `status=sent` sin
+  enviar un duplicado.
+- La verificación nueva de onboarding quedó aprobada el `2026-08-01`: código
+  recibido y aceptado, empresa habilitada y correo de bienvenida entregado.
+- Veredicto de outbox cifrada: **certificación completa aprobada en producción**
+  para verificación, bienvenida, recuperación, reintentos e idempotencia.
+
+## Avance 5 · Gate de carga
+
+- Responsable: Gladis Rocio Gelves Pabon.
+- Producción: Roustix `1.0.37`; PostgreSQL, migraciones, Redis y worker en verde.
+- Escalones de 1, 5 y 10 usuarios concurrentes aprobados sin errores
+  funcionales. La confirmación de 10 usuarios procesó 507 solicitudes, 0
+  fallos y obtuvo p95 global de `2.052,03 ms`.
+- En la prueba definitiva de 20 usuarios se procesaron 981 solicitudes con 0
+  fallos y p95 global de `1.568,86 ms`, pero `/incidencias` y `/ordenes`
+  superaron el límite rojo de `5.000 ms`.
+- Capacidad certificada para el piloto sobre la instancia Starter actual:
+  **10 usuarios concurrentes**.
+- El escalón de 20 usuarios queda bloqueado hasta ampliar CPU/instancias o
+  completar una optimización específica de las dos vistas afectadas.
+- Evidencia técnica detallada: `SPRINT23.4-LOAD-TEST.md` y
+  `artifacts/load-20-final.json` (artefacto local excluido de Git).
+
+## Avance 6 · Tenants internos de prueba
+
+- Las empresas pueden clasificarse explícitamente como **Pruebas** desde el
+  panel de Plataforma y filtrarse por tipo.
+- Los tenants de prueba conservan usuarios, aislamiento, planes funcionales,
+  archivos y auditoría para smoke tests reales.
+- Quedan excluidos de clientes activos, altas comerciales, MRR, cartera,
+  facturación manual, vencimientos automáticos y estadísticas públicas.
+- La clasificación y sus cambios quedan auditados; suspender un tenant sigue
+  siendo una acción independiente para revocar su acceso sin borrar evidencia.
+- El máximo comercial del piloto permanece en tres empresas reales; los
+  tenants marcados como prueba no consumen ese cupo.

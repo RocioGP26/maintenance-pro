@@ -1,5 +1,8 @@
 from datetime import date, datetime, timedelta
 import unittest
+from unittest.mock import patch
+
+from sqlalchemy import event
 
 from app import create_app, db
 from app.models import Empresa, Machine, MachineType, PlanSuscripcion, User, WorkOrder
@@ -122,6 +125,78 @@ class TestDashboardAnalysisSeparation(unittest.TestCase):
         self.assertIn("Inicio", html)
         self.assertIn("Inteligencia", html)
         self.assertIn("Análisis", html)
+
+
+    def test_operational_dashboard_keeps_a_bounded_query_budget(self):
+        engine = self.app.extensions["sqlalchemy"].engine
+        statements = 0
+
+        def count_statement(*_args, **_kwargs):
+            nonlocal statements
+            statements += 1
+
+        event.listen(engine, "before_cursor_execute", count_statement)
+        try:
+            response = self.client.get("/dashboard")
+        finally:
+            event.remove(engine, "before_cursor_execute", count_statement)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertLessEqual(
+            statements,
+            35,
+            "Inicio no debe volver a ejecutar el bloque analítico completo.",
+        )
+
+    def test_production_mode_leaves_status_sync_to_worker(self):
+        self.app.config["WORK_ORDER_STATUS_SYNC_ON_REQUEST"] = False
+
+        with patch("app.work_order_status.sincronizar_estados_ordenes") as sync:
+            response = self.client.get("/dashboard")
+
+        self.assertEqual(response.status_code, 200)
+        sync.assert_not_called()
+
+    def test_alert_summary_cache_reduces_repeated_page_queries(self):
+        class FakeRedis:
+            def __init__(self):
+                self.values = {}
+
+            def get(self, key):
+                return self.values.get(key)
+
+            def set(self, key, value, ex=None):
+                self.values[key] = value
+                return True
+
+        self.app.config.update(
+            REDIS_URL="redis://cache-test",
+            ALERT_SUMMARY_CACHE_SECONDS=15,
+            WORK_ORDER_STATUS_SYNC_ON_REQUEST=False,
+        )
+        engine = self.app.extensions["sqlalchemy"].engine
+        fake_redis = FakeRedis()
+
+        def request_query_count():
+            statements = 0
+
+            def count_statement(*_args, **_kwargs):
+                nonlocal statements
+                statements += 1
+
+            event.listen(engine, "before_cursor_execute", count_statement)
+            try:
+                response = self.client.get("/dashboard")
+            finally:
+                event.remove(engine, "before_cursor_execute", count_statement)
+            self.assertEqual(response.status_code, 200)
+            return statements
+
+        with patch("app.redis_client.get_redis", return_value=fake_redis):
+            first = request_query_count()
+            cached = request_query_count()
+
+        self.assertLess(cached, first)
 
 
 if __name__ == "__main__":

@@ -1,0 +1,8 @@
+Hola {{ user.nombre or user.username }},
+
+Esta es una prueba controlada de la entrega idempotente de correos de Roustix.
+
+Ensayo: {{ run_id }}
+Empresa: {{ empresa.razon_social }}
+
+No necesitas realizar ninguna acción.

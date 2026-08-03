@@ -11,7 +11,7 @@ services:
     # Una petición lenta del dashboard no debe bloquear el health check. El
     # worker gthread conserva un solo proceso (memoria acotada) y permite
     # atender en paralelo las sondas de Render.
-    startCommand: gunicorn --worker-class gthread --workers 1 --threads 4 --timeout 120 --graceful-timeout 30 run:app
+    startCommand: gunicorn --worker-class gthread --workers 1 --threads 16 --timeout 120 --graceful-timeout 30 run:app
     healthCheckPath: /health
     autoDeploy: true
     envVars:
@@ -36,6 +36,10 @@ services:
         value: "true"
       - key: WORKER_HEARTBEAT_MAX_AGE_SECONDS
         value: "90"
+      - key: WORK_ORDER_STATUS_SYNC_ON_REQUEST
+        value: "false"
+      - key: ALERT_SUMMARY_CACHE_SECONDS
+        value: "60"
       - key: STORAGE_BACKEND
         value: s3
       - key: STORAGE_BUCKET

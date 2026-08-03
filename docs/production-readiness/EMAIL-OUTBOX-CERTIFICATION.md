@@ -49,7 +49,7 @@ Variables opcionales:
 | Regresión de verificación y recuperación | ✅ |
 | Alembic | ✅ una sola cabeza: `rt9u4v06w18y_email_outbox` |
 
-## Gate de producción pendiente de despliegue
+## Gate de producción
 
 1. Definir `OUTBOX_ENCRYPTION_KEY` primero en el worker, esperar que vuelva a
    estar saludable y después definir exactamente el mismo valor en la web.
@@ -66,15 +66,68 @@ Variables opcionales:
    reintento, alerta operativa y recuperación posterior.
 9. Registrar fecha, responsable, commit, versión y capturas en este documento.
 
+El ensayo de idempotencia se ejecuta desde la Shell del servicio web de Render.
+El primer comando crea un solo sobre aunque el servicio sea invocado dos veces:
+
+```powershell
+flask --app run:app email-outbox certify-idempotency `
+  --empresa-slug EMPRESA_PILOTO `
+  --user-email CORREO_RECEPTOR `
+  --run-id pilot-AAAAMMDD
+```
+
+El resultado aprobado muestra `approved: true`, `same_id: true` y
+`row_count: 1`. Después de que actúe el worker, repetir exactamente el mismo
+comando y comprobar además `status: sent`, `sent: true` y que `row_count`
+continúa en `1`. La salida no imprime destinatario, asunto ni contenido cifrado.
+
 ## Evidencia remota
 
 | Campo | Resultado |
 | --- | --- |
-| Fecha Colombia | Pendiente |
-| Responsable | Pendiente |
-| Commit / versión | Pendiente |
-| Verificación entregada | Pendiente |
-| Recuperación entregada | Pendiente |
-| Idempotencia | Pendiente |
-| Reintento controlado | Pendiente |
-| Veredicto | Pendiente |
+| Fecha Colombia | 2026-08-01 13:43 |
+| Responsable | Gladis Rocio Gelves Pabon |
+| Commit / versión | `97fc527` / `1.0.37` |
+| Verificación entregada | ✅ Código nuevo recibido, aceptado y empresa habilitada |
+| Recuperación entregada | ✅ Correo recibido, contraseña cambiada y nueva clave aceptada |
+| Uso único y sesiones | ✅ Enlace reutilizado rechazado y sesión anterior revocada |
+| Idempotencia | ✅ Ensayo remoto aprobado; un único sobre entregado |
+| Reintento controlado | ✅ El correo pendiente se conservó y entregó tras corregir la configuración SMTP |
+| Health y worker | ✅ `/health/ready` en `ok`; heartbeat estable |
+| Veredicto | ✅ Certificación completa aprobada en producción |
+
+### Ensayo remoto de idempotencia · 2026-08-01
+
+- Tenant piloto: Inversiones Reinoso y Cía SAS; destinatario reservado.
+- Identificador del ensayo: `pilot-20260801`.
+- Primera ejecución: `approved=true`, `same_id=true`, `row_count=1` y estado
+  `pending`; no se creó un segundo sobre.
+- El worker entregó el mensaje **Certificación operativa de correo Roustix** y
+  la responsable confirmó su recepción.
+- Segunda ejecución con los mismos parámetros: `approved=true`,
+  `same_id=true`, `row_count=1`, `attempts=1`, `sent=true` y estado `sent`.
+- Veredicto: idempotencia y entrega mediante worker **aprobadas en producción**.
+
+### Verificación nueva de onboarding · 2026-08-01
+
+- La responsable registró una empresa de prueba mediante el onboarding público.
+- El código de seis dígitos fue recibido dentro de su vigencia y aceptado por
+  Roustix; el valor del código no se conserva como evidencia documental.
+- La empresa quedó habilitada y el correo de bienvenida fue entregado al mismo
+  destinatario.
+- Veredicto: verificación, habilitación y bienvenida mediante worker
+  **aprobadas en producción**.
+- Con esta evidencia quedan aprobados los flujos de verificación, bienvenida,
+  recuperación, reintento e idempotencia de la outbox cifrada.
+
+### Incidencias observadas y correcciones
+
+- Una configuración inválida de `MAIL_SERVER` produjo un error IDNA en el
+  worker. Desde `1.0.35` el fallo se convierte en reintento controlado y no
+  interrumpe el ciclo completo.
+- La reutilización del enlace desde una sesión autenticada redirigía al
+  dashboard. Las versiones `1.0.36` y `1.0.37` garantizan rechazo visible del
+  token consumido y permiten solicitar un enlace nuevo sin abandonar el flujo.
+- El dashboard registró una latencia cercana a 9 segundos y bloqueó
+  temporalmente el health check. `1.0.36` habilitó concurrencia `gthread` para
+  mantener las sondas operativas mientras se atienden peticiones lentas.

@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import jwt
-from flask import Flask, g, jsonify, redirect, request, url_for
+from flask import Flask, current_app, g, jsonify, redirect, request, url_for
 from flask_login import current_user
 
 from app.tenancy.db import close_db
@@ -99,6 +99,8 @@ def _load_from_session_user() -> None:
 
 
 def _sync_ordenes_vencidas() -> None:
+    if not current_app.config.get("WORK_ORDER_STATUS_SYNC_ON_REQUEST", True):
+        return
     eid = getattr(g, "empresa_id", None)
     if not eid or getattr(g, "_ot_vencidas_synced", False):
         return

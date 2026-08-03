@@ -29,8 +29,8 @@ jobs:
       MAIL_DEFAULT_SENDER: ${{ secrets.MAIL_DEFAULT_SENDER }}
       MAIL_USE_TLS: "true"
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.13"
       - name: Comprobar liveness y readiness

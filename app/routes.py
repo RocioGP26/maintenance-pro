@@ -12,7 +12,7 @@ from uuid import UUID, uuid4
 from flask import Blueprint, abort, current_app, flash, jsonify, redirect, render_template, request, session, url_for
 from werkzeug.utils import secure_filename
 from flask_login import current_user, login_required, login_user, logout_user
-from sqlalchemy import and_, false, func, or_
+from sqlalchemy import and_, case, false, func, or_
 from sqlalchemy.exc import IntegrityError
 
 from app import db, limiter
@@ -186,6 +186,10 @@ ACTIVO_DOC_EXTENSIONS = {"pdf"}
 ACTIVO_DOC_CAMPOS = {
     "manual": "manual_url",
     "ficha": "ficha_tecnica_url",
+}
+ACTIVO_ARCHIVO_CAMPOS = {
+    "foto": "foto_url",
+    **ACTIVO_DOC_CAMPOS,
 }
 ZONAS_EMPRESA = (
     ("America/Bogota", "América / Bogotá"),
@@ -2025,6 +2029,18 @@ def dashboard(
     hoy = date.today()
     periodo_anios = list(range(hoy.year - 2, hoy.year + 3))
 
+    # Inicio es una vista operativa. No debe ejecutar los cálculos históricos
+    # de MTBF, MTTR, Pareto y carga técnica que pertenecen a Análisis.
+    if _template_name == "inicio/dashboard.html":
+        return _render_operational_dashboard(
+            show_welcome=show_welcome,
+            show_tour=show_tour,
+            sector=sector,
+            machine_ids=machine_ids,
+            filtros=dash_filtros,
+            hoy=hoy,
+        )
+
     machines_q = _machines_query_con_filtros(_machines_for_sector_query(sector), dash_filtros)
     total_m = machines_q.count()
     op = machines_q.filter(Machine.status == MachineStatus.OPERATIVO.value).count()
@@ -2388,6 +2404,198 @@ def dashboard(
         preventivos_hoy_items=preventivos_hoy_items,
         garantias_por_vencer=garantias_por_vencer,
         actividad_reciente=actividad_reciente,
+    )
+
+
+def _render_operational_dashboard(
+    *,
+    show_welcome: bool,
+    show_tour: bool,
+    sector: str,
+    machine_ids: Optional[list[int]],
+    filtros: dict[str, str],
+    hoy: date,
+):
+    """Contexto mínimo del Inicio; los KPI históricos viven en /analisis."""
+    from sqlalchemy.orm import joinedload
+
+    machines_q = _machines_query_con_filtros(
+        _machines_for_sector_query(sector), filtros
+    )
+    machine_counts = machines_q.with_entities(
+        func.count(Machine.id),
+        func.coalesce(
+            func.sum(
+                case((Machine.status == MachineStatus.OPERATIVO.value, 1), else_=0)
+            ),
+            0,
+        ),
+        func.coalesce(
+            func.sum(
+                case(
+                    (Machine.status == MachineStatus.MANTENIMIENTO.value, 1),
+                    else_=0,
+                )
+            ),
+            0,
+        ),
+        func.coalesce(
+            func.sum(case((Machine.status == MachineStatus.FALLA.value, 1), else_=0)),
+            0,
+        ),
+    ).one()
+    _total, operativos, mantenimiento, falla = (int(value or 0) for value in machine_counts)
+
+    ordenes_q = _filter_work_orders_empresa(WorkOrder.query)
+    if sector:
+        ordenes_q = ordenes_q.filter(_wo_for_sector(sector))
+    ordenes_q = _wo_apply_machine_ids(ordenes_q, machine_ids)
+    open_statuses = list(WORK_ORDER_PENDING_STATUSES)
+    ordenes_abiertas, ordenes_vencidas, preventivos_hoy = (
+        int(value or 0)
+        for value in ordenes_q.with_entities(
+            func.coalesce(
+                func.sum(case((WorkOrder.status.in_(open_statuses), 1), else_=0)),
+                0,
+            ),
+            func.coalesce(
+                func.sum(
+                    case(
+                        (WorkOrder.status == WorkOrderStatus.VENCIDA.value, 1),
+                        else_=0,
+                    )
+                ),
+                0,
+            ),
+            func.coalesce(
+                func.sum(
+                    case(
+                        (
+                            and_(
+                                WorkOrder.fecha_programada == hoy,
+                                func.lower(WorkOrder.tipo)
+                                == WorkOrderType.PREVENTIVO.value,
+                            ),
+                            1,
+                        ),
+                        else_=0,
+                    )
+                ),
+                0,
+            ),
+        ).one()
+    )
+    repuestos_bajo_minimo = (
+        _filter_empresa(SparePart.query, SparePart)
+        .filter(SparePart.cantidad < SparePart.stock_minimo)
+        .count()
+    )
+
+    incidentes_q = _incidents_scope_query().filter(
+        Incident.estado.notin_(
+            [
+                IncidentEstado.RESUELTO.value,
+                IncidentEstado.CERRADO.value,
+                IncidentEstado.CANCELADO.value,
+            ]
+        )
+    )
+    incidentes_nuevas = incidentes_q.filter(
+        Incident.estado.in_(
+            [IncidentEstado.REPORTADO.value, IncidentEstado.RECIBIDO.value]
+        )
+    ).count()
+    incidentes_recientes = (
+        incidentes_q.options(joinedload(Incident.machine))
+        .order_by(Incident.reportado_en.desc())
+        .limit(6)
+        .all()
+    )
+    preventivos_hoy_items = (
+        _wo_in_period_query(hoy, hoy, sector, machine_ids)
+        .options(joinedload(WorkOrder.machine))
+        .filter(func.lower(WorkOrder.tipo) == WorkOrderType.PREVENTIVO.value)
+        .order_by(WorkOrder.fecha_programada, WorkOrder.id)
+        .limit(6)
+        .all()
+    )
+    garantias_por_vencer = (
+        machines_q.filter(
+            Machine.garantia_hasta.isnot(None),
+            Machine.garantia_hasta >= hoy,
+            Machine.garantia_hasta <= hoy + timedelta(days=30),
+        )
+        .order_by(Machine.garantia_hasta)
+        .limit(6)
+        .all()
+    )
+    actividad_reciente = (
+        _filter_work_orders_empresa(WorkOrder.query)
+        .options(joinedload(WorkOrder.machine))
+        .order_by(WorkOrder.created_at.desc())
+        .limit(8)
+        .all()
+    )
+
+    operacion_cards = [
+        {
+            "label": "OT abiertas",
+            "value": ordenes_abiertas,
+            "icon": "bi-clipboard2-check",
+            "style": "warning",
+            "href": url_for("main.ordenes_list", status=WorkOrderStatus.ABIERTA.value),
+        },
+        {
+            "label": "OT vencidas",
+            "value": ordenes_vencidas,
+            "icon": "bi-clock-history",
+            "style": "danger",
+            "href": url_for("main.ordenes_list", status=WorkOrderStatus.VENCIDA.value),
+        },
+        {
+            "label": "Incidencias nuevas",
+            "value": incidentes_nuevas,
+            "icon": "bi-exclamation-triangle",
+            "style": "danger",
+            "href": url_for("main.incidencias_list"),
+        },
+        {
+            "label": "Preventivos de hoy",
+            "value": preventivos_hoy,
+            "icon": "bi-calendar2-check",
+            "style": "success",
+            "href": url_for(
+                "main.ordenes_list",
+                tipo=WorkOrderType.PREVENTIVO.value,
+                fecha_desde=hoy.isoformat(),
+                fecha_hasta=hoy.isoformat(),
+            ),
+        },
+        {
+            "label": "Repuestos bajo mínimo",
+            "value": repuestos_bajo_minimo,
+            "icon": "bi-box-seam",
+            "style": "warning",
+            "href": url_for("main.inventario_list"),
+        },
+        {
+            "label": "Activos fuera de servicio",
+            "value": mantenimiento + falla,
+            "icon": "bi-cone-striped",
+            "style": "danger" if mantenimiento + falla else "success",
+            "href": url_for("main.activos_list"),
+        },
+    ]
+    return render_template(
+        "inicio/dashboard.html",
+        show_welcome=show_welcome,
+        show_tour=show_tour,
+        operacion_cards=operacion_cards,
+        incidentes_recientes=incidentes_recientes,
+        preventivos_hoy_items=preventivos_hoy_items,
+        garantias_por_vencer=garantias_por_vencer,
+        actividad_reciente=actividad_reciente,
+        operativos=operativos,
     )
 
 
@@ -3217,6 +3425,41 @@ def activos_edit(id):
     return render_template("activos/form.html", **ctx)
 
 
+@bp.route("/activos/<int:id>/archivo/<tipo>/eliminar", methods=["POST"])
+def activos_archivo_delete(id, tipo):
+    """Retira un archivo individual del activo y libera su espacio almacenado."""
+    tipo_normalizado = (tipo or "").strip().lower()
+    attr = ACTIVO_ARCHIVO_CAMPOS.get(tipo_normalizado)
+    if not attr:
+        abort(404)
+    machine = _filter_empresa(Machine.query.filter_by(id=id), Machine).first_or_404()
+    referencia = (getattr(machine, attr, "") or "").strip()
+    if not referencia:
+        flash("El activo ya no tiene ese archivo.", "info")
+        return redirect(url_for("main.activos_edit", id=machine.id))
+
+    from app.file_storage import delete_best_effort, key_from_reference
+
+    key = key_from_reference(referencia)
+    setattr(machine, attr, "")
+    db.session.commit()
+    eliminado = delete_best_effort(key) if key else True
+    etiquetas = {
+        "foto": "La imagen del activo fue eliminada.",
+        "manual": "El manual técnico fue eliminado.",
+        "ficha": "La ficha técnica fue eliminada.",
+    }
+    if eliminado:
+        flash(etiquetas[tipo_normalizado], "success")
+    else:
+        flash(
+            "El archivo se retiró del activo, pero el almacenamiento no respondió. "
+            "Roustix registró una alerta para completar la limpieza.",
+            "warning",
+        )
+    return redirect(url_for("main.activos_edit", id=machine.id))
+
+
 @bp.route("/activos/api/campos")
 def activos_api_campos():
     if not current_user.is_authenticated:
@@ -3619,8 +3862,8 @@ def _aplicar_estado_orden_desde_formulario(wo: WorkOrder) -> None:
 
 
 def _cerrar_incidente_vinculado_si_ot_terminal(wo: WorkOrder) -> None:
-    """Cierra el incidente de origen únicamente tras el cierre definitivo de la OT."""
-    if (wo.status or "").strip().lower() != WorkOrderStatus.CERRADA.value:
+    """Cierra el incidente de origen cuando la OT queda completada o cerrada."""
+    if (wo.status or "").strip().lower() not in WORK_ORDER_TERMINAL_STATUSES:
         return
     incidente = getattr(wo, "incidencia_origen", None)
     if not incidente or incidente.estado in (
@@ -3692,6 +3935,7 @@ def _repuesto_linea_a_dict(line: WorkOrderRepuesto) -> dict:
         "nombre": p.nombre if p else "",
         "costo_unitario": cu,
         "costo_total": line.costo_total_linea,
+        "persistido": True,
         "jornada_fecha": line.jornada_fecha.isoformat() if line.jornada_fecha else "",
         "jornada_hora_inicio": line.jornada_hora_inicio or "",
         "jornada_hora_fin": line.jornada_hora_fin or "",
@@ -3700,9 +3944,17 @@ def _repuesto_linea_a_dict(line: WorkOrderRepuesto) -> dict:
 
 
 def _revertir_repuestos_stock(wo: WorkOrder) -> None:
-    for line in list(wo.repuestos):
-        if line.spare_part:
-            line.spare_part.cantidad = (line.spare_part.cantidad or 0) + line.cantidad
+    lineas = list(wo.repuestos)
+    cantidades_previas: dict[int, int] = {}
+    for line in lineas:
+        cantidades_previas[line.spare_part_id] = (
+            cantidades_previas.get(line.spare_part_id, 0) + int(line.cantidad or 0)
+        )
+    if cantidades_previas:
+        partes = SparePart.query.filter(SparePart.id.in_(cantidades_previas)).all()
+        for part in partes:
+            part.cantidad = (part.cantidad or 0) + cantidades_previas[part.id]
+    for line in lineas:
         db.session.delete(line)
     db.session.flush()
 
@@ -3717,7 +3969,7 @@ def _parse_repuestos_json() -> Tuple[list[dict], Optional[str]]:
         return [], "Los datos de repuestos no son válidos."
 
     parsed: list[dict] = []
-    vistos: set[int] = set()
+    vistos: set[tuple[int, str, str, str]] = set()
     for i, item in enumerate(items, start=1):
         if not isinstance(item, dict):
             return [], f"Repuesto línea {i}: formato inválido."
@@ -3727,23 +3979,27 @@ def _parse_repuestos_json() -> Tuple[list[dict], Optional[str]]:
             return [], f"Repuesto línea {i}: selecciona un repuesto válido."
         if part_id <= 0:
             return [], f"Repuesto línea {i}: selecciona un repuesto."
-        if part_id in vistos:
-            return [], f"Repuesto línea {i}: no repitas el mismo ítem."
-        vistos.add(part_id)
         try:
             qty = int(item.get("cantidad") or 0)
         except (TypeError, ValueError):
             return [], f"Repuesto línea {i}: cantidad inválida."
         if qty <= 0:
             return [], f"Repuesto línea {i}: la cantidad debe ser mayor a cero."
+        jornada_fecha = (item.get("jornada_fecha") or "").strip()
+        jornada_hora_inicio = (item.get("jornada_hora_inicio") or "").strip()[:5]
+        jornada_hora_fin = (item.get("jornada_hora_fin") or "").strip()[:5]
+        clave_linea = (part_id, jornada_fecha, jornada_hora_inicio, jornada_hora_fin)
+        if clave_linea in vistos:
+            return [], f"Repuesto línea {i}: no repitas el mismo ítem en la misma jornada."
+        vistos.add(clave_linea)
         parsed.append(
             {
                 "spare_part_id": part_id,
                 "cantidad": qty,
                 "notas": (item.get("notas") or "").strip()[:255],
-                "jornada_fecha": (item.get("jornada_fecha") or "").strip(),
-                "jornada_hora_inicio": (item.get("jornada_hora_inicio") or "").strip()[:5],
-                "jornada_hora_fin": (item.get("jornada_hora_fin") or "").strip()[:5],
+                "jornada_fecha": jornada_fecha,
+                "jornada_hora_inicio": jornada_hora_inicio,
+                "jornada_hora_fin": jornada_hora_fin,
                 "jornada_tecnico": (item.get("jornada_tecnico") or "").strip()[:200],
             }
         )
@@ -3767,9 +4023,14 @@ def _guardar_repuestos_orden(wo: WorkOrder) -> Optional[str]:
         ): line.costo_unitario_linea
         for line in wo.repuestos
     }
-    _revertir_repuestos_stock(wo)
+    cantidades_previas: dict[int, int] = {}
+    for line in wo.repuestos:
+        cantidades_previas[line.spare_part_id] = (
+            cantidades_previas.get(line.spare_part_id, 0) + int(line.cantidad or 0)
+        )
 
     if request.form.get("usa_repuestos") != "1":
+        _revertir_repuestos_stock(wo)
         return None
 
     items, err = _parse_repuestos_json()
@@ -3779,20 +4040,33 @@ def _guardar_repuestos_orden(wo: WorkOrder) -> Optional[str]:
         return "Indica al menos un repuesto o desmarca «Requiere cambio de repuestos»."
 
     eid = _current_empresa_id()
+    cantidades_requeridas: dict[int, int] = {}
     for item in items:
-        part = db.session.get(SparePart, item["spare_part_id"])
+        cantidades_requeridas[item["spare_part_id"]] = (
+            cantidades_requeridas.get(item["spare_part_id"], 0) + item["cantidad"]
+        )
+    partes_por_id: dict[int, SparePart] = {}
+    for part_id, cantidad_total in cantidades_requeridas.items():
+        part = db.session.get(SparePart, part_id)
         if part is None:
             return "Uno de los repuestos seleccionados ya no existe."
         if eid and part.empresa_id != eid:
             return f"El repuesto {part.sku} no pertenece a tu empresa."
-        if (part.cantidad or 0) < item["cantidad"]:
+        partes_por_id[part_id] = part
+        cantidad_disponible = (part.cantidad or 0) + cantidades_previas.get(part_id, 0)
+        if cantidad_disponible < cantidad_total:
             return (
                 f"Stock insuficiente para {part.nombre} "
-                f"(disponible: {part.cantidad} {part.unidad or 'pza'})."
+                f"(disponible: {cantidad_disponible} {part.unidad or 'pza'})."
             )
 
+    # Solo se revierte el consumo anterior después de validar el reemplazo
+    # completo. Así una edición compara contra stock actual + unidades ya
+    # consumidas por esta misma OT, sin exigir existencias duplicadas.
+    _revertir_repuestos_stock(wo)
+
     for item in items:
-        part = db.session.get(SparePart, item["spare_part_id"])
+        part = partes_por_id[item["spare_part_id"]]
         jornada = wo.jornadas[-1] if wo.jornadas else None
         jornada_fecha = None
         if item["jornada_fecha"]:
@@ -4554,7 +4828,14 @@ def ordenes_list():
     filtros = _ordenes_filtros_desde_request()
     orders = _ordenes_list_query(filtros).all()
     filtros_stats = {**filtros, "status": "", "alerta": ""}
-    ot_resumen = _ordenes_list_resumen(_ordenes_list_query(filtros_stats).all())
+    resumen_rows = (
+        _ordenes_list_query(filtros_stats)
+        .enable_eagerloads(False)
+        .with_entities(WorkOrder.tipo, WorkOrder.status)
+        .order_by(None)
+        .all()
+    )
+    ot_resumen = _ordenes_list_resumen(resumen_rows)
     hay_filtros = any(filtros.values())
     filtros_qs_base = {
         k: v for k, v in filtros.items() if v and k not in ("status", "alerta", "tipo")
@@ -6932,18 +7213,43 @@ def _cambiar_estado(inc, nuevo, accion, comentario=""):
 
 
 def _incidentes_kpis(base_q) -> dict:
-    pendientes_q = base_q.filter(Incident.resuelto.is_(False))
+    from sqlalchemy import case
+
+    row = base_q.with_entities(
+        func.count(Incident.id).label("total"),
+        func.sum(case((Incident.resuelto.is_(False), 1), else_=0)).label("pendientes"),
+        func.sum(
+            case(
+                (
+                    and_(
+                        Incident.resuelto.is_(False),
+                        Incident.prioridad == IncidentPrioridad.CRITICA.value,
+                    ),
+                    1,
+                ),
+                else_=0,
+            )
+        ).label("criticas"),
+        func.sum(case((Incident.resuelto.is_(True), 1), else_=0)).label("resueltas"),
+        func.sum(
+            case(
+                (
+                    and_(
+                        Incident.user_id == current_user.id,
+                        Incident.resuelto.is_(False),
+                    ),
+                    1,
+                ),
+                else_=0,
+            )
+        ).label("mis_pendientes"),
+    ).one()
     return {
-        "total": base_q.count(),
-        "pendientes": pendientes_q.count(),
-        "criticas": pendientes_q.filter(
-            Incident.prioridad == IncidentPrioridad.CRITICA.value
-        ).count(),
-        "resueltas": base_q.filter(Incident.resuelto.is_(True)).count(),
-        "mis_pendientes": base_q.filter(
-            Incident.user_id == current_user.id,
-            Incident.resuelto.is_(False),
-        ).count()
+        "total": int(row.total or 0),
+        "pendientes": int(row.pendientes or 0),
+        "criticas": int(row.criticas or 0),
+        "resueltas": int(row.resueltas or 0),
+        "mis_pendientes": int(row.mis_pendientes or 0)
         if current_user.is_authenticated
         else 0,
     }
