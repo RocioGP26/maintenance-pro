@@ -262,6 +262,10 @@ _AUTH_PUBLIC_ENDPOINTS = (
     "main.recursos",
     "main.guia_producto",
     "main.manual_usuario",
+    "main.terminos",
+    "main.privacidad",
+    "main.terminos_pdf",
+    "main.privacidad_pdf",
     "main.recuperar_contrasena",
     "main.restablecer_contrasena",
 )
@@ -1920,6 +1924,68 @@ def recursos():
     ctx["mtx_cases"] = MTX_CASES
     ctx["recursos_links"] = RECURSOS_LINKS
     return render_template("landing/recursos.html", **ctx)
+
+
+def _render_legal_page(slug: str):
+    from flask import abort
+
+    from app.landing_service import public_page_context
+    from app.public_legal import get_legal_page, load_legal_html
+
+    page = get_legal_page(slug)
+    if page is None:
+        abort(404)
+    ctx = public_page_context()
+    ctx["now_year"] = date.today().year
+    ctx["legal_page"] = page
+    ctx["legal_html"] = load_legal_html(slug)
+    ctx["legal_pdf_url"] = f"/{slug}/pdf"
+    return render_template("landing/legal.html", **ctx)
+
+
+@bp.route("/terminos")
+def terminos():
+    """Términos y Condiciones públicos — RTX-LEGAL-001."""
+    return _render_legal_page("terminos")
+
+
+@bp.route("/privacidad")
+def privacidad():
+    """Política de Privacidad pública — RTX-PRIV-001."""
+    return _render_legal_page("privacidad")
+
+
+def _download_legal_pdf(slug: str):
+    from flask import abort, send_file
+    from io import BytesIO
+
+    from app.legal_pdf import export_legal_pdf
+    from app.public_legal import get_legal_page
+
+    if get_legal_page(slug) is None:
+        abort(404)
+    try:
+        content, filename = export_legal_pdf(slug)
+    except FileNotFoundError:
+        abort(404)
+    return send_file(
+        BytesIO(content),
+        mimetype="application/pdf",
+        as_attachment=True,
+        download_name=filename,
+    )
+
+
+@bp.route("/terminos/pdf")
+def terminos_pdf():
+    """Descarga PDF · RTX-LEGAL-001."""
+    return _download_legal_pdf("terminos")
+
+
+@bp.route("/privacidad/pdf")
+def privacidad_pdf():
+    """Descarga PDF · RTX-PRIV-001."""
+    return _download_legal_pdf("privacidad")
 
 
 @bp.route("/dashboard")
