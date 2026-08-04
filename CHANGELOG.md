@@ -12,6 +12,16 @@ La suite documental mantiene un ciclo independiente en
 
 - Espacio reservado para cambios aún no publicados.
 
+## [1.1.0] - 2026-08-03
+
+### Added
+
+- Suite documental legal LEG (`docs/legal/`) con Términos, Privacidad, Contrato
+  SaaS, SLA, Soporte y anexos de privacidad.
+- Páginas públicas `/terminos` y `/privacidad` (borrador · `noindex`) con
+  descarga PDF de marca Roustix.
+- Enlaces legales en el footer público (sustituye «Privacidad · próximamente»).
+
 ## [1.0.46] - 2026-08-01
 
 ### Fixed

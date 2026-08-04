@@ -6,14 +6,15 @@
 
 | Producto | Versión actual | Fuente canónica | Changelog | Tag Git |
 |---|---:|---|---|---|
-| **Aplicación Flask** | **v1.0.46** | [`app/version.py`](../app/version.py) | [`CHANGELOG.md`](../CHANGELOG.md) | `v1.0.46` |
-| **Suite documental** | **v1.22.5** | Este archivo | [changelog.md](changelog.md) | `docs-vX.Y` |
+| **Aplicación Flask** | **v1.1.0** | [`app/version.py`](../app/version.py) | [`CHANGELOG.md`](../CHANGELOG.md) | `v1.1.0` |
+| **Suite documental** | **v1.24.0** | Este archivo | [changelog.md](changelog.md) | `docs-vX.Y` |
 | **COM (empaquetado comercial)** | **v1.3.3** | [`com/README.md`](com/README.md) | [`com/changelog.md`](com/changelog.md) | — |
+| **LEG (sistema documental legal)** | **v1.2.1** | [`legal/README.md`](legal/README.md) | [`legal/RTX-DOC-000`](legal/RTX-DOC-000-control-versiones.md) | — |
 
 La aplicación y la documentación son productos versionados de forma
 independiente. Flujo de release del software: [APP_VERSIONING.md](APP_VERSIONING.md).
 
-**Suite actual:** **v1.22.5** (Sprint 22 completo · API pública y Webhooks)  
+**Suite actual:** **v1.24.0** (LEG · páginas legales públicas y paquete RTX-*)  
 **COM v1.3.3**: Start $1M · Business $1.5M · Enterprise desde $2.5M · piloto máximo 3 empresas
 **Últimos tags:** `docs-v1.0` · `docs-foundation-1.0` (recomendado)
 
@@ -23,6 +24,7 @@ independiente. Flujo de release del software: [APP_VERSIONING.md](APP_VERSIONING
 
 | Versión | Fecha | Tag Git | Notas |
 |---------|-------|---------|-------|
+| **v1.24.0** | 2026-08-03 | *(pendiente)* | **LEG** · sistema documental legal + `/terminos` · `/privacidad` · PDF |
 | **v1.22.5** | 2026-07-22 | *(pendiente)* | **Cierre Sprint 22** · guía integradores, colección, auditoría ✅ |
 | **v1.22.4** | 2026-07-22 | *(pendiente)* | **Seguridad y observabilidad** · entitlements, HMAC, stats ✅ |
 | **v1.22.3** | 2026-07-22 | *(pendiente)* | **Webhooks** · outbox, HMAC, reintentos y catálogo de eventos ✅ |

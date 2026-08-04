@@ -3,6 +3,14 @@
 > Este changelog pertenece a la documentación. Los cambios de la aplicación se
 > registran por separado en [`/CHANGELOG.md`](../CHANGELOG.md).
 
+## [1.24.0] — 2026-08-03 · LEG · Sistema Documental Legal
+
+### Added
+
+- Suite `docs/legal/` (RTX-DOC-000, LEGAL-001/002, PRIV-001 + anexos, SLA-001, SUP-001).
+- Páginas públicas `/terminos` y `/privacidad` con descarga PDF de marca.
+- Registro de LEG en nomenclatura maestra y VERSIONS.
+
 ## [1.23.1] — 2026-07-28 · Sprint 23.2 · Hardening de identidad y plataforma
 
 ### Added
