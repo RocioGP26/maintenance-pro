@@ -50,6 +50,9 @@
         <a class="nav-link {% if ep in ('platform.legal', 'platform.legal_pdf') %}active{% endif %}" href="{{ url_for('platform.legal') }}">
           <i class="bi bi-file-earmark-ruled me-2"></i> Documentación legal
         </a>
+        <a class="nav-link {% if ep in ('platform.comercial', 'platform.com_pdf') %}active{% endif %}" href="{{ url_for('platform.comercial') }}">
+          <i class="bi bi-tags me-2"></i> Empaquetado comercial
+        </a>
       </nav>
       <div class="mt-auto px-3 pt-3">
         <p class="text-secondary small text-center mb-2">v{{ app_version }}</p>

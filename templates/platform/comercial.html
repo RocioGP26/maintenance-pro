@@ -1,0 +1,66 @@
+{% extends "platform/base.html" %}
+{% block title %}Empaquetado comercial (COM) — Roustix Platform{% endblock %}
+
+{% block content %}
+<div class="platform-page-header">
+  <h1>Empaquetado comercial (COM)</h1>
+  <p>
+    Planes, add-ons y programa piloto · descarga PDF con marca Roustix
+    (mismo formato que la documentación legal).
+  </p>
+</div>
+
+<div class="platform-card platform-docs-note mb-4">
+  <div class="platform-docs-note-inner">
+    <i class="bi bi-currency-dollar me-2"></i>
+    <div>
+      <strong>Uso interno y comercial</strong>
+      <p class="mb-0 text-secondary small">
+        Estos documentos definen la oferta comercial vigente. Complementan MCM;
+        no sustituyen el Contrato SaaS firmado con el cliente.
+      </p>
+    </div>
+  </div>
+</div>
+
+<div class="platform-card">
+  <div class="table-responsive">
+    <table class="table table-sm align-middle mb-0">
+      <thead>
+        <tr>
+          <th>Código</th>
+          <th>Documento</th>
+          <th>Versión</th>
+          <th>Estado</th>
+          <th class="text-end">PDF</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for doc in com_docs %}
+        <tr>
+          <td><code class="small">{{ doc.code }}</code></td>
+          <td>
+            <strong>{{ doc.title }}</strong>
+            <div class="text-secondary small">{{ doc.description }}</div>
+          </td>
+          <td>v{{ doc.version }}</td>
+          <td>
+            <span class="badge text-bg-success">{{ doc.status_label }}</span>
+          </td>
+          <td class="text-end">
+            <a class="btn btn-sm btn-outline-primary"
+               href="{{ url_for('platform.com_pdf', slug=doc.slug) }}">
+              <i class="bi bi-filetype-pdf"></i> Descargar
+            </a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<p class="text-secondary small mt-3 mb-0">
+  Fuente: <code>docs/com/</code> · suite COM v1.3.3
+</p>
+{% endblock %}

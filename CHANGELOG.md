@@ -12,6 +12,13 @@ La suite documental mantiene un ciclo independiente en
 
 - Espacio reservado para cambios aún no publicados.
 
+## [1.1.3] - 2026-08-04
+
+### Added
+
+- Panel SuperAdmin `/platform/comercial` para descargar en PDF el empaquetado
+  comercial COM (resumen, planes, add-ons y piloto).
+
 ## [1.1.2] - 2026-08-04
 
 ### Fixed

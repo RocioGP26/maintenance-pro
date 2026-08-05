@@ -27,13 +27,13 @@ from reportlab.platypus import (
     TableStyle,
 )
 
-from app.public_legal import get_legal_page, load_legal_markdown
 from app.timezone_utils import DEFAULT_TZ, timezone_obj
 
 
 def _legal_today() -> date:
     """Fecha civil en zona Colombia (evita desfase UTC del servidor)."""
     return datetime.now(timezone_obj(tz_name=DEFAULT_TZ)).date()
+
 
 _ROOT = Path(__file__).resolve().parents[1]
 # Mismo arte del paquete piloto DOCX, aplanado sobre blanco (ReportLab no maneja bien RGBA)
@@ -53,15 +53,35 @@ _WARN_BG = colors.HexColor("#FFF8E8")
 _SOFT = colors.HexColor("#F8FAFC")
 
 _CONTENT_WIDTH = 178 * mm
-_HEADER_LABEL = "ROUSTIX  ·  PAQUETE DOCUMENTAL"
+_HEADER_LABEL_LEGAL = "ROUSTIX  ·  PAQUETE DOCUMENTAL"
+_HEADER_LABEL_COM = "ROUSTIX  ·  EMPAQUETADO COMERCIAL"
+
+_LEGAL_PURPOSE = (
+    "Documento oficial del Sistema Documental Legal de Roustix. "
+    "Regula el uso de la plataforma o el tratamiento de datos según el código indicado. "
+    "Debe completarse la identificación del prestador y revisarse jurídicamente antes de exigirse como vigente."
+)
+_LEGAL_WARNING = (
+    "Borrador · no vigente. Roustix es actualmente un nombre comercial. "
+    "Este texto está en revisión jurídica e identificación del responsable; "
+    "no constituye aún el documento aplicable al servicio. "
+    "En la versión 1.0 Vigente, esta advertencia se reemplazará por la "
+    "identificación jurídica definitiva del Prestador."
+)
+_COM_PURPOSE = (
+    "Documento oficial del empaquetado comercial (COM) de Roustix. "
+    "Define planes, precios, cupos, add-ons o condiciones del programa piloto. "
+    "Uso interno y comercial; no sustituye el Contrato SaaS firmado."
+)
 
 
-class _LegalPageCanvas(Canvas):
+class _BrandedPageCanvas(Canvas):
     """Canvas que imprime cabecera de marca y «Página Y de X»."""
 
-    def __init__(self, *args, footer_left: str = "", **kwargs):
+    def __init__(self, *args, footer_left: str = "", header_label: str = _HEADER_LABEL_LEGAL, **kwargs):
         super().__init__(*args, **kwargs)
         self._footer_left = footer_left
+        self._header_label = header_label
         self._saved_page_states: list[dict] = []
 
     def showPage(self):
@@ -80,9 +100,9 @@ class _LegalPageCanvas(Canvas):
         self.saveState()
         self.setFont("Helvetica-Bold", 8)
         self.setFillColor(_GRAY)
-        self.drawRightString(A4[0] - 16 * mm, A4[1] - 10 * mm, _HEADER_LABEL)
+        self.drawRightString(A4[0] - 16 * mm, A4[1] - 10 * mm, self._header_label)
         underline_w = self.stringWidth("ROUSTIX", "Helvetica-Bold", 8)
-        full_w = self.stringWidth(_HEADER_LABEL, "Helvetica-Bold", 8)
+        full_w = self.stringWidth(self._header_label, "Helvetica-Bold", 8)
         x_start = (A4[0] - 16 * mm) - full_w
         self.setStrokeColor(_BLUE)
         self.setLineWidth(0.7)
@@ -99,12 +119,26 @@ class _LegalPageCanvas(Canvas):
         self.restoreState()
 
 
-def export_legal_pdf(slug: str) -> tuple[bytes, str]:
-    page = get_legal_page(slug)
-    if page is None:
-        raise ValueError(f"Documento legal desconocido: {slug}")
+# Compatibilidad con imports previos
+_LegalPageCanvas = _BrandedPageCanvas
+_HEADER_LABEL = _HEADER_LABEL_LEGAL
 
-    md = load_legal_markdown(slug)
+
+def export_branded_markdown_pdf(
+    *,
+    code: str,
+    slug: str,
+    title: str,
+    description: str,
+    version: str,
+    status_label: str,
+    markdown: str,
+    is_draft: bool = False,
+    purpose: str,
+    warning: str | None = None,
+    header_label: str = _HEADER_LABEL_LEGAL,
+) -> tuple[bytes, str]:
+    """Genera PDF con marca Roustix a partir de markdown."""
     buffer = BytesIO()
     doc = SimpleDocTemplate(
         buffer,
@@ -113,36 +147,104 @@ def export_legal_pdf(slug: str) -> tuple[bytes, str]:
         rightMargin=16 * mm,
         topMargin=18 * mm,
         bottomMargin=16 * mm,
-        title=f"{page.code} · {page.title}",
+        title=f"{code} · {title}",
         author="Roustix",
-        subject=page.description,
+        subject=description,
     )
     styles = _styles()
+    page_meta = type(
+        "PageMeta",
+        (),
+        {
+            "code": code,
+            "title": title,
+            "description": description,
+            "version": version,
+            "status_label": status_label,
+            "is_draft": is_draft,
+        },
+    )()
     story: list = []
-    story.extend(_branded_cover(page, styles))
-    story.extend(_markdown_to_flowables(md, styles))
+    story.extend(
+        _branded_cover(
+            page_meta,
+            styles,
+            purpose=purpose,
+            warning=warning if is_draft else None,
+        )
+    )
+    story.extend(_markdown_to_flowables(markdown, styles))
     story.append(Spacer(1, 6 * mm))
     story.append(HRFlowable(width="100%", thickness=0.4, color=_BORDER))
     story.append(Spacer(1, 2 * mm))
     story.append(Paragraph(
         escape(
             f"Generado desde roustix.com · {_legal_today().isoformat()} · "
-            f"{page.code} v{page.version}"
+            f"{code} v{version}"
         ),
         styles["footer"],
     ))
 
-    footer_left = f"{page.code} · Versión {page.version}"
+    footer_left = f"{code} · Versión {version}"
 
     def _canvas_maker(filename_or_buffer, **kwargs):
-        return _LegalPageCanvas(filename_or_buffer, footer_left=footer_left, **kwargs)
+        return _BrandedPageCanvas(
+            filename_or_buffer,
+            footer_left=footer_left,
+            header_label=header_label,
+            **kwargs,
+        )
 
     doc.build(story, canvasmaker=_canvas_maker)
-    filename = f"Roustix-{page.code}-{page.slug}-v{page.version}.pdf"
+    filename = f"Roustix-{code}-{slug}-v{version}.pdf"
     return buffer.getvalue(), filename
 
 
-def _branded_cover(page, styles: dict) -> list:
+def export_legal_pdf(slug: str) -> tuple[bytes, str]:
+    from app.public_legal import get_legal_page, load_legal_markdown
+
+    page = get_legal_page(slug)
+    if page is None:
+        raise ValueError(f"Documento legal desconocido: {slug}")
+
+    return export_branded_markdown_pdf(
+        code=page.code,
+        slug=page.slug,
+        title=page.title,
+        description=page.description,
+        version=page.version,
+        status_label=page.status_label,
+        markdown=load_legal_markdown(slug),
+        is_draft=page.is_draft,
+        purpose=_LEGAL_PURPOSE,
+        warning=_LEGAL_WARNING,
+        header_label=_HEADER_LABEL_LEGAL,
+    )
+
+
+def export_com_pdf(slug: str) -> tuple[bytes, str]:
+    from app.com_docs import get_com_page, load_com_markdown
+
+    page = get_com_page(slug)
+    if page is None:
+        raise ValueError(f"Documento COM desconocido: {slug}")
+
+    return export_branded_markdown_pdf(
+        code=page.code,
+        slug=page.slug,
+        title=page.title,
+        description=page.description,
+        version=page.version,
+        status_label=page.status_label,
+        markdown=load_com_markdown(slug),
+        is_draft=page.is_draft,
+        purpose=_COM_PURPOSE,
+        warning=None,
+        header_label=_HEADER_LABEL_COM,
+    )
+
+
+def _branded_cover(page, styles: dict, *, purpose: str, warning: str | None) -> list:
     """Portada alineada al paquete documental Word (logo + meta + callouts)."""
     blocks: list = []
 
@@ -162,22 +264,16 @@ def _branded_cover(page, styles: dict) -> list:
     blocks.append(Spacer(1, 3 * mm))
     blocks.append(_callout(
         "Propósito",
-        "Documento oficial del Sistema Documental Legal de Roustix. "
-        "Regula el uso de la plataforma o el tratamiento de datos según el código indicado. "
-        "Debe completarse la identificación del prestador y revisarse jurídicamente antes de exigirse como vigente.",
+        purpose,
         styles,
         fill=_PALE_BLUE,
         accent=_BLUE,
     ))
-    if page.is_draft:
+    if warning:
         blocks.append(Spacer(1, 2.5 * mm))
         blocks.append(_callout(
             "Advertencia",
-            "Borrador · no vigente. Roustix es actualmente un nombre comercial. "
-            "Este texto está en revisión jurídica e identificación del responsable; "
-            "no constituye aún el documento aplicable al servicio. "
-            "En la versión 1.0 Vigente, esta advertencia se reemplazará por la "
-            "identificación jurídica definitiva del Prestador.",
+            warning,
             styles,
             fill=_WARN_BG,
             accent=_GOLD,

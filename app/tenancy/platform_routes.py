@@ -976,3 +976,40 @@ def legal_pdf(slug: str):
         as_attachment=True,
         download_name=filename,
     )
+
+
+@platform_bp.route("/comercial")
+@platform_login_required
+def comercial():
+    """Catálogo COM · descarga PDF de planes, add-ons y piloto."""
+    from app.com_docs import list_com_pages
+
+    return render_template(
+        "platform/comercial.html",
+        com_docs=list_com_pages(),
+    )
+
+
+@platform_bp.route("/comercial/<slug>/pdf")
+@platform_login_required
+def com_pdf(slug: str):
+    """Descarga PDF de un documento COM."""
+    from io import BytesIO
+
+    from flask import abort, send_file
+
+    from app.com_docs import get_com_page
+    from app.legal_pdf import export_com_pdf
+
+    if get_com_page(slug) is None:
+        abort(404)
+    try:
+        content, filename = export_com_pdf(slug)
+    except (FileNotFoundError, ValueError):
+        abort(404)
+    return send_file(
+        BytesIO(content),
+        mimetype="application/pdf",
+        as_attachment=True,
+        download_name=filename,
+    )
