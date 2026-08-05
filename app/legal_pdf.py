@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import re
-from datetime import date
+from datetime import date, datetime
 from io import BytesIO
 from pathlib import Path
 from xml.sax.saxutils import escape
@@ -28,6 +28,12 @@ from reportlab.platypus import (
 )
 
 from app.public_legal import get_legal_page, load_legal_markdown
+from app.timezone_utils import DEFAULT_TZ, timezone_obj
+
+
+def _legal_today() -> date:
+    """Fecha civil en zona Colombia (evita desfase UTC del servidor)."""
+    return datetime.now(timezone_obj(tz_name=DEFAULT_TZ)).date()
 
 _ROOT = Path(__file__).resolve().parents[1]
 # Mismo arte del paquete piloto DOCX, aplanado sobre blanco (ReportLab no maneja bien RGBA)
@@ -120,7 +126,7 @@ def export_legal_pdf(slug: str) -> tuple[bytes, str]:
     story.append(Spacer(1, 2 * mm))
     story.append(Paragraph(
         escape(
-            f"Generado desde roustix.com · {date.today().isoformat()} · "
+            f"Generado desde roustix.com · {_legal_today().isoformat()} · "
             f"{page.code} v{page.version}"
         ),
         styles["footer"],
@@ -236,7 +242,7 @@ def _meta_table(page, styles: dict) -> Table:
             Paragraph("Estado", label),
             Paragraph(escape(page.status_label), value),
             Paragraph("Fecha", label),
-            Paragraph(escape(date.today().strftime("%d / %m / %Y")), value),
+            Paragraph(escape(_legal_today().strftime("%d / %m / %Y")), value),
         ],
     ]
     table = Table(data, colWidths=[28 * mm, 61 * mm, 28 * mm, 61 * mm])

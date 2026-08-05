@@ -12,6 +12,13 @@ La suite documental mantiene un ciclo independiente en
 
 - Espacio reservado para cambios aún no publicados.
 
+## [1.1.2] - 2026-08-04
+
+### Fixed
+
+- Las fechas de los PDF legales usan zona horaria `America/Bogota` y ya no
+  adelantan un día respecto a Colombia cuando el servidor corre en UTC.
+
 ## [1.1.1] - 2026-08-04
 
 ### Added
