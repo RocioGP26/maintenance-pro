@@ -939,3 +939,40 @@ def documentacion():
             {"name": "Índice Docs", "href": "/docs/"},
         ),
     )
+
+
+@platform_bp.route("/legal")
+@platform_login_required
+def legal():
+    """Catálogo LEG · descarga PDF de borradores (solo SuperAdmin)."""
+    from app.public_legal import list_legal_pages
+
+    return render_template(
+        "platform/legal.html",
+        legal_docs=list_legal_pages(),
+    )
+
+
+@platform_bp.route("/legal/<slug>/pdf")
+@platform_login_required
+def legal_pdf(slug: str):
+    """Descarga PDF de un documento LEG (mismo motor de marca que el paquete piloto)."""
+    from io import BytesIO
+
+    from flask import abort, send_file
+
+    from app.legal_pdf import export_legal_pdf
+    from app.public_legal import get_legal_page
+
+    if get_legal_page(slug) is None:
+        abort(404)
+    try:
+        content, filename = export_legal_pdf(slug)
+    except (FileNotFoundError, ValueError):
+        abort(404)
+    return send_file(
+        BytesIO(content),
+        mimetype="application/pdf",
+        as_attachment=True,
+        download_name=filename,
+    )

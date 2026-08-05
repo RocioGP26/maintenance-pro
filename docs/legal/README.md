@@ -75,7 +75,8 @@ Plantillas DOCX: `docs/production-readiness/templates/`.
 4. ✅ **RTX-LEGAL-001** — Términos (borrador v0.3)  
 5. ✅ **RTX-PRIV-001** — Privacidad Partes A/B/C (borrador v0.2)  
 6. 🟡 **Anexos PRIV** — ANX-001/003 con stack prod; regiones cloud por validar en consolas  
-7. ✅ **Rutas públicas** — `/terminos` · `/privacidad` (borrador · `noindex` · footer actualizado)
+7. ✅ **Rutas públicas** — `/terminos` · `/privacidad` muestran «próximamente» mientras sean borrador  
+8. ✅ **SuperAdmin** — `/platform/legal` descarga PDF de todo el catálogo LEG
 
 ## Antes de publicar o firmar
 

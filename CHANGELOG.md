@@ -12,6 +12,19 @@ La suite documental mantiene un ciclo independiente en
 
 - Espacio reservado para cambios aún no publicados.
 
+## [1.1.1] - 2026-08-04
+
+### Added
+
+- Panel SuperAdmin `/platform/legal` para descargar en PDF todo el catálogo LEG
+  (términos, contrato, privacidad, anexos, SLA y soporte).
+
+### Changed
+
+- Términos y Privacidad dejan de exponerse públicamente mientras sean borrador
+  (`próximamente`); la descarga PDF pública queda reservada a documentos Vigentes.
+- Pie de PDF legal: paginación «Página Y de X».
+
 ## [1.1.0] - 2026-08-03
 
 ### Added

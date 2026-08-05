@@ -13,6 +13,7 @@ from reportlab.lib.enums import TA_CENTER, TA_JUSTIFY, TA_LEFT, TA_RIGHT
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
 from reportlab.lib.units import mm
+from reportlab.pdfgen.canvas import Canvas
 from reportlab.platypus import (
     HRFlowable,
     Image,
@@ -49,6 +50,49 @@ _CONTENT_WIDTH = 178 * mm
 _HEADER_LABEL = "ROUSTIX  ·  PAQUETE DOCUMENTAL"
 
 
+class _LegalPageCanvas(Canvas):
+    """Canvas que imprime cabecera de marca y «Página Y de X»."""
+
+    def __init__(self, *args, footer_left: str = "", **kwargs):
+        super().__init__(*args, **kwargs)
+        self._footer_left = footer_left
+        self._saved_page_states: list[dict] = []
+
+    def showPage(self):
+        self._saved_page_states.append(dict(self.__dict__))
+        self._startPage()
+
+    def save(self):
+        total = len(self._saved_page_states)
+        for state in self._saved_page_states:
+            self.__dict__.update(state)
+            self._draw_chrome(total)
+            super().showPage()
+        super().save()
+
+    def _draw_chrome(self, total: int) -> None:
+        self.saveState()
+        self.setFont("Helvetica-Bold", 8)
+        self.setFillColor(_GRAY)
+        self.drawRightString(A4[0] - 16 * mm, A4[1] - 10 * mm, _HEADER_LABEL)
+        underline_w = self.stringWidth("ROUSTIX", "Helvetica-Bold", 8)
+        full_w = self.stringWidth(_HEADER_LABEL, "Helvetica-Bold", 8)
+        x_start = (A4[0] - 16 * mm) - full_w
+        self.setStrokeColor(_BLUE)
+        self.setLineWidth(0.7)
+        self.line(x_start, A4[1] - 11 * mm, x_start + underline_w, A4[1] - 11 * mm)
+
+        self.setFont("Helvetica", 7.5)
+        self.setFillColor(_GRAY)
+        self.drawString(16 * mm, 8 * mm, self._footer_left)
+        self.drawRightString(
+            A4[0] - 16 * mm,
+            8 * mm,
+            f"Página {self._pageNumber} de {total}",
+        )
+        self.restoreState()
+
+
 def export_legal_pdf(slug: str) -> tuple[bytes, str]:
     page = get_legal_page(slug)
     if page is None:
@@ -82,28 +126,12 @@ def export_legal_pdf(slug: str) -> tuple[bytes, str]:
         styles["footer"],
     ))
 
-    def _on_page(canvas, _doc):
-        canvas.saveState()
-        canvas.setFont("Helvetica-Bold", 8)
-        canvas.setFillColor(_GRAY)
-        canvas.drawRightString(A4[0] - 16 * mm, A4[1] - 10 * mm, _HEADER_LABEL)
-        # subrayado fino bajo «ROUSTIX»
-        underline_w = canvas.stringWidth("ROUSTIX", "Helvetica-Bold", 8)
-        x_end = A4[0] - 16 * mm
-        # El texto completo termina a la derecha; «ROUSTIX» está al inicio del label
-        full_w = canvas.stringWidth(_HEADER_LABEL, "Helvetica-Bold", 8)
-        x_start = x_end - full_w
-        canvas.setStrokeColor(_BLUE)
-        canvas.setLineWidth(0.7)
-        canvas.line(x_start, A4[1] - 11 * mm, x_start + underline_w, A4[1] - 11 * mm)
+    footer_left = f"{page.code} · Versión {page.version}"
 
-        canvas.setFont("Helvetica", 7.5)
-        canvas.setFillColor(_GRAY)
-        canvas.drawString(16 * mm, 8 * mm, f"{page.code} · Versión {page.version}")
-        canvas.drawRightString(A4[0] - 16 * mm, 8 * mm, f"Página {canvas.getPageNumber()}")
-        canvas.restoreState()
+    def _canvas_maker(filename_or_buffer, **kwargs):
+        return _LegalPageCanvas(filename_or_buffer, footer_left=footer_left, **kwargs)
 
-    doc.build(story, onFirstPage=_on_page, onLaterPages=_on_page)
+    doc.build(story, canvasmaker=_canvas_maker)
     filename = f"Roustix-{page.code}-{page.slug}-v{page.version}.pdf"
     return buffer.getvalue(), filename
 

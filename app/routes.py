@@ -1938,6 +1938,9 @@ def _render_legal_page(slug: str):
     ctx = public_page_context()
     ctx["now_year"] = date.today().year
     ctx["legal_page"] = page
+    # Borradores: no exponer texto ni PDF en la web pública.
+    if not page.is_public:
+        return render_template("landing/legal_soon.html", **ctx)
     ctx["legal_html"] = load_legal_html(slug)
     ctx["legal_pdf_url"] = f"/{slug}/pdf"
     return render_template("landing/legal.html", **ctx)
@@ -1962,7 +1965,8 @@ def _download_legal_pdf(slug: str):
     from app.legal_pdf import export_legal_pdf
     from app.public_legal import get_legal_page
 
-    if get_legal_page(slug) is None:
+    page = get_legal_page(slug)
+    if page is None or not page.is_public:
         abort(404)
     try:
         content, filename = export_legal_pdf(slug)
@@ -1978,13 +1982,13 @@ def _download_legal_pdf(slug: str):
 
 @bp.route("/terminos/pdf")
 def terminos_pdf():
-    """Descarga PDF · RTX-LEGAL-001."""
+    """Descarga PDF pública · solo si el documento está Vigente/publicado."""
     return _download_legal_pdf("terminos")
 
 
 @bp.route("/privacidad/pdf")
 def privacidad_pdf():
-    """Descarga PDF · RTX-PRIV-001."""
+    """Descarga PDF pública · solo si el documento está Vigente/publicado."""
     return _download_legal_pdf("privacidad")
 
 
