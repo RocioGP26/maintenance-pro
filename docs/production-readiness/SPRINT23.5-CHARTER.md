@@ -76,11 +76,29 @@ la zona DNS de `roustix.com`. La evidencia mínima debe incluir:
 ## Definition of Done
 
 - [x] Dominio productivo con HTTPS.
-- [ ] Buzones o alias corporativos disponibles.
-- [ ] SPF, DKIM y DMARC publicados y validados.
+- [x] Buzones o alias corporativos disponibles.
+- [x] SPF, DKIM y DMARC publicados y validados.
 - [ ] SMTP corporativo configurado en web, worker y GitHub Actions.
 - [ ] Entregabilidad aprobada en Gmail y Outlook.
-- [ ] UAT funcional y de aislamiento aprobado.
+- [x] UAT funcional y de aislamiento aprobado.
 - [ ] Documentación legal y soporte listos para el piloto.
 - [ ] Decisión Go/No-Go registrada para máximo tres empresas.
 
+## Evidencia de correo corporativo · 2026-08-09
+
+- Responsable: Gladis Rocio Gelves Pabon.
+- Proveedor: Namecheap Private Email.
+- Buzón remitente y receptor: `contacto@roustix.com`.
+- Canal operativo alterno conservado: `soporte.roustix@hotmail.com`.
+- MX autoritativos: `mx1.privateemail.com` y `mx2.privateemail.com`.
+- SPF: `v=spf1 include:spf.privateemail.com ~all`.
+- DKIM: selector `privateemail`, publicado y visible.
+- DMARC: `v=DMARC1; p=none; rua=mailto:contacto@roustix.com`.
+- SMTP autenticado configurado y probado en la aplicación y el worker.
+- `/health/ready`: `status=ok`, versión `1.1.3`; base de datos,
+  migraciones, Redis y heartbeat del worker en verde.
+- Alerta operativa enviada y recepción/respuesta del buzón corporativo
+  confirmadas por la responsable.
+
+Queda pendiente confirmar los secretos SMTP de GitHub Actions y documentar la
+entregabilidad cruzada en Gmail y Outlook antes de cerrar completamente el gate.

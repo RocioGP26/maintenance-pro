@@ -85,7 +85,7 @@ Plantillas DOCX: `docs/production-readiness/templates/`.
 - [ ] Revisión jurídica colombiana
 - [ ] Validación tributaria / facturación
 - [ ] Confirmación operativa de objetivos SLA (infraestructura)
-- [ ] Correo corporativo definitivo (`soporte@roustix.com` u otro)
+- [x] Correo corporativo definitivo (`contacto@roustix.com`)
 
 ## Índice de archivos
 

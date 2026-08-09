@@ -3,10 +3,10 @@
 | Campo | Valor |
 |-------|-------|
 | **Código** | RTX-PRIV-ANX-003 |
-| **Versión** | **0.2.0** |
+| **Versión** | **0.3.0** |
 | **Estado** | 🟡 Borrador · confirmar países/regiones en consolas de cada proveedor |
 | **Padre** | [RTX-PRIV-001](../RTX-PRIV-001-politica-privacidad.md) |
-| **Fecha** | 2026-08-03 |
+| **Fecha** | 2026-08-09 |
 
 ---
 
@@ -27,7 +27,7 @@ Registrar transferencias o transmisiones internacionales de datos personales aso
 | 3 | Object storage | **Cloudflare R2** | Archivos / evidencias | Almacenamiento | Credenciales S3-compatible + ACL | **Por validar** jurisdicción Cloudflare / bucket |
 | 4 | Redis gestionado | **Render Key Value** | Metadatos de rate limit / locks | Estabilidad y seguridad | Servicio del mismo proveedor de host | **Por validar** |
 | 5 | Observabilidad | **Sentry** | Eventos de error / traces (posible PII residual) | Monitoreo y diagnóstico | DSN + `before_send` scrub | **Por validar** org/región Sentry |
-| 6 | Correo | **Google (Gmail SMTP)** — provisional | Destinatarios y contenido transaccional | Notificaciones del servicio | SMTP TLS · cuenta temporal | Global Google · **sustituir** por correo `@roustix.com` |
+| 6 | Correo | **Namecheap Private Email** | Destinatarios y contenido transaccional | Notificaciones y correo corporativo | SMTP TLS · SPF, DKIM y DMARC | **Por validar** ubicación específica del servicio |
 | 7 | CI / backups automatizados | **GitHub Actions** | Acceso a secrets; artefacto de backup según job | Continuidad operativa | Secrets cifrados · least privilege | **Por validar** (runners GitHub) |
 
 ---
@@ -50,7 +50,8 @@ Cuando se confirmen los países:
 |---------|-------|--------|
 | **0.1.0** | 2026-08-03 | Plantilla inicial |
 | **0.2.0** | 2026-08-03 | Flujos mapeados al stack prod (regiones pendientes de consola) |
+| **0.3.0** | 2026-08-09 | Flujo SMTP actualizado a Namecheap Private Email |
 
 ---
 
-*RTX-PRIV-ANX-003 · v0.2.0*
+*RTX-PRIV-ANX-003 · v0.3.0*

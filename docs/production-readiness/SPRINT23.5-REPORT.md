@@ -1,9 +1,10 @@
 # Sprint 23.5 · Reporte en curso
 
 Fecha de inicio: 2026-08-01  
-Última actualización: 2026-08-02
+Última actualización: 2026-08-09
 
-Estado: **GO condicionado · correo corporativo y revisión legal pendientes**
+Estado: **GO condicionado · identidad de correo aprobada; GitHub Actions y
+revisión legal pendientes**
 
 ## Evidencia de entrada
 
@@ -18,11 +19,11 @@ Estado: **GO condicionado · correo corporativo y revisión legal pendientes**
 | Elemento | Estado | Observación |
 | --- | --- | --- |
 | `roustix.com` | Operativo | Aplicación productiva bajo HTTPS |
-| `contacto@roustix.com` | Pendiente de validar | Publicado en la aplicación y material comercial |
+| `contacto@roustix.com` | Operativo | Buzón Namecheap Private Email con envío y recepción comprobados |
 | `soporte@roustix.com` | Pendiente | Recomendado para atención y alertas |
-| `soporte.roustix@hotmail.com` | Disponible | Canal temporal, no autentica el dominio Roustix |
-| SMTP transaccional | Operativo temporal | Gates funcionales aprobados con cuenta externa |
-| SPF / DKIM / DMARC | Pendiente | Requiere proveedor de correo y acceso DNS |
+| `soporte.roustix@hotmail.com` | Disponible | Canal externo de recuperación y alertas operativas |
+| SMTP transaccional | Operativo corporativo | Namecheap Private Email configurado en web y worker |
+| SPF / DKIM / DMARC | Aprobado | Registros visibles en DNS autoritativo el 2026-08-09 |
 
 ### Consulta DNS pública · 2026-08-01
 
@@ -36,14 +37,27 @@ Estado: **GO condicionado · correo corporativo y revisión legal pendientes**
   mediante el alias.
 - La contratación y los cambios DNS requieren aprobación de la responsable.
 
+## Gate de identidad y SMTP · 2026-08-09
+
+- Proveedor seleccionado: Namecheap Private Email.
+- MX corporativos publicados para `roustix.com`.
+- SPF, DKIM y DMARC visibles mediante consulta al DNS autoritativo.
+- DMARC inició en observación (`p=none`) y envía reportes a
+  `contacto@roustix.com`.
+- La aplicación y el worker usan `contacto@roustix.com` como identidad SMTP.
+- La prueba operativa de envío, recepción y respuesta fue aprobada por Gladis
+  Rocio Gelves Pabon.
+- Producción respondió `status=ok` en `/health/ready`, versión `1.1.3`, con
+  base de datos, migraciones, Redis y worker en verde.
+- No se registraron contraseñas, claves privadas ni secretos SMTP en el
+  repositorio.
+
 ## Próximo gate
 
-1. Seleccionar o confirmar el proveedor del correo corporativo.
-2. Crear los buzones o alias de contacto y soporte.
-3. Obtener los registros SPF, DKIM y DMARC del proveedor.
-4. Publicarlos en la zona DNS de `roustix.com`.
-5. Actualizar secretos de web, worker y GitHub Actions.
-6. Ejecutar y documentar las pruebas de entregabilidad.
+1. Confirmar o actualizar los secretos SMTP de GitHub Actions.
+2. Ejecutar manualmente los workflows que notifican por correo.
+3. Documentar recepción en Gmail y Outlook con SPF, DKIM y DMARC en `PASS`.
+4. Completar la revisión jurídica del paquete legal del piloto.
 
 ## Hallazgo legal inicial
 
