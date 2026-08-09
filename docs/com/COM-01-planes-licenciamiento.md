@@ -3,9 +3,9 @@
 | Campo | Valor |
 |-------|-------|
 | **Código** | COM-01 |
-| **Versión** | **1.3.2** |
-| **Estado** | ✅ Estrategia comercial vigente · piloto |
-| **Vigencia** | 2026-07-29 |
+| **Versión** | **1.4.0** |
+| **Estado** | ✅ Estrategia comercial vigente |
+| **Vigencia** | 2026-08-09 |
 | **Moneda** | COP |
 | **Fuente** | `PLANES_SEED` · [MCM-04](../mcm/chapters/04-planes-saas.md) |
 
@@ -32,15 +32,18 @@ Start  →  Business  →  Enterprise
 
 ### Por qué estos cupos de storage (año 1)
 
-Infraestructura piloto: Cloudflare R2 free ≈ **10 GB**.
+La capacidad contratada se controla por tenant y la infraestructura debe
+escalar conforme crezca el almacenamiento comercial comprometido.
 
 | Escenario | Consumo teórico incluido |
 |-----------|--------------------------|
-| 3 clientes piloto Start | 3 × 1 GB = 3 GB |
 | 5 clientes Start | 5 GB |
 | 2 clientes Business | 2 × 5 GB = 10 GB |
+| 1 cliente Enterprise | Desde 20 GB · validar capacidad antes de activar |
 
-Se asume costo de storage adicional cuando ya hay clientes de pago. Es más fácil **aumentar** cupos en 6–12 meses que reducir beneficios.
+La capacidad disponible se revisa antes de activar planes Enterprise o
+ampliaciones relevantes. Es más fácil **aumentar** cupos en 6–12 meses que
+reducir beneficios ya contratados.
 
 Complemento comercial: **+2 GB · $100.000/mes** ([COM-02](COM-02-servicios-adicionales.md)).
 
@@ -54,7 +57,8 @@ Complemento comercial: **+2 GB · $100.000/mes** ([COM-02](COM-02-servicios-adic
 | Business | 10 GB |
 | Enterprise | 50 GB |
 
-No reducir cupos v1.3.2; solo ampliar y comunicar como beneficio.
+No reducir los cupos vigentes de COM-01 v1.4.0; solo ampliar y comunicar como
+beneficio.
 
 ---
 
@@ -89,10 +93,11 @@ Plataforma SaaS · actualizaciones · backups · HTTPS · roles · auditoría ·
 
 | Versión | Fecha | Cambio |
 |---------|-------|--------|
+| **1.4.0** | 2026-08-09 | Oferta comercial general; retirado el enfoque y límite del piloto |
 | **1.3.2** | 2026-07-29 | Storage año 1: 1 / 5 / 20 GB · roadmap v2 · monitor infra |
 | **1.3.1** | 2026-07-29 | Business · Enterprise sin precio público |
 | **1.3.0** | 2026-07-29 | Precios 1M / 1.5M / desde 2.5M |
 
 ---
 
-*COM-01 · v1.3.2 · 2026*
+*COM-01 · v1.4.0 · 2026*

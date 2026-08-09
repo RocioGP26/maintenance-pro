@@ -6,7 +6,7 @@
 |--------|------|-----------|
 | **COM-01** | planes-licenciamiento | Planes y Licenciamiento Roustix |
 | **COM-02** | servicios-adicionales | Servicios Adicionales (Add-ons) |
-| **COM-03** | programa-piloto-fundadores | Programa Piloto y Clientes Fundadores |
+| **COM-03** | programa-piloto-fundadores | Programa Piloto y Clientes Fundadores · archivado |
 
 ## SKUs de add-on (COM-02)
 
@@ -27,6 +27,6 @@ Formato semver del documento: `MAJOR.MINOR.PATCH`
 | Nuevo precio o límite contractual | MINOR o MAJOR |
 | Nuevo SKU de add-on | MINOR |
 | Corrección editorial | PATCH |
-| Cierre / rediseño del piloto | COM-03 MINOR+ |
+| Archivo o consulta histórica del piloto | COM-03 · sin reactivar oferta |
 
 Registro: [changelog.md](changelog.md)

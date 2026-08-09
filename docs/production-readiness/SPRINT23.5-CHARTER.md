@@ -1,10 +1,10 @@
-# Sprint 23.5 · Dominio, correo, UAT y salida controlada
+# Sprint 23.5 · Dominio, correo y preparación para comercialización
 
 ## Objetivo
 
-Certificar la identidad pública de Roustix, la entregabilidad de sus correos y
-el recorrido completo de un cliente piloto antes de iniciar una operación
-comercial controlada de máximo tres empresas.
+Certificar la identidad pública de Roustix, la entregabilidad de sus correos,
+la aceptación técnica del servicio y los controles necesarios para iniciar la
+comercialización general de manera responsable.
 
 ## Estado inicial · 2026-08-01
 
@@ -43,7 +43,7 @@ comercial controlada de máximo tres empresas.
 - Verificar el panel de infraestructura, el worker y `/health/ready`.
 - Rotar las credenciales temporales cuando la nueva identidad quede aprobada.
 
-### 4. UAT del piloto
+### 4. Aceptación técnica del servicio
 
 - Ejecutar registro, verificación, inicio de sesión y recuperación.
 - Crear empresa, sede, área, usuarios y activos.
@@ -52,11 +52,11 @@ comercial controlada de máximo tres empresas.
 - Probar límites del plan, alertas de capacidad, add-on y suspensión controlada.
 - Ejecutar pruebas con roles reales y aislamiento entre empresas.
 
-### 5. Salida controlada
+### 5. Preparación comercial
 
-- Máximo tres empresas piloto reales; los tenants marcados como prueba no
-  consumen ese cupo.
-- Onboarding asistido y responsable asignado para cada empresa.
+- Capacidad de nuevas empresas controlada mediante métricas de infraestructura,
+  almacenamiento, concurrencia y soporte; sin un límite comercial fijo.
+- Onboarding documentado y responsable asignado para cada cliente.
 - Canal, horario y tiempos de respuesta de soporte documentados.
 - Política de escalamiento, respaldo, restauración e incidentes comunicada.
 - Revisión legal de privacidad, tratamiento de datos, términos y servicio SaaS.
@@ -80,9 +80,9 @@ la zona DNS de `roustix.com`. La evidencia mínima debe incluir:
 - [x] SPF, DKIM y DMARC publicados y validados.
 - [ ] SMTP corporativo configurado en web, worker y GitHub Actions.
 - [ ] Entregabilidad aprobada en Gmail y Outlook.
-- [x] UAT funcional y de aislamiento aprobado.
-- [ ] Documentación legal y soporte listos para el piloto.
-- [ ] Decisión Go/No-Go registrada para máximo tres empresas.
+- [x] Aceptación técnica funcional y de aislamiento aprobada.
+- [ ] Documentación legal, comercial y soporte listos para clientes.
+- [ ] Decisión de habilitación comercial registrada.
 
 ## Evidencia de correo corporativo · 2026-08-09
 

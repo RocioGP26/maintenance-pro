@@ -3,9 +3,9 @@
 | Campo | Valor |
 |-------|-------|
 | **Código** | RTX-SUP-001 |
-| **Versión** | **0.1.0** |
+| **Versión** | **0.2.0** |
 | **Estado** | 🟡 Borrador |
-| **Fecha** | 2026-08-03 |
+| **Fecha** | 2026-08-09 |
 | **Pregunta que responde** | ¿Cómo obtiene ayuda un cliente de Roustix? |
 | **Referenciado por** | [RTX-LEGAL-002](RTX-LEGAL-002-contrato-saas.md) · [COM-01](../com/COM-01-planes-licenciamiento.md) |
 | **No sustituye** | [RTX-SLA-001](RTX-SLA-001-acuerdo-nivel-servicio.md) (compromisos de nivel) |
@@ -29,8 +29,7 @@ Definir canales, horarios, tipos de solicitud, inclusiones, exclusiones y escala
 
 | Canal | Identificador |
 |-------|---------------|
-| Correo temporal (piloto) | `soporte.roustix@hotmail.com` |
-| Correo objetivo | `soporte@roustix.com` `[PENDIENTE · DNS / buzón]` |
+| Correo | `contacto@roustix.com` |
 | Chat | Dentro de la Plataforma (Business+) `[cuando exista]` |
 | Portal de soporte | `[Futuro]` |
 
@@ -159,8 +158,9 @@ Roustix podrá actualizar esta política. Los cambios materiales se comunicarán
 
 | Versión | Fecha | Cambio |
 |---------|-------|--------|
+| **0.2.0** | 2026-08-09 | Se establece `contacto@roustix.com` como canal corporativo vigente y se retira el buzón temporal |
 | **0.1.0** | 2026-08-03 | Creación del borrador inicial |
 
 ---
 
-*RTX-SUP-001 · v0.1.0 · Borrador · 2026-08-03*
+*RTX-SUP-001 · v0.2.0 · Borrador · 2026-08-09*

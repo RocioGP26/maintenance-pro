@@ -1,5 +1,17 @@
 # Changelog · Roustix Documentation Suite
 
+## [1.25.0] — 2026-08-09
+
+### Changed
+- Programa piloto COM-03 archivado antes de su ejecución.
+- COM-01 y COM-02 actualizados a comercialización general v1.4.0.
+- Eliminado el límite comercial de tres empresas; las altas se controlan por
+  capacidad operativa e infraestructura disponible.
+- Plantillas exclusivas del piloto trasladadas al archivo histórico.
+- Sprint 23.5 reformulado como preparación para comercialización.
+
+---
+
 > Este changelog pertenece a la documentación. Los cambios de la aplicación se
 > registran por separado en [`/CHANGELOG.md`](../CHANGELOG.md).
 

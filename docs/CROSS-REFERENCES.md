@@ -87,9 +87,10 @@ Convenciones para enlazar manuales de forma **consistente**. Objetivo: un lector
 | Definición EMP | MCM-01 · **MPA-01** | MBB · MCM · MPA |
 | UX Laws obligatorias | MUX laws.md | MDL · MPA-12 · Developer |
 | Componentes UI | MDL | MUX · MPA-11 · MPA-12 |
-| Planes Start/Grow/Scale | **COM-01** · MCM-04 | MPA-05 · MPA-04 · `PLANES_SEED` |
+| Planes Start/Business/Enterprise | **COM-01** · MCM-04 | MPA-05 · MPA-04 · `PLANES_SEED` |
 | Add-ons / servicios | **COM-02** | MCM-06 onboarding |
-| Piloto · clientes fundadores | **COM-03** | GTM appendix |
+| Piloto · clientes fundadores (histórico) | **COM-03 archivado** | GTM appendix |
+| Propuesta y activación comercial | **COM-01** · **COM-02** · propuesta comercial · Acta de Servicio | Contrato SaaS · onboarding · facturación |
 | Mapa de módulos | **MPA-02** | MCM-05 · MCM-10 |
 | Arquitectura modular | **MPA-03** | MPA-04 · Developer |
 | Constitución desarrollo | **MPA-12** | MUX · Developer |

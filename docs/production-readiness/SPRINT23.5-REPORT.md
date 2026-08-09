@@ -3,16 +3,16 @@
 Fecha de inicio: 2026-08-01  
 Última actualización: 2026-08-09
 
-Estado: **GO condicionado · identidad de correo aprobada; GitHub Actions y
-revisión legal pendientes**
+Estado: **Preparación para comercialización · identidad de correo aprobada;
+GitHub Actions, paquete comercial y revisión legal pendientes**
 
 ## Evidencia de entrada
 
 - Sprint 23.4 cerrado con observabilidad, workers, outbox, monitor y prueba de
   carga certificados.
 - Producción saludable en Roustix `1.0.46` (`100e206`).
-- Capacidad piloto aprobada: 10 usuarios concurrentes sobre la instancia actual.
-- Límite comercial: máximo tres empresas piloto reales.
+- Prueba de capacidad aprobada: 10 usuarios concurrentes sobre la instancia
+  evaluada; este resultado es una referencia operativa, no un límite comercial.
 
 ## Auditoría inicial de identidad
 
@@ -57,7 +57,7 @@ revisión legal pendientes**
 1. Confirmar o actualizar los secretos SMTP de GitHub Actions.
 2. Ejecutar manualmente los workflows que notifican por correo.
 3. Documentar recepción en Gmail y Outlook con SPF, DKIM y DMARC en `PASS`.
-4. Completar la revisión jurídica del paquete legal del piloto.
+4. Completar la revisión jurídica del paquete legal y comercial.
 
 ## Hallazgo legal inicial
 
@@ -74,26 +74,25 @@ revisión legal pendientes**
 - Roustix todavía no corresponde a una sociedad constituida y es desarrollado
   por dos socios personas naturales.
 - Se prepararon en almacenamiento local privado borradores de política de
-  tratamiento, aviso de privacidad, términos del piloto y acuerdo de
+  tratamiento, aviso de privacidad, términos comerciales y acuerdo de
   transmisión de datos.
 - Los borradores están excluidos de Git porque contienen datos personales y no
   pueden publicarse ni firmarse hasta completar la identificación de ambos
   socios y obtener revisión jurídica colombiana.
 
-## Gate UAT
+## Evidencia de aceptación técnica
 
 El recorrido reproducible definido en `SPRINT23.5-UAT.md` fue ejecutado con la
-empresa marcada como **Pruebas**, sin consumir el cupo máximo de tres empresas
-piloto reales.
+empresa interna marcada como **Pruebas**. Se conserva como evidencia técnica y
+no como requisito de un programa piloto.
 
 Resultado: **GO CONDICIONADO**. Todos los pasos técnicos del tenant de prueba
 quedaron aprobados en producción, incluida la descarga de la Hoja de Vida en PDF
 con la zona horaria de la empresa. No quedaron hallazgos críticos o altos
 abiertos.
 
-Antes de incorporar cada empresa piloto real se deberá ejecutar el recorrido
-abreviado, documentar responsables y soporte, y mantener el límite de tres
-empresas durante esta fase.
+Antes de activar cada cliente se deberá ejecutar el onboarding abreviado,
+documentar responsables, soporte, plan contratado y capacidad disponible.
 
 No se deben publicar valores de contraseñas, claves DKIM privadas, tokens ni
 credenciales SMTP en este documento o en el repositorio.
