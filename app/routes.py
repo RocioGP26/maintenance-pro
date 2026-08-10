@@ -65,6 +65,7 @@ from app.custom_fields import (
 from app.dashboard_kpis import build_plant_kpi_cards
 from app.models import (
     ActivoCampoValor,
+    AssetMotorAssignment,
     CampoPersonalizado,
     Empresa,
     Incident,
@@ -262,6 +263,10 @@ _AUTH_PUBLIC_ENDPOINTS = (
     "main.recursos",
     "main.guia_producto",
     "main.manual_usuario",
+    "main.terminos",
+    "main.privacidad",
+    "main.terminos_pdf",
+    "main.privacidad_pdf",
     "main.recuperar_contrasena",
     "main.restablecer_contrasena",
 )
@@ -1432,6 +1437,7 @@ def _apply_machine_base_fields(machine: Machine, form) -> Optional[str]:
     if foto_url:
         machine.foto_url = foto_url
     machine.requiere_mantenimiento = bool(form.get("requiere_mantenimiento"))
+    machine.tiene_motores = bool(form.get("tiene_motores"))
     machine.tipos_mantenimiento = tipos_mantenimiento_from_form(form)
     machine.frecuencia_mantenimiento = (form.get("frecuencia_mantenimiento") or "").strip()
     raw_resp = (form.get("responsable_user_id") or "").strip()
@@ -1639,6 +1645,18 @@ def _activos_form_context(
         machine.moneda_compra if machine and machine.moneda_compra else None,
         moneda_empresa,
     )
+    motores_asignados = []
+    if machine and eid:
+        motores_asignados = (
+            AssetMotorAssignment.query.filter_by(
+                empresa_id=eid, asset_id=machine.id
+            )
+            .order_by(
+                AssetMotorAssignment.fecha_instalacion.desc(),
+                AssetMotorAssignment.id.desc(),
+            )
+            .all()
+        )
     return {
         "machine": machine,
         "machine_types": tipos,
@@ -1677,6 +1695,37 @@ def _activos_form_context(
             else ""
         ),
         "catalogo_tecnico": _catalogo_tecnico_form(eid),
+        "motores_asignados": motores_asignados,
+        "motores_activos_count": sum(
+            1 for motor in motores_asignados if motor.estado in ("instalado", "mantenimiento")
+        ),
+        "motores_json": [
+            {
+                "id": motor.id,
+                "nombre_funcion": motor.nombre_funcion,
+                "source_type": (
+                    "machine" if motor.motor_machine_id else "spare" if motor.spare_part_id else "new"
+                ),
+                "source_id": motor.motor_machine_id or motor.spare_part_id,
+                "identificador": motor.identificador,
+                "marca": motor.marca,
+                "modelo": motor.modelo,
+                "numero_serie": motor.numero_serie,
+                "potencia": motor.potencia,
+                "potencia_unidad": motor.potencia_unidad,
+                "rpm": motor.rpm,
+                "voltaje": motor.voltaje,
+                "amperaje": motor.amperaje,
+                "fecha_instalacion": (
+                    motor.fecha_instalacion.isoformat() if motor.fecha_instalacion else ""
+                ),
+                "fecha_retiro": motor.fecha_retiro.isoformat() if motor.fecha_retiro else "",
+                "estado": motor.estado,
+                "notas": motor.notas,
+                "reemplaza_asignacion_id": motor.reemplaza_asignacion_id,
+            }
+            for motor in motores_asignados
+        ],
     }
 
 
@@ -1920,6 +1969,72 @@ def recursos():
     ctx["mtx_cases"] = MTX_CASES
     ctx["recursos_links"] = RECURSOS_LINKS
     return render_template("landing/recursos.html", **ctx)
+
+
+def _render_legal_page(slug: str):
+    from flask import abort
+
+    from app.landing_service import public_page_context
+    from app.public_legal import get_legal_page, load_legal_html
+
+    page = get_legal_page(slug)
+    if page is None:
+        abort(404)
+    ctx = public_page_context()
+    ctx["now_year"] = date.today().year
+    ctx["legal_page"] = page
+    # Borradores: no exponer texto ni PDF en la web pública.
+    if not page.is_public:
+        return render_template("landing/legal_soon.html", **ctx)
+    ctx["legal_html"] = load_legal_html(slug)
+    ctx["legal_pdf_url"] = f"/{slug}/pdf"
+    return render_template("landing/legal.html", **ctx)
+
+
+@bp.route("/terminos")
+def terminos():
+    """Términos y Condiciones públicos — RTX-LEGAL-001."""
+    return _render_legal_page("terminos")
+
+
+@bp.route("/privacidad")
+def privacidad():
+    """Política de Privacidad pública — RTX-PRIV-001."""
+    return _render_legal_page("privacidad")
+
+
+def _download_legal_pdf(slug: str):
+    from flask import abort, send_file
+    from io import BytesIO
+
+    from app.legal_pdf import export_legal_pdf
+    from app.public_legal import get_legal_page
+
+    page = get_legal_page(slug)
+    if page is None or not page.is_public:
+        abort(404)
+    try:
+        content, filename = export_legal_pdf(slug)
+    except FileNotFoundError:
+        abort(404)
+    return send_file(
+        BytesIO(content),
+        mimetype="application/pdf",
+        as_attachment=True,
+        download_name=filename,
+    )
+
+
+@bp.route("/terminos/pdf")
+def terminos_pdf():
+    """Descarga PDF pública · solo si el documento está Vigente/publicado."""
+    return _download_legal_pdf("terminos")
+
+
+@bp.route("/privacidad/pdf")
+def privacidad_pdf():
+    """Descarga PDF pública · solo si el documento está Vigente/publicado."""
+    return _download_legal_pdf("privacidad")
 
 
 @bp.route("/dashboard")
@@ -3153,6 +3268,7 @@ def activos_hoja_vida_pdf(id):
         incidentes,
         ctx["sector_label"],
         _avances_hoja_vida(ordenes),
+        ctx["motores_asignados"],
     )
     return send_file(
         BytesIO(contenido),
@@ -3328,6 +3444,9 @@ def activos_new():
                             "Se aplicó la plantilla de preventivos del sector.",
                             "success",
                         )
+                        if m.tiene_motores:
+                            flash("Agrega ahora los motores asociados al activo.", "info")
+                            return redirect(url_for("main.activos_edit", id=m.id) + "#motores-activo")
                         return redirect(url_for("main.activos_cronograma", id=m.id))
                     except ValueError as exc:
                         db.session.rollback()
@@ -3375,6 +3494,16 @@ def activos_edit(id):
         if mt_id:
             m.machine_type_id = mt_id
         _apply_err = _apply_machine_base_fields(m, request.form)
+        if (
+            not _apply_err
+            and not m.tiene_motores
+            and AssetMotorAssignment.query.filter(
+                AssetMotorAssignment.asset_id == m.id,
+                AssetMotorAssignment.empresa_id == m.empresa_id,
+                AssetMotorAssignment.estado.in_(("instalado", "mantenimiento")),
+            ).first()
+        ):
+            _apply_err = "Retira los motores activos antes de desactivar esta opción."
         if _apply_err:
             flash(_apply_err, "danger")
         elif not m.codigo or not m.nombre:
@@ -3423,6 +3552,197 @@ def activos_edit(id):
         .all()
     )
     return render_template("activos/form.html", **ctx)
+
+
+MOTOR_ESTADOS = frozenset(("instalado", "mantenimiento", "retirado"))
+MOTOR_POTENCIA_UNIDADES = frozenset(("kW", "HP"))
+
+
+def _motor_payload_number(payload, key: str, *, integer: bool = False):
+    raw = payload.get(key)
+    if raw in (None, ""):
+        return None
+    try:
+        value = int(raw) if integer else float(str(raw).replace(",", "."))
+    except (TypeError, ValueError):
+        raise ValueError(f"El campo {key} debe ser numérico.")
+    if value < 0:
+        raise ValueError(f"El campo {key} no puede ser negativo.")
+    return value
+
+
+def _motor_source(machine: Machine, payload: dict, current_id: Optional[int] = None):
+    source_type = (payload.get("source_type") or "new").strip().lower()
+    raw_id = str(payload.get("source_id") or "").strip()
+    source_id = int(raw_id) if raw_id.isdigit() else None
+    motor_machine = None
+    spare_part = None
+    if source_type == "machine":
+        if not source_id:
+            raise ValueError("Selecciona el motor existente que deseas vincular.")
+        motor_machine = Machine.query.filter_by(
+            id=source_id, empresa_id=machine.empresa_id
+        ).first()
+        if motor_machine is None or motor_machine.id == machine.id:
+            raise ValueError("El motor seleccionado no pertenece a esta empresa.")
+        tipo_motor = " ".join(
+            filter(
+                None,
+                [
+                    motor_machine.machine_type.clave if motor_machine.machine_type else "",
+                    motor_machine.machine_type.nombre if motor_machine.machine_type else "",
+                ],
+            )
+        ).lower()
+        if not any(term in tipo_motor for term in ("motor", "accionamiento", "servo")):
+            raise ValueError("El activo seleccionado no está clasificado como motor o accionamiento.")
+    elif source_type == "spare":
+        if not source_id:
+            raise ValueError("Selecciona el motor del inventario técnico.")
+        spare_part = SparePart.query.filter_by(
+            id=source_id, empresa_id=machine.empresa_id
+        ).first()
+        if spare_part is None:
+            raise ValueError("El repuesto seleccionado no pertenece a esta empresa.")
+        tipo_motor = f"{spare_part.categoria or ''} {spare_part.nombre or ''}".lower()
+        if not any(term in tipo_motor for term in ("motor", "accionamiento", "servo")):
+            raise ValueError("El repuesto seleccionado no está clasificado como motor o accionamiento.")
+    elif source_type != "new":
+        raise ValueError("Selecciona un origen de motor válido.")
+
+    duplicate = None
+    if motor_machine:
+        duplicate = AssetMotorAssignment.query.filter(
+            AssetMotorAssignment.empresa_id == machine.empresa_id,
+            AssetMotorAssignment.estado.in_(("instalado", "mantenimiento")),
+            AssetMotorAssignment.motor_machine_id == motor_machine.id
+        )
+        if current_id:
+            duplicate = duplicate.filter(AssetMotorAssignment.id != current_id)
+    if duplicate is not None and duplicate.first():
+        raise ValueError("Ese motor ya se encuentra asociado a un activo.")
+    return source_type, motor_machine, spare_part
+
+
+@bp.route("/activos/<int:id>/motores", methods=["POST"])
+def activos_motor_manage(id):
+    """Crea, edita o retira motores conservando el historial del activo."""
+    machine = _filter_empresa(Machine.query.filter_by(id=id), Machine).first_or_404()
+    payload = request.get_json(silent=True) or {}
+    action = (payload.get("action") or "save").strip().lower()
+    raw_assignment_id = str(payload.get("id") or "").strip()
+    assignment_id = int(raw_assignment_id) if raw_assignment_id.isdigit() else None
+    assignment = None
+    if assignment_id:
+        assignment = AssetMotorAssignment.query.filter_by(
+            id=assignment_id,
+            empresa_id=machine.empresa_id,
+            asset_id=machine.id,
+        ).first()
+        if assignment is None:
+            return jsonify({"ok": False, "error": "El motor asociado no existe."}), 404
+
+    if action == "retire":
+        if assignment is None:
+            return jsonify({"ok": False, "error": "Selecciona el motor que deseas retirar."}), 400
+        assignment.estado = "retirado"
+        assignment.fecha_retiro = _parse_form_date(payload.get("fecha_retiro")) or date.today()
+        assignment.notas = (payload.get("notas") or assignment.notas or "").strip()
+        db.session.commit()
+        return jsonify({"ok": True, "message": "Motor retirado; la trazabilidad fue conservada."})
+
+    try:
+        nombre_funcion = (payload.get("nombre_funcion") or "").strip()
+        if not nombre_funcion:
+            raise ValueError("Nombre / función del motor es obligatorio.")
+        source_type, motor_machine, spare_part = _motor_source(
+            machine, payload, assignment.id if assignment else None
+        )
+        estado = (payload.get("estado") or "instalado").strip().lower()
+        if estado not in MOTOR_ESTADOS:
+            raise ValueError("Selecciona un estado de motor válido.")
+        potencia_unidad = (payload.get("potencia_unidad") or "kW").strip()
+        if potencia_unidad not in MOTOR_POTENCIA_UNIDADES:
+            raise ValueError("La potencia debe estar expresada en kW o HP.")
+        identificador = (payload.get("identificador") or "").strip()
+        if motor_machine and not identificador:
+            identificador = motor_machine.codigo
+        if spare_part and not identificador:
+            identificador = spare_part.sku
+        if source_type == "new" and not identificador:
+            raise ValueError("Indica un ID / tag para el motor nuevo.")
+        duplicate_tag = AssetMotorAssignment.query.filter(
+            AssetMotorAssignment.empresa_id == machine.empresa_id,
+            func.lower(AssetMotorAssignment.identificador) == identificador.lower(),
+            AssetMotorAssignment.estado.in_(("instalado", "mantenimiento")),
+        )
+        if assignment:
+            duplicate_tag = duplicate_tag.filter(AssetMotorAssignment.id != assignment.id)
+        if identificador and duplicate_tag.first():
+            raise ValueError("Ya existe un motor instalado o en mantenimiento con ese ID / tag.")
+
+        reemplaza_raw = str(payload.get("reemplaza_asignacion_id") or "").strip()
+        reemplaza_id = int(reemplaza_raw) if reemplaza_raw.isdigit() else None
+        reemplaza = None
+        if reemplaza_id:
+            reemplaza = AssetMotorAssignment.query.filter_by(
+                id=reemplaza_id,
+                empresa_id=machine.empresa_id,
+                asset_id=machine.id,
+            ).first()
+            if reemplaza is None or (assignment and reemplaza.id == assignment.id):
+                raise ValueError("El motor reemplazado no es válido.")
+
+        row = assignment or AssetMotorAssignment(
+            empresa_id=machine.empresa_id,
+            asset_id=machine.id,
+            created_by_id=current_user.id,
+        )
+        row.motor_machine_id = motor_machine.id if motor_machine else None
+        row.spare_part_id = spare_part.id if spare_part else None
+        row.reemplaza_asignacion_id = reemplaza.id if reemplaza else None
+        row.nombre_funcion = nombre_funcion
+        row.identificador = identificador
+        row.marca = (payload.get("marca") or (motor_machine.marca if motor_machine else "")).strip()
+        row.modelo = (payload.get("modelo") or (motor_machine.modelo if motor_machine else "")).strip()
+        row.numero_serie = (
+            payload.get("numero_serie")
+            or (motor_machine.numero_serie if motor_machine else "")
+        ).strip()
+        row.potencia = _motor_payload_number(payload, "potencia")
+        row.potencia_unidad = potencia_unidad
+        row.rpm = _motor_payload_number(payload, "rpm", integer=True)
+        row.voltaje = (payload.get("voltaje") or "").strip()
+        row.amperaje = (payload.get("amperaje") or "").strip()
+        row.fecha_instalacion = _parse_form_date(payload.get("fecha_instalacion"))
+        row.estado = estado
+        row.fecha_retiro = (
+            _parse_form_date(payload.get("fecha_retiro")) if estado == "retirado" else None
+        )
+        if estado == "retirado" and row.fecha_retiro is None:
+            row.fecha_retiro = date.today()
+        row.notas = (payload.get("notas") or "").strip()
+        if assignment is None:
+            db.session.add(row)
+        if reemplaza:
+            reemplaza.estado = "retirado"
+            reemplaza.fecha_retiro = row.fecha_instalacion or date.today()
+        machine.tiene_motores = True
+        db.session.commit()
+        return jsonify(
+            {
+                "ok": True,
+                "message": "Motor actualizado." if assignment else "Motor asociado al activo.",
+                "id": row.id,
+            }
+        )
+    except ValueError as exc:
+        db.session.rollback()
+        return jsonify({"ok": False, "error": str(exc)}), 400
+    except Exception:
+        db.session.rollback()
+        current_app.logger.exception("No se pudo guardar el motor del activo")
+        return jsonify({"ok": False, "error": "No se pudo guardar el motor."}), 500
 
 
 @bp.route("/activos/<int:id>/archivo/<tipo>/eliminar", methods=["POST"])

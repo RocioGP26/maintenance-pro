@@ -3,10 +3,16 @@
 | Campo | Valor |
 |-------|-------|
 | **Código** | COM-03 |
-| **Versión** | **1.3.3** |
+| **Versión** | **1.4.0** |
+| **Estado** | ⚫ Archivado · fuera de la oferta comercial vigente |
+| **Archivado** | 2026-08-09 |
 | **Precios base** | [COM-01 v1.3.2](COM-01-planes-licenciamiento.md) · [COM-02 v1.3.2](COM-02-servicios-adicionales.md) |
 | **Vigencia piloto** | 90 días o 3 empresas piloto (lo que ocurra primero) |
 
+> **Documento histórico.** Roustix decidió no ejecutar el programa piloto. Las
+> condiciones, beneficios, cupos y precios descritos aquí no están disponibles
+> para nuevas contrataciones. La oferta vigente se rige por COM-01 y COM-02.
+>
 > Precios de lista COM-01/02 **congelados** durante el piloto.
 
 ---
@@ -42,9 +48,10 @@ CRM: `com_version = COM-03@1.3.3`
 
 | Versión | Cambio |
 |---------|--------|
+| **1.4.0** | Programa archivado antes de su ejecución; fuera de la oferta vigente |
 | **1.3.3** | Piloto controlado con máximo 3 empresas reales |
 | **1.3.2** | Storage año 1 1/5/20 GB |
 | **1.3.1** | Grow → Business · Enterprise sin precio público |
 | **1.3.0** | Matriz 1M / 1.5M / desde 2.5M |
 
-*COM-03 · v1.3.3 · 2026*
+*COM-03 · v1.4.0 · Archivado · 2026*

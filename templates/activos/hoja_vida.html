@@ -82,7 +82,10 @@
 <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
   <div>
     <div class="text-muted small">{{ sector_label }} · {{ machine.tipo_etiqueta }}</div>
-    <h2 class="h4 mb-0">{{ machine.codigo }} · {{ machine.nombre }}</h2>
+    <h2 class="h4 mb-0 d-flex flex-wrap align-items-center gap-2">
+      <span>{{ machine.codigo }} · {{ machine.nombre }}</span>
+      {% if machine.tiene_motores %}<span class="badge rounded-pill text-bg-primary fs-6">Motores: {{ motores_activos_count }} asignados</span>{% else %}<span class="badge rounded-pill text-bg-light border text-secondary fs-6">Sin motores</span>{% endif %}
+    </h2>
   </div>
   <div class="d-flex gap-2">
     <a href="{{ url_for('main.activos_list') }}" class="btn btn-outline-secondary"><i class="bi bi-arrow-left me-1"></i>Activos</a>
@@ -210,6 +213,35 @@
     </div>
   </div>
 </div>
+
+{% if machine.tiene_motores or motores_asignados %}
+<div class="card mb-3" id="motores-activo">
+  <div class="card-header d-flex flex-wrap justify-content-between align-items-center gap-2">
+    <span class="fw-semibold"><i class="bi bi-gear-wide-connected me-1"></i>Motores y Accionamientos</span>
+    {% if perm.editar %}<a href="{{ url_for('main.activos_edit', id=machine.id) }}#motores-activo" class="btn btn-outline-primary btn-sm"><i class="bi bi-pencil me-1"></i>Gestionar</a>{% endif %}
+  </div>
+  <div class="table-responsive">
+    <table class="table table-sm table-hover align-middle mb-0">
+      <thead class="table-light"><tr>
+        <th>Nombre / función</th><th>ID / Tag</th><th>Marca / modelo</th><th>Serie</th><th>Potencia</th><th>RPM</th><th>Voltaje / amperaje</th><th>Instalación / retiro</th><th>Estado</th>
+      </tr></thead>
+      <tbody>
+        {% for motor in motores_asignados %}
+        <tr>
+          <td class="fw-semibold">{{ motor.nombre_funcion }}{% if motor.reemplaza_asignacion %}<small class="d-block text-muted">Reemplazó: {{ motor.reemplaza_asignacion.identificador or motor.reemplaza_asignacion.nombre_funcion }}</small>{% endif %}</td>
+          <td class="font-monospace">{% if motor.motor_machine %}<a href="{{ url_for('main.activos_hoja_vida', id=motor.motor_machine.id) }}">{{ motor.identificador }}</a>{% else %}{{ motor.identificador or '—' }}{% endif %}</td>
+          <td>{{ [motor.marca, motor.modelo]|select|join(' · ') or '—' }}</td>
+          <td>{{ motor.numero_serie or '—' }}</td><td>{{ motor.potencia_label }}</td><td>{{ motor.rpm or '—' }}</td>
+          <td>{{ motor.voltaje or '—' }} / {{ motor.amperaje or '—' }}</td>
+          <td>{{ motor.fecha_instalacion.strftime('%d/%m/%Y') if motor.fecha_instalacion else '—' }}{% if motor.fecha_retiro %}<small class="d-block text-muted">Retiro: {{ motor.fecha_retiro.strftime('%d/%m/%Y') }}</small>{% endif %}</td>
+          <td><span class="badge {% if motor.estado == 'instalado' %}text-bg-success{% elif motor.estado == 'mantenimiento' %}text-bg-warning{% else %}text-bg-secondary{% endif %}">{{ motor.estado_label }}</span></td>
+        </tr>
+        {% else %}<tr><td colspan="9" class="text-center text-muted py-3">La gestión está habilitada, pero no hay motores registrados.</td></tr>{% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endif %}
 
 {% if campos_personalizados %}
 <div class="card mb-3">

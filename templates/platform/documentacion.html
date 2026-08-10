@@ -37,6 +37,26 @@
 {% endfor %}
 
 <section class="platform-docs-group mb-2">
+  <h2 class="platform-docs-group-title">Legal y compliance</h2>
+  <p class="text-secondary small mb-3">
+    Borradores LEG (términos, contrato, privacidad, SLA, soporte). Solo revisión interna.
+  </p>
+  <a class="platform-docs-chip" href="{{ url_for('platform.legal') }}">
+    <i class="bi bi-file-earmark-ruled"></i> Documentación legal · PDF
+  </a>
+</section>
+
+<section class="platform-docs-group mb-2">
+  <h2 class="platform-docs-group-title">Empaquetado comercial</h2>
+  <p class="text-secondary small mb-3">
+    Planes, add-ons y piloto (COM-01 · COM-02 · COM-03).
+  </p>
+  <a class="platform-docs-chip" href="{{ url_for('platform.comercial') }}">
+    <i class="bi bi-tags"></i> COM · PDF
+  </a>
+</section>
+
+<section class="platform-docs-group mb-2">
   <h2 class="platform-docs-group-title">Vistas públicas (referencia)</h2>
   <p class="text-secondary small mb-3">Contrato e integración visibles también para clientes e integradores.</p>
   <div class="platform-docs-public-row">

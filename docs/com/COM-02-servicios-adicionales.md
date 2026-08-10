@@ -3,8 +3,8 @@
 | Campo | Valor |
 |-------|-------|
 | **Código** | COM-02 |
-| **Versión** | **1.3.2** |
-| **Alineado a** | [COM-01 v1.3.2](COM-01-planes-licenciamiento.md) |
+| **Versión** | **1.4.0** |
+| **Alineado a** | [COM-01 v1.4.0](COM-01-planes-licenciamiento.md) |
 | **Moneda** | COP |
 
 > Extiende capacidad **sin** forzar upgrade Start → Business → Enterprise.
@@ -24,7 +24,7 @@
 
 **Producto:** banner en portal cliente (admins con configuración) + CTA a `contacto@roustix.com` · misma lógica en panel plataforma.
 
-### Operación del piloto · `ADD-STG-2G`
+### Operación comercial · `ADD-STG-2G`
 
 - Cobro mensual anticipado de **$100.000 COP** mediante factura/pago manual.
 - Activación por SuperAdmin cuando el pago esté confirmado.
@@ -45,7 +45,8 @@
 
 | Versión | Cambio |
 |---------|--------|
+| **1.4.0** | Operación comercial general; retiradas las reglas del piloto |
 | **1.3.2** | Énfasis upsell +2 GB al 80% · alineado storage año 1 |
 | **1.3.1** | Business |
 
-*COM-02 · v1.3.2 · 2026*
+*COM-02 · v1.4.0 · 2026*

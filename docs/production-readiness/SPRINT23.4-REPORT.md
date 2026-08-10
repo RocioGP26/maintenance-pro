@@ -40,11 +40,12 @@ instancia Starter actual.
 - Compilación de `app`, `scripts` y `tests`: aprobada.
 - Validación sintáctica de `backup.yml` y `render.yaml`: aprobada.
 
-## Pendiente para el siguiente avance
+## Seguimiento posterior
 
 - Ampliar la infraestructura u optimizar incidencias y órdenes antes de repetir
   el escalón de 20 usuarios concurrentes.
-- Mejorar la entregabilidad del correo operativo mediante SPF, DKIM y DMARC.
+- La entregabilidad del correo se certificó posteriormente con SMTP corporativo,
+  SPF, DKIM y DMARC en el Sprint 23.5.
 
 ### Actualización de GitHub Actions · 2026-08-01
 
@@ -57,9 +58,9 @@ instancia Starter actual.
 
 ## Decisiones de cierre
 
-- La capacidad certificada del piloto permanece en 10 usuarios concurrentes;
-  optimizar incidencias y órdenes para el escalón de 20 es una mejora posterior
-  de capacidad, no un bloqueo para el piloto de máximo tres empresas.
+- La prueba ejecutada certificó 10 usuarios concurrentes sobre la instancia
+  evaluada. Desde COM v1.4.0 este resultado se usa como referencia operativa y
+  no como límite comercial ni como cupo de empresas.
 - SPF, DKIM, DMARC y la alineación del remitente se gestionarán en el Sprint
   23.5 junto con el dominio y el correo corporativo.
 - Todos los criterios de la Definition of Done del Sprint 23.4 cuentan con
@@ -189,5 +190,6 @@ instancia Starter actual.
   facturación manual, vencimientos automáticos y estadísticas públicas.
 - La clasificación y sus cambios quedan auditados; suspender un tenant sigue
   siendo una acción independiente para revocar su acceso sin borrar evidencia.
-- El máximo comercial del piloto permanece en tres empresas reales; los
-  tenants marcados como prueba no consumen ese cupo.
+- La decisión histórica de limitar el piloto a tres empresas fue archivada en
+  COM v1.4.0. Los tenants marcados como prueba continúan excluidos de métricas
+  comerciales, pero las altas de clientes se gobiernan por capacidad operativa.

@@ -1,5 +1,16 @@
 # COM Changelog
 
+## [1.4.0] — 2026-08-09 · Comercialización general
+
+### Changed
+- COM-01 y COM-02 pasan a oferta comercial general.
+- Se elimina el límite comercial de tres empresas; la capacidad se controla
+  mediante métricas operativas e infraestructura disponible.
+- COM-03 queda archivado y fuera de la oferta vigente.
+- Las plantillas exclusivas del piloto pasan al archivo histórico.
+
+---
+
 ## [1.3.3] — 2026-08-01 · Piloto controlado
 
 ### Changed

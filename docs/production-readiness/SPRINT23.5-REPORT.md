@@ -1,28 +1,29 @@
 # Sprint 23.5 · Reporte en curso
 
 Fecha de inicio: 2026-08-01  
-Última actualización: 2026-08-02
+Última actualización: 2026-08-09
 
-Estado: **GO condicionado · correo corporativo y revisión legal pendientes**
+Estado: **Preparación para comercialización · identidad de correo, GitHub
+Actions y paquete comercial aprobados; revisión legal pendiente**
 
 ## Evidencia de entrada
 
 - Sprint 23.4 cerrado con observabilidad, workers, outbox, monitor y prueba de
   carga certificados.
 - Producción saludable en Roustix `1.0.46` (`100e206`).
-- Capacidad piloto aprobada: 10 usuarios concurrentes sobre la instancia actual.
-- Límite comercial: máximo tres empresas piloto reales.
+- Prueba de capacidad aprobada: 10 usuarios concurrentes sobre la instancia
+  evaluada; este resultado es una referencia operativa, no un límite comercial.
 
 ## Auditoría inicial de identidad
 
 | Elemento | Estado | Observación |
 | --- | --- | --- |
 | `roustix.com` | Operativo | Aplicación productiva bajo HTTPS |
-| `contacto@roustix.com` | Pendiente de validar | Publicado en la aplicación y material comercial |
-| `soporte@roustix.com` | Pendiente | Recomendado para atención y alertas |
-| `soporte.roustix@hotmail.com` | Disponible | Canal temporal, no autentica el dominio Roustix |
-| SMTP transaccional | Operativo temporal | Gates funcionales aprobados con cuenta externa |
-| SPF / DKIM / DMARC | Pendiente | Requiere proveedor de correo y acceso DNS |
+| `contacto@roustix.com` | Operativo | Buzón Namecheap Private Email con envío y recepción comprobados |
+| `soporte@roustix.com` | Opcional futuro | `contacto@roustix.com` es el canal corporativo vigente |
+| `soporte.roustix@hotmail.com` | Disponible | Canal externo de recuperación y alertas operativas |
+| SMTP transaccional | Operativo corporativo | Namecheap Private Email configurado en web y worker |
+| SPF / DKIM / DMARC | Aprobado | Registros visibles en DNS autoritativo el 2026-08-09 |
 
 ### Consulta DNS pública · 2026-08-01
 
@@ -36,14 +37,27 @@ Estado: **GO condicionado · correo corporativo y revisión legal pendientes**
   mediante el alias.
 - La contratación y los cambios DNS requieren aprobación de la responsable.
 
+## Gate de identidad y SMTP · 2026-08-09
+
+- Proveedor seleccionado: Namecheap Private Email.
+- MX corporativos publicados para `roustix.com`.
+- SPF, DKIM y DMARC visibles mediante consulta al DNS autoritativo.
+- DMARC inició en observación (`p=none`) y envía reportes a
+  `contacto@roustix.com`.
+- La aplicación y el worker usan `contacto@roustix.com` como identidad SMTP.
+- La prueba operativa de envío, recepción y respuesta fue aprobada por Gladis
+  Rocio Gelves Pabon.
+- Producción respondió `status=ok` en `/health/ready`, versión `1.1.3`, con
+  base de datos, migraciones, Redis y worker en verde.
+- No se registraron contraseñas, claves privadas ni secretos SMTP en el
+  repositorio.
+
 ## Próximo gate
 
-1. Seleccionar o confirmar el proveedor del correo corporativo.
-2. Crear los buzones o alias de contacto y soporte.
-3. Obtener los registros SPF, DKIM y DMARC del proveedor.
-4. Publicarlos en la zona DNS de `roustix.com`.
-5. Actualizar secretos de web, worker y GitHub Actions.
-6. Ejecutar y documentar las pruebas de entregabilidad.
+1. Completar identidad jurídica y tributaria del Prestador.
+2. Cerrar decisiones de precios, pagos, terminación y SLA.
+3. Completar la revisión jurídica y contable del paquete.
+4. Publicar Términos y Privacidad vigentes y activar aceptación trazable.
 
 ## Hallazgo legal inicial
 
@@ -60,26 +74,25 @@ Estado: **GO condicionado · correo corporativo y revisión legal pendientes**
 - Roustix todavía no corresponde a una sociedad constituida y es desarrollado
   por dos socios personas naturales.
 - Se prepararon en almacenamiento local privado borradores de política de
-  tratamiento, aviso de privacidad, términos del piloto y acuerdo de
+  tratamiento, aviso de privacidad, términos comerciales y acuerdo de
   transmisión de datos.
 - Los borradores están excluidos de Git porque contienen datos personales y no
   pueden publicarse ni firmarse hasta completar la identificación de ambos
   socios y obtener revisión jurídica colombiana.
 
-## Gate UAT
+## Evidencia de aceptación técnica
 
 El recorrido reproducible definido en `SPRINT23.5-UAT.md` fue ejecutado con la
-empresa marcada como **Pruebas**, sin consumir el cupo máximo de tres empresas
-piloto reales.
+empresa interna marcada como **Pruebas**. Se conserva como evidencia técnica y
+no como requisito de un programa piloto.
 
 Resultado: **GO CONDICIONADO**. Todos los pasos técnicos del tenant de prueba
 quedaron aprobados en producción, incluida la descarga de la Hoja de Vida en PDF
 con la zona horaria de la empresa. No quedaron hallazgos críticos o altos
 abiertos.
 
-Antes de incorporar cada empresa piloto real se deberá ejecutar el recorrido
-abreviado, documentar responsables y soporte, y mantener el límite de tres
-empresas durante esta fase.
+Antes de activar cada cliente se deberá ejecutar el onboarding abreviado,
+documentar responsables, soporte, plan contratado y capacidad disponible.
 
 No se deben publicar valores de contraseñas, claves DKIM privadas, tokens ni
 credenciales SMTP en este documento o en el repositorio.

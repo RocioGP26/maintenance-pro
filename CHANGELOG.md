@@ -12,6 +12,54 @@ La suite documental mantiene un ciclo independiente en
 
 - Espacio reservado para cambios aún no publicados.
 
+## [1.2.0] - 2026-08-09
+
+### Added
+
+- Gestión histórica de motores registrados como componentes del activo principal,
+  sin crear activos independientes en el catálogo.
+- Ficha rápida por motor: función, tag, marca, modelo, serie, potencia, RPM,
+  voltaje, amperaje, instalación y estado.
+- Reemplazos y retiros sin pérdida de trazabilidad en la Hoja de Vida y su PDF.
+- Badge de motores asignados y aislamiento de registros por empresa.
+
+## [1.1.3] - 2026-08-04
+
+### Added
+
+- Panel SuperAdmin `/platform/comercial` para descargar en PDF el empaquetado
+  comercial COM (resumen, planes, add-ons y piloto).
+
+## [1.1.2] - 2026-08-04
+
+### Fixed
+
+- Las fechas de los PDF legales usan zona horaria `America/Bogota` y ya no
+  adelantan un día respecto a Colombia cuando el servidor corre en UTC.
+
+## [1.1.1] - 2026-08-04
+
+### Added
+
+- Panel SuperAdmin `/platform/legal` para descargar en PDF todo el catálogo LEG
+  (términos, contrato, privacidad, anexos, SLA y soporte).
+
+### Changed
+
+- Términos y Privacidad dejan de exponerse públicamente mientras sean borrador
+  (`próximamente`); la descarga PDF pública queda reservada a documentos Vigentes.
+- Pie de PDF legal: paginación «Página Y de X».
+
+## [1.1.0] - 2026-08-03
+
+### Added
+
+- Suite documental legal LEG (`docs/legal/`) con Términos, Privacidad, Contrato
+  SaaS, SLA, Soporte y anexos de privacidad.
+- Páginas públicas `/terminos` y `/privacidad` (borrador · `noindex`) con
+  descarga PDF de marca Roustix.
+- Enlaces legales en el footer público (sustituye «Privacidad · próximamente»).
+
 ## [1.0.46] - 2026-08-01
 
 ### Fixed

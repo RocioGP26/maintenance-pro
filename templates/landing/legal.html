@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  {% include "_favicon.html" %}
+  {% if legal_page.is_draft %}
+  <meta name="robots" content="noindex,nofollow">
+  {% endif %}
+  <title>{{ legal_page.title }} — Roustix</title>
+  <meta name="description" content="{{ legal_page.description }}">
+  {% from "_cdn_assets.html" import google_fonts_inter_extra_bold, bootstrap_icons_css %}
+  {{ google_fonts_inter_extra_bold() }}
+  {{ bootstrap_icons_css() }}
+  <link href="{{ url_for('static', filename='css/landing.css') }}" rel="stylesheet">
+</head>
+<body class="landing-body">
+  {% include "landing/_nav.html" %}
+
+  <main class="landing-public-page">
+    <section class="landing-section landing-section--soft">
+      <div class="container-xl landing-public-page-head">
+        <p class="landing-eyebrow">{{ legal_page.eyebrow }} · v{{ legal_page.version }}</p>
+        <h1 class="landing-section-title">{{ legal_page.title }}</h1>
+        <p class="landing-section-sub mx-auto text-center">
+          Documento oficial del Sistema Documental Legal de Roustix.
+        </p>
+        <p class="text-center mt-3 mb-0">
+          <a href="{{ legal_pdf_url }}"
+             class="landing-btn landing-btn-outline landing-btn-sm">
+            <i class="bi bi-filetype-pdf"></i> Descargar PDF
+          </a>
+        </p>
+      </div>
+    </section>
+
+    {% if legal_page.is_draft %}
+    <section class="landing-section pt-0">
+      <div class="container-xl">
+        <div class="landing-legal-banner" role="status">
+          <strong>Borrador · no vigente.</strong>
+          Este texto está en revisión jurídica e identificación del responsable.
+          No constituye aún los {{ legal_page.title|lower }} aplicables al servicio.
+          Canal provisional:
+          <a href="mailto:{{ contact_email }}">{{ contact_email }}</a>.
+        </div>
+      </div>
+    </section>
+    {% endif %}
+
+    <section class="landing-section pt-0">
+      <div class="container-xl landing-legal-layout">
+        <aside class="landing-legal-aside" aria-label="Documentos relacionados">
+          <p class="landing-footer-heading">Documentos</p>
+          <a href="{{ url_for('main.terminos') }}" {% if legal_page.slug == 'terminos' %}aria-current="page"{% endif %}>Términos y Condiciones</a>
+          <a href="{{ url_for('main.privacidad') }}" {% if legal_page.slug == 'privacidad' %}aria-current="page"{% endif %}>Política de Privacidad</a>
+          <a href="{{ url_for('main.contacto') }}">Contacto</a>
+          <a href="{{ legal_pdf_url }}">Descargar PDF</a>
+          <p class="landing-legal-aside-meta">
+            Código {{ legal_page.code }} · {{ legal_page.status_label }}
+          </p>
+        </aside>
+        <article class="landing-legal-body">
+          {{ legal_html|safe }}
+        </article>
+      </div>
+    </section>
+  </main>
+
+  {% include "landing/_footer.html" %}
+</body>
+</html>

@@ -91,7 +91,15 @@ def _imagen_activo(machine):
 
 
 def export_asset_life_pdf(
-    empresa, machine, campos, valores, ordenes, incidentes, sector_label, avances_por_ot=None
+    empresa,
+    machine,
+    campos,
+    valores,
+    ordenes,
+    incidentes,
+    sector_label,
+    avances_por_ot=None,
+    motores=None,
 ):
     buffer = BytesIO()
     doc = SimpleDocTemplate(
@@ -185,6 +193,36 @@ def export_asset_life_pdf(
         ("VALIGN", (0, 0), (-1, -1), "TOP"), ("PADDING", (0, 0), (-1, -1), 4),
     ]))
     story.extend([general_table, Spacer(1, 3 * mm)])
+
+    motores = list(motores or [])
+    if getattr(machine, "tiene_motores", False) or motores:
+        story.append(_p("MOTORES Y ACCIONAMIENTOS", subtitle))
+        datos_motor = [[
+            _p(x, header)
+            for x in ["Función / tag", "Marca / modelo", "Serie", "Potencia / RPM", "V / A", "Instalación / retiro", "Estado"]
+        ]]
+        for motor in motores:
+            reemplazo = ""
+            if motor.reemplaza_asignacion:
+                reemplazo = f"\nReemplazó: {motor.reemplaza_asignacion.identificador or motor.reemplaza_asignacion.nombre_funcion}"
+            fechas = motor.fecha_instalacion.strftime("%d/%m/%Y") if motor.fecha_instalacion else "—"
+            if motor.fecha_retiro:
+                fechas += f"\nRetiro: {motor.fecha_retiro.strftime('%d/%m/%Y')}"
+            datos_motor.append([
+                _p(f"{motor.nombre_funcion}\n{motor.identificador or 'Sin tag'}{reemplazo}", normal),
+                _p(" · ".join(filter(None, [motor.marca, motor.modelo])) or "—", normal),
+                _p(motor.numero_serie or "—", normal),
+                _p(f"{motor.potencia_label}\n{str(motor.rpm) + ' RPM' if motor.rpm else 'RPM —'}", normal),
+                _p(f"{motor.voltaje or '—'} / {motor.amperaje or '—'}", normal),
+                _p(fechas, normal),
+                _p(motor.estado_label, normal),
+            ])
+        if not motores:
+            datos_motor.append([_p("Sin motores registrados", normal)] + [""] * 6)
+        story.extend([
+            tabla(datos_motor, [34 * mm, 31 * mm, 24 * mm, 27 * mm, 20 * mm, 30 * mm, 20 * mm]),
+            Spacer(1, 3 * mm),
+        ])
 
     if campos:
         story.append(_p(f"INFORMACIÓN ESPECÍFICA - {sector_label.upper()}", subtitle))

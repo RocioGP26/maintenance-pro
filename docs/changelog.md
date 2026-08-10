@@ -1,7 +1,58 @@
 # Changelog · Roustix Documentation Suite
 
+## [1.27.0] — 2026-08-09
+
+### Added
+- Matriz interna para cerrar decisiones jurídicas, comerciales, tributarias,
+  contractuales, de SLA y tratamiento de datos entre los socios.
+- Paquete de entrega y control para revisión jurídica, contable y tributaria.
+- Checklist maestro con expediente, evidencias, gates de no activación y
+  autorización final del servicio.
+
+### Control
+- Los documentos jurídicos y tributarios continúan como borradores hasta
+  recibir concepto profesional y completar la identidad del prestador.
+
+---
+
+## [1.26.0] — 2026-08-09
+
+### Added
+- Cotización comercial individual.
+- Guía de onboarding comercial.
+- Acta de capacitación por perfiles.
+- Acta de entrega y aceptación.
+- Acta de terminación del servicio.
+
+### Changed
+- Índices LEG y Production Readiness alineados con la comercialización general.
+- Canal corporativo `contacto@roustix.com` aplicado a privacidad y contratación.
+- Evidencias ya aprobadas de correo y paquete comercial retiradas de pendientes.
+
+---
+
+## [1.25.0] — 2026-08-09
+
+### Changed
+- Programa piloto COM-03 archivado antes de su ejecución.
+- COM-01 y COM-02 actualizados a comercialización general v1.4.0.
+- Eliminado el límite comercial de tres empresas; las altas se controlan por
+  capacidad operativa e infraestructura disponible.
+- Plantillas exclusivas del piloto trasladadas al archivo histórico.
+- Sprint 23.5 reformulado como preparación para comercialización.
+
+---
+
 > Este changelog pertenece a la documentación. Los cambios de la aplicación se
 > registran por separado en [`/CHANGELOG.md`](../CHANGELOG.md).
+
+## [1.24.0] — 2026-08-03 · LEG · Sistema Documental Legal
+
+### Added
+
+- Suite `docs/legal/` (RTX-DOC-000, LEGAL-001/002, PRIV-001 + anexos, SLA-001, SUP-001).
+- Páginas públicas `/terminos` y `/privacidad` con descarga PDF de marca.
+- Registro de LEG en nomenclatura maestra y VERSIONS.
 
 ## [1.23.1] — 2026-07-28 · Sprint 23.2 · Hardening de identidad y plataforma
 

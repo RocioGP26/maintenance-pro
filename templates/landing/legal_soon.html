@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  {% include "_favicon.html" %}
+  <meta name="robots" content="noindex,nofollow">
+  <title>{{ legal_page.title }} — Roustix</title>
+  <meta name="description" content="Documento legal en elaboración. Aún no vigente.">
+  {% from "_cdn_assets.html" import google_fonts_inter_extra_bold, bootstrap_icons_css %}
+  {{ google_fonts_inter_extra_bold() }}
+  {{ bootstrap_icons_css() }}
+  <link href="{{ url_for('static', filename='css/landing.css') }}" rel="stylesheet">
+</head>
+<body class="landing-body">
+  {% include "landing/_nav.html" %}
+
+  <main class="landing-public-page">
+    <section class="landing-section landing-section--soft">
+      <div class="container-xl landing-public-page-head">
+        <p class="landing-eyebrow">{{ legal_page.eyebrow }}</p>
+        <h1 class="landing-section-title">{{ legal_page.title }}</h1>
+        <p class="landing-section-sub mx-auto text-center">
+          Este documento está en elaboración y <strong>aún no está vigente</strong>.
+          Se publicará aquí cuando pase a estado Vigente tras la revisión jurídica.
+        </p>
+        <div class="landing-legal-banner mt-4" role="status">
+          <strong>Próximamente.</strong>
+          Mientras tanto, puedes escribir a
+          <a href="mailto:{{ contact_email }}">{{ contact_email }}</a>.
+        </div>
+      </div>
+    </section>
+  </main>
+
+  {% include "landing/_footer.html" %}
+</body>
+</html>
