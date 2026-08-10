@@ -12,6 +12,17 @@ La suite documental mantiene un ciclo independiente en
 
 - Espacio reservado para cambios aún no publicados.
 
+## [1.2.0] - 2026-08-09
+
+### Added
+
+- Gestión histórica de motores registrados como componentes del activo principal,
+  sin crear activos independientes en el catálogo.
+- Ficha rápida por motor: función, tag, marca, modelo, serie, potencia, RPM,
+  voltaje, amperaje, instalación y estado.
+- Reemplazos y retiros sin pérdida de trazabilidad en la Hoja de Vida y su PDF.
+- Badge de motores asignados y aislamiento de registros por empresa.
+
 ## [1.1.3] - 2026-08-04
 
 ### Added

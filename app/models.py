@@ -1012,6 +1012,7 @@ class Machine(db.Model):
     ficha_tecnica_url = db.Column(db.String(500), default="")
     foto_url = db.Column(db.String(500), default="")
     requiere_mantenimiento = db.Column(db.Boolean, default=True)
+    tiene_motores = db.Column(db.Boolean, default=False, nullable=False)
     tipos_mantenimiento = db.Column(db.Text, default="[]")
     frecuencia_mantenimiento = db.Column(db.String(32), default="")
     responsable_technician_id = db.Column(
@@ -1070,6 +1071,14 @@ class Machine(db.Model):
         lazy="dynamic",
         cascade="all, delete-orphan",
     )
+    motores_asignados = db.relationship(
+        "AssetMotorAssignment",
+        foreign_keys="AssetMotorAssignment.asset_id",
+        back_populates="asset",
+        lazy="dynamic",
+        cascade="all, delete-orphan",
+        order_by="AssetMotorAssignment.fecha_instalacion.desc(), AssetMotorAssignment.id.desc()",
+    )
 
     @property
     def tipo_etiqueta(self) -> str:
@@ -1107,6 +1116,79 @@ class Machine(db.Model):
 
     def sync_criticidad_critico(self) -> None:
         self.es_critico = (self.criticidad or "media") in ("alta", "critica")
+
+
+class AssetMotorAssignment(db.Model):
+    """Instalación histórica de un motor en un activo principal."""
+
+    __tablename__ = "asset_motor_assignments"
+    __table_args__ = (
+        db.CheckConstraint("asset_id <> motor_machine_id", name="ck_asset_motor_not_self"),
+    )
+
+    id = db.Column(db.Integer, primary_key=True)
+    empresa_id = db.Column(
+        db.Integer, db.ForeignKey("empresas.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    asset_id = db.Column(
+        db.Integer, db.ForeignKey("machines.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    motor_machine_id = db.Column(
+        db.Integer, db.ForeignKey("machines.id", ondelete="SET NULL"), nullable=True, index=True
+    )
+    spare_part_id = db.Column(
+        db.Integer, db.ForeignKey("spare_parts.id", ondelete="SET NULL"), nullable=True, index=True
+    )
+    reemplaza_asignacion_id = db.Column(
+        db.Integer,
+        db.ForeignKey("asset_motor_assignments.id", ondelete="SET NULL"),
+        nullable=True,
+        index=True,
+    )
+    nombre_funcion = db.Column(db.String(160), nullable=False)
+    identificador = db.Column(db.String(80), default="", nullable=False)
+    marca = db.Column(db.String(120), default="", nullable=False)
+    modelo = db.Column(db.String(120), default="", nullable=False)
+    numero_serie = db.Column(db.String(120), default="", nullable=False)
+    potencia = db.Column(db.Float, nullable=True)
+    potencia_unidad = db.Column(db.String(8), default="kW", nullable=False)
+    rpm = db.Column(db.Integer, nullable=True)
+    voltaje = db.Column(db.String(40), default="", nullable=False)
+    amperaje = db.Column(db.String(40), default="", nullable=False)
+    fecha_instalacion = db.Column(db.Date, nullable=True)
+    fecha_retiro = db.Column(db.Date, nullable=True)
+    estado = db.Column(db.String(24), default="instalado", nullable=False, index=True)
+    notas = db.Column(db.Text, default="", nullable=False)
+    created_by_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    updated_at = db.Column(
+        db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False
+    )
+
+    asset = db.relationship(
+        "Machine", foreign_keys=[asset_id], back_populates="motores_asignados"
+    )
+    motor_machine = db.relationship("Machine", foreign_keys=[motor_machine_id])
+    spare_part = db.relationship("SparePart", foreign_keys=[spare_part_id])
+    reemplaza_asignacion = db.relationship(
+        "AssetMotorAssignment", remote_side=[id], foreign_keys=[reemplaza_asignacion_id]
+    )
+    created_by = db.relationship("User", foreign_keys=[created_by_id])
+
+    @property
+    def estado_label(self) -> str:
+        return {
+            "instalado": "Instalado",
+            "mantenimiento": "En mantenimiento",
+            "retirado": "Retirado",
+        }.get((self.estado or "").strip().lower(), self.estado or "—")
+
+    @property
+    def potencia_label(self) -> str:
+        if self.potencia is None:
+            return "—"
+        valor = f"{float(self.potencia):g}"
+        return f"{valor} {self.potencia_unidad or 'kW'}"
 
 
 MACHINE_CATALOG_COLUMN_CAMPOS = ("marca", "modelo", "fabricante", "area", "ubicacion")

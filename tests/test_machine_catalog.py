@@ -117,6 +117,24 @@ class TestMachineCatalogCreatable(unittest.TestCase):
         self.assertIn("Crear «", html)
         self.assertIn("initCreatableSelects", html)
 
+    def test_edit_form_accepts_legacy_null_document_urls(self):
+        machine = Machine.query.filter_by(
+            empresa_id=self.empresa_id,
+            codigo="CT-001",
+        ).one()
+        machine.foto_url = None
+        machine.manual_url = None
+        machine.ficha_tecnica_url = None
+        db.session.commit()
+
+        response = self.client.get(f"/activos/{machine.id}/editar")
+
+        self.assertEqual(response.status_code, 200)
+        html = response.get_data(as_text=True)
+        self.assertIn('name="foto_url"', html)
+        self.assertIn('name="manual_url"', html)
+        self.assertIn('name="ficha_tecnica_url"', html)
+
     def test_api_create_area_and_planta(self):
         area = self.client.post(
             "/activos/api/catalogo/area",
