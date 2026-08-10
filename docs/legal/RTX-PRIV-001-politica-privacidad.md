@@ -27,7 +27,7 @@
 | Identificación / NIT | `[PENDIENTE]` |
 | Domicilio | `[PENDIENTE]` |
 | Sitio | [https://roustix.com](https://roustix.com) |
-| Canal titulares | `[PENDIENTE]` · provisional operativo: `soporte.roustix@hotmail.com` |
+| Canal titulares | `contacto@roustix.com` |
 
 Mientras no se constituya sociedad, los responsables serán las personas naturales operadoras identificadas en la versión firmada / publicada definitiva. Si se constituye la sociedad operadora, se actualizará esta sección.
 
@@ -192,8 +192,7 @@ Si hay transmisión o transferencia internacional de datos, se registra en:
 
 | Campo | Valor |
 |-------|-------|
-| Correo | `[PENDIENTE]` |
-| Provisional | `soporte.roustix@hotmail.com` |
+| Correo | `contacto@roustix.com` |
 | Autoridad de control | Superintendencia de Industria y Comercio (SIC) |
 
 ---

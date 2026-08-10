@@ -4,8 +4,8 @@
 |-------|-------|
 | **Código** | RTX-DOC-000 |
 | **Suite** | LEG · Sistema Documental Legal de Roustix |
-| **Versión del sistema** | **1.2.0** |
-| **Fecha** | 2026-08-03 |
+| **Versión del sistema** | **1.2.2** |
+| **Fecha** | 2026-08-09 |
 | **Estado** | ✅ Activo (gobierno interno) |
 | **Responsable de mantenimiento** | Socios Roustix · revisión jurídica externa |
 
@@ -28,7 +28,7 @@ Este documento es el **índice maestro** del paquete legal. Define códigos, ver
 | RTX-PRIV-ANX-002 | Matriz de Conservación | 0.2.0 | Borrador plazos | Anexo PRIV | — |
 | RTX-PRIV-ANX-003 | Flujos Internacionales | 0.2.0 | Borrador flujos | Anexo PRIV | — |
 | RTX-SLA-001 | Acuerdo de Nivel de Servicio | 0.1.0 | Borrador | Solo anexo contractual | Firma si se anexa |
-| RTX-SUP-001 | Política de Soporte | 0.1.0 | Borrador | Referencia cliente | Referenciado |
+| RTX-SUP-001 | Política de Soporte | 0.2.0 | Borrador | Referencia cliente | Referenciado |
 
 **Estados permitidos:** `Esqueleto` · `Borrador` · `Revisión jurídica` · `Aprobado` · `Vigente` · `Obsoleto`
 
@@ -95,6 +95,7 @@ Ningún documento en estado **Vigente** puede contener:
 | **1.1.0** | 2026-08-03 | LEGAL-001 v0.2 y PRIV-001 v0.2 (borradores completos desde PIL-*) |
 | **1.2.0** | 2026-08-03 | ANX-001/003 infra real · rutas públicas `/terminos` y `/privacidad` |
 | **1.2.1** | 2026-08-03 | LEGAL-001 v0.3 (Alcance, mantenimiento, actualizaciones, datos, ley) |
+| **1.2.2** | 2026-08-09 | Canal corporativo aprobado, piloto archivado y paquete comercial general enlazado |
 
 ---
 
@@ -108,4 +109,4 @@ Ningún documento en estado **Vigente** puede contener:
 
 ---
 
-*RTX-DOC-000 · v1.0.0 · 2026-08-03*
+*RTX-DOC-000 · v1.2.2 · 2026-08-09*

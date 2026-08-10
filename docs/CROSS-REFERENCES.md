@@ -10,6 +10,12 @@
 
 **Sprint 22 · API pública y Webhooks (completo ✅):** [guía integradores](api/integrator-guide.md) · [ejemplos](api/examples.md) · [colecciones](api/collections/README.md) · [charter](api/charter.md) · [arquitectura](api/architecture.md) · [contrato REST](api/api-contract.md) · [webhooks](api/webhooks.md) · [permisos y planes](api/permissions-plans.md) · [reporte 22.5](api/SPRINT22.5-REPORT.md) · [MAG](mag/README.md) · [MPA-06](mpa/chapters/06-integraciones.md)
 
+**Gobierno y contratación comercial:** la `Matriz de Decisiones de Socios`
+precede el cierre de identidad, precios, impuestos, SLA y contratos; el
+`Paquete de Revisión Jurídica y Contable` consolida la revisión profesional; y
+el `Checklist Maestro de Contratación y Activación` reúne las versiones,
+aceptaciones, pagos, configuración y gates de cada expediente de cliente.
+
 Convenciones para enlazar manuales de forma **consistente**. Objetivo: un lector siempre puede saltar de marca → producto → experiencia → ventas → arquitectura.
 
 ---
@@ -90,7 +96,9 @@ Convenciones para enlazar manuales de forma **consistente**. Objetivo: un lector
 | Planes Start/Business/Enterprise | **COM-01** · MCM-04 | MPA-05 · MPA-04 · `PLANES_SEED` |
 | Add-ons / servicios | **COM-02** | MCM-06 onboarding |
 | Piloto · clientes fundadores (histórico) | **COM-03 archivado** | GTM appendix |
-| Propuesta y activación comercial | **COM-01** · **COM-02** · propuesta comercial · Acta de Servicio | Contrato SaaS · onboarding · facturación |
+| Propuesta y activación comercial | **COM-01** · **COM-02** · propuesta · cotización · Acta de Servicio | Contrato SaaS · onboarding · facturación |
+| Onboarding y capacitación | **OPS-ONB-001** · **OPS-CAP-001** | Acta de Servicio · soporte · aceptación |
+| Aceptación y cierre comercial | **OPS-ACE-001** · **OPS-CIE-001** · Constancia de Datos | Operación · privacidad · terminación contractual |
 | Mapa de módulos | **MPA-02** | MCM-05 · MCM-10 |
 | Arquitectura modular | **MPA-03** | MPA-04 · Developer |
 | Constitución desarrollo | **MPA-12** | MUX · Developer |

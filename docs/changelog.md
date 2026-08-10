@@ -1,5 +1,36 @@
 # Changelog · Roustix Documentation Suite
 
+## [1.27.0] — 2026-08-09
+
+### Added
+- Matriz interna para cerrar decisiones jurídicas, comerciales, tributarias,
+  contractuales, de SLA y tratamiento de datos entre los socios.
+- Paquete de entrega y control para revisión jurídica, contable y tributaria.
+- Checklist maestro con expediente, evidencias, gates de no activación y
+  autorización final del servicio.
+
+### Control
+- Los documentos jurídicos y tributarios continúan como borradores hasta
+  recibir concepto profesional y completar la identidad del prestador.
+
+---
+
+## [1.26.0] — 2026-08-09
+
+### Added
+- Cotización comercial individual.
+- Guía de onboarding comercial.
+- Acta de capacitación por perfiles.
+- Acta de entrega y aceptación.
+- Acta de terminación del servicio.
+
+### Changed
+- Índices LEG y Production Readiness alineados con la comercialización general.
+- Canal corporativo `contacto@roustix.com` aplicado a privacidad y contratación.
+- Evidencias ya aprobadas de correo y paquete comercial retiradas de pendientes.
+
+---
+
 ## [1.25.0] — 2026-08-09
 
 ### Changed

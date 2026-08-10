@@ -3,8 +3,8 @@
 Fecha de inicio: 2026-08-01  
 Última actualización: 2026-08-09
 
-Estado: **Preparación para comercialización · identidad de correo aprobada;
-GitHub Actions, paquete comercial y revisión legal pendientes**
+Estado: **Preparación para comercialización · identidad de correo, GitHub
+Actions y paquete comercial aprobados; revisión legal pendiente**
 
 ## Evidencia de entrada
 
@@ -20,7 +20,7 @@ GitHub Actions, paquete comercial y revisión legal pendientes**
 | --- | --- | --- |
 | `roustix.com` | Operativo | Aplicación productiva bajo HTTPS |
 | `contacto@roustix.com` | Operativo | Buzón Namecheap Private Email con envío y recepción comprobados |
-| `soporte@roustix.com` | Pendiente | Recomendado para atención y alertas |
+| `soporte@roustix.com` | Opcional futuro | `contacto@roustix.com` es el canal corporativo vigente |
 | `soporte.roustix@hotmail.com` | Disponible | Canal externo de recuperación y alertas operativas |
 | SMTP transaccional | Operativo corporativo | Namecheap Private Email configurado en web y worker |
 | SPF / DKIM / DMARC | Aprobado | Registros visibles en DNS autoritativo el 2026-08-09 |
@@ -54,10 +54,10 @@ GitHub Actions, paquete comercial y revisión legal pendientes**
 
 ## Próximo gate
 
-1. Confirmar o actualizar los secretos SMTP de GitHub Actions.
-2. Ejecutar manualmente los workflows que notifican por correo.
-3. Documentar recepción en Gmail y Outlook con SPF, DKIM y DMARC en `PASS`.
-4. Completar la revisión jurídica del paquete legal y comercial.
+1. Completar identidad jurídica y tributaria del Prestador.
+2. Cerrar decisiones de precios, pagos, terminación y SLA.
+3. Completar la revisión jurídica y contable del paquete.
+4. Publicar Términos y Privacidad vigentes y activar aceptación trazable.
 
 ## Hallazgo legal inicial
 

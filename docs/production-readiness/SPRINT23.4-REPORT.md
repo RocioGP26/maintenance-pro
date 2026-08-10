@@ -40,11 +40,12 @@ instancia Starter actual.
 - Compilación de `app`, `scripts` y `tests`: aprobada.
 - Validación sintáctica de `backup.yml` y `render.yaml`: aprobada.
 
-## Pendiente para el siguiente avance
+## Seguimiento posterior
 
 - Ampliar la infraestructura u optimizar incidencias y órdenes antes de repetir
   el escalón de 20 usuarios concurrentes.
-- Mejorar la entregabilidad del correo operativo mediante SPF, DKIM y DMARC.
+- La entregabilidad del correo se certificó posteriormente con SMTP corporativo,
+  SPF, DKIM y DMARC en el Sprint 23.5.
 
 ### Actualización de GitHub Actions · 2026-08-01
 

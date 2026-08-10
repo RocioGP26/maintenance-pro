@@ -26,7 +26,7 @@
 | Tipo de persona | ☐ Persona jurídica  ☐ Personas naturales |
 | Identificación / NIT | `[PENDIENTE]` |
 | Domicilio | `[PENDIENTE]` |
-| Correo contractual | `[PENDIENTE]` |
+| Correo contractual | `contacto@roustix.com` |
 | Representante | `[PENDIENTE]` |
 
 **EL CLIENTE** (en adelante, «el Cliente»):

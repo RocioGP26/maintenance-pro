@@ -1,7 +1,7 @@
 # LEG · Sistema Documental Legal de Roustix
 
 **Suite:** LEG · Legal & Compliance  
-**Versión del sistema:** **v1.2.0**  
+**Versión del sistema:** **v1.2.2**
 **Control maestro:** [RTX-DOC-000](RTX-DOC-000-control-versiones.md)  
 **Estado:** 🟡 Borrador interno · sujeto a revisión jurídica colombiana
 
@@ -29,7 +29,7 @@ RTX-DOC-000 · Control de Versiones Documentales
 | Documento | Audiencia | Momento |
 |-----------|-----------|---------|
 | **RTX-LEGAL-001** | Todos los usuarios | Aceptación al registrarse / usar la plataforma |
-| **RTX-LEGAL-002** | Empresa cliente (representante autorizado) | Firma comercial (post-piloto o venta directa) |
+| **RTX-LEGAL-002** | Empresa cliente (representante autorizado) | Firma comercial antes de activar el servicio |
 | **RTX-PRIV-001** | Titulares / usuarios / clientes | Publicación + aceptación en flujos de datos |
 | **RTX-SLA-001** | Solo si el contrato lo anexa | Business+/Enterprise o SLA cotizado |
 | **RTX-SUP-001** | Clientes con servicio activo | Referenciado por contrato y plan |
@@ -50,11 +50,11 @@ Los precios, cupos y add-ons viven en **COM**, no en los textos legales:
 
 - [COM-01 · Planes](../com/COM-01-planes-licenciamiento.md)
 - [COM-02 · Add-ons](../com/COM-02-servicios-adicionales.md)
-- [COM-03 · Piloto](../com/COM-03-programa-piloto-fundadores.md)
+- [COM-03 · Programa piloto archivado](../com/COM-03-programa-piloto-fundadores.md) — referencia histórica, no oferta vigente
 
 El Contrato SaaS y el Acta de Servicio **referencian** COM; no copian tarifas salvo en la orden firmada.
 
-## Relación con el paquete piloto (PIL- / SAA-)
+## Relación con el archivo histórico del piloto (PIL- / SAA-)
 
 | Código piloto | Rol | Relación con LEG |
 |---------------|-----|------------------|
@@ -65,7 +65,8 @@ El Contrato SaaS y el Acta de Servicio **referencian** COM; no copian tarifas sa
 | SAA-ACT-001 | Acta de plan | Orden / carátula operativa del contrato |
 | PIL-GUI-001 | Guía operativa | Alimenta SUP-001 y objetivos técnicos |
 
-Plantillas DOCX: `docs/production-readiness/templates/`.
+Los documentos PIL se conservan únicamente como evidencia histórica. Las
+plantillas comerciales vigentes están en `docs/production-readiness/templates/`.
 
 ## Orden de elaboración (v1.1)
 
@@ -103,4 +104,4 @@ Plantillas DOCX: `docs/production-readiness/templates/`.
 
 ---
 
-*LEG · Sistema Documental Legal Roustix · v1.2.0 · 2026-08-03*
+*LEG · Sistema Documental Legal Roustix · v1.2.2 · 2026-08-09*

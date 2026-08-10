@@ -188,8 +188,8 @@ Este apartado será completado una vez se defina la identificación jurídica de
 
 | Tema | Canal |
 |------|-------|
-| Consultas sobre estos Términos | `[PENDIENTE]` |
-| Soporte técnico / funcional | Según [RTX-SUP-001](RTX-SUP-001-politica-soporte.md) · temporal: `soporte.roustix@hotmail.com` |
+| Consultas sobre estos Términos | `contacto@roustix.com` |
+| Soporte técnico / funcional | `contacto@roustix.com` · según [RTX-SUP-001](RTX-SUP-001-politica-soporte.md) |
 | Datos personales / titulares | Según RTX-PRIV-001 |
 
 Sitio: [https://roustix.com](https://roustix.com)
