@@ -52,9 +52,18 @@ def live():
 
 
 @health_bp.get("/health")
+def health():
+    """Health check ligero para Render, sin consultar dependencias externas."""
+    return jsonify({
+        "status": "ok",
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "version": __version__,
+    }), 200
+
+
 @health_bp.get("/health/ready")
 def ready():
-    """Readiness: BD accesible y migraciones aplicadas."""
+    """Readiness profundo: verifica BD, migraciones, Redis y worker."""
     db_ok, db_error, db_latency_ms = _check_database()
     migration, migration_error = _migration_revision()
     degraded_threshold = max(1, int(current_app.config.get("DB_HEALTH_DEGRADED_MS", 750)))
