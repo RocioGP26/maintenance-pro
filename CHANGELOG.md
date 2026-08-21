@@ -12,6 +12,12 @@ La suite documental mantiene un ciclo independiente en
 
 - Espacio reservado para cambios aún no publicados.
 
+## [1.2.1] - 2026-08-21
+
+### Changed
+
+- fix: use lightweight Render health check (#15).
+
 ## [1.2.0] - 2026-08-09
 
 ### Added
@@ -625,7 +631,7 @@ La suite documental mantiene un ciclo independiente en
 
 - Este release formaliza el versionado; no modifica funcionalidades de negocio.
 
-[Unreleased]: https://github.com/RocioGP26/maintenance-pro/compare/v1.0.29...HEAD
+[Unreleased]: https://github.com/RocioGP26/maintenance-pro/compare/v1.2.1...HEAD
 [1.0.29]: https://github.com/RocioGP26/maintenance-pro/compare/v1.0.28...v1.0.29
 [1.0.28]: https://github.com/RocioGP26/maintenance-pro/compare/v1.0.27...v1.0.28
 [1.0.27]: https://github.com/RocioGP26/maintenance-pro/compare/v1.0.26...v1.0.27
@@ -656,3 +662,4 @@ La suite documental mantiene un ciclo independiente en
 [1.0.23]: https://github.com/RocioGP26/maintenance-pro/compare/v1.0.22...v1.0.23
 [1.0.24]: https://github.com/RocioGP26/maintenance-pro/compare/v1.0.23...v1.0.24
 [1.0.25]: https://github.com/RocioGP26/maintenance-pro/compare/v1.0.24...v1.0.25
+[1.2.1]: https://github.com/RocioGP26/maintenance-pro/compare/v1.2.0...v1.2.1
