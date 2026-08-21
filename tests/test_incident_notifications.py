@@ -14,6 +14,8 @@ from app.models import (
     IncidentEstado,
     IncidentHistory,
     IncidentNotification,
+    Machine,
+    MachineType,
     WorkOrder,
     WorkOrderStatus,
     PlanSuscripcion,
@@ -346,12 +348,26 @@ class TestIncidentNotifications(unittest.TestCase):
 
         incident = self._incident()
         incident.estado = IncidentEstado.PENDIENTE_OT.value
+        machine_type = MachineType(
+            empresa_id=self.company.id,
+            clave="equipo_prueba",
+            nombre="Equipo de prueba",
+            prefijo="TP",
+        )
+        machine = Machine(
+            empresa_id=self.company.id,
+            codigo="EQ-INC-001",
+            nombre="Activo vinculado",
+            machine_type=machine_type,
+        )
+        db.session.add_all([machine_type, machine])
+        db.session.flush()
         work_order = WorkOrder(
             empresa_id=self.company.id,
             numero="OT-26-0099",
             titulo="OT vinculada de prueba",
             status=WorkOrderStatus.COMPLETADO.value,
-            machine_id=1,
+            machine_id=machine.id,
         )
         work_order.incidencia_origen = incident
         db.session.add_all([incident, work_order])
