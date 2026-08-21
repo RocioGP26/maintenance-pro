@@ -7,6 +7,7 @@ from pathlib import Path
 from datetime import timedelta
 
 from dotenv import load_dotenv
+from sqlalchemy.pool import NullPool
 
 # Debe ejecutarse antes de construir las clases Config: sus atributos leen os.environ
 # durante la importación del módulo.
@@ -253,6 +254,7 @@ class TestingConfig(Config):
     RUN_STARTUP_TASKS = False
     RUN_LEGACY_SCHEMA_MIGRATIONS = False
     MAIL_SUPPRESS_SEND = True
+    MAIL_DEFAULT_SENDER = "tests@roustix.local"
     EMAIL_OUTBOX_SYNC_IN_TESTS = True
     # Tests unitarios no simulan login de docs salvo test_docs_access
     DOCS_ACCESS_POLICY = os.environ.get("DOCS_ACCESS_POLICY", "open").strip().lower() or "open"
@@ -264,7 +266,12 @@ class TestingConfig(Config):
         if not test_database_url:
             return
         app.config["SQLALCHEMY_DATABASE_URI"] = normalize_database_url(test_database_url)
-        app.config["SQLALCHEMY_ENGINE_OPTIONS"] = engine_options_for(test_database_url)
+        # La suite crea muchas aplicaciones Flask en un solo proceso. No conservar
+        # pools entre ellas evita agotar max_connections en PostgreSQL de CI.
+        app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
+            "poolclass": NullPool,
+            "pool_pre_ping": True,
+        }
 
 
 config_by_name: dict[str, type[Config]] = {

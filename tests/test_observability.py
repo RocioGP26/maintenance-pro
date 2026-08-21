@@ -42,6 +42,32 @@ class TestObservability(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertRegex(response.headers["X-Request-Id"], r"^req_[0-9a-f]{24}$")
 
+    @patch("app.health_routes._migration_revision")
+    @patch("app.health_routes._check_database")
+    def test_health_is_lightweight(self, db_check, migration_check):
+        response = self.client.get("/health")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json["status"], "ok")
+        self.assertIn("version", response.json)
+        self.assertIn("timestamp", response.json)
+        self.assertNotIn("checks", response.json)
+        db_check.assert_not_called()
+        migration_check.assert_not_called()
+
+    @patch("app.health_routes._migration_revision", return_value=("revision-ok", None))
+    @patch("app.health_routes._check_database", return_value=(True, None, 2.0))
+    def test_health_ready_has_dependency_checks(self, db_check, migration_check):
+        response = self.client.get("/health/ready")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            set(response.json["checks"]),
+            {"database", "migrations", "redis", "worker"},
+        )
+        db_check.assert_called_once_with()
+        migration_check.assert_called_once_with()
+
     def test_valid_request_id_is_preserved_and_invalid_one_is_replaced(self):
         valid = self.client.get("/health/live", headers={"X-Request-Id": "client-request-123"})
         self.assertEqual(valid.headers["X-Request-Id"], "client-request-123")
