@@ -29,6 +29,7 @@ ACTIVITY_LABELS = {
     "integration_credential_revoked": "Credencial de integración revocada",
     "plan_changed": "Plan comercial cambiado",
     "classification_changed": "Clasificación comercial cambiada",
+    "commercial_terms_accepted": "Términos comerciales aceptados",
 }
 
 
@@ -68,7 +69,7 @@ def ultima_actividad_empresa(empresa_id: int, limit: int = 25) -> list[TenantAct
 def empresa_puede_operar(empresa: Empresa | None) -> tuple[bool, str, str]:
     """
     Devuelve (puede_operar, codigo, mensaje).
-    Bloquea suspendidas y en mora (excepto impersonación de soporte).
+    Bloquea suspendidas. La mora conserva lectura y se controla en middleware.
     """
     if empresa is None:
         return True, "", ""
@@ -93,13 +94,13 @@ def empresa_puede_operar(empresa: Empresa | None) -> tuple[bool, str, str]:
             "suspendida",
             "El periodo de prueba o suscripción de esta cuenta ha finalizado.",
         )
-    if estado == "mora":
-        return (
-            False,
-            "mora",
-            "Hay pagos pendientes. Regulariza la facturación para continuar usando Roustix.",
-        )
     return True, "", ""
+
+
+def empresa_en_solo_lectura(empresa: Empresa | None) -> bool:
+    if empresa is None or session.get("platform_impersonating"):
+        return False
+    return estado_ciclo_empresa(empresa) == "mora" and not empresa.suspendida
 
 
 def endpoint_exento_bloqueo(endpoint: str) -> bool:
@@ -108,4 +109,6 @@ def endpoint_exento_bloqueo(endpoint: str) -> bool:
         "main.logout",
         "main.salir_impersonacion",
         "main.cuenta_suspendida",
+        "main.suscripcion_estado",
+        "main.suscripcion_aceptar_terminos",
     }

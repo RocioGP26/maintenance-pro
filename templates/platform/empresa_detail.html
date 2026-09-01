@@ -168,7 +168,7 @@
   <div class="platform-card p-3">
     <form method="post" action="{{ url_for('platform.empresa_cambiar_plan', id=e.id) }}"
           class="d-flex flex-wrap gap-2 align-items-end"
-          onsubmit="return confirm('¿Asignar el plan seleccionado? La acción activará el ciclo y no generará factura.');">
+          onsubmit="return confirm('¿Preparar la conversión al plan seleccionado? Se generará la factura y la activación quedará pendiente del pago.');">
       {% include "_csrf.html" %}
       <div>
         <label for="planComercial" class="form-label small text-secondary mb-1">Asignar o cambiar plan</label>
@@ -186,7 +186,7 @@
       {% if e.es_prueba %}
       Tenant de pruebas: el plan conserva los límites funcionales, pero no genera MRR, mora ni facturas.
       {% else %}
-      Operación piloto: el cambio es manual, activa el ciclo y queda auditado. No crea factura automáticamente.
+      En trial o mora, requiere aceptación comercial vigente, genera la factura y mantiene la cuenta en consulta hasta registrar el pago. Los cambios entre planes ya activos conservan el ciclo.
       {% endif %}
     </p>
   </div>

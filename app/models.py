@@ -290,6 +290,10 @@ class PlanSuscripcion(db.Model):
     estado_ciclo = db.Column(db.String(16), default=SuscripcionEstado.TRIAL.value)
     pasarela_customer_id = db.Column(db.String(120), default="")
     pasarela_subscription_id = db.Column(db.String(120), default="")
+    terminos_version = db.Column(db.String(32), default="")
+    terminos_aceptados_en = db.Column(db.DateTime, nullable=True)
+    terminos_aceptados_por_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=True)
+    terminos_aceptados_ip = db.Column(db.String(45), default="")
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     empresa = db.relationship("Empresa", back_populates="planes")
@@ -3008,6 +3012,18 @@ def ensure_saas_schema():
         )
         _add_column_if_missing(
             "planes_suscripcion", "pasarela_subscription_id", "pasarela_subscription_id VARCHAR(120)"
+        )
+        _add_column_if_missing(
+            "planes_suscripcion", "terminos_version", "terminos_version VARCHAR(32) DEFAULT ''"
+        )
+        _add_column_if_missing(
+            "planes_suscripcion", "terminos_aceptados_en", "terminos_aceptados_en DATETIME"
+        )
+        _add_column_if_missing(
+            "planes_suscripcion", "terminos_aceptados_por_id", "terminos_aceptados_por_id INTEGER"
+        )
+        _add_column_if_missing(
+            "planes_suscripcion", "terminos_aceptados_ip", "terminos_aceptados_ip VARCHAR(45) DEFAULT ''"
         )
         _add_column_if_missing("facturas_empresa", "suscripcion_id", "suscripcion_id INTEGER")
         _add_column_if_missing(

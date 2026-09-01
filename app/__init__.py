@@ -312,10 +312,27 @@ def create_app(config_name: str | None = None):
         monedas_act = empresa_actual.monedas_activas if empresa_actual else ["COP"]
         multimoneda = empresa_actual.multimoneda if empresa_actual else False
         session_security = None
+        subscription_access = None
         if current_user.is_authenticated:
             from app.session_management import policy_for
 
             session_security = policy_for(current_user)
+            if empresa_actual is not None:
+                from datetime import date
+
+                from app.platform_service import estado_ciclo_empresa
+
+                sub = empresa_actual.plan_activo
+                estado_sub = estado_ciclo_empresa(empresa_actual)
+                subscription_access = {
+                    "estado": estado_sub,
+                    "read_only": estado_sub == "mora" and not empresa_actual.suspendida,
+                    "dias_restantes": (
+                        max((sub.fecha_fin - date.today()).days, 0)
+                        if sub and sub.fecha_fin and estado_sub == "trial"
+                        else None
+                    ),
+                }
         # Alerta storage ≥80%: solo admins con config (evita listar R2 en cada request de operadores).
         storage_uso = None
         if empresa_actual is not None and perm.get("config"):
@@ -358,6 +375,7 @@ def create_app(config_name: str | None = None):
             "multimoneda": multimoneda,
             "session_security": session_security,
             "storage_uso": storage_uso,
+            "subscription_access": subscription_access,
         }
 
     from app import models  # noqa: F401

@@ -21,7 +21,7 @@ from flask_login import current_user, login_user, logout_user
 
 from app import db, limiter
 from app.url_utils import is_safe_redirect
-from app.models import Empresa, FacturaEmpresa, User
+from app.models import Empresa, FacturaEmpresa, SuscripcionEstado, User
 from app.platform_billing import (
     FACTURA_ESTADO_CHOICES,
     crear_factura_mensual,
@@ -31,7 +31,11 @@ from app.platform_billing import (
     listar_facturas_platform,
     monto_suscripcion_empresa,
 )
-from app.subscription_service import cambiar_plan_manual, marcar_factura_pagada
+from app.subscription_service import (
+    cambiar_plan_manual,
+    marcar_factura_pagada,
+    preparar_conversion_comercial,
+)
 from app.platform_service import (
     ESTADO_META,
     activos_por_empresa,
@@ -430,19 +434,46 @@ def empresa_detail(id: int):
 def empresa_cambiar_plan(id: int):
     empresa = Empresa.query.get_or_404(id)
     nuevo_key = (request.form.get("plan") or "").strip().lower()
+    sub_actual = empresa.plan_activo
+    conversion = bool(
+        sub_actual
+        and sub_actual.estado_ciclo
+        in {
+            SuscripcionEstado.TRIAL.value,
+            SuscripcionEstado.MORA.value,
+            SuscripcionEstado.SUSPENDIDA.value,
+        }
+    )
     try:
-        _sub, anterior_key, changed = cambiar_plan_manual(empresa, nuevo_key)
+        if conversion:
+            _sub, factura, anterior_key, changed = preparar_conversion_comercial(
+                empresa, nuevo_key
+            )
+        else:
+            _sub, anterior_key, changed = cambiar_plan_manual(empresa, nuevo_key)
+            factura = None
     except ValueError as exc:
         flash(str(exc), "danger")
         return redirect(url_for("platform.empresa_detail", id=id))
 
     if not changed:
-        flash(f"{empresa.razon_social} ya tiene ese plan activo.", "info")
+        if conversion and factura:
+            flash(
+                f"La conversión a {plan_a_meta_key(nuevo_key)} ya está preparada; "
+                f"la factura {factura.numero} continúa pendiente.",
+                "info",
+            )
+        else:
+            flash(f"{empresa.razon_social} ya tiene ese plan activo.", "info")
         return redirect(url_for("platform.empresa_detail", id=id))
 
     anterior = plan_a_meta_key(anterior_key)
     nuevo = plan_a_meta_key(nuevo_key)
-    detalle = f"{anterior} → {nuevo} · asignación manual piloto; no genera factura"
+    detalle = (
+        f"{anterior} → {nuevo} · conversión comercial; factura {factura.numero} pendiente"
+        if factura
+        else f"{anterior} → {nuevo} · cambio de plan activo"
+    )
     registrar_auditoria_plataforma(
         "plan_change",
         empresa_id=empresa.id,
@@ -455,7 +486,14 @@ def empresa_cambiar_plan(id: int):
         detalle=detalle,
     )
     db.session.commit()
-    flash(f"Plan actualizado: {nuevo}. Crea la factura manual por separado.", "success")
+    if factura:
+        flash(
+            f"Conversión preparada a {nuevo}. La activación ocurrirá al registrar el pago "
+            f"de la factura {factura.numero}.",
+            "success",
+        )
+    else:
+        flash(f"Plan actualizado: {nuevo}.", "success")
     return redirect(url_for("platform.empresa_detail", id=id))
 
 

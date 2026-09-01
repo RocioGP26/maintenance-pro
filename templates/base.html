@@ -423,6 +423,19 @@
             {% endfor %}
           {% endif %}
         {% endwith %}
+        {% if subscription_access and (subscription_access.read_only or subscription_access.estado == 'trial') %}
+        <div class="alert {% if subscription_access.read_only %}alert-warning{% else %}alert-info{% endif %} d-flex flex-wrap align-items-center justify-content-between gap-2" role="status">
+          <div class="small mb-0">
+            <i class="bi {% if subscription_access.read_only %}bi-lock-fill{% else %}bi-clock-fill{% endif %} me-1"></i>
+            {% if subscription_access.read_only %}
+              El trial terminó. La cuenta conserva consulta y exportación, pero las modificaciones están pausadas hasta activar la suscripción.
+            {% else %}
+              Periodo de prueba: quedan <strong>{{ subscription_access.dias_restantes }}</strong> días.
+            {% endif %}
+          </div>
+          <a class="btn btn-sm btn-dark text-nowrap" href="{{ url_for('main.suscripcion_estado') }}">Ver suscripción</a>
+        </div>
+        {% endif %}
         {% if perm.config and storage_uso and storage_uso.warn and ep != 'main.configuracion_almacenamiento' %}
         <div class="alert {% if storage_uso.uploads_blocked %}alert-danger{% else %}alert-warning{% endif %} d-flex flex-wrap align-items-center justify-content-between gap-2" role="status">
           <div class="small mb-0">

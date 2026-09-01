@@ -10,7 +10,7 @@ Flujo:
 
 from __future__ import annotations
 
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 from typing import Any, Optional
 
 from app import db
@@ -32,6 +32,7 @@ from app.platform_config_service import (
 from app.platform_service import plan_meta
 
 PLAN_TRAS_TRIAL = PlanTipo.BASICO.value  # fallback; usar plan_tras_trial()
+TERMINOS_COMERCIALES_VERSION = "RTX-COM-01-v1.3.2"
 
 
 def _periodo_hoy(hoy: date | None = None) -> str:
@@ -135,6 +136,77 @@ def cambiar_plan_manual(
     return sub, anterior, True
 
 
+def registrar_aceptacion_terminos(
+    sub: PlanSuscripcion,
+    *,
+    user_id: int,
+    ip_address: str = "",
+) -> PlanSuscripcion:
+    """Records an auditable, versioned acceptance without activating billing."""
+    sub.terminos_version = TERMINOS_COMERCIALES_VERSION
+    sub.terminos_aceptados_en = datetime.utcnow()
+    sub.terminos_aceptados_por_id = user_id
+    sub.terminos_aceptados_ip = (ip_address or "")[:45]
+    return sub
+
+
+def terminos_vigentes_aceptados(sub: PlanSuscripcion | None) -> bool:
+    return bool(
+        sub
+        and sub.terminos_aceptados_en
+        and sub.terminos_version == TERMINOS_COMERCIALES_VERSION
+    )
+
+
+def preparar_conversion_comercial(
+    empresa: Empresa,
+    plan_key: str,
+    *,
+    hoy: date | None = None,
+) -> tuple[PlanSuscripcion, FacturaEmpresa, str, bool]:
+    """Selects the paid plan and creates its invoice; activation waits for payment."""
+    from app.platform_config_service import PLANES_COMERCIALES_PILOTO
+
+    key = (plan_key or "").strip().lower()
+    if key not in PLANES_COMERCIALES_PILOTO:
+        raise ValueError("El plan no pertenece a la oferta comercial vigente.")
+    if empresa.es_prueba:
+        raise ValueError("Las empresas de prueba están excluidas de facturación.")
+
+    sub = empresa.plan_activo
+    if not sub:
+        raise ValueError("La empresa no tiene una suscripción para convertir.")
+    if not terminos_vigentes_aceptados(sub):
+        raise ValueError(
+            "La empresa debe aceptar los términos comerciales vigentes antes de convertir el trial."
+        )
+
+    hoy = hoy or date.today()
+    anterior = sub.plan
+    pendiente = (
+        FacturaEmpresa.query.filter_by(
+            empresa_id=empresa.id,
+            suscripcion_id=sub.id,
+            estado=FacturaEstado.PENDIENTE.value,
+        )
+        .order_by(FacturaEmpresa.id.desc())
+        .first()
+    )
+    changed = anterior != key
+    sub.plan = key
+    sub.activo = True
+    sub.estado_ciclo = SuscripcionEstado.MORA.value
+    empresa.suspendida = False
+    if pendiente:
+        pendiente.concepto = f"Suscripción {plan_meta(key)['short_label']} — {_periodo_hoy(hoy)}"
+        pendiente.monto = _monto_plan(key)
+        pendiente.periodo = _periodo_hoy(hoy)
+        factura = pendiente
+    else:
+        factura = _crear_factura_suscripcion(empresa, sub, hoy=hoy)
+    return sub, factura, anterior, changed
+
+
 def _plan_facturable(sub: PlanSuscripcion) -> str:
     if sub.plan == PlanTipo.TRIAL.value:
         return plan_tras_trial()
@@ -176,10 +248,10 @@ def _crear_factura_suscripcion(
 
 def _inferir_estado_ciclo_legacy(sub: PlanSuscripcion, hoy: date) -> str:
     if sub.plan == PlanTipo.TRIAL.value:
-        if sub.fecha_fin and sub.fecha_fin < hoy:
+        if sub.fecha_fin and sub.fecha_fin <= hoy:
             return SuscripcionEstado.MORA.value
         return SuscripcionEstado.TRIAL.value
-    if sub.fecha_fin and sub.fecha_fin < hoy:
+    if sub.fecha_fin and sub.fecha_fin <= hoy:
         return SuscripcionEstado.MORA.value
     return SuscripcionEstado.ACTIVA.value
 
@@ -207,14 +279,71 @@ def verificar_vencimientos(hoy: date | None = None) -> dict[str, int]:
     - Facturas impagas tras gracia → vencida + suscripción suspendida
     """
     hoy = hoy or date.today()
-    stats = {"trials_a_mora": 0, "facturas_vencidas": 0, "suspensiones": 0}
+    stats = {
+        "avisos_trial": 0,
+        "avisos_fallidos": 0,
+        "trials_a_mora": 0,
+        "facturas_vencidas": 0,
+        "suspensiones": 0,
+    }
+
+    trials_para_aviso = PlanSuscripcion.query.join(Empresa).filter(
+        Empresa.es_prueba.is_(False),
+        PlanSuscripcion.activo.is_(True),
+        PlanSuscripcion.estado_ciclo == SuscripcionEstado.TRIAL.value,
+    ).all()
+    for sub in trials_para_aviso:
+        dia = (hoy - sub.fecha_inicio).days
+        if dia not in {7, 12, 15} or not sub.empresa:
+            continue
+        empresa = sub.empresa
+        recipient = (empresa.email or "").strip()
+        if not recipient:
+            from app.models import User
+
+            admin = (
+                User.query.filter(
+                    User.empresa_id == empresa.id,
+                    User.activo.is_(True),
+                    User.rol.in_(["superadmin", "admin"]),
+                    User.email != "",
+                )
+                .order_by(User.id.asc())
+                .first()
+            )
+            recipient = (admin.email or "").strip() if admin else ""
+        if not recipient:
+            continue
+        try:
+            from app.email_service import EmailDeliveryError, send_templated_email
+
+            send_templated_email(
+                empresa_id=empresa.id,
+                recipient=recipient,
+                subject=(
+                    "Tu periodo de prueba Roustix finaliza hoy"
+                    if dia == 15
+                    else "Información sobre tu periodo de prueba Roustix"
+                ),
+                template_name="trial_expiry",
+                context={
+                    "empresa": empresa,
+                    "dia_trial": dia,
+                    "dias_restantes": max(15 - dia, 0),
+                    "fecha_fin": sub.fecha_fin,
+                },
+                idempotency_key=f"trial-expiry:{sub.id}:day:{dia}",
+            )
+            stats["avisos_trial"] += 1
+        except EmailDeliveryError:
+            stats["avisos_fallidos"] += 1
 
     trials_vencidos = PlanSuscripcion.query.join(Empresa).filter(
         Empresa.es_prueba.is_(False),
         PlanSuscripcion.activo.is_(True),
         PlanSuscripcion.estado_ciclo == SuscripcionEstado.TRIAL.value,
         PlanSuscripcion.fecha_fin.isnot(None),
-        PlanSuscripcion.fecha_fin < hoy,
+        PlanSuscripcion.fecha_fin <= hoy,
     ).all()
     for sub in trials_vencidos:
         empresa = sub.empresa
