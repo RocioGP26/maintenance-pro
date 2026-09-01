@@ -65,6 +65,22 @@ class TestCommercialPilot(unittest.TestCase):
         db.drop_all()
         self.ctx.pop()
 
+    def _crear_admin(self, username: str) -> User:
+        user = User(
+            empresa_id=self.empresa.id,
+            username=username,
+            email=f"{username}@piloto.test",
+            nombre_visible="Administrador comercial",
+            area="Administración",
+            rol="admin",
+            activo=True,
+            onboarding_completado=True,
+        )
+        user.set_password("Clave-Segura-123!")
+        db.session.add(user)
+        db.session.flush()
+        return user
+
     def test_catalogo_asignable_excluye_trial_y_scale_legacy(self):
         self.assertEqual(
             PLANES_COMERCIALES_PILOTO,
@@ -110,9 +126,10 @@ class TestCommercialPilot(unittest.TestCase):
             cambiar_plan_manual(self.empresa, PlanTipo.PROFESIONAL.value)
 
     def test_ruta_superadmin_cambia_plan_y_audita(self):
+        aceptante = self._crear_admin("aceptante-ruta")
         self.sub.terminos_version = TERMINOS_COMERCIALES_VERSION
         self.sub.terminos_aceptados_en = datetime.utcnow()
-        self.sub.terminos_aceptados_por_id = 99
+        self.sub.terminos_aceptados_por_id = aceptante.id
         db.session.commit()
         client = self.app.test_client()
         now = int(time.time())
@@ -143,7 +160,10 @@ class TestCommercialPilot(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "aceptar los términos"):
             preparar_conversion_comercial(self.empresa, PlanTipo.BASICO.value)
 
-        registrar_aceptacion_terminos(self.sub, user_id=7, ip_address="127.0.0.1")
+        aceptante = self._crear_admin("aceptante-servicio")
+        registrar_aceptacion_terminos(
+            self.sub, user_id=aceptante.id, ip_address="127.0.0.1"
+        )
         sub, factura, anterior, changed = preparar_conversion_comercial(
             self.empresa, PlanTipo.BASICO.value
         )
