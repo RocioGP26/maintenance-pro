@@ -20,7 +20,7 @@ from app.sector_templates import SECTOR_CHOICES, SECTOR_LABELS
 
 REGLAS_DEFAULT: dict[str, str] = {
     "trial_dias": "15",
-    "dias_gracia_mora": "5",
+    "dias_gracia_mora": "15",
     "dias_periodo_pago": "30",
     "plan_tras_trial": PlanTipo.BASICO.value,
     "dias_alerta_mora": "3",
@@ -223,7 +223,7 @@ def trial_dias() -> int:
 
 
 def dias_gracia_mora() -> int:
-    return get_regla_int("dias_gracia_mora", 5)
+    return get_regla_int("dias_gracia_mora", 15)
 
 
 def dias_periodo_pago() -> int:

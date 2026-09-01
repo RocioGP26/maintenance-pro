@@ -75,10 +75,10 @@ def estado_ciclo_empresa(empresa: Empresa, hoy: date | None = None) -> str:
     if estado in {e.value for e in SuscripcionEstado}:
         return estado
     if sub.plan == PlanTipo.TRIAL.value:
-        if sub.fecha_fin and sub.fecha_fin < hoy:
+        if sub.fecha_fin and sub.fecha_fin <= hoy:
             return SuscripcionEstado.MORA.value
         return SuscripcionEstado.TRIAL.value
-    if sub.fecha_fin and sub.fecha_fin < hoy:
+    if sub.fecha_fin and sub.fecha_fin <= hoy:
         return SuscripcionEstado.MORA.value
     return SuscripcionEstado.ACTIVA.value
 

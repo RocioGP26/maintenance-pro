@@ -1,0 +1,9 @@
+Hola {{ empresa.razon_social }},
+
+{% if dias_restantes == 0 %}Tu periodo de prueba de Roustix finaliza hoy.{% else %}Quedan {{ dias_restantes }} días de tu periodo de prueba de Roustix.{% endif %}
+
+Tus datos se conservarán. Al finalizar el trial, la cuenta pasará a modo consulta: podrás ver y exportar información, pero no crear ni modificar registros hasta activar una suscripción.
+
+Para continuar, un administrador debe aceptar las condiciones comerciales y completar el pago de la factura de activación.
+
+Equipo Roustix

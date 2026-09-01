@@ -19,6 +19,7 @@ from app import db, limiter
 from app.url_utils import is_safe_redirect
 from app.password_policy import validar_password
 from app.user_service import username_disponible
+from app.user_entitlements import UserLimitExceeded, validar_cupo_usuario
 from app.branding import APP_LOGO_PATH, empresa_logo_url_or_none, normalizar_logo_empresa
 from app.permissions import (
     CONFIG_ENDPOINT_PREFIX,
@@ -68,6 +69,8 @@ from app.models import (
     AssetMotorAssignment,
     CampoPersonalizado,
     Empresa,
+    FacturaEmpresa,
+    FacturaEstado,
     Incident,
     IncidentDiagnosis,
     IncidentHistory,
@@ -660,6 +663,79 @@ def cuenta_suspendida():
         motivo=motivo,
         mensaje=mensajes.get(motivo, mensajes["suspendida"]),
     )
+
+
+@bp.route("/suscripcion")
+@login_required
+def suscripcion_estado():
+    empresa = current_user.empresa
+    sub = empresa.plan_activo if empresa else None
+    factura = None
+    if sub:
+        factura = (
+            FacturaEmpresa.query.filter_by(
+                empresa_id=empresa.id,
+                suscripcion_id=sub.id,
+                estado=FacturaEstado.PENDIENTE.value,
+            )
+            .order_by(FacturaEmpresa.id.desc())
+            .first()
+        )
+    from app.platform_service import plan_meta
+    from app.subscription_service import (
+        TERMINOS_COMERCIALES_VERSION,
+        terminos_vigentes_aceptados,
+    )
+
+    return render_template(
+        "suscripcion/estado.html",
+        empresa=empresa,
+        sub=sub,
+        factura=factura,
+        plan=plan_meta(sub.plan if sub else None),
+        terminos_version=TERMINOS_COMERCIALES_VERSION,
+        terminos_aceptados=terminos_vigentes_aceptados(sub),
+        puede_aceptar=normalize_rol(current_user.rol)
+        in {UserRole.SUPERADMIN.value, UserRole.ADMIN.value},
+    )
+
+
+@bp.route("/suscripcion/aceptar-terminos", methods=["POST"])
+@login_required
+def suscripcion_aceptar_terminos():
+    if normalize_rol(current_user.rol) not in {
+        UserRole.SUPERADMIN.value,
+        UserRole.ADMIN.value,
+    }:
+        flash("Solo un administrador puede aceptar los términos comerciales.", "danger")
+        return redirect(url_for("main.suscripcion_estado"))
+    empresa = current_user.empresa
+    sub = empresa.plan_activo if empresa else None
+    if not sub:
+        flash("No hay una suscripción asociada a la empresa.", "danger")
+        return redirect(url_for("main.suscripcion_estado"))
+    if request.form.get("acepto") != "1":
+        flash("Debes confirmar la aceptación para continuar.", "warning")
+        return redirect(url_for("main.suscripcion_estado"))
+
+    from app.subscription_service import registrar_aceptacion_terminos
+    from app.tenant_activity import registrar_actividad_tenant
+
+    registrar_aceptacion_terminos(
+        sub,
+        user_id=current_user.id,
+        ip_address=request.remote_addr or "",
+    )
+    registrar_actividad_tenant(
+        empresa.id,
+        "commercial_terms_accepted",
+        user_id=current_user.id,
+        username=current_user.username,
+        detalle=f"Términos comerciales aceptados: {sub.terminos_version}",
+    )
+    db.session.commit()
+    flash("Aceptación comercial registrada. Ya puede generarse la factura de activación.", "success")
+    return redirect(url_for("main.suscripcion_estado"))
 
 
 @bp.route("/salir-impersonacion", methods=["POST"])
@@ -6233,6 +6309,11 @@ def equipo_new():
         password2 = request.form.get("password2", "")
         sede_id, err_sede = _parse_sede_equipo(request.form, eid)
         tarifa_hora, err_tarifa = _parse_tarifa_hora_equipo(request.form, emp)
+        err_cupo = None
+        try:
+            validar_cupo_usuario(emp, rol=rol, activo=activo)
+        except UserLimitExceeded as exc:
+            err_cupo = str(exc)
 
         err_u = _validar_username_equipo(username)
         if err_u:
@@ -6247,6 +6328,8 @@ def equipo_new():
             flash("Selecciona un rol válido.", "danger")
         elif not can_assign_role(current_user, rol):
             flash("No puedes asignar ese rol.", "danger")
+        elif err_cupo:
+            flash(err_cupo, "danger")
         elif err_sede:
             flash(err_sede, "danger")
         elif err_tarifa:
@@ -6344,6 +6427,17 @@ def equipo_edit(id):
             sede_id, err_sede = usuario.sede_id, None
             tarifa_hora, err_tarifa = usuario.tarifa_hora, None
 
+        err_cupo = None
+        try:
+            validar_cupo_usuario(
+                emp,
+                rol=rol,
+                activo=activo,
+                excluir_user_id=usuario.id,
+            )
+        except UserLimitExceeded as exc:
+            err_cupo = str(exc)
+
         err_u = _validar_username_equipo(username)
         if err_u:
             flash(err_u, "danger")
@@ -6359,6 +6453,8 @@ def equipo_edit(id):
             flash("Selecciona un rol válido.", "danger")
         elif not es_self and not can_assign_role(current_user, rol):
             flash("No puedes asignar ese rol.", "danger")
+        elif err_cupo:
+            flash(err_cupo, "danger")
         elif err_sede:
             flash(err_sede, "danger")
         elif err_tarifa:

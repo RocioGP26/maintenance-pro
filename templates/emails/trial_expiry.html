@@ -1,0 +1,13 @@
+<!doctype html>
+<html lang="es">
+  <body style="font-family:Arial,sans-serif;color:#172033;line-height:1.5">
+    <h1 style="font-size:22px">Información sobre tu periodo de prueba</h1>
+    <p>Hola <strong>{{ empresa.razon_social }}</strong>,</p>
+    <p>
+      {% if dias_restantes == 0 %}Tu periodo de prueba de Roustix finaliza hoy.{% else %}Quedan <strong>{{ dias_restantes }} días</strong> de tu periodo de prueba de Roustix.{% endif %}
+    </p>
+    <p>Tus datos se conservarán. Al finalizar el trial, la cuenta pasará a modo consulta: podrás ver y exportar información, pero no crear ni modificar registros hasta activar una suscripción.</p>
+    <p>Para continuar, un administrador debe aceptar las condiciones comerciales y completar el pago de la factura de activación.</p>
+    <p>Equipo Roustix</p>
+  </body>
+</html>

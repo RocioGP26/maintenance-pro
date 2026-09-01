@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import jwt
-from flask import Flask, current_app, g, jsonify, redirect, request, url_for
+from flask import Flask, current_app, flash, g, jsonify, redirect, request, url_for
 from flask_login import current_user
 
 from app.tenancy.db import close_db
@@ -215,6 +215,32 @@ def _verificar_bloqueo_tenant(endpoint: str):
     return redirect(url_for("main.cuenta_suspendida", motivo=codigo))
 
 
+def _verificar_solo_lectura_tenant(endpoint: str):
+    """Allows consultation/export in mora but rejects state-changing requests."""
+    from app.models import Empresa
+    from app.tenant_activity import empresa_en_solo_lectura, endpoint_exento_bloqueo
+
+    if request.method in {"GET", "HEAD", "OPTIONS"}:
+        return None
+    if _is_public_endpoint(endpoint) or endpoint_exento_bloqueo(endpoint):
+        return None
+    eid = getattr(g, "empresa_id", None)
+    if not eid or not empresa_en_solo_lectura(Empresa.query.get(int(eid))):
+        return None
+    mensaje = (
+        "El periodo de prueba finalizó. La información sigue disponible en modo consulta, "
+        "pero no se pueden crear ni modificar registros hasta activar la suscripción."
+    )
+    if request.path.startswith("/api/v1"):
+        from app.public_api.contract import api_error
+
+        return api_error("SUBSCRIPTION_READ_ONLY", mensaje, 403)
+    if request.path.startswith("/api/"):
+        return jsonify({"error": mensaje, "codigo": "subscription_read_only"}), 403
+    flash(mensaje, "warning")
+    return redirect(url_for("main.suscripcion_estado"))
+
+
 def register_tenancy_middleware(app: Flask) -> None:
     @app.before_request
     def middleware_tenancy():
@@ -267,6 +293,9 @@ def register_tenancy_middleware(app: Flask) -> None:
                 bloqueo = _verificar_bloqueo_tenant(endpoint)
                 if bloqueo is not None:
                     return bloqueo
+                solo_lectura = _verificar_solo_lectura_tenant(endpoint)
+                if solo_lectura is not None:
+                    return solo_lectura
                 modulo = _verificar_modulo_activo(endpoint)
                 if modulo is not None:
                     return modulo
@@ -301,6 +330,9 @@ def register_tenancy_middleware(app: Flask) -> None:
             bloqueo = _verificar_bloqueo_tenant(endpoint)
             if bloqueo is not None:
                 return bloqueo
+            solo_lectura = _verificar_solo_lectura_tenant(endpoint)
+            if solo_lectura is not None:
+                return solo_lectura
             modulo = _verificar_modulo_activo(endpoint)
             if modulo is not None:
                 return modulo
@@ -314,6 +346,9 @@ def register_tenancy_middleware(app: Flask) -> None:
         bloqueo = _verificar_bloqueo_tenant(endpoint)
         if bloqueo is not None:
             return bloqueo
+        solo_lectura = _verificar_solo_lectura_tenant(endpoint)
+        if solo_lectura is not None:
+            return solo_lectura
         modulo = _verificar_modulo_activo(endpoint)
         if modulo is not None:
             return modulo

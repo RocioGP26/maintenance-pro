@@ -4,12 +4,13 @@ from __future__ import annotations
 
 import time
 import unittest
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 from pathlib import Path
 
 from app import create_app, db
 from app.models import (
     Empresa,
+    EmailOutbox,
     FacturaEmpresa,
     FacturaEstado,
     PlanSuscripcion,
@@ -17,15 +18,21 @@ from app.models import (
     PlatformAuditLog,
     SuscripcionEstado,
     TenantActivityLog,
+    User,
 )
 from app.platform_billing import kpis_facturacion, listar_facturas_platform
 from app.platform_service import kpis_platform, listar_empresas_platform
 from app.platform_config_service import PLANES_COMERCIALES_PILOTO
 from app.subscription_service import (
+    TERMINOS_COMERCIALES_VERSION,
     cambiar_plan_manual,
     crear_factura_mensual,
+    marcar_factura_pagada,
+    preparar_conversion_comercial,
+    registrar_aceptacion_terminos,
     verificar_vencimientos,
 )
+from app.user_entitlements import UserLimitExceeded, usuarios_facturables, validar_cupo_usuario
 
 
 class TestCommercialPilot(unittest.TestCase):
@@ -103,6 +110,10 @@ class TestCommercialPilot(unittest.TestCase):
             cambiar_plan_manual(self.empresa, PlanTipo.PROFESIONAL.value)
 
     def test_ruta_superadmin_cambia_plan_y_audita(self):
+        self.sub.terminos_version = TERMINOS_COMERCIALES_VERSION
+        self.sub.terminos_aceptados_en = datetime.utcnow()
+        self.sub.terminos_aceptados_por_id = 99
+        db.session.commit()
         client = self.app.test_client()
         now = int(time.time())
         with client.session_transaction() as session:
@@ -119,11 +130,110 @@ class TestCommercialPilot(unittest.TestCase):
         self.assertEqual(response.status_code, 302)
         db.session.refresh(self.sub)
         self.assertEqual(self.sub.plan, PlanTipo.BUSINESS.value)
+        self.assertEqual(self.sub.estado_ciclo, SuscripcionEstado.MORA.value)
+        self.assertEqual(FacturaEmpresa.query.count(), 1)
         audit = PlatformAuditLog.query.filter_by(accion="plan_change").one()
         activity = TenantActivityLog.query.filter_by(tipo="plan_changed").one()
         self.assertEqual(audit.empresa_id, self.empresa.id)
         self.assertIn("Trial → Business", audit.detalle)
-        self.assertIn("no genera factura", activity.detalle)
+        self.assertIn("factura", activity.detalle)
+        self.assertIn("pendiente", activity.detalle)
+
+    def test_conversion_requiere_aceptacion_y_activa_solo_con_pago(self):
+        with self.assertRaisesRegex(ValueError, "aceptar los términos"):
+            preparar_conversion_comercial(self.empresa, PlanTipo.BASICO.value)
+
+        registrar_aceptacion_terminos(self.sub, user_id=7, ip_address="127.0.0.1")
+        sub, factura, anterior, changed = preparar_conversion_comercial(
+            self.empresa, PlanTipo.BASICO.value
+        )
+        self.assertTrue(changed)
+        self.assertEqual(anterior, PlanTipo.TRIAL.value)
+        self.assertEqual(sub.estado_ciclo, SuscripcionEstado.MORA.value)
+        self.assertEqual(factura.estado, FacturaEstado.PENDIENTE.value)
+
+        marcar_factura_pagada(factura, metodo="transferencia", referencia="TRX-1")
+        self.assertEqual(sub.estado_ciclo, SuscripcionEstado.ACTIVA.value)
+        self.assertEqual(sub.plan, PlanTipo.BASICO.value)
+        self.assertEqual(factura.estado, FacturaEstado.PAGADA.value)
+
+    def test_dia_15_pasa_a_consulta_factura_y_envia_aviso(self):
+        hoy = date(2026, 9, 1)
+        self.empresa.email = "admin@piloto.test"
+        self.sub.fecha_inicio = hoy - timedelta(days=15)
+        self.sub.fecha_fin = hoy
+        self.app.config["MAIL_DEFAULT_SENDER"] = "noreply@roustix.test"
+        db.session.commit()
+
+        stats = verificar_vencimientos(hoy=hoy)
+
+        self.assertEqual(stats["avisos_trial"], 1)
+        self.assertEqual(stats["trials_a_mora"], 1)
+        self.assertEqual(self.sub.estado_ciclo, SuscripcionEstado.MORA.value)
+        self.assertFalse(self.empresa.suspendida)
+        self.assertEqual(FacturaEmpresa.query.count(), 1)
+        self.assertEqual(EmailOutbox.query.count(), 1)
+
+    def test_solicitantes_no_consumen_cupo_del_plan(self):
+        for idx in range(20):
+            user = User(
+                empresa_id=self.empresa.id,
+                username=f"usuario-{idx}",
+                rol="tecnico",
+                activo=True,
+            )
+            user.set_password("Clave-Segura-123!")
+            db.session.add(user)
+        requester = User(
+            empresa_id=self.empresa.id,
+            username="reportante",
+            rol="solicitante",
+            activo=True,
+        )
+        requester.set_password("Clave-Segura-123!")
+        db.session.add(requester)
+        db.session.commit()
+
+        self.assertEqual(usuarios_facturables(self.empresa.id), 20)
+        validar_cupo_usuario(self.empresa, rol="solicitante", activo=True)
+        with self.assertRaises(UserLimitExceeded):
+            validar_cupo_usuario(self.empresa, rol="tecnico", activo=True)
+
+    def test_mora_permite_consulta_bloquea_escritura_y_acepta_terminos(self):
+        self.empresa.email_verified_at = datetime.utcnow()
+        self.sub.estado_ciclo = SuscripcionEstado.MORA.value
+        admin = User(
+            empresa_id=self.empresa.id,
+            username="admin-comercial",
+            email="admin@piloto.test",
+            nombre_visible="Admin Comercial",
+            area="Administración",
+            rol="admin",
+            activo=True,
+            onboarding_completado=True,
+        )
+        admin.set_password("Clave-Segura-123!")
+        db.session.add(admin)
+        db.session.commit()
+
+        client = self.app.test_client()
+        with client.session_transaction() as session:
+            session["_user_id"] = admin.get_id()
+            session["_fresh"] = True
+
+        page = client.get("/suscripcion")
+        self.assertEqual(page.status_code, 200)
+        self.assertIn("modo consulta", page.get_data(as_text=True))
+
+        blocked = client.post("/equipo/nuevo", data={})
+        self.assertEqual(blocked.status_code, 302)
+        self.assertTrue(blocked.location.endswith("/suscripcion"))
+
+        accepted = client.post("/suscripcion/aceptar-terminos", data={"acepto": "1"})
+        self.assertEqual(accepted.status_code, 302)
+        db.session.refresh(self.sub)
+        self.assertEqual(self.sub.terminos_version, TERMINOS_COMERCIALES_VERSION)
+        self.assertEqual(self.sub.terminos_aceptados_por_id, admin.id)
 
     def test_detalle_superadmin_muestra_solo_planes_oficiales(self):
         client = self.app.test_client()
