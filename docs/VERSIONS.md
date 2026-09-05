@@ -6,7 +6,7 @@
 
 | Producto | Versión actual | Fuente canónica | Changelog | Tag Git |
 |---|---:|---|---|---|
-| **Aplicación Flask** | **v1.2.2** | [`app/version.py`](../app/version.py) | [`CHANGELOG.md`](../CHANGELOG.md) | `v1.2.0` |
+| **Aplicación Flask** | **v1.2.3** | [`app/version.py`](../app/version.py) | [`CHANGELOG.md`](../CHANGELOG.md) | `v1.2.0` |
 | **Suite documental** | **v1.27.0** | Este archivo | [changelog.md](changelog.md) | `docs-vX.Y` |
 | **COM (empaquetado comercial)** | **v1.4.0** | [`com/README.md`](com/README.md) | [`com/changelog.md`](com/changelog.md) | — |
 | **LEG (sistema documental legal)** | **v1.2.2** | [`legal/README.md`](legal/README.md) | [`legal/RTX-DOC-000`](legal/RTX-DOC-000-control-versiones.md) | — |
