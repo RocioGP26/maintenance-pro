@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="csrf-token" content="{{ csrf_token() }}">
   {% include "_favicon.html" %}
   <title>{% block title %}Roustix Platform{% endblock %}</title>
   {% from "_cdn_assets.html" import google_fonts_inter, bootstrap_css, bootstrap_icons_css, bootstrap_js %}
@@ -114,6 +115,41 @@
     });
   })();
   </script>
+  {% if session.get('platform_admin') %}
+  <script>
+  (function () {
+    var statusUrl = {{ url_for('platform.session_status')|tojson }};
+    var loginUrl = {{ url_for('platform.login')|tojson }};
+    var csrf = document.querySelector('meta[name="csrf-token"]');
+    var lastPing = 0;
+
+    function sync(active) {
+      var now = Date.now();
+      if (active && now - lastPing < 60000) return;
+      if (active) lastPing = now;
+      var headers = {'X-Requested-With': 'XMLHttpRequest'};
+      if (csrf) headers['X-CSRFToken'] = csrf.content;
+      fetch(statusUrl, {
+        method: active ? 'POST' : 'GET',
+        headers: headers,
+        credentials: 'same-origin'
+      }).then(function (response) {
+        if (response.status === 401) {
+          window.location.assign(loginUrl + '?expired=idle_timeout');
+        }
+      }).catch(function () {
+        // Una interrupcion transitoria de red no equivale a cerrar la sesion.
+      });
+    }
+
+    ['click', 'keydown', 'input', 'touchstart'].forEach(function (eventName) {
+      document.addEventListener(eventName, function () { sync(true); }, {passive: true});
+    });
+    window.setInterval(function () { sync(false); }, 60000);
+    sync(false);
+  })();
+  </script>
+  {% endif %}
   {% block scripts %}{% endblock %}
 </body>
 </html>

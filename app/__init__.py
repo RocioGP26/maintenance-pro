@@ -84,7 +84,12 @@ def create_app(config_name: str | None = None):
             db.session.rollback()
             raise
 
-    login_manager.session_protection = "strong" if config_name == "production" else "basic"
+    # La aplicacion ya valida cada sesion contra ActiveSession (revocacion,
+    # inactividad y limite absoluto). El modo ``strong`` de Flask-Login tambien
+    # ata la cookie a request.remote_addr y termina cerrando sesiones legitimas
+    # cuando Cloudflare/Render cambia el proxy de salida entre peticiones.
+    # ``basic`` conserva la deteccion de cambios sin destruir la sesion.
+    login_manager.session_protection = "basic"
     login_manager.init_app(app)
     csrf.init_app(app)
     limiter.init_app(app)

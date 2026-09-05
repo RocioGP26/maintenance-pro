@@ -11,6 +11,7 @@ from flask import (
     Blueprint,
     current_app,
     flash,
+    jsonify,
     redirect,
     render_template,
     request,
@@ -144,6 +145,23 @@ def _platform_expiration_reason() -> str | None:
     if now - last_activity >= idle_seconds:
         return "idle_timeout"
     return None
+
+
+def _platform_session_payload() -> dict[str, int | bool]:
+    """Estado restante de la sesion privilegiada sin renovarla."""
+    now = _now_epoch()
+    started = int(session.get(PLATFORM_STARTED_AT_KEY) or 0)
+    last_activity = int(session.get(PLATFORM_LAST_ACTIVITY_KEY) or 0)
+    idle_seconds = max(1, int(current_app.config.get("PLATFORM_SESSION_IDLE_MINUTES", 15))) * 60
+    absolute_seconds = max(
+        1, int(current_app.config.get("PLATFORM_SESSION_ABSOLUTE_MINUTES", 120))
+    ) * 60
+    expires_at = min(last_activity + idle_seconds, started + absolute_seconds)
+    return {
+        "authenticated": True,
+        "seconds_remaining": max(0, expires_at - now),
+        "warning_seconds": min(120, idle_seconds),
+    }
 
 
 def _mfa_pending_expired() -> bool:
@@ -289,6 +307,23 @@ def login():
         mfa_step=False,
         totp_habilitado=totp_habilitado(),
     )
+
+
+@platform_bp.route("/session/status", methods=["GET", "POST"])
+def session_status():
+    """Consulta o renueva la sesion cuando hubo interaccion real en la UI."""
+    if not session.get("platform_admin"):
+        return jsonify({"authenticated": False, "reason": "missing_session"}), 401
+
+    reason = _platform_expiration_reason()
+    if reason:
+        _audit_platform_security("platform_session_expired", reason)
+        _clear_platform_state()
+        return jsonify({"authenticated": False, "reason": reason}), 401
+
+    if request.method == "POST":
+        session[PLATFORM_LAST_ACTIVITY_KEY] = _now_epoch()
+    return jsonify(_platform_session_payload())
 
 
 @platform_bp.route("/logout", methods=["POST"])

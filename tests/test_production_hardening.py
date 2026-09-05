@@ -203,6 +203,20 @@ class TestPlatformHardening(SecurityAppTestCase):
             1,
         )
 
+    def test_platform_activity_ping_renews_idle_session(self):
+        self._platform_login()
+        now = int(time.time())
+        with self.client.session_transaction() as browser_session:
+            browser_session["platform_last_activity_at"] = now - (14 * 60)
+
+        response = self.client.post("/platform/session/status")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.json["authenticated"])
+        self.assertGreater(response.json["seconds_remaining"], 14 * 60)
+        with self.client.session_transaction() as browser_session:
+            self.assertGreaterEqual(browser_session["platform_last_activity_at"], now)
+
     def test_failed_key_is_audited_without_granting_access(self):
         response = self.client.post("/platform/login", data={"clave": "incorrecta"})
         self.assertEqual(response.status_code, 200)
