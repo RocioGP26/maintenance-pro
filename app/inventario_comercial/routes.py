@@ -52,6 +52,7 @@ from app.inventario_comercial.service import (
     iva_default_pct_empresa,
 )
 from app.models import Empresa, InvCliente, InvCompra, InvProducto, InvProveedor, InvVenta
+from app.money import MONEDAS_CODIGOS, MONEDAS_SOPORTADAS
 from app.module_guard import require_module
 from app.modules import MODULO_INVENTARIO
 from app.tenancy.queries import query_tenant
@@ -197,6 +198,7 @@ def productos_list():
         q=q,
         estado=estado,
         alerta=alerta,
+        monedas_exportacion=MONEDAS_SOPORTADAS,
     )
 
 
@@ -228,7 +230,10 @@ def productos_export_catalogo():
     estado = (request.args.get("estado") or "activo").strip().lower()
     query, _ = _query_productos_lista(q=q, estado=estado, alerta=alerta)
     productos = query.all()
-    contenido, nombre = excel_productos_catalogo(eid, productos)
+    moneda = (request.args.get("moneda") or "").strip().upper()
+    if moneda not in MONEDAS_CODIGOS:
+        moneda = None
+    contenido, nombre = excel_productos_catalogo(eid, productos, moneda=moneda)
     return send_file(
         BytesIO(contenido),
         mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
@@ -244,7 +249,10 @@ def productos_export_plantilla():
     from io import BytesIO
 
     eid = _require_empresa_id()
-    contenido, nombre = excel_productos_plantilla(eid)
+    moneda = (request.args.get("moneda") or "").strip().upper()
+    if moneda not in MONEDAS_CODIGOS:
+        moneda = None
+    contenido, nombre = excel_productos_plantilla(eid, moneda=moneda)
     return send_file(
         BytesIO(contenido),
         mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
@@ -285,6 +293,8 @@ def productos_import_excel():
         partes.append(f"{resultado.actualizados} actualizado(s)")
     if resultado.omitidos:
         partes.append(f"{resultado.omitidos} omitido(s)")
+    if resultado.monedas_activadas:
+        partes.append(f"moneda(s) activada(s): {', '.join(resultado.monedas_activadas)}")
 
     if partes:
         flash(f"Importación completada: {', '.join(partes)}.", "success")

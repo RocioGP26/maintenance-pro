@@ -14,8 +14,9 @@ from openpyxl.styles import Font
 from openpyxl.utils import get_column_letter
 
 from app import db
-from app.currency import empresa_multimoneda, monedas_activas_de
+from app.currency import empresa_multimoneda, monedas_activas_de, set_monedas_empresa
 from app.inventario_comercial.service import _parse_float, _parse_int, guardar_producto_comercial
+from app.money import MONEDAS_CODIGOS, normalizar_moneda
 from app.models import Empresa, InvProducto
 
 MAX_FILAS_IMPORT = 5000
@@ -48,10 +49,21 @@ def _parse_activo(val: Any, default: bool = True) -> bool:
     return default
 
 
-def headers_producto_excel(empresa: Empresa | None) -> list[str]:
+def _moneda_archivo(empresa: Empresa | None, moneda: str | None = None) -> str:
+    moneda_ref = (empresa.moneda if empresa else "COP") or "COP"
+    return normalizar_moneda(moneda, moneda_ref)
+
+
+def headers_producto_excel(
+    empresa: Empresa | None,
+    moneda: str | None = None,
+) -> list[str]:
     moneda_ref = (empresa.moneda if empresa else "COP") or "COP"
     multimoneda = empresa_multimoneda(empresa)
-    monedas = monedas_activas_de(empresa) if multimoneda else [moneda_ref]
+    monedas = [_moneda_archivo(empresa, moneda)] if moneda else (
+        monedas_activas_de(empresa) if multimoneda else [moneda_ref]
+    )
+    moneda_compra = monedas[0] if moneda else moneda_ref
 
     headers = [
         "Referencia",
@@ -62,9 +74,9 @@ def headers_producto_excel(empresa: Empresa | None) -> list[str]:
         "Unidad",
         "Stock",
         "Stock mínimo",
-        f"Precio compra ({moneda_ref})",
+        f"Precio compra ({moneda_compra})",
     ]
-    if multimoneda:
+    if multimoneda or moneda:
         headers.extend(f"Precio venta ({m})" for m in monedas)
     else:
         headers.append(f"Precio venta ({moneda_ref})")
@@ -72,10 +84,21 @@ def headers_producto_excel(empresa: Empresa | None) -> list[str]:
     return headers
 
 
-def fila_producto_excel(producto: InvProducto, empresa: Empresa | None) -> list:
+def fila_producto_excel(
+    producto: InvProducto,
+    empresa: Empresa | None,
+    moneda: str | None = None,
+) -> list:
     moneda_ref = (empresa.moneda if empresa else "COP") or "COP"
     multimoneda = empresa_multimoneda(empresa)
-    monedas = monedas_activas_de(empresa) if multimoneda else [moneda_ref]
+    monedas = [_moneda_archivo(empresa, moneda)] if moneda else (
+        monedas_activas_de(empresa) if multimoneda else [moneda_ref]
+    )
+    precio_compra = (
+        None
+        if moneda and monedas[0] != moneda_ref
+        else float(producto.precio_compra or 0)
+    )
 
     row: list = [
         producto.sku,
@@ -86,9 +109,9 @@ def fila_producto_excel(producto: InvProducto, empresa: Empresa | None) -> list:
         producto.unidad or "pza",
         int(producto.stock or 0),
         int(producto.stock_minimo or 0),
-        float(producto.precio_compra or 0),
+        precio_compra,
     ]
-    if multimoneda:
+    if multimoneda or moneda:
         precios = producto.precios_venta(moneda_ref)
         row.extend(float(precios.get(m, 0)) for m in monedas)
     else:
@@ -116,19 +139,28 @@ def _workbook_a_bytes(wb: Workbook) -> bytes:
 def excel_productos_catalogo(
     empresa_id: int,
     productos: list[InvProducto],
+    *,
+    moneda: str | None = None,
 ) -> tuple[bytes, str]:
     from app.inventario_comercial.exports import excel_productos_catalogo_mrl
 
     empresa = Empresa.query.get(empresa_id)
-    return excel_productos_catalogo_mrl(empresa, productos)
+    return excel_productos_catalogo_mrl(empresa, productos, moneda=moneda)
 
 
-def excel_productos_plantilla(empresa_id: int) -> tuple[bytes, str]:
+def excel_productos_plantilla(
+    empresa_id: int,
+    *,
+    moneda: str | None = None,
+) -> tuple[bytes, str]:
     empresa = Empresa.query.get(empresa_id)
-    headers = headers_producto_excel(empresa)
+    headers = headers_producto_excel(empresa, moneda)
     moneda_ref = (empresa.moneda if empresa else "COP") or "COP"
     multimoneda = empresa_multimoneda(empresa)
-    monedas = monedas_activas_de(empresa) if multimoneda else [moneda_ref]
+    monedas = [_moneda_archivo(empresa, moneda)] if moneda else (
+        monedas_activas_de(empresa) if multimoneda else [moneda_ref]
+    )
+    moneda_archivo = monedas[0] if moneda else moneda_ref
 
     wb = Workbook()
     ws = wb.active
@@ -138,6 +170,7 @@ def excel_productos_plantilla(empresa_id: int) -> tuple[bytes, str]:
         cell = ws.cell(row=1, column=col_idx, value=titulo)
         cell.font = Font(bold=True)
 
+    precios_ejemplo = {"COP": 8500.0, "USD": 8.5, "VES": 310.0, "MXN": 145.0}
     ejemplo = [
         "SKU-001",
         "Aceite motor 1L",
@@ -147,10 +180,13 @@ def excel_productos_plantilla(empresa_id: int) -> tuple[bytes, str]:
         "pza",
         10,
         5,
-        8500.0,
+        precios_ejemplo.get(moneda_archivo, 8500.0),
     ]
-    if multimoneda:
-        ejemplo.extend(12000.0 for _ in monedas)
+    if multimoneda or moneda:
+        ejemplo.extend(
+            {"COP": 12000.0, "USD": 12.0, "VES": 435.0, "MXN": 205.0}.get(m, 0.0)
+            for m in monedas
+        )
     else:
         ejemplo.append(12000.0)
     ejemplo.append("Sí")
@@ -164,14 +200,16 @@ def excel_productos_plantilla(empresa_id: int) -> tuple[bytes, str]:
         "2. Referencia y Nombre son obligatorios.",
         "3. Si la Referencia ya existe, el producto se actualiza; si no, se crea.",
         "4. Activo: use Sí o No.",
-        f"5. Precios en {moneda_ref}" + (" y monedas adicionales según columnas." if multimoneda else "."),
+        f"5. Los precios de este archivo están expresados en {moneda_archivo}."
+        + (" Las monedas adicionales aparecen en columnas separadas." if multimoneda and not moneda else ""),
     ]
     for idx, texto in enumerate(lineas, start=3):
         inst.cell(row=idx, column=1, value=texto)
 
     _ajustar_columnas(ws, len(headers))
     inst.column_dimensions["A"].width = 72
-    return _workbook_a_bytes(wb), "plantilla_productos.xlsx"
+    sufijo = f"_{moneda_archivo.lower()}" if moneda else ""
+    return _workbook_a_bytes(wb), f"plantilla_productos{sufijo}.xlsx"
 
 
 def _mapear_columnas(headers: list[str], empresa: Empresa | None) -> dict[str, int]:
@@ -220,7 +258,7 @@ def _mapear_columnas(headers: list[str], empresa: Empresa | None) -> dict[str, i
             continue
         if clave.startswith("precio_venta"):
             moneda_match = re.search(r"\(([A-Z]{3})\)", header or "", re.I)
-            if moneda_match:
+            if moneda_match and moneda_match.group(1).upper() in MONEDAS_CODIGOS:
                 mapping[f"precio_venta_{moneda_match.group(1).upper()}"] = idx
             elif "precio_venta" in clave_a_campo.values() or clave in clave_a_campo:
                 mapping.setdefault("precio_venta", idx)
@@ -261,6 +299,7 @@ class ResultadoImportProductos:
     actualizados: int = 0
     omitidos: int = 0
     errores: list[str] = field(default_factory=list)
+    monedas_activadas: list[str] = field(default_factory=list)
 
 
 def importar_productos_desde_excel(
@@ -301,6 +340,19 @@ def importar_productos_desde_excel(
 
     header_row, mapping = detectado
 
+    monedas_archivo = [
+        campo.removeprefix("precio_venta_")
+        for campo in mapping
+        if campo.startswith("precio_venta_")
+    ]
+    activas = monedas_activas_de(empresa)
+    nuevas_monedas = [m for m in monedas_archivo if m not in activas]
+    if nuevas_monedas and empresa is not None:
+        set_monedas_empresa(empresa, activas + nuevas_monedas, moneda_ref)
+        resultado.monedas_activadas.extend(nuevas_monedas)
+        multimoneda = empresa_multimoneda(empresa)
+        monedas = monedas_activas_de(empresa)
+
     filas_datos = 0
     for row_idx, row in enumerate(
         ws.iter_rows(min_row=header_row + 1, values_only=True),
@@ -320,6 +372,8 @@ def importar_productos_desde_excel(
             continue
 
         filas_datos += 1
+        existente = InvProducto.query.filter_by(empresa_id=empresa_id, sku=sku).first()
+        precio_compra_celda = _valor_celda(row, mapping.get("precio_compra"))
         datos: dict[str, Any] = {
             "sku": sku,
             "nombre": nombre,
@@ -329,20 +383,36 @@ def importar_productos_desde_excel(
             "unidad": _normalizar_texto(_valor_celda(row, mapping.get("unidad"))) or "pza",
             "stock": _parse_int(_valor_celda(row, mapping.get("stock"))),
             "stock_minimo": _parse_int(_valor_celda(row, mapping.get("stock_minimo"))),
-            "precio_compra": _parse_float(_valor_celda(row, mapping.get("precio_compra"))),
+            "precio_compra": (
+                _parse_float(precio_compra_celda)
+                if precio_compra_celda not in (None, "")
+                else float(existente.precio_compra or 0) if existente else 0.0
+            ),
             "activo": _parse_activo(_valor_celda(row, mapping.get("activo")), default=True),
         }
         if multimoneda:
+            precios_existentes = existente.precios_venta(moneda_ref) if existente else {}
             for m in monedas:
-                datos[f"precio_venta_{m}"] = _parse_float(
-                    _valor_celda(row, mapping.get(f"precio_venta_{m}"))
+                columna = mapping.get(f"precio_venta_{m}")
+                datos[f"precio_venta_{m}"] = (
+                    _parse_float(_valor_celda(row, columna))
+                    if columna is not None
+                    else float(precios_existentes.get(m, 0) or 0)
                 )
         else:
+            columna_venta = mapping.get("precio_venta")
+            if columna_venta is None:
+                columnas_con_moneda = [
+                    (campo, idx)
+                    for campo, idx in mapping.items()
+                    if campo.startswith("precio_venta_")
+                ]
+                if len(columnas_con_moneda) == 1:
+                    columna_venta = columnas_con_moneda[0][1]
             datos["precio_venta"] = _parse_float(
-                _valor_celda(row, mapping.get("precio_venta"))
+                _valor_celda(row, columna_venta)
             )
 
-        existente = InvProducto.query.filter_by(empresa_id=empresa_id, sku=sku).first()
         try:
             with db.session.begin_nested():
                 if existente:

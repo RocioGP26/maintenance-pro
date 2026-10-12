@@ -12,6 +12,14 @@ La suite documental mantiene un ciclo independiente en
 
 - Espacio reservado para cambios aún no publicados.
 
+## [1.3.0] - 2026-10-12
+
+### Added
+
+- Selección de moneda al descargar el catálogo o la plantilla de productos.
+- Importación de precios por moneda sin borrar los valores existentes en otras
+  monedas y activación automática de nuevas monedas detectadas en el archivo.
+
 ## [1.2.3] - 2026-09-05
 
 ### Changed
